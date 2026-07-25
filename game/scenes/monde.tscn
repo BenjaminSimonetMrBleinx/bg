@@ -1,3 +1,239 @@
-[gd_scene format=3 uid="uid://bgmonde0v0000"]
+; Scene principale.
+;
+; Tout le 3D vit dans le SubViewport "Rendu" a resolution reduite. Le
+; TextureRect "Ecran" l'agrandit en plein ecran. Le contenu de test sous
+; Scene3D sera remplace par la ville generee en V2.
 
-[node name="Monde" type="Node3D"]
+[gd_scene load_steps=18 format=3 uid="uid://bgmonde0v0001"]
+
+[ext_resource type="Script" path="res://rendu/rendu_ps2.gd" id="1_rendu"]
+[ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
+
+[sub_resource type="ViewportTexture" id="tex_ecran"]
+viewport_path = NodePath("Rendu")
+
+[sub_resource type="Environment" id="env"]
+background_mode = 1
+
+[sub_resource type="PlaneMesh" id="m_sol"]
+size = Vector2(240, 240)
+subdivide_width = 120
+subdivide_depth = 120
+
+[sub_resource type="BoxMesh" id="m_trottoir"]
+size = Vector3(3, 0.18, 120)
+subdivide_width = 2
+subdivide_depth = 60
+
+[sub_resource type="BoxMesh" id="m_imm_a"]
+size = Vector3(7, 7.4, 9)
+
+[sub_resource type="BoxMesh" id="m_imm_b"]
+size = Vector3(7, 5.2, 8)
+
+[sub_resource type="BoxMesh" id="m_imm_c"]
+size = Vector3(7, 9.1, 10)
+
+[sub_resource type="BoxMesh" id="m_poteau"]
+size = Vector3(0.14, 3.2, 0.14)
+
+[sub_resource type="BoxMesh" id="m_tete"]
+size = Vector3(0.7, 0.22, 0.35)
+
+[sub_resource type="StandardMaterial3D" id="mat_asphalte"]
+shading_mode = 1
+albedo_color = Color(0.152, 0.16, 0.176, 1)
+roughness = 1.0
+metallic_specular = 0.0
+
+[sub_resource type="StandardMaterial3D" id="mat_trottoir"]
+shading_mode = 1
+albedo_color = Color(0.243, 0.243, 0.267, 1)
+roughness = 1.0
+metallic_specular = 0.0
+
+[sub_resource type="StandardMaterial3D" id="mat_fac_a"]
+shading_mode = 1
+albedo_color = Color(0.376, 0.314, 0.267, 1)
+roughness = 1.0
+metallic_specular = 0.0
+
+[sub_resource type="StandardMaterial3D" id="mat_fac_b"]
+shading_mode = 1
+albedo_color = Color(0.282, 0.298, 0.361, 1)
+roughness = 1.0
+metallic_specular = 0.0
+
+[sub_resource type="StandardMaterial3D" id="mat_fac_c"]
+shading_mode = 1
+albedo_color = Color(0.416, 0.337, 0.275, 1)
+roughness = 1.0
+metallic_specular = 0.0
+
+[sub_resource type="StandardMaterial3D" id="mat_poteau"]
+shading_mode = 1
+albedo_color = Color(0.106, 0.106, 0.129, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="mat_lampe"]
+shading_mode = 0
+albedo_color = Color(0.98, 0.83, 0.58, 1)
+emission_enabled = true
+emission = Color(1, 0.84, 0.6, 1)
+emission_energy_multiplier = 2.5
+
+[node name="Monde" type="Node"]
+script = ExtResource("1_rendu")
+reglages = ExtResource("2_reglages")
+
+[node name="Rendu" type="SubViewport" parent="."]
+size = Vector2i(512, 288)
+render_target_update_mode = 4
+
+[node name="Environnement" type="WorldEnvironment" parent="Rendu"]
+environment = SubResource("env")
+
+[node name="Camera3D" type="Camera3D" parent="Rendu"]
+transform = Transform3D(1, 0, 0, 0, 0.998, 0.0616, 0, -0.0616, 0.998, 0, 1.6, 10)
+fov = 70.0
+near = 0.1
+far = 400.0
+
+[node name="Scene3D" type="Node3D" parent="Rendu"]
+
+[node name="Sol" type="MeshInstance3D" parent="Rendu/Scene3D"]
+mesh = SubResource("m_sol")
+surface_material_override/0 = SubResource("mat_asphalte")
+
+[node name="TrottoirGauche" type="MeshInstance3D" parent="Rendu/Scene3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 0.09, -50)
+mesh = SubResource("m_trottoir")
+surface_material_override/0 = SubResource("mat_trottoir")
+
+[node name="TrottoirDroit" type="MeshInstance3D" parent="Rendu/Scene3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 0.09, -50)
+mesh = SubResource("m_trottoir")
+surface_material_override/0 = SubResource("mat_trottoir")
+
+[node name="ImmG1" type="MeshInstance3D" parent="Rendu/Scene3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.5, 3.7, -8)
+mesh = SubResource("m_imm_a")
+surface_material_override/0 = SubResource("mat_fac_a")
+
+[node name="ImmG2" type="MeshInstance3D" parent="Rendu/Scene3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.5, 2.6, -19)
+mesh = SubResource("m_imm_b")
+surface_material_override/0 = SubResource("mat_fac_b")
+
+[node name="ImmG3" type="MeshInstance3D" parent="Rendu/Scene3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.5, 4.55, -32)
+mesh = SubResource("m_imm_c")
+surface_material_override/0 = SubResource("mat_fac_c")
+
+[node name="ImmD1" type="MeshInstance3D" parent="Rendu/Scene3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, 2.6, -12)
+mesh = SubResource("m_imm_b")
+surface_material_override/0 = SubResource("mat_fac_c")
+
+[node name="ImmD2" type="MeshInstance3D" parent="Rendu/Scene3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, 4.55, -24)
+mesh = SubResource("m_imm_c")
+surface_material_override/0 = SubResource("mat_fac_a")
+
+[node name="ImmD3" type="MeshInstance3D" parent="Rendu/Scene3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, 3.7, -38)
+mesh = SubResource("m_imm_a")
+surface_material_override/0 = SubResource("mat_fac_b")
+
+[node name="LampG1" type="Node3D" parent="Rendu/Scene3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.6, 0, -6)
+
+[node name="Poteau" type="MeshInstance3D" parent="Rendu/Scene3D/LampG1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+mesh = SubResource("m_poteau")
+surface_material_override/0 = SubResource("mat_poteau")
+
+[node name="Tete" type="MeshInstance3D" parent="Rendu/Scene3D/LampG1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 3.16, 0)
+mesh = SubResource("m_tete")
+surface_material_override/0 = SubResource("mat_lampe")
+
+[node name="Lumiere" type="OmniLight3D" parent="Rendu/Scene3D/LampG1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 3.05, 0)
+light_color = Color(1, 0.827, 0.596, 1)
+light_energy = 9.0
+omni_range = 24.0
+omni_attenuation = 1.0
+
+[node name="LampD1" type="Node3D" parent="Rendu/Scene3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.6, 0, -18)
+
+[node name="Poteau" type="MeshInstance3D" parent="Rendu/Scene3D/LampD1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+mesh = SubResource("m_poteau")
+surface_material_override/0 = SubResource("mat_poteau")
+
+[node name="Tete" type="MeshInstance3D" parent="Rendu/Scene3D/LampD1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42, 3.16, 0)
+mesh = SubResource("m_tete")
+surface_material_override/0 = SubResource("mat_lampe")
+
+[node name="Lumiere" type="OmniLight3D" parent="Rendu/Scene3D/LampD1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42, 3.05, 0)
+light_color = Color(1, 0.827, 0.596, 1)
+light_energy = 9.0
+omni_range = 24.0
+omni_attenuation = 1.0
+
+[node name="LampG2" type="Node3D" parent="Rendu/Scene3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.6, 0, -30)
+
+[node name="Poteau" type="MeshInstance3D" parent="Rendu/Scene3D/LampG2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+mesh = SubResource("m_poteau")
+surface_material_override/0 = SubResource("mat_poteau")
+
+[node name="Tete" type="MeshInstance3D" parent="Rendu/Scene3D/LampG2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 3.16, 0)
+mesh = SubResource("m_tete")
+surface_material_override/0 = SubResource("mat_lampe")
+
+[node name="Lumiere" type="OmniLight3D" parent="Rendu/Scene3D/LampG2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 3.05, 0)
+light_color = Color(1, 0.827, 0.596, 1)
+light_energy = 9.0
+omni_range = 24.0
+omni_attenuation = 1.0
+
+[node name="LampD0" type="Node3D" parent="Rendu/Scene3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.6, 0, 3)
+
+[node name="Poteau" type="MeshInstance3D" parent="Rendu/Scene3D/LampD0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+mesh = SubResource("m_poteau")
+surface_material_override/0 = SubResource("mat_poteau")
+
+[node name="Tete" type="MeshInstance3D" parent="Rendu/Scene3D/LampD0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42, 3.16, 0)
+mesh = SubResource("m_tete")
+surface_material_override/0 = SubResource("mat_lampe")
+
+[node name="Lumiere" type="OmniLight3D" parent="Rendu/Scene3D/LampD0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42, 3.05, 0)
+light_color = Color(1, 0.827, 0.596, 1)
+light_energy = 9.0
+omni_range = 24.0
+omni_attenuation = 1.0
+
+[node name="Affichage" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="Ecran" type="TextureRect" parent="Affichage"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("tex_ecran")
+expand_mode = 1
+stretch_mode = 1
