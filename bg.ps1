@@ -30,7 +30,7 @@ $Racine = $PSScriptRoot
 $Projet = Join-Path $Racine 'game'
 $Tmp = Join-Path $Racine '.tmp'
 
-function Trouver-Outil {
+function Find-Outil {
     param([string]$Nom, [string[]]$Candidats)
     foreach ($c in $Candidats) {
         $trouve = Get-Item $c -ErrorAction SilentlyContinue | Select-Object -First 1
@@ -41,15 +41,15 @@ function Trouver-Outil {
     return $null
 }
 
-$Godot = Trouver-Outil 'godot' @(
+$Godot = Find-Outil 'godot' @(
     "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_*\Godot_v*_win64.exe",
     "$env:ProgramFiles\Godot\Godot*.exe"
 )
 $GodotConsole = if ($Godot) { $Godot -replace '_win64\.exe$', '_win64_console.exe' } else { $null }
-$Blender = Trouver-Outil 'blender' @(
+$Blender = Find-Outil 'blender' @(
     "$env:ProgramFiles\Blender Foundation\Blender *\blender.exe"
 )
-$Python = Trouver-Outil 'python' @(
+$Python = Find-Outil 'python' @(
     "$env:LOCALAPPDATA\Programs\Python\Python3*\python.exe"
 )
 
@@ -114,9 +114,21 @@ switch ($Commande) {
         # Tests de comportement : ils ont besoin d un vrai rendu, donc pas
         # de --headless. Une fenetre s ouvre brievement.
         Exiger $Godot 'Godot'
-        Write-Host "`n--- sens de conduite ---" -ForegroundColor Cyan
-        & $Godot --path $Projet --script 'res://outils/test_sens.gd'
-        if ($LASTEXITCODE -ne 0) { Write-Host "ECHEC" -ForegroundColor Red; exit 1 }
-        Write-Host "OK" -ForegroundColor Green
+        $suites = @(
+            @{ nom = 'sens de conduite'; script = 'res://outils/test_sens.gd' },
+            @{ nom = 'montee et descente'; script = 'res://outils/test_montee.gd' }
+        )
+        $echecs = 0
+        foreach ($s in $suites) {
+            Write-Host "`n--- $($s.nom) ---" -ForegroundColor Cyan
+            & $Godot --path $Projet --script $s.script
+            if ($LASTEXITCODE -ne 0) { $echecs++ }
+        }
+        Write-Host ""
+        if ($echecs -gt 0) {
+            Write-Host "$echecs suite(s) en echec" -ForegroundColor Red
+            exit 1
+        }
+        Write-Host "$($suites.Count) suites OK" -ForegroundColor Green
     }
 }

@@ -139,6 +139,23 @@ func regime() -> float:
 	return _regime
 
 
+## Rend la main au conducteur.
+func prendre_le_volant() -> void:
+	set_physics_process(true)
+
+
+## Neutralise le vehicule quand on en descend.
+##
+## Couper le script ne suffit pas : engine_force garde sa derniere valeur et
+## la voiture continuerait toute seule pendant qu'on marche. Il faut annuler
+## la poussee et serrer le frein explicitement.
+func quitter_le_volant() -> void:
+	set_physics_process(false)
+	engine_force = 0.0
+	steering = 0.0
+	brake = reglages.force_frein * 2.0
+
+
 func basculer_phares() -> void:
 	reglages.phares_allumes = not reglages.phares_allumes
 	for p in _phares:

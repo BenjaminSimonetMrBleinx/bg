@@ -108,3 +108,8 @@ light_energy = 8.0
 spot_range = 38.0
 spot_angle = 34.0
 spot_attenuation = 1.2
+
+; Point de depose du personnage quand il descend. Dans le repere du
+; vehicule, donc il sort toujours du bon cote.
+[node name="SortieConducteur" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.75, 0, -0.3)

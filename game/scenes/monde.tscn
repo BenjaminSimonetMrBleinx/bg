@@ -11,7 +11,7 @@
 ; Le vehicule demarre sur la chaussee verticale du couloir 0, qui court le
 ; long de -Z : il est donc deja dans le bon sens.
 
-[gd_scene load_steps=10 format=3 uid="uid://bgmonde0v0001"]
+[gd_scene load_steps=11 format=3 uid="uid://bgmonde0v0001"]
 
 [ext_resource type="Script" path="res://rendu/rendu_ps2.gd" id="1_rendu"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
@@ -20,6 +20,7 @@
 [ext_resource type="PackedScene" path="res://scenes/vehicule.tscn" id="5_vehicule"]
 [ext_resource type="Script" path="res://systemes/camera_poursuite.gd" id="6_camera"]
 [ext_resource type="PackedScene" path="res://scenes/joueur.tscn" id="7_joueur"]
+[ext_resource type="Script" path="res://systemes/controleur.gd" id="8_controleur"]
 
 [sub_resource type="ViewportTexture" id="tex_ecran"]
 viewport_path = NodePath("Rendu")
@@ -60,6 +61,34 @@ far = 400.0
 script = ExtResource("6_camera")
 reglages = ExtResource("2_reglages")
 cible = NodePath("../Scene3D/Joueur")
+
+; L'interface vit DANS le SubViewport, donc rendue a 512x384 comme le reste.
+; Un texte net superpose a une image basse resolution trahirait immediatement
+; un jeu moderne — les HUD PS2 partageaient le meme tampon que la 3D.
+[node name="Interface" type="CanvasLayer" parent="Rendu"]
+
+[node name="Invite" type="Label" parent="Rendu/Interface"]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -46.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.949, 0.925, 0.867, 1)
+theme_override_colors/font_outline_color = Color(0.043, 0.055, 0.086, 1)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 17
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Controleur" type="Node" parent="."]
+script = ExtResource("8_controleur")
+reglages = ExtResource("2_reglages")
+joueur = NodePath("../Rendu/Scene3D/Joueur")
+vehicule = NodePath("../Rendu/Scene3D/Vehicule")
+camera = NodePath("../Rendu/Camera3D")
+invite = NodePath("../Rendu/Interface/Invite")
 
 [node name="Affichage" type="CanvasLayer" parent="."]
 layer = -1
