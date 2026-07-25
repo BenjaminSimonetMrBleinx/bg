@@ -15,7 +15,11 @@ aux questions, on fige la direction, on code ensuite.
 
 **→ [`docs/00-questions.md`](docs/00-questions.md) — à remplir par Benjamin et Guillaume.**
 
-Le cadrage en cours est dans [`docs/01-cadrage.md`](docs/01-cadrage.md).
+| Document | Contenu |
+|---|---|
+| [`docs/00-questions.md`](docs/00-questions.md) | Les questions de cadrage, à remplir |
+| [`docs/01-cadrage.md`](docs/01-cadrage.md) | Décisions verrouillées, choix du moteur, répartition du travail |
+| [`docs/02-methode.md`](docs/02-methode.md) | Comment on code ce jeu au quotidien |
 
 ## Décidé
 

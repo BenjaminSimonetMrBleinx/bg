@@ -8,7 +8,9 @@
 Pas besoin d'attendre l'autre pour commiter. Faites un bloc, poussez, passez au suivant.
 Une question sans intérêt pour vous : écrivez `passe` et on n'y revient pas.
 
-Les blocs **A** à **C** bloquent le démarrage. Les blocs **D** et **E** peuvent attendre lundi.
+Les blocs **A**, **B**, **C** et **F** bloquent le démarrage. Les blocs **D** et **E** peuvent attendre.
+
+Le bloc **F** porte sur la méthode de travail — il se lit après [`02-methode.md`](02-methode.md).
 
 ---
 
@@ -296,6 +298,81 @@ système de jeu — et le direct convient pour les assets générés et les corr
 Proposition : les exports de build, les caches Godot (`.godot/`), les fichiers temporaires
 Blender, et tout fichier issu de la série (image, son, vidéo) — ce dernier point est autant
 juridique que technique.
+
+- **B:** —
+- **G:** —
+
+---
+
+## F · Méthode de travail
+
+À lire après [`02-methode.md`](02-methode.md). Ces réponses définissent comment on travaille
+au quotidien — elles comptent autant que les choix techniques.
+
+### F1. Le fichier de réglages : tout dedans dès le début, ou au fur et à mesure ?
+Tout d'emblée demande d'anticiper des nombres dont on ignore encore l'utilité. Au fur et à
+mesure risque de laisser des constantes de feeling coincées dans le code.
+Recommandation : au fur et à mesure, avec une règle stricte — dès qu'un nombre influence une
+sensation, il monte dans le fichier le jour même.
+
+- **B:** —
+
+### F2. Walkthrough systématique, ou seulement sur demande ?
+Cinq lignes d'explication après chaque système livré. Systématique, c'est un peu de bruit mais
+la garantie que le dépôt ne devient jamais une boîte noire. Sur demande, c'est plus fluide mais
+on oublie de demander exactement quand il aurait fallu.
+Recommandation : systématique sur les systèmes de jeu, jamais sur les assets générés.
+
+- **B:** —
+
+### F3. Code en anglais, commentaires en français — validé ?
+Le mélange dans les identifiants est ce qui rend un dépôt illisible. À figer maintenant, pas
+au bout de 3 000 lignes.
+
+- **B:** —
+- **G:** —
+
+### F4. Le journal : qui le tient ?
+Quatre lignes par session. Tenu automatiquement, c'est fait à coup sûr mais c'est mon regard.
+Tenu par vous, c'est votre ressenti — bien plus utile, et c'est le ressenti qui compte ici.
+Recommandation : la ligne « surprise » est écrite par vous, le reste automatiquement.
+
+- **B:** —
+- **G:** —
+
+### F5. Créneaux longs le week-end, ou sessions courtes en semaine ?
+Ça change la taille des verticales que je découpe. Une session de trois heures et une session
+de quarante minutes ne se préparent pas pareil.
+
+- **B:** —
+- **G:** —
+
+### F6. Quand une question de design surgit en cours de route, je fais quoi ?
+M'arrêter et demander garde le contrôle mais casse le rythme, surtout si vous n'êtes pas devant
+l'écran. Prendre la décision la plus neutre et la signaler garde le rythme, au risque que du
+design se décide par défaut.
+Recommandation : je m'arrête pour tout ce qui touche au ressenti du joueur, je tranche seul et
+je signale pour tout ce qui est purement technique.
+
+- **B:** —
+
+### F7. Est-ce que je peux lancer le jeu moi-même et regarder des captures ?
+Je peux exporter, lancer en headless, prendre des captures et les lire. Ça me permet de corriger
+des bugs visuels sans vous déranger. Ça consomme du temps machine et ça produit des allers-retours
+que vous ne voyez pas passer.
+
+- **B:** —
+
+### F8. Guillaume : comment tu veux recevoir les specs d'assets ?
+Une fiche par asset (dimensions, budget de polygones, taille de texture, pivot, orientation,
+échelle) ? Une liste globale ? Ou tu préfères que je te donne une contrainte technique unique et
+que tu t'organises librement à l'intérieur ?
+
+- **G:** —
+
+### F9. Qu'est-ce qui vous ferait dire, dans un mois, qu'on s'y est mal pris ?
+Question de rétrospective posée à l'avance. Les réponses sont presque toujours justes, et presque
+toujours ignorées.
 
 - **B:** —
 - **G:** —
