@@ -86,3 +86,44 @@ Le test de sens est resté dans le dépôt comme non-régression, accessible par
 `.\bg.ps1 test`. C'est typiquement le piège qui revient à la première refonte.
 
 **Prochain** : V4, Walter jouable à pied.
+
+---
+
+## V6 — Les maisons de Walter et Jesse
+
+Deux maisons posées sur la rue du haut de la grille, avec un intérieur dans lequel on entre
+par la porte. Extérieur et intérieur ne se touchent jamais : l'intérieur est déporté six
+cents mètres à l'écart du monde, et le passage est masqué par un fondu au noir. C'est ce que
+faisaient GTA III et Vice City, et pour une raison très concrète — la caméra se tient à 3,6 m
+derrière le personnage et traverserait les murs en permanence dans une pièce de sept mètres.
+
+**Le repère du seuil n'arrivait pas dans le `.glb`.** Il s'appelait `Porte`, le battant de
+la porte porte le matériau `porte`, et l'exportateur glTF de Blender a fusionné les deux :
+le fichier exporté contenait un *maillage* nommé `Porte`, à l'origine de la maison, et plus
+aucun repère. Côté Godot, `find_child("Porte")` trouvait ce maillage et le prenait pour le
+seuil — donc entrer se serait déclenché depuis le milieu du salon, et ressortir aurait déposé
+Walter à l'intérieur du mur. Rien n'aurait planté. Renommé en `Seuil`, et `maison.gd` gueule
+maintenant si le repère manque, parce que c'est une panne parfaitement silencieuse.
+
+Trouvé en comparant les objets présents en scène côté Blender avec la liste des nœuds du
+`.glb` exporté. Le raisonnement seul ne donnait rien : les deux intérieurs exportaient leurs
+repères sans problème, seul l'extérieur perdait le sien.
+
+**Le cache d'import de Godot a ensuite fait croire que le correctif ne marchait pas.** Le
+`.glb` régénéré sur le disque, mais `.godot/imported` tenait encore l'ancien. Un
+`--headless --import` avant de tester, sinon on corrige à l'aveugle.
+
+**La caméra devait sauter, pas suivre.** Elle rattrape sa position en lissage : sur six cents
+mètres, elle aurait mis plusieurs secondes à traverser, et on aurait vu défiler le vide.
+`recaler()` la repose d'un coup pendant le noir.
+
+**Les façades étaient des silhouettes noires.** Les maisons sont hors de la grille, donc hors
+de portée des lampadaires, qui ne sont générés qu'autour des îlots. Une lumière de porche
+au-dessus de chaque porte règle la lisibilité et désigne l'endroit où aller — et c'est ce
+qu'a n'importe quelle maison de banlieue, donc ça ne coûte rien.
+
+`outils/test_maison.gd` entre et ressort en mesurant les positions, parce que c'est une
+téléportation masquée par un écran noir : quand elle se trompe, elle ne plante pas, elle
+dépose le joueur dans un mur et personne ne voit rien. Huit suites maintenant.
+
+**Prochain** : V7, les personnages dans les maisons et le dialogue.

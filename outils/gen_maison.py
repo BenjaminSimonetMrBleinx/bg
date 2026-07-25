@@ -214,7 +214,13 @@ def construire_exterieur(spec: dict, mats: dict) -> int:
 
     # Repere du seuil, juste devant la porte. Exporte plutot que recalcule
     # cote Godot : la geometrie change, le repere suit tout seul.
-    seuil = bpy.data.objects.new("Porte", None)
+    #
+    # Il s'appelait "Porte", et il n'arrivait jamais dans le .glb : le battant
+    # porte le materiau "porte", et l'exportateur glTF fusionne les noms qui
+    # se ressemblent trop a ce point. On se retrouvait avec un maillage nomme
+    # "Porte" a l'origine de la maison, que le code cote Godot prenait pour le
+    # seuil — l'entree se serait faite au milieu du salon. Nom distinct.
+    seuil = bpy.data.objects.new("Seuil", None)
     seuil.empty_display_type = "PLAIN_AXES"
     seuil.location = (0.0, -hy - 1.1, 0.0)
     bpy.context.collection.objects.link(seuil)

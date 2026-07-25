@@ -189,7 +189,8 @@ switch ($Commande) {
             @{ nom = 'boucle camera'; script = 'res://outils/test_camera.gd' },
             @{ nom = 'franchissement de bordure'; script = 'res://outils/test_trottoir.gd' },
             @{ nom = 'audio'; script = 'res://outils/test_audio.gd' },
-            @{ nom = 'son du moteur'; script = 'res://outils/test_moteur.gd' }
+            @{ nom = 'son du moteur'; script = 'res://outils/test_moteur.gd' },
+            @{ nom = 'entrer dans les maisons'; script = 'res://outils/test_maison.gd' }
         )
         $echecs = 0
         foreach ($s in $suites) {

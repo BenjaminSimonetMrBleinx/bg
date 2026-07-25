@@ -27,6 +27,11 @@ var _initialisee: bool = false
 ## independant est la seule facon de casser la boucle.
 var _cap: float = 0.0
 
+## Cadrage resserre pour les interieurs. Le reste du comportement est
+## identique : seule la distance change, parce qu'une piece de sept metres
+## ne laisse pas la place d'un recul de rue.
+var _dedans: bool = false
+
 
 func _ready() -> void:
 	if reglages == null:
@@ -114,12 +119,27 @@ func _recentrer(delta: float) -> void:
 	_cap = rotate_toward(_cap, voulu, reglages.pieton_recentrage * delta)
 
 
+## Resserre ou relache le cadrage. Appele au passage d'une porte.
+func interieur(dedans: bool) -> void:
+	_dedans = dedans
+
+
+## Replace la camera d'un coup, sans lissage. Indispensable apres une
+## teleportation : le lissage mettrait plusieurs secondes a traverser les six
+## cents metres qui separent la ville des interieurs, et on verrait le vide.
+func recaler() -> void:
+	_cap = _cible.rotation.y
+	_initialisee = false
+
+
 func _ancrage() -> Vector3:
 	if _pieton:
 		var derriere := Vector3(sin(_cap), 0.0, cos(_cap))
+		var recul := reglages.interieur_recul if _dedans else reglages.pieton_recul
+		var haut := reglages.interieur_hauteur if _dedans else reglages.pieton_hauteur
 		return (_cible.global_position
-				+ derriere * reglages.pieton_recul
-				+ Vector3.UP * reglages.pieton_hauteur)
+				+ derriere * recul
+				+ Vector3.UP * haut)
 	var base := _cible.global_transform.basis
 	return (_cible.global_position
 			+ base.z * reglages.recul

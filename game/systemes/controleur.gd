@@ -12,13 +12,35 @@ extends Node
 @export var camera: NodePath
 @export var invite: NodePath
 
-enum Etat { A_PIED, AU_VOLANT }
+## Toutes les maisons de la carte. Le controleur cherche la plus proche a
+## chaque image : a deux maisons c'est gratuit, et le jour ou il y en aura
+## trente on passera par des zones de detection.
+@export var maisons: NodePath
+
+## Rectangle noir plein ecran servant au fondu de porte.
+@export var fondu: NodePath
+
+## Joue les ambiances. Facultatif : sans lui on entre quand meme, en silence.
+@export var audio: NodePath
+
+enum Etat { A_PIED, AU_VOLANT, DEDANS }
 
 var _etat: int = Etat.A_PIED
 var _j: Joueur
 var _v: Vehicule
 var _c: Camera3D
 var _invite: Label
+var _fondu: ColorRect
+var _audio: Audio
+var _maisons: Array[Maison] = []
+
+## La maison dans laquelle on se trouve. Nulle des qu'on est dehors.
+var _dedans: Maison = null
+
+## Vrai pendant le fondu. Tant qu'il dure, plus aucune commande ne passe :
+## sans ce verrou, un appui repete sur F pendant le noir enchaine deux
+## transitions et depose le joueur dans le decor.
+var _transition: bool = false
 
 
 func _ready() -> void:
@@ -33,22 +55,77 @@ func _ready() -> void:
 			set_process(false)
 			return
 
+	_fondu = get_node_or_null(fondu) as ColorRect
+	_audio = get_node_or_null(audio) as Audio
+	var racine := get_node_or_null(maisons)
+	if racine != null:
+		for n in racine.get_children():
+			if n is Maison:
+				_maisons.append(n as Maison)
+
 	_v.quitter_le_volant()
 	_c.suivre(_j)
+	_c.interieur(false)
+	if _fondu != null:
+		_fondu.color.a = 0.0
 	_afficher("")
 
 
 func _process(_delta: float) -> void:
-	if _etat == Etat.A_PIED:
-		var d := _j.global_position.distance_to(_v.global_position)
-		var proche := d <= reglages.portee_interaction + 1.4
-		_afficher("F   Monter" if proche else "")
-		if proche and Input.is_action_just_pressed("interagir"):
-			_monter()
-	else:
-		_afficher("F   Descendre")
+	if _transition:
+		return
+
+	match _etat:
+		Etat.AU_VOLANT:
+			_afficher("F   Descendre")
+			if Input.is_action_just_pressed("interagir"):
+				_descendre()
+
+		Etat.DEDANS:
+			var vers_sortie := _j.global_position.distance_to(_dedans.entree())
+			var sortable := vers_sortie <= reglages.portee_porte
+			_afficher("F   Sortir" if sortable else "")
+			if sortable and Input.is_action_just_pressed("interagir"):
+				_sortir()
+
+		_:
+			_a_pied()
+
+
+# A pied, deux interactions se disputent la meme touche. On tranche par la
+# distance plutot que par un ordre fixe : garer la voiture devant chez soi est
+# exactement ce qu'on fera tout le temps, et il faut que F fasse alors la
+# chose la plus proche, pas la premiere testee.
+func _a_pied() -> void:
+	var d_v := _j.global_position.distance_to(_v.global_position)
+	var portee_v := reglages.portee_interaction + 1.4
+
+	var maison := _maison_proche()
+	var d_m := INF
+	if maison != null:
+		d_m = _j.global_position.distance_to(maison.seuil())
+
+	if maison != null and d_m <= reglages.portee_porte and d_m < d_v:
+		_afficher("F   Entrer chez %s" % maison.nom_affiche)
 		if Input.is_action_just_pressed("interagir"):
-			_descendre()
+			_entrer(maison)
+		return
+
+	var proche := d_v <= portee_v
+	_afficher("F   Monter" if proche else "")
+	if proche and Input.is_action_just_pressed("interagir"):
+		_monter()
+
+
+func _maison_proche() -> Maison:
+	var meilleure: Maison = null
+	var mini := INF
+	for m in _maisons:
+		var d := _j.global_position.distance_to(m.seuil())
+		if d < mini:
+			mini = d
+			meilleure = m
+	return meilleure
 
 
 func _monter() -> void:
@@ -82,6 +159,54 @@ func _descendre() -> void:
 	_j.visible = true
 	_j.set_physics_process(true)
 	_c.suivre(_j)
+
+
+func _entrer(m: Maison) -> void:
+	await _passer_la_porte(m.entree(), m.cap_entree())
+	_etat = Etat.DEDANS
+	_dedans = m
+	_c.interieur(true)
+	if _audio != null:
+		_audio.ambiance(m.nom_affiche)
+
+
+func _sortir() -> void:
+	var m := _dedans
+	await _passer_la_porte(m.seuil(), m.cap_sortie())
+	_etat = Etat.A_PIED
+	_dedans = null
+	_c.interieur(false)
+	if _audio != null:
+		_audio.ambiance("")
+
+
+# Noir, on deplace, on rouvre. Le deplacement se fait au creux du fondu :
+# c'est la seule image ou le saut de six cents metres est invisible.
+func _passer_la_porte(destination: Vector3, cap: float) -> void:
+	_transition = true
+	_afficher("")
+	await _noircir(1.0)
+
+	_j.global_position = destination + Vector3.UP * 0.1
+	_j.velocity = Vector3.ZERO
+	_j.rotation.y = cap
+	# La camera doit sauter avec lui. Sans ce recalage elle rattraperait la
+	# distance en lissant, et on verrait defiler le vide entre les deux.
+	_c.recaler()
+	# Une image complete pour que la physique repose le personnage et que la
+	# camera se replace avant qu'on rouvre.
+	await get_tree().physics_frame
+
+	await _noircir(0.0)
+	_transition = false
+
+
+func _noircir(alpha: float) -> void:
+	if _fondu == null:
+		return
+	var t := create_tween()
+	t.tween_property(_fondu, "color:a", alpha, reglages.fondu_porte)
+	await t.finished
 
 
 func _afficher(texte: String) -> void:

@@ -11,7 +11,7 @@
 ; Le vehicule demarre sur la chaussee verticale du couloir 0, qui court le
 ; long de -Z : il est donc deja dans le bon sens.
 
-[gd_scene load_steps=13 format=3 uid="uid://bgmonde0v0001"]
+[gd_scene load_steps=18 format=3 uid="uid://bgmonde0v0001"]
 
 [ext_resource type="Script" path="res://rendu/rendu_ps2.gd" id="1_rendu"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
@@ -23,6 +23,11 @@
 [ext_resource type="Script" path="res://systemes/controleur.gd" id="8_controleur"]
 [ext_resource type="Script" path="res://systemes/audio.gd" id="9_audio"]
 [ext_resource type="AudioStream" path="res://assets/sons/ambiance/amb_rue_jour.ogg" id="10_ambiance"]
+[ext_resource type="Script" path="res://systemes/maison.gd" id="11_maison"]
+[ext_resource type="PackedScene" path="res://assets/maisons/walter_ext.glb" id="12_walter_ext"]
+[ext_resource type="PackedScene" path="res://assets/maisons/walter_int.glb" id="13_walter_int"]
+[ext_resource type="PackedScene" path="res://assets/maisons/jesse_ext.glb" id="14_jesse_ext"]
+[ext_resource type="PackedScene" path="res://assets/maisons/jesse_int.glb" id="15_jesse_int"]
 
 [sub_resource type="ViewportTexture" id="tex_ecran"]
 viewport_path = NodePath("Rendu")
@@ -48,6 +53,33 @@ environment = SubResource("env")
 script = ExtResource("3_ville")
 reglages = ExtResource("2_reglages")
 geometrie = ExtResource("4_geometrie")
+
+; Les deux maisons bordent la rue du haut de la grille (le couloir z = -115),
+; sur le desert qui la longe : c'est le seul endroit de la carte ou il reste
+; de la place devant une chaussee, les ilots etant entierement batis.
+;
+; Leur porte regarde +Z, donc la rue. Les interieurs sont poses tres loin, a
+; des distances differentes pour qu'ils ne puissent jamais se voir l'un
+; l'autre.
+[node name="Maisons" type="Node3D" parent="Rendu/Scene3D"]
+
+[node name="Walter" type="Node3D" parent="Rendu/Scene3D/Maisons"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, -129)
+script = ExtResource("11_maison")
+nom_affiche = "Walter"
+geometrie_ext = ExtResource("12_walter_ext")
+geometrie_int = ExtResource("13_walter_int")
+decalage_interieur = Vector3(-600, 0, 600)
+
+[node name="Jesse" type="Node3D" parent="Rendu/Scene3D/Maisons"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 86, 0, -129)
+script = ExtResource("11_maison")
+nom_affiche = "Jesse"
+geometrie_ext = ExtResource("14_jesse_ext")
+geometrie_int = ExtResource("15_jesse_int")
+decalage_interieur = Vector3(-600, 0, 900)
+lumiere_couleur = Color(1, 0.831, 0.639, 1)
+lumiere_energie = 2.6
 
 [node name="Vehicule" parent="Rendu/Scene3D" instance=ExtResource("5_vehicule")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.6, 0.6, -22)
@@ -85,6 +117,17 @@ theme_override_font_sizes/font_size = 17
 horizontal_alignment = 1
 vertical_alignment = 1
 
+; Le fondu de porte. Declare APRES l'invite, donc dessine par-dessus : pendant
+; le noir, plus rien ne doit rester lisible a l'ecran.
+[node name="Fondu" type="ColorRect" parent="Rendu/Interface"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0)
+
 [node name="Audio" type="Node" parent="."]
 script = ExtResource("9_audio")
 reglages = ExtResource("2_reglages")
@@ -97,6 +140,9 @@ joueur = NodePath("../Rendu/Scene3D/Joueur")
 vehicule = NodePath("../Rendu/Scene3D/Vehicule")
 camera = NodePath("../Rendu/Camera3D")
 invite = NodePath("../Rendu/Interface/Invite")
+maisons = NodePath("../Rendu/Scene3D/Maisons")
+fondu = NodePath("../Rendu/Interface/Fondu")
+audio = NodePath("../Audio")
 
 [node name="Affichage" type="CanvasLayer" parent="."]
 layer = -1

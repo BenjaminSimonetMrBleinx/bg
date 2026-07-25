@@ -239,3 +239,21 @@ extends Resource
 ## Roulis du torse a chaque foulee, en degres. Discret, mais c'est lui qui
 ## enleve l'impression de pantin.
 @export_range(0.0, 20.0, 0.5) var roulis_torse: float = 4.0
+
+
+@export_group("Maisons")
+
+## Distance a laquelle la porte propose d'entrer, en metres. Plus genereuse
+## que pour le vehicule : on vise une porte de face, on ne tourne pas autour.
+@export_range(0.5, 8.0, 0.1) var portee_porte: float = 3.0
+
+## Duree d'une moitie de fondu au noir, en secondes. Le passage complet en
+## dure donc le double. C'est le seul masque dont on dispose : la teleportation
+## vers l'interieur est instantanee, et sans ce noir on la verrait.
+@export_range(0.05, 1.5, 0.05) var fondu_porte: float = 0.35
+
+## Recul de la camera a l'interieur. Les pieces font sept metres de large :
+## le recul de rue collerait la camera dans le mur d'en face.
+@export_range(0.6, 6.0, 0.1) var interieur_recul: float = 2.1
+
+@export_range(0.3, 4.0, 0.1) var interieur_hauteur: float = 1.5

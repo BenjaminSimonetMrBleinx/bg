@@ -20,6 +20,14 @@ extends Node3D
 @export var lumiere_energie: float = 3.2
 @export var lumiere_couleur: Color = Color(1.0, 0.898, 0.769)
 
+## Lumiere de porche. Les maisons sont hors de la grille, donc hors de portee
+## des lampadaires, et sans elle la facade est une silhouette noire — on ne
+## voit meme pas ou est la porte. C'est aussi ce qu'a toute maison de
+## banlieue, donc ca ne coute rien en credibilite.
+@export var porche_energie: float = 2.4
+@export var porche_couleur: Color = Color(1.0, 0.855, 0.639)
+@export var porche_portee: float = 11.0
+
 var _seuil: Node3D
 var _sortie: Node3D
 var _habitant: Node3D
@@ -38,7 +46,22 @@ func _poser_exterieur() -> void:
 	var n := geometrie_ext.instantiate()
 	add_child(n)
 	_collisionner(n)
-	_seuil = n.find_child("Porte", true, false) as Node3D
+	_seuil = n.find_child("Seuil", true, false) as Node3D
+	if _seuil == null:
+		push_error("maison %s : repere 'Seuil' absent du .glb. Regenerer : "
+				% nom_affiche + "blender -b -P outils/gen_maison.py")
+		return
+
+	# Accrochee au seuil plutot qu'a une position ecrite en dur : la maison
+	# peut changer de taille, la lumiere reste au-dessus de la porte.
+	var porche := OmniLight3D.new()
+	porche.name = "Porche"
+	porche.position = _seuil.position + Vector3(0.0, 2.35, -0.85)
+	porche.light_color = porche_couleur
+	porche.light_energy = porche_energie
+	porche.omni_range = porche_portee
+	porche.omni_attenuation = 1.5
+	add_child(porche)
 
 
 func _poser_interieur() -> void:
@@ -55,6 +78,8 @@ func _poser_interieur() -> void:
 	_collisionner(n)
 	_sortie = n.find_child("Sortie", true, false) as Node3D
 	_habitant = n.find_child("Habitant", true, false) as Node3D
+	if _sortie == null:
+		push_error("maison %s : repere 'Sortie' absent du .glb" % nom_affiche)
 
 	var lampe := OmniLight3D.new()
 	lampe.name = "Plafonnier"
@@ -94,3 +119,15 @@ func place_habitant() -> Vector3:
 
 func _interieur_centre() -> Vector3:
 	return _racine_int.global_position if _racine_int != null else global_position
+
+
+## Cap a donner au joueur en entrant : il regarde vers le fond de la piece.
+## La facade est en +Z local, l'avant de Godot est -Z, donc rentrer dans la
+## maison revient a prendre le cap de la maison elle-meme.
+func cap_entree() -> float:
+	return global_rotation.y
+
+
+## Cap a donner au joueur en sortant : dos a la porte, face a la rue.
+func cap_sortie() -> float:
+	return global_rotation.y + PI
