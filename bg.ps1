@@ -97,10 +97,12 @@ switch ($Commande) {
     }
 
     'capture' {
-        Exiger $Godot 'Godot'
+        # Variante console obligatoire : le binaire graphique se detache et
+        # PowerShell n attend ni sa fin ni son code de sortie.
+        Exiger $GodotConsole 'Godot (console)'
         New-Item -ItemType Directory -Force -Path $Tmp | Out-Null
         $sortie = Join-Path $Tmp 'capture.png'
-        & $Godot --path $Projet --script 'res://outils/capture.gd' -- --sortie $sortie --frames 150
+        & $GodotConsole --path $Projet --script 'res://outils/capture.gd' -- --sortie $sortie --frames 150
         if (Test-Path $sortie) { Write-Host "-> $sortie" -ForegroundColor Green }
     }
 
@@ -111,9 +113,11 @@ switch ($Commande) {
     }
 
     'test' {
-        # Tests de comportement : ils ont besoin d un vrai rendu, donc pas
-        # de --headless. Une fenetre s ouvre brievement.
-        Exiger $Godot 'Godot'
+        # Tests de comportement : ils ont besoin d un vrai rendu, donc pas de
+        # --headless. Et imperativement la variante console : le binaire
+        # graphique se detache, PowerShell ne recupere jamais son code de
+        # sortie et toutes les suites paraissent echouer.
+        Exiger $GodotConsole 'Godot (console)'
         $suites = @(
             @{ nom = 'sens de conduite'; script = 'res://outils/test_sens.gd' },
             @{ nom = 'montee et descente'; script = 'res://outils/test_montee.gd' }
@@ -121,7 +125,7 @@ switch ($Commande) {
         $echecs = 0
         foreach ($s in $suites) {
             Write-Host "`n--- $($s.nom) ---" -ForegroundColor Cyan
-            & $Godot --path $Projet --script $s.script
+            & $GodotConsole --path $Projet --script $s.script
             if ($LASTEXITCODE -ne 0) { $echecs++ }
         }
         Write-Host ""
