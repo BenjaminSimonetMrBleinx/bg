@@ -17,7 +17,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('jouer', 'editeur', 'generer', 'capture', 'verif', 'test', 'outils')]
+    [ValidateSet('jouer', 'editeur', 'generer', 'capture', 'verif', 'test', 'son', 'reparer', 'outils')]
     [string]$Commande = 'jouer',
 
     [int]$Blocs = 2,
@@ -133,6 +133,34 @@ switch ($Commande) {
         Initialize-Projet
         & $GodotConsole --headless --path $Projet --script 'res://outils/verif.gd'
         exit $LASTEXITCODE
+    }
+
+    'son' {
+        # Le jeu muet ne donne aucune piste : ce diagnostic repond d un coup
+        # sur le fichier, l import, les bus, le peripherique et le volume.
+        Exiger $GodotConsole 'Godot (console)'
+        Initialize-Projet
+        & $GodotConsole --path $Projet --script 'res://outils/diag_son.gd'
+        exit $LASTEXITCODE
+    }
+
+    'reparer' {
+        # Godot garde un cache d import dans .godot/. Si un fichier est
+        # arrive casse - typiquement un pointeur Git LFS importe comme s il
+        # etait un vrai fichier - le cache reste fausse et le reimport normal
+        # ne suffit pas. On le supprime pour forcer une reconstruction.
+        Exiger $GodotConsole 'Godot (console)'
+        $cache = Join-Path $Projet '.godot'
+        if (Test-Path $cache) {
+            Write-Host "  Suppression du cache d import..." -ForegroundColor Gray
+            Remove-Item -Recurse -Force $cache
+        }
+        Write-Host "  Reimport complet, patiente..." -ForegroundColor Gray
+        $ancien = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
+        try { & $GodotConsole --headless --path $Projet --import 2>&1 | Out-Null }
+        finally { $ErrorActionPreference = $ancien }
+        Write-Host "  Termine. Relance le jeu." -ForegroundColor Green
     }
 
     'test' {

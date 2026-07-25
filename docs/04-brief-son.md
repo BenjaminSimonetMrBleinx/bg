@@ -37,6 +37,15 @@ C'est particulièrement vrai du moteur : c'est de loin le son le plus entendu du
 jeu, et quelques millisecondes de blanc deviennent insupportables en deux
 minutes.
 
+**4. Vise environ −6 dB de crête.** C'est la règle qui a le plus vite servi :
+la première ambiance livrée culminait à −27 dB, et elle était audible sur une
+machine, inaudible sur l'autre. Le moteur peut toujours baisser, mais il ne
+peut pas monter sans faire remonter le souffle avec. Livre fort, on atténue
+ensuite.
+
+Pour vérifier depuis le jeu : `.\bg.ps1 son` mesure la crête réelle et
+prévient si elle est trop basse.
+
 ---
 
 ## Si tu n'as que deux heures

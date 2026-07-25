@@ -34,6 +34,7 @@ func _ready() -> void:
 		push_error("audio : aucune ressource Reglages assignee")
 		return
 	appliquer_volumes()
+	diagnostic()
 	_preparer_ambiance()
 
 
@@ -49,14 +50,44 @@ func appliquer_volumes() -> void:
 func _regler(nom: String, db: float) -> void:
 	var index := AudioServer.get_bus_index(nom)
 	if index < 0:
-		push_warning("audio : bus '%s' introuvable" % nom)
+		push_error("audio : bus '%s' introuvable. La disposition des bus "
+				% nom + "n'est pas chargee, tout le son passera au Master.")
 		return
 	AudioServer.set_bus_volume_db(index, db)
+	AudioServer.set_bus_mute(index, false)
+
+
+## Etat du son, imprime au demarrage. Sans ca, un jeu muet ne donne aucune
+## piste : on ne sait meme pas si le probleme vient du fichier, du bus, du
+## peripherique de sortie ou du volume.
+func diagnostic() -> void:
+	print("AUDIO : pilote '%s', melangeur %d Hz, sortie '%s'"
+			% [AudioServer.get_driver_name(), AudioServer.get_mix_rate(),
+			   AudioServer.get_output_device()])
+	for i in AudioServer.bus_count:
+		print("        bus %-10s %+6.1f dB%s"
+				% [AudioServer.get_bus_name(i), AudioServer.get_bus_volume_db(i),
+				   "  MUET" if AudioServer.is_bus_mute(i) else ""])
 
 
 func _preparer_ambiance() -> void:
+	# Un systeme audio muet ne se signale pas tout seul : c'est precisement
+	# son mode de defaillance. Une premiere version sortait ici en silence
+	# quand le flux manquait, et on cherchait la panne partout ailleurs.
 	if ambiance_exterieure == null:
+		push_error("audio : AUCUN flux d'ambiance charge. "
+				+ "Le fichier est probablement un pointeur Git LFS non resolu, "
+				+ "ou l'import Godot a echoue. Essayer : .\\bg.ps1 reparer")
+		print("AUDIO : aucune ambiance. Voir le message d'erreur ci-dessus.")
 		return
+
+	var chemin := ambiance_exterieure.resource_path
+	var duree := ambiance_exterieure.get_length()
+	print("AUDIO : ambiance '%s', %.0f s" % [chemin.get_file(), duree])
+	if duree < 0.5:
+		push_error("audio : le flux '%s' dure %.2f s. "
+				% [chemin, duree]
+				+ "C'est le signe d'un fichier vide ou d'un pointeur LFS.")
 
 	# La boucle se regle sur le flux lui-meme, pas sur le lecteur : une nappe
 	# qui se relance depuis le debut a chaque fin s'entend, un flux marque
