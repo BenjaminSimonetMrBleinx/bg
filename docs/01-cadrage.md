@@ -83,9 +83,14 @@ Trois conflits structurels le disqualifient pour **ce** projet :
    franches et le tramage, c'est-à-dire notre dither 15 bits. Désactivable
    (`r.AntiAliasingMethod=0`), mais on retire les fonctions phares du moteur pour arriver
    là où Godot démarre.
-2. **Les scènes et les Blueprints sont binaires.** Impossible de les générer, de les
-   modifier ou même de les lire par script. Le modèle de travail retenu pour ce projet
-   casse structurellement.
+2. **Les Blueprints sont binaires et opaques au script.** Nuance importante, corrigée après
+   vérification : le *niveau*, lui, est scriptable. Unreal a un mode commandlet Python
+   (`UnrealEditor-Cmd.exe projet.uproject -run=pythonscript -script=x.py`) qui tourne sans
+   interface et permet d'importer des assets, d'instancier des acteurs, de sauvegarder le
+   niveau et de rendre une image de contrôle. Le pipeline procédural serait donc possible.
+   Restent : les graphes Blueprint qu'aucun script n'écrit vraiment, et une boucle en
+   minutes plutôt qu'en secondes (démarrage éditeur + compilation de shaders). Ce point est
+   une **friction sérieuse**, pas un blocage.
 3. **Un `.uasset` ne se merge pas.** À deux sur le même niveau, ce n'est pas un conflit à
    résoudre : c'est le travail de l'un qui est jeté. La réponse d'Unreal est Perforce avec
    verrouillage exclusif, pas GitHub.
@@ -98,6 +103,32 @@ ramasse-miettes) très loin de TypeScript.
 les Blueprints et prend le gameplay, on renonce à générer l'essentiel du code, et on
 accepte des semaines plutôt qu'un week-end. C'est un projet valable — ce n'est pas
 celui-ci.
+
+### Les assets tout faits : l'avantage des gros moteurs n'existe pas ici
+
+Pour du low-poly, l'écosystème gratuit est **indépendant du moteur**. Tout est en FBX ou
+glTF, donc utilisable à l'identique dans Godot, Unity ou Unreal.
+
+| Source | Contenu | Licence |
+|---|---|---|
+| [Kenney](https://kenney.nl) | 40 000+ assets, kits de ville, véhicules | CC0 |
+| [Quaternius](https://quaternius.com) | Packs low-poly, dont *LowPoly Cars* (FBX/OBJ/Blend) | CC0 |
+| [Poly Pizza](https://poly.pizza) | FBX et glTF, sans compte | CC0 / CC-BY |
+| [itch.io](https://itch.io/game-assets/assets-cc0/tag-low-poly) | Packs PSX, dont *PSX Style Cars* avec bruitages | CC0 |
+
+L'avantage « Asset Store » d'Unreal et Unity porte sur le contenu photoréaliste et AAA —
+exactement ce qu'on ne veut pas. Sur ce créneau, il ne joue pas. L'argument donné plus haut
+en faveur d'Unity sur ce point est donc retiré.
+
+Pour la ville, aucun pack ne bat la génération procédurale : paramétrée, réamorçable par
+graine, régénérable en une commande.
+
+**Conséquence sur le planning :** un pack de voitures PSX en CC0 avec bruitages couvre le
+véhicule et le son du premier jalon. Guillaume n'est plus un point de blocage — il refait
+la voiture correctement ensuite, pendant que le jalon roule avec un placeholder légitime.
+
+**Discipline unique à tenir :** noter la licence de chaque asset importé dans
+`assets/LICENCES.md`. CC0 ne demande rien, CC-BY demande une attribution.
 
 ### Ce que coûte Godot, honnêtement
 
