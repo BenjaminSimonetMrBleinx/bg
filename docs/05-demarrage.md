@@ -1,59 +1,67 @@
 # Démarrage
 
-Pour Guillaume, ou pour toute machine neuve. Dix minutes.
+Pour Guillaume, ou pour toute machine neuve.
 
 ---
 
-## 1. Installer les outils
+## 1. Tout installer — une seule commande
 
-| Outil | Pourquoi | Lien |
-|---|---|---|
-| **Git LFS** | **Indispensable.** Sans lui, rien ne marche — voir plus bas | [git-lfs.com](https://git-lfs.com/) |
-| **Blender 5.2** | Modélisation, et les générateurs du projet tournent dedans | [blender.org](https://www.blender.org/download/) |
-| **Godot 4.7** | Le moteur. 120 Mo, aucun compte à créer | [godotengine.org](https://godotengine.org/download) |
-| Python 3.12 | Génération des textures | [python.org](https://www.python.org/downloads/) |
-
-## 2. Git LFS d'abord, le clone ensuite
-
-**L'ordre compte.** Cloner avant d'avoir installé LFS donne un dépôt en
-apparence complet mais inutilisable.
+Depuis le dossier du projet :
 
 ```powershell
-git lfs version          # doit repondre quelque chose
-git lfs install          # une seule fois par machine
-git clone https://github.com/BenjaminSimonetMrBleinx/bg.git
-cd bg
+.\installer.ps1
 ```
 
-### Si tu as déjà cloné sans LFS
+Le script détecte ce qui manque, l'installe, et laisse tranquille ce qui est
+déjà là. Il peut être relancé autant de fois que tu veux. Windows demandera
+peut-être une confirmation pendant les installations : réponds oui.
 
-C'est le piège classique, et il ne ressemble pas à une erreur :
+Il s'occupe de :
 
-- **tes pushs de fichiers binaires échouent**, avec un message peu parlant ;
-- **tes images sont fausses.** Ouvre `game/assets/textures/route.png` : au lieu
-  d'une image, tu trouveras trois lignes de texte commençant par
-  `version https://git-lfs.github.com/spec/v1`. C'est un *pointeur*, pas le
-  fichier. Blender et Godot refuseront de l'ouvrir.
+| | |
+|---|---|
+| **Git** | récupérer et envoyer le travail |
+| **Git LFS** | les images, sons et `.blend` passent par lui |
+| **Blender 5.2** | modélisation, et les générateurs du projet tournent dedans |
+| **Godot 4.7** | le moteur du jeu |
+| **Python 3.12** | génération des textures |
 
-Réparation, sans recloner :
+Puis il configure ton identité git, autorise l'exécution des scripts, répare
+le téléchargement des fichiers binaires, et vérifie que le projet se lance.
+
+> **Si Git vient d'être installé**, ferme le terminal, rouvre-le, et relance
+> `.\installer.ps1`. Windows a besoin d'une nouvelle session pour voir un
+> outil fraîchement installé.
+
+### Pour regarder avant de se lancer
 
 ```powershell
-git lfs install
-git lfs pull
+.\installer.ps1 -Simuler
 ```
 
-## 3. Vérifier que tout est là
+Montre ce qui serait installé, sans rien toucher.
+
+## 2. Le piège qui coûte une soirée
+
+**Git LFS doit être là avant le clone.** Le script le gère si tu as déjà
+cloné, mais autant comprendre pourquoi il insiste.
+
+Sans LFS, le dépôt se télécharge en apparence complet — sauf que les fichiers
+binaires ne sont pas les vrais. Ouvre `game/assets/textures/route.png` : au
+lieu d'une image, tu trouveras trois lignes de texte commençant par
+`version https://git-lfs.github.com/spec/v1`. C'est un *pointeur*. Blender et
+Godot refuseront de l'ouvrir, et tes envois de fichiers binaires échoueront
+avec un message qui ne parle pas de LFS.
+
+Réparation, sans recloner : `git lfs install` puis `git lfs pull`.
+C'est exactement ce que fait `installer.ps1`.
+
+## 3. Vérifier
 
 ```powershell
-.\bg.ps1 outils          # doit trouver Godot, Blender et Python
+.\bg.ps1 outils          # ou en est la chaine d outils
 .\bg.ps1 verif           # doit afficher VERIF OK
 .\bg.ps1 jouer           # le jeu se lance
-```
-
-Si `bg.ps1` refuse de s'exécuter, PowerShell bloque les scripts non signés :
-
-```powershell
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 ```
 
 ## 4. Commandes en jeu

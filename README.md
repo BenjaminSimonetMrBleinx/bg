@@ -46,17 +46,15 @@ Pas de missions, pas d'IA, pas de trafic, pas de personnage animé. Le jalon ser
 
 ## Mise en route
 
-**L'ordre compte** : Git LFS s'installe *avant* le clone. Sinon les textures
-arrivent sous forme de pointeurs texte de 130 octets et rien ne s'ouvre.
-
-```bash
-git lfs install                                              # une fois par machine
+```powershell
 git clone https://github.com/BenjaminSimonetMrBleinx/bg.git
 cd bg
+.\installer.ps1        # installe et configure tout, relancable sans risque
 ```
 
-Déjà cloné sans LFS ? `git lfs install` puis `git lfs pull` répare sans
-recloner. Détails dans [docs/05-demarrage.md](docs/05-demarrage.md).
+`installer.ps1` détecte ce qui manque, l'installe via winget, configure Git
+LFS et ton identité, répare le téléchargement des binaires et vérifie que le
+projet se lance. Détails dans [docs/05-demarrage.md](docs/05-demarrage.md).
 
 Outils : [Godot 4.7](https://godotengine.org/download) · [Blender 5.2](https://www.blender.org/download/) · [Python 3.12](https://www.python.org/downloads/) · [Git LFS](https://git-lfs.com/)
 
