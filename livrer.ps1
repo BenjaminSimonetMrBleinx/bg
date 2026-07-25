@@ -186,6 +186,19 @@ if (Test-Path "assets/sons") {
     if ($audio.Count -gt 0) { Bien "$($audio.Count) son(s) ranges au bon endroit" }
 }
 
+# Meme principe pour les voix, mais elles ont besoin d etre converties et
+# RENOMMEES : le jeu les retrouve par une empreinte du texte, que personne ne
+# doit calculer a la main. On depose des numeros, le script fait le reste.
+$depot_voix = @(Get-ChildItem "assets/voix" -File -Include *.wav,*.mp3,*.ogg,*.flac `
+                -Recurse -ErrorAction SilentlyContinue)
+if ($depot_voix.Count -gt 0) {
+    Info "$($depot_voix.Count) enregistrement(s) de voix a integrer..."
+    $ancien = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try { & (Join-Path $PSScriptRoot 'bg.ps1') voix -Integrer }
+    finally { $ErrorActionPreference = $ancien }
+}
+
 Titre "3. Ce que tu t appretes a envoyer"
 
 $etat = & git status --porcelain

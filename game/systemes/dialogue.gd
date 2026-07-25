@@ -10,6 +10,11 @@ class_name Dialogue
 extends Node
 
 const FICHIER := "res://donnees/dialogues.json"
+const VOIX := "res://assets/voix/%s_%s.wav"
+
+## Les voix sortent sur le bus Interface : c'est du hors-champ, comme le
+## reste de l'habillage, et ca les met sous le meme curseur de volume.
+const BUS_VOIX := "Interface"
 
 signal termine
 
@@ -30,6 +35,11 @@ var _vus: Dictionary = {}
 var _cadre: Control
 var _nom: Label
 var _texte: Label
+var _lecteur: AudioStreamPlayer
+
+## Personnages deja signales comme muets. Sans ce garde, une voix manquante
+## remplit la console d'un avertissement par replique.
+var _manquantes: Dictionary = {}
 
 
 func _ready() -> void:
@@ -38,6 +48,14 @@ func _ready() -> void:
 	_texte = get_node_or_null(etiquette_texte) as Label
 	if _cadre != null:
 		_cadre.visible = false
+
+	# Non positionne : une voix de dialogue ne doit pas baisser quand le
+	# joueur tourne la tete. C'est du hors-champ, pas une source du monde.
+	_lecteur = AudioStreamPlayer.new()
+	_lecteur.name = "Voix"
+	_lecteur.bus = BUS_VOIX
+	add_child(_lecteur)
+
 	_charger()
 
 
@@ -102,6 +120,39 @@ func _montrer() -> void:
 		_nom.text = str(r.get("qui", ""))
 	if _texte != null:
 		_texte.text = str(r.get("texte", ""))
+	_dire(str(r.get("qui", "")), str(r.get("texte", "")))
+
+
+# Joue l'enregistrement de cette replique, s'il existe.
+#
+# Le nom du fichier est deduit du TEXTE, pas d'un index : l'empreinte MD5 des
+# dix premiers caracteres suffit. Reecrire une replique change son empreinte,
+# donc son fichier — impossible d'entendre l'ancienne version sur le nouveau
+# texte, ce qu'un index numerique aurait permis sans rien signaler.
+func _dire(qui: String, texte: String) -> void:
+	if _lecteur == null:
+		return
+	_lecteur.stop()
+	var chemin := VOIX % [_simplifier(qui), texte.md5_text().substr(0, 10)]
+	if not ResourceLoader.exists(chemin):
+		if not _manquantes.has(qui):
+			_manquantes[qui] = true
+			push_warning("dialogue : aucune voix pour %s. Generer : .\\bg.ps1 voix"
+					% qui)
+		return
+	_lecteur.stream = ResourceLoader.load(chemin) as AudioStream
+	_lecteur.play()
+
+
+# Doit produire exactement le meme nom que outils/gen_voix.ps1. Les deux
+# cotes se rejoignent sur un nom de fichier et rien d'autre : s'ils divergent,
+# le jeu cherche un fichier qui n'existe pas et reste muet sans erreur.
+static func _simplifier(nom: String) -> String:
+	var sortie := ""
+	for c in nom.to_lower():
+		if (c >= "a" and c <= "z") or (c >= "0" and c <= "9"):
+			sortie += c
+	return sortie
 
 
 func _fermer() -> void:

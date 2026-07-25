@@ -1,0 +1,39 @@
+{
+  "_lisez_moi": [
+    "Une voix par personnage. La cle correspond au champ 'qui' de",
+    "dialogues.json — c'est celui qui parle qui decide du timbre.",
+    "",
+    "  moteur   voix installee sur Windows (voir .\\bg.ps1 voix -Voix)",
+    "  debit    -10 (tres lent) a +10 (tres rapide)",
+    "  hauteur  transposition. 1.0 = voix d'origine, 0.6 = nettement plus grave",
+    "  grave    frequence coupee dans le bas, en Hz",
+    "  aigu     frequence coupee dans le haut, en Hz",
+    "",
+    "Il n'y a qu'une seule voix francaise installee sur Windows par defaut,",
+    "et elle est feminine : c'est la TRANSPOSITION qui distingue les",
+    "personnages. Descendre en dessous de 0.6 rend la voix caverneuse plutot",
+    "que masculine — les formants descendent avec la hauteur.",
+    "",
+    "Regenerer apres modification : .\\bg.ps1 voix -Refaire"
+  ],
+
+  "defaut": {
+    "moteur": "Microsoft Hortense Desktop",
+    "debit": 0, "hauteur": 1.0, "grave": 90, "aigu": 7600
+  },
+
+  "voix": {
+    "Walter": {
+      "moteur": "Microsoft Hortense Desktop",
+      "debit": -2, "hauteur": 0.66, "grave": 75, "aigu": 6600
+    },
+    "Skyler": {
+      "moteur": "Microsoft Hortense Desktop",
+      "debit": 0, "hauteur": 1.04, "grave": 110, "aigu": 7800
+    },
+    "Jesse": {
+      "moteur": "Microsoft Hortense Desktop",
+      "debit": 2, "hauteur": 0.84, "grave": 95, "aigu": 7400
+    }
+  }
+}

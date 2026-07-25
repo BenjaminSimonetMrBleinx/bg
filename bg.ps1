@@ -20,7 +20,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('jouer', 'editeur', 'generer', 'capture', 'verif', 'test', 'son', 'sons', 'reparer', 'exporter', 'nettoyer', 'outils')]
+    [ValidateSet('jouer', 'editeur', 'generer', 'capture', 'verif', 'test', 'son', 'sons', 'reparer', 'exporter', 'nettoyer', 'voix', 'outils')]
     [string]$Commande = 'jouer',
 
     [int]$Blocs = 2,
@@ -46,7 +46,22 @@ param(
 
     # Pour 'test' : demande a git ce qui a bouge et n en joue que les suites
     # concernees. C est le mode a utiliser avant chaque commit.
-    [switch]$Modifies
+    [switch]$Modifies,
+
+    # Pour 'voix' : refabrique meme ce qui existe deja. A utiliser apres avoir
+    # touche a un profil dans donnees\voix.json — le nom de fichier depend du
+    # TEXTE, pas du timbre, donc rien ne se regenere tout seul.
+    [switch]$Refaire,
+
+    # Pour 'voix' : liste les voix installees sur la machine, et sort.
+    [switch]$Voix,
+
+    # Pour 'voix' : ecrit docs\08-script-voix.md, la liste numerotee des
+    # repliques a enregistrer. C est ce qu on donne a celui qui prete sa voix.
+    [switch]$Script,
+
+    # Pour 'voix' : range les enregistrements deposes dans assets\voix\.
+    [switch]$Integrer
 )
 
 $ErrorActionPreference = 'Stop'
@@ -222,6 +237,18 @@ switch ($Commande) {
         }
     }
 
+    'voix' {
+        # La synthese est fournie avec Windows : rien a installer, rien en
+        # ligne. Le script est en PowerShell parce que l API vocale est une
+        # API .NET — Python devrait passer par un pont pour y acceder.
+        & (Join-Path $Racine 'outils\gen_voix.ps1') -Racine $Racine `
+            -Refaire:$Refaire -Voix:$Voix -Script:$Script -Integrer:$Integrer
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        # Les nouveaux .wav doivent etre importes, sinon le jeu cherche des
+        # fichiers que Godot n a jamais convertis et reste muet.
+        if (-not $Voix) { Initialize-Projet }
+    }
+
     'exporter' {
         Exiger $GodotConsole 'Godot (console)'
         Initialize-Projet
@@ -360,6 +387,9 @@ switch ($Commande) {
             @{ cle = 'murs'; nom = 'camera et murs'
                script = 'res://outils/test_camera_murs.gd'
                couvre = @('systemes/camera_poursuite', 'systemes/maison') }
+            @{ cle = 'voix'; nom = 'voix des dialogues'
+               script = 'res://outils/test_voix.gd'
+               couvre = @('systemes/dialogue', 'donnees/dialogues', 'donnees/voix', 'assets/voix', 'gen_voix') }
             @{ cle = 'souris'; nom = 'visee a la souris'
                script = 'res://outils/test_souris.gd'
                couvre = @('systemes/camera_poursuite', 'systemes/controleur') }

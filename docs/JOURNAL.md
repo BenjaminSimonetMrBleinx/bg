@@ -590,3 +590,54 @@ maintenant, la suivante mesure.
 trame.**
 
 Quinze suites. Sept jouées pour ce commit.
+
+---
+
+## V15 — Les voix
+
+Chaque réplique de `dialogues.json` a maintenant un fichier audio, et le dialogue le joue en
+affichant la ligne. Vingt répliques, mesurées à −6,1 dB sur le bus Interface — le test
+vérifie le **volume réellement sorti**, pas la présence du fichier.
+
+**La synthèse est celle de Windows.** Hors ligne, rien à installer, aucune clé, aucun compte.
+Ce n'est pas un pis-aller : une voix synthétique de 2005 dans un jeu à l'esthétique PS2 est
+cohérente, là où une voix parfaitement naturelle jurerait avec des personnages de quatre-vingt
+dix faces. Tout est sorti en **22 kHz mono**, ce que sortait une PS2 — et ça masque au passage
+une partie des artefacts.
+
+Une seule voix française est installée par défaut sur Windows, et elle est féminine. Les
+personnages se distinguent donc par **transposition** : `donnees/voix.json` donne à chacun sa
+hauteur, son débit et son filtrage. En dessous de 0,6 la voix devient caverneuse plutôt que
+masculine — les formants descendent avec la hauteur.
+
+**Le nom du fichier est déduit du texte**, par empreinte MD5. Conséquence utile : réécrire une
+réplique change son empreinte, donc son fichier. Impossible d'entendre l'ancienne version sur
+le nouveau texte, ce qu'un index numéroté aurait permis sans rien signaler.
+
+Le générateur est en PowerShell et le lecteur en GDScript : **ils ne se rejoignent que sur un
+nom de fichier**. S'ils calculaient l'empreinte différemment, le dialogue s'afficherait
+normalement, personne ne parlerait, et rien ne serait signalé. Le test calcule le nom avec la
+fonction *du jeu*, pas avec la sienne — sinon il validerait sa propre convention.
+
+### Le circuit pour enregistrer de vraies voix
+
+Personne ne doit calculer une empreinte à la main. `.\bg.ps1 voix -Script` écrit
+`docs/08-script-voix.md` : la liste **numérotée** des répliques, comme un vrai script
+d'enregistrement.
+
+On enregistre `001.wav`, `002.wav`, on dépose dans `assets/voix/`, et `.\livrer.ps1` convertit,
+renomme et range. Le numéro est la première suite de chiffres du nom : `012_jesse_yo.wav`
+marche aussi bien que `12.wav`. Un fichier sans numéro est laissé en place avec un
+avertissement, jamais deviné.
+
+Une ligne sans enregistrement garde la voix de synthèse. On peut donc en livrer trois
+aujourd'hui et le reste plus tard.
+
+### Ce que je n'ai pas fait
+
+Reproduire la voix de Bryan Cranston. Fabriquer de nouvelles phrases dans la voix d'une
+personne réelle, c'est produire des propos qu'elle n'a jamais tenus — autre chose que reprendre
+des extraits existants. Le circuit ci-dessus accepte n'importe quel enregistrement, y compris
+de vraies répliques découpées de la série : ça ne met aucun mot dans la bouche de personne.
+
+Seize suites.
