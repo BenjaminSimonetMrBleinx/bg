@@ -66,6 +66,19 @@ function Invoke-Git {
     }
 }
 
+# Meme isolement que pour git, pour les autres programmes appeles.
+function Invoke-Externe {
+    $prog = $args[0]
+    $reste = @()
+    if ($args.Count -gt 1) { $reste = $args[1..($args.Count - 1)] }
+    $ancien = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $lignes = & $prog @reste 2>&1 | ForEach-Object { "$_" }
+        return [pscustomobject]@{ Code = $LASTEXITCODE; Lignes = $lignes }
+    } finally { $ErrorActionPreference = $ancien }
+}
+
 # git est bavard : compteurs de progression repetes ligne apres ligne,
 # avertissements de fins de ligne Windows. Noyer l information utile
 # la-dedans revient a ne rien afficher du tout.
@@ -159,6 +172,20 @@ Bien "A jour avec GitHub"
 
 # ------------------------------------------------------- 3. ce que tu vas envoyer
 
+# Les sons deposes dans assets/sons sont remis la ou Godot les lit. Autant
+# que le script s en charge plutot que d exiger qu on retienne le chemin.
+if (Test-Path "assets/sons") {
+    $audio = @(Get-ChildItem "assets/sons" -Recurse -File -Include *.wav,*.ogg,*.mp3 -ErrorAction SilentlyContinue)
+    foreach ($f in $audio) {
+        $relatif = $f.FullName.Substring((Resolve-Path "assets/sons").Path.Length).TrimStart('\')
+        $cible = Join-Path "game/assets/sons" $relatif
+        New-Item -ItemType Directory -Force -Path (Split-Path $cible) | Out-Null
+        Move-Item $f.FullName $cible -Force
+        Info "range : $relatif -> game/assets/sons/"
+    }
+    if ($audio.Count -gt 0) { Bien "$($audio.Count) son(s) ranges au bon endroit" }
+}
+
 Titre "3. Ce que tu t appretes a envoyer"
 
 $etat = & git status --porcelain
@@ -209,6 +236,21 @@ if ($generes.Count -gt 4) {
     Souci "$($generes.Count) fichiers generes par Godot ou Blender vont partir."
     Info  "C est normal apres un premier import, ou si tu as lance bg.ps1 generer."
     Info  "Si tu n as fait ni l un ni l autre, signale-le a Benjamin avant d envoyer."
+}
+
+# Godot n importe que du WAV en PCM. Les stations audio exportent volontiers
+# autre chose sous la meme extension, et l erreur n apparait qu a l import,
+# bien plus tard, avec un message qui ne dit pas quoi faire.
+$sons_envoyes = @($fichiers | Where-Object { $_.Fichier -match '\.(wav|ogg)$' })
+if ($sons_envoyes.Count -gt 0 -and (Get-Command python -ErrorAction SilentlyContinue)) {
+    $ctrl = Invoke-Externe python 'outils/normaliser_sons.py'
+    if ($ctrl.Code -ne 0) {
+        Souci "Certains sons ne sont pas au format que Godot sait lire :"
+        $ctrl.Lignes | Where-Object { $_ -match 'A CORRIGER|^\s{14}' } |
+            ForEach-Object { Info $_ }
+        Info "Corrige avec : .\bg.ps1 sons -Corriger"
+        Info "Tu peux envoyer quand meme, ils seront convertis a l arrivee."
+    }
 }
 
 # Les gros fichiers passent par LFS, mais autant savoir ce qu on envoie.

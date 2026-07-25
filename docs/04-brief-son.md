@@ -46,6 +46,24 @@ ensuite.
 Pour vérifier depuis le jeu : `.\bg.ps1 son` mesure la crête réelle et
 prévient si elle est trop basse.
 
+**5. Exporte en PCM non compressé, et vérifie-le.** Godot n'importe que du WAV
+en **PCM** (ou IEEE float). Or les stations audio proposent d'autres variantes
+sous la même extension `.wav` — WAVE extensible, ADPCM — et certaines écrivent
+carrément un conteneur QuickTime en le nommant `.wav`. Le message d'erreur de
+Godot ne dit pas quoi faire.
+
+Sur la première livraison de moteur, trois fichiers sur cinq étaient bons ;
+`moteur_demarrage` était en *WAVE extensible* et `moteur_arret` était un
+conteneur QuickTime déguisé. Aucun des deux ne se chargeait.
+
+Dans ton DAW, cherche **« WAV / PCM 16 bits / 48 kHz »**, pas simplement
+« WAV ». Et pour vérifier avant d'envoyer :
+
+```powershell
+.\bg.ps1 sons              # dit ce qui ne va pas
+.\bg.ps1 sons -Corriger    # convertit automatiquement
+```
+
 ---
 
 ## Si tu n'as que deux heures

@@ -157,6 +157,24 @@ extends Resource
 ## demarre a plein volume s'entend comme un declic.
 @export_range(0.0, 10.0, 0.1) var ambiance_fondu: float = 2.5
 
+@export_subgroup("Moteur")
+
+## Volume des boucles moteur. C'est le son le plus present du jeu : trop
+## fort il fatigue en deux minutes, trop bas la conduite parait morte.
+@export_range(-40.0, 6.0, 0.5) var moteur_volume: float = -4.0
+
+## Distance de reference pour l'attenuation, en metres. Plus c'est grand,
+## plus la voiture s'entend de loin.
+@export_range(2.0, 60.0, 1.0) var moteur_portee: float = 14.0
+
+## Vitesse a laquelle le regime sonore suit la vitesse reelle. Sans ce
+## lissage, le moindre a-coup de la physique s'entend comme un hoquet.
+@export_range(0.5, 20.0, 0.1) var moteur_reactivite: float = 4.0
+
+## Variation de hauteur appliquee A L'INTERIEUR de chaque couche. Affine la
+## progression entre deux boucles ; au-dela de 0,3 l'echantillon s'entend.
+@export_range(0.0, 0.6, 0.01) var moteur_variation_hauteur: float = 0.18
+
 # ------------------------------------------------------------------ joueur
 @export_group("Joueur a pied")
 

@@ -7,12 +7,18 @@
 ; empeche la caisse de se retourner dans les virages sans avoir a brider le
 ; braquage.
 
-[gd_scene load_steps=8 format=3 uid="uid://bgvehicule00001"]
+[gd_scene load_steps=14 format=3 uid="uid://bgvehicule00001"]
 
 [ext_resource type="Script" path="res://systemes/vehicule.gd" id="1_vehicule"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
 [ext_resource type="PackedScene" path="res://assets/vehicules/caisse.glb" id="3_caisse"]
 [ext_resource type="PackedScene" path="res://assets/vehicules/roue.glb" id="4_roue"]
+[ext_resource type="Script" path="res://systemes/moteur_audio.gd" id="5_moteur"]
+[ext_resource type="AudioStream" path="res://assets/sons/vehicule/moteur_ralenti.wav" id="6_ralenti"]
+[ext_resource type="AudioStream" path="res://assets/sons/vehicule/moteur_charge.wav" id="7_charge"]
+[ext_resource type="AudioStream" path="res://assets/sons/vehicule/moteur_haut.wav" id="8_haut"]
+[ext_resource type="AudioStream" path="res://assets/sons/vehicule/moteur_demarrage.wav" id="9_demarrage"]
+[ext_resource type="AudioStream" path="res://assets/sons/vehicule/moteur_arret.wav" id="10_arret"]
 
 [sub_resource type="BoxShape3D" id="forme_caisse"]
 size = Vector3(1.86, 1.2, 4.6)
@@ -113,3 +119,15 @@ spot_attenuation = 1.2
 ; vehicule, donc il sort toujours du bon cote.
 [node name="SortieConducteur" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.75, 0, -0.3)
+
+; Le son du moteur vit sur le vehicule, pas dans un lecteur global : a pied,
+; on doit entendre la voiture venir de sa direction.
+[node name="MoteurAudio" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, -1.6)
+script = ExtResource("5_moteur")
+reglages = ExtResource("2_reglages")
+boucle_ralenti = ExtResource("6_ralenti")
+boucle_charge = ExtResource("7_charge")
+boucle_haut = ExtResource("8_haut")
+demarrage = ExtResource("9_demarrage")
+arret = ExtResource("10_arret")

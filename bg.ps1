@@ -17,7 +17,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('jouer', 'editeur', 'generer', 'capture', 'verif', 'test', 'son', 'reparer', 'outils')]
+    [ValidateSet('jouer', 'editeur', 'generer', 'capture', 'verif', 'test', 'son', 'sons', 'reparer', 'outils')]
     [string]$Commande = 'jouer',
 
     [int]$Blocs = 2,
@@ -142,6 +142,18 @@ switch ($Commande) {
         Initialize-Projet
         & $GodotConsole --path $Projet --script 'res://outils/diag_son.gd'
         exit $LASTEXITCODE
+    }
+
+    'sons' {
+        # Godot n importe que du WAV en PCM non compresse. Les stations audio
+        # exportent volontiers autre chose sous une extension .wav, et le
+        # message d erreur de Godot ne dit pas quoi faire.
+        Exiger $Python 'Python'
+        Push-Location $Racine
+        try {
+            if ($Corriger) { & $Python 'outils/normaliser_sons.py' --corriger }
+            else            { & $Python 'outils/normaliser_sons.py' }
+        } finally { Pop-Location }
     }
 
     'reparer' {

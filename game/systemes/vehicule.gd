@@ -142,6 +142,9 @@ func regime() -> float:
 ## Rend la main au conducteur.
 func prendre_le_volant() -> void:
 	set_physics_process(true)
+	var m := get_node_or_null("MoteurAudio")
+	if m != null:
+		m.call("demarrer")
 
 
 ## Neutralise le vehicule quand on en descend.
@@ -154,6 +157,9 @@ func quitter_le_volant() -> void:
 	engine_force = 0.0
 	steering = 0.0
 	brake = reglages.force_frein * 2.0
+	var m := get_node_or_null("MoteurAudio")
+	if m != null:
+		m.call("couper")
 
 
 func basculer_phares() -> void:

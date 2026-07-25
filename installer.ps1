@@ -82,6 +82,9 @@ $OUTILS = @(
     @{ nom = 'Python';   cmd = 'python';  paquet = 'Python.Python.3.12'
        motifs = @("$env:LOCALAPPDATA\Programs\Python\Python3*\python.exe")
        pourquoi = 'generation des textures' }
+    @{ nom = 'ffmpeg';   cmd = 'ffmpeg';  paquet = 'Gyan.FFmpeg'
+       motifs = @("$env:LOCALAPPDATA\Microsoft\WinGet\Packages\Gyan.FFmpeg_*\*\bin\ffmpeg.exe")
+       pourquoi = 'convertir les sons que Godot refuse d importer' }
 )
 
 Write-Host @"
