@@ -75,6 +75,16 @@ func _init() -> void:
 					+ "ne s'est pas charge. Repare l'import : .\\bg.ps1 reparer")
 		j.free()
 
+	# La version doit etre lisible et non nulle. Un numero reste a 0.0.0 parce
+	# que personne ne l'a bouge est un numero qui ne sert a rien : autant que la
+	# verification le dise plutot que de decouvrir la chose sur une capture
+	# d'ecran envoyee par quelqu'un.
+	var v := Version.numero()
+	if v == "0.0.0" or v == "":
+		erreurs.append("version : '%s'. La regler dans project.godot." % v)
+	else:
+		print("  ok  version          %s" % Version.texte())
+
 	print("")
 	if erreurs.is_empty():
 		print("VERIF OK")

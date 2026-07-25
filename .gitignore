@@ -45,3 +45,7 @@ desktop.ini
 # Redirection POSIX interpretee comme un chemin par Windows : git lfs install
 # y a deja ecrit ses hooks. Rien de ce qui atterrit la n'a de sens.
 /dev/
+
+# Ecrit par bg.ps1 avant chaque lancement : numero de commit courant. Il change
+# a chaque commit, donc le suivre creerait une modification permanente.
+/game/donnees/version.json

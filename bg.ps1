@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Lanceur du projet BG. Evite d avoir a retenir les chemins.
 
@@ -111,6 +111,45 @@ function Exiger($chemin, $nom) {
     if (-not $chemin) { throw "$nom introuvable. Installe-le, ou lance : .\bg.ps1 outils" }
 }
 
+# La version vit dans project.godot, et nulle part ailleurs.
+#
+# C est deja le champ que Godot utilise pour l export et les proprietes de
+# l executable. En tenir un second ici garantirait qu ils divergent : on
+# bumperait l un, on oublierait l autre, et l exe annoncerait un numero que le
+# jeu contredit a l ecran.
+function Get-Version {
+    $ligne = Select-String -Path (Join-Path $Projet 'project.godot') `
+             -Pattern '^config/version="(.+)"' | Select-Object -First 1
+    if ($ligne) { return $ligne.Matches[0].Groups[1].Value }
+    return '0.0.0'
+}
+
+# Le numero de commit ne peut pas venir de git une fois le jeu exporte : il n y
+# a plus de depot. On l ecrit donc dans un fichier que le jeu lit.
+#
+# Ecrit SEULEMENT si le contenu change. Godot reimporte tout ce qui a bouge
+# sous game\, et reecrire ce fichier a chaque lancement couterait dix secondes
+# d import pour un texte identique.
+function Set-Build {
+    $cible = Join-Path $Projet 'donnees\version.json'
+    $ancien = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    $sha = (& git -C $Racine rev-parse --short HEAD 2>$null)
+    $sale = (& git -C $Racine status --porcelain 2>$null)
+    $ErrorActionPreference = $ancien
+    if (-not $sha) { return }
+
+    # Un depot qui a des modifications non commitees ne correspond a AUCUN
+    # commit : afficher le dernier serait un mensonge, et c est exactement le
+    # cas ou l on cherche a savoir ce qui tourne.
+    if ($sale) { $sha = "$sha+" }
+
+    $contenu = @{ version = (Get-Version); commit = $sha } |
+               ConvertTo-Json -Compress
+    if ((Test-Path $cible) -and ((Get-Content $cible -Raw).Trim() -eq $contenu)) { return }
+    Set-Content -Path $cible -Value $contenu -Encoding UTF8
+}
+
 # Sur un depot fraichement clone, Godot n a jamais importe le projet : le
 # registre des classes globales vit dans .godot/, qui est ignore par git.
 # Sans cet import, tout script utilisant un class_name refuse de compiler
@@ -167,10 +206,12 @@ switch ($Commande) {
         [pscustomobject]@{ Outil = 'Blender'; Chemin = Get-OuAbsent $Blender }
         [pscustomobject]@{ Outil = 'Python';  Chemin = Get-OuAbsent $Python }
         [pscustomobject]@{ Outil = 'Projet';  Chemin = $Projet }
+        [pscustomobject]@{ Outil = 'Version'; Chemin = "$(Get-Version)  (commit $((git -C $Racine rev-parse --short HEAD 2>$null)))" }
     }
 
     'jouer' {
         Exiger $Godot 'Godot'
+        Set-Build
         Initialize-Projet
         & $Godot --path $Projet
     }
@@ -215,6 +256,7 @@ switch ($Commande) {
         # Variante console obligatoire : le binaire graphique se detache et
         # PowerShell n attend ni sa fin ni son code de sortie.
         Exiger $GodotConsole 'Godot (console)'
+        Set-Build
         Initialize-Projet
         New-Item -ItemType Directory -Force -Path $Tmp | Out-Null
         $sortie = Join-Path $Tmp 'capture.png'
@@ -224,6 +266,7 @@ switch ($Commande) {
 
     'verif' {
         Exiger $GodotConsole 'Godot (console)'
+        Set-Build
         Initialize-Projet
         & $GodotConsole --headless --path $Projet --script 'res://verifs/verif.gd'
         exit $LASTEXITCODE
@@ -268,6 +311,7 @@ switch ($Commande) {
 
     'exporter' {
         Exiger $GodotConsole 'Godot (console)'
+        Set-Build
         Initialize-Projet
 
         # Les modeles d export sont un telechargement a part, absent de
@@ -298,12 +342,12 @@ switch ($Commande) {
 
         $dossier = Join-Path $Racine 'build'
         New-Item -ItemType Directory -Force -Path $dossier | Out-Null
-        Write-Host "`n--- export Windows ---" -ForegroundColor Cyan
+        Write-Host "`n--- export Windows $(Get-Version) ---" -ForegroundColor Cyan
         & $GodotConsole --headless --path $Projet --export-release 'Windows' | Out-Null
         $exe = Join-Path $dossier 'BG.exe'
         if (Test-Path $exe) {
             $mo = [math]::Round((Get-Item $exe).Length / 1MB, 1)
-            Write-Host "`nOK  $exe  ($mo Mo)" -ForegroundColor Green
+            Write-Host "`nOK  $exe  ($mo Mo)  version $(Get-Version)" -ForegroundColor Green
             Write-Host "Il se lance seul, sans Godot ni rien d autre." -ForegroundColor Gray
         } else {
             Write-Host "`nL export n a rien produit." -ForegroundColor Red
@@ -357,6 +401,7 @@ switch ($Commande) {
         # graphique se detache, PowerShell ne recupere jamais son code de
         # sortie et toutes les suites paraissent echouer.
         Exiger $GodotConsole 'Godot (console)'
+        Set-Build
         Initialize-Projet
         # Chaque suite declare les FICHIERS qu elle couvre. C est ce qui
         # permet de ne rejouer que ce qui est concerne par une modification,

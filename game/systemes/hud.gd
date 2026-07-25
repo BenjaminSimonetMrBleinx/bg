@@ -65,6 +65,8 @@ func _draw() -> void:
 	if police == null:
 		return
 
+	_version(police)
+
 	if _au_volant():
 		_compteur(police)
 
@@ -73,6 +75,21 @@ func _draw() -> void:
 		var a := clampf(_annonce / maxf(0.01, reglages.hud_annonce * 0.33), 0.0, 1.0)
 		_ecrire(police, _texte_annonce, Vector2(size.x / 2.0, size.y - 62.0),
 				17, Color(0.949, 0.776, 0.42, a), true)
+
+
+# La version, en haut a droite, en permanence.
+#
+# C'est la seule chose affichee tout le temps, et elle enfreint donc la regle
+# de conduite du fichier. La raison la vaut : quand quelqu'un envoie une
+# capture d'ecran en disant que quelque chose ne marche pas, la premiere
+# question est toujours « tu es sur quelle version ». Elle est maintenant sur
+# l'image.
+#
+# Assez petite et assez pale pour disparaitre du regard — 9 points a 512 de
+# large, c'est la taille d'une mention legale.
+func _version(police: Font) -> void:
+	_ecrire(police, Version.texte(), Vector2(size.x - 6.0, 14.0), 9,
+			Color(0.72, 0.70, 0.64, 0.55), false, HORIZONTAL_ALIGNMENT_RIGHT)
 
 
 func _compteur(police: Font) -> void:

@@ -137,6 +137,25 @@ dans un fichier de données :
 | `outils/gen_maison.py` | `MAISONS` — pièces, meubles, place de l'habitant |
 | `outils/gen_ville.py` | `RESERVES` — les parcelles laissées libres pour les bâtiments faits main |
 
+## La version
+
+Elle est affichée **en permanence en haut à droite de l'écran**, en tout petit :
+`v0.9.0 · 8931b13`.
+
+C'est la seule chose visible en continu, et ça vaut l'exception : quand quelqu'un envoie
+une capture en disant que ça ne marche pas, la première question est toujours « tu es sur
+quelle version ». Elle est maintenant sur l'image.
+
+| | |
+|---|---|
+| **Le numéro** | `MAJEUR.MINEUR.CORRECTIF`. Vit dans `game/project.godot`, **et nulle part ailleurs** — c'est déjà le champ que Godot utilise pour l'export. En tenir un second garantirait qu'ils divergent. |
+| **Le commit** | Écrit par `bg.ps1` avant chaque lancement. Un `+` à la fin veut dire qu'il y a du travail non commité : ce qui tourne ne correspond alors à aucun commit. |
+| `.\bg.ps1 outils` | Affiche les deux. |
+
+**Quand bumper.** `MAJEUR` passera à 1 le jour où le jeu se tient de bout en bout — on n'y
+est pas. `MINEUR` à chaque lot de fonctionnalités. `CORRECTIF` pour ce qui répare sans rien
+ajouter.
+
 ## Structure
 
 Une règle, et elle décide de tout : **`game/` ne contient que ce que le jeu charge.**
