@@ -73,6 +73,18 @@ particuliers, mais `go.ps1` couvre le quotidien.
 .\go.ps1 -SansJeu              # tout sauf le lancement
 ```
 
+### Sans terminal du tout
+
+Deux fichiers a double-cliquer, dans le dossier du projet :
+
+| | |
+|---|---|
+| **`JOUER.bat`** | lance le jeu, rien d autre |
+| **`MISE_A_JOUR.bat`** | tout : recupere, envoie, lance |
+
+Fais-toi un raccourci de `JOUER.bat` sur le Bureau, c est le plus pratique
+au quotidien.
+
 ### Ce qui tourne dessous
 
 Si tu veux une étape isolée :
