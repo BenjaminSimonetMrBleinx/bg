@@ -17,9 +17,19 @@ signal prete(etendue: float)
 var etendue: float = 0.0
 
 
+const DECOR := "res://assets/decor/%s.glb"
+
+## Le mobilier n'a pas besoin de collision : ce sont des objets bas, et une
+## poubelle qui arrete une voiture est plus penible qu'une poubelle qu'on
+## traverse. Ceux-la seuls sont solides, parce qu'on ne pardonne pas de
+## passer au travers.
+const SOLIDES := ["benne", "banc", "cactus", "panneau"]
+
+
 func _ready() -> void:
 	_poser_geometrie()
 	_poser_lampes()
+	_poser_decor()
 	prete.emit(etendue)
 
 
@@ -86,3 +96,54 @@ func _poser_lampes() -> void:
 		parent.add_child(lumiere)
 
 	print("ville : %d lampadaires, etendue %.0f m" % [parent.get_child_count(), etendue])
+
+
+# Le mobilier vient du meme fichier que les lampes. Chaque type n'est charge
+# QU'UNE FOIS : une PackedScene instanciee cent fois partage son maillage et
+# sa texture, alors qu'un ResourceLoader.load par exemplaire les rechargerait
+# a chaque appel et ferait de cent poubelles cent fois leur cout.
+func _poser_decor() -> void:
+	if not FileAccess.file_exists(lampes_json):
+		return
+	var data = JSON.parse_string(FileAccess.get_file_as_string(lampes_json))
+	if typeof(data) != TYPE_DICTIONARY:
+		return
+	var liste: Array = data.get("decor", [])
+	if liste.is_empty():
+		return
+
+	var parent := Node3D.new()
+	parent.name = "Decor"
+	add_child(parent)
+
+	var modeles := {}
+	var manquants := {}
+	for entree in liste:
+		var type := str(entree.get("type", ""))
+		if not modeles.has(type):
+			var chemin := DECOR % type
+			modeles[type] = (ResourceLoader.load(chemin) as PackedScene
+					if ResourceLoader.exists(chemin) else null)
+		if modeles[type] == null:
+			manquants[type] = true
+			continue
+
+		var n := (modeles[type] as PackedScene).instantiate() as Node3D
+		var p: Array = entree["pos"]
+		n.position = Vector3(float(p[0]), float(p[1]), float(p[2]))
+		n.rotation.y = float(entree.get("angle", 0.0))
+		# Nomme explicitement : sinon Godot, refusant deux freres homonymes,
+		# baptise le second "@Node3D@35". Sur cent trente elements, l'arbre
+		# devient illisible et on ne peut plus dire ce qui a ete pose.
+		n.name = "%s_%03d" % [type, parent.get_child_count()]
+		parent.add_child(n)
+		if type in SOLIDES:
+			_ajouter_collisions(n)
+
+	if not manquants.is_empty():
+		push_error("ville : decor introuvable (%s). Regenerer : "
+				% ", ".join(manquants.keys())
+				+ "blender -b -P outils/gen_decor.py -- --nom tous")
+
+	print("ville : %d elements de decor, %d modeles"
+			% [parent.get_child_count(), modeles.size()])

@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import random
 import sys
 from pathlib import Path
@@ -62,6 +63,24 @@ HAUTEURS = [4.6, 5.8, 7.1, 8.4, 9.7, 11.2]
 # La facade sud de l'ilot (0, 0) donne sur le carrefour de depart. C'est la
 # que vivent Walter et Jesse : a vingt metres du point ou commence la partie.
 RESERVES = {(0, 0, "sud")}
+
+# Mobilier urbain. Il n'est PAS cuit dans le maillage de la ville : le
+# generateur ne fait qu'ecrire ou le poser, et le jeu instancie. Trois cents
+# poubelles fondues dans le .glb pesent trois cents fois le prix d'une seule.
+#
+# Le tirage est pondere : une rue est faite de poubelles et de bornes, pas
+# d'un echantillonnage equitable du catalogue.
+MOBILIER = [
+    ("poubelle", 34), ("borne", 20), ("banc", 14),
+    ("benne", 10), ("cactus", 8),
+]
+
+# Ecart moyen entre deux elements le long d'un trottoir, en metres.
+ESPACEMENT_DECOR = 9.0
+
+# Un climatiseur sur ce toit-ci ? Sans eux, chaque immeuble est une boite
+# parfaite, et ca se voit tout de suite d'en haut comme depuis la rue.
+PROBA_CLIM = 0.4
 
 
 # ------------------------------------------------------------------ utilitaires
@@ -196,12 +215,87 @@ def lampadaire(m: Maillage, x, y, vx, vy) -> None:
 # ---------------------------------------------------------------------- ville
 
 
+def tirer(rng: random.Random) -> str:
+    """Un type de mobilier, selon les poids de MOBILIER."""
+    total = sum(poids for _, poids in MOBILIER)
+    seuil = rng.uniform(0.0, total)
+    for nom, poids in MOBILIER:
+        seuil -= poids
+        if seuil <= 0.0:
+            return nom
+    return MOBILIER[0][0]
+
+
+def mobilier_de_cote(ox: float, oy: float, cote: str,
+                     rng: random.Random) -> list[dict]:
+    """Pose du mobilier le long d'un cote d'ilot, contre les facades.
+
+    Contre les FACADES, pas au bord du trottoir : les lampadaires occupent
+    deja la bordure. Les deux rangees ne se croisent donc jamais, et on garde
+    le passage libre au milieu — un trottoir infranchissable serait pire que
+    vide.
+    """
+    recul = 0.9                       # distance a la facade
+    marge = 3.0                       # on s'ecarte des angles
+    objets: list[dict] = []
+
+    # (position fixe, axe qui varie, angle) — l'objet regarde la rue.
+    if cote == "ouest":
+        fixe, angle, axe = ox - recul, -math.pi / 2, "y"
+    elif cote == "est":
+        fixe, angle, axe = ox + BLOC + recul, math.pi / 2, "y"
+    elif cote == "sud":
+        fixe, angle, axe = oy - recul, 0.0, "x"
+    else:
+        fixe, angle, axe = oy + BLOC + recul, math.pi, "x"
+
+    debut = (oy if axe == "y" else ox) + marge
+    fin = debut + BLOC - 2 * marge
+    pos = debut + rng.uniform(0.0, ESPACEMENT_DECOR)
+    while pos < fin:
+        x, y = (fixe, pos) if axe == "y" else (pos, fixe)
+        objets.append({
+            "type": tirer(rng),
+            "pos": [round(x, 3), 0.18, round(-y, 3)],   # sur le trottoir
+            "angle": round(angle + rng.uniform(-0.18, 0.18), 3),
+        })
+        pos += ESPACEMENT_DECOR * rng.uniform(0.65, 1.45)
+    return objets
+
+
+def cactus_du_desert(etendue: float, rng: random.Random,
+                     combien: int = 70) -> list[dict]:
+    """Seme des cactus autour de la ville.
+
+    Le desert est un aplat parfaitement plat et parfaitement vide : de nuit
+    il ne se distingue pas du neant. Quelques silhouettes suffisent a lui
+    rendre une echelle et une profondeur.
+    """
+    objets: list[dict] = []
+    bande = 75.0
+    essais = 0
+    while len(objets) < combien and essais < combien * 20:
+        essais += 1
+        x = rng.uniform(-bande, etendue + bande)
+        y = rng.uniform(-bande, etendue + bande)
+        # Rien dans la ville ni collé contre : le desert commence apres.
+        if -4.0 < x < etendue + 4.0 and -4.0 < y < etendue + 4.0:
+            continue
+        objets.append({
+            "type": "cactus",
+            "pos": [round(x, 2), 0.0, round(-y, 2)],
+            "angle": round(rng.uniform(0.0, 6.28), 3),
+        })
+    return objets
+
+
 def construire(n: int, rng: random.Random, mats: dict) -> dict:
     noms = ["route", "asphalte", "trottoir", "desert", "lampes"] + FACADES
     m = {nom: Maillage(nom, mats[nom]) for nom in noms}
 
     etendue = n * BLOC + (n + 1) * COULOIR
     lampes: list[tuple[float, float, float, float]] = []
+    decor: list[dict] = []
 
     # --- chaussees et carrefours -------------------------------------------
     # Corridor k : [k*PAS, k*PAS + COULOIR]. Chaussee au centre : +TROTTOIR.
@@ -274,6 +368,8 @@ def construire(n: int, rng: random.Random, mats: dict) -> dict:
                     dalle(m["desert"], cx0, cy0, cx1, cy1, 0.02, TUILE_SOL)
                     continue
 
+                decor += mobilier_de_cote(ox, oy, cote, rng)
+
                 longueur = (cx1 - cx0) if axe == "x" else (cy1 - cy0)
                 pos = 0.0
                 while longueur - pos > 5.0:
@@ -284,8 +380,14 @@ def construire(n: int, rng: random.Random, mats: dict) -> dict:
                     mat = rng.choice(FACADES)
                     if axe == "x":
                         boite(m[mat], cx0 + pos, cy0, cx0 + pos + large, cy1, 0.0, h)
+                        centre = (cx0 + pos + large / 2, (cy0 + cy1) / 2)
                     else:
                         boite(m[mat], cx0, cy0 + pos, cx1, cy0 + pos + large, 0.0, h)
+                        centre = ((cx0 + cx1) / 2, cy0 + pos + large / 2)
+                    if rng.random() < PROBA_CLIM:
+                        decor.append({"type": "climatiseur",
+                                      "pos": [centre[0], h, -centre[1]],
+                                      "angle": rng.uniform(0.0, 6.28)})
                     pos += large
 
             # lampadaires, tournes vers la chaussee
@@ -307,8 +409,10 @@ def construire(n: int, rng: random.Random, mats: dict) -> dict:
     dalle(m["desert"], -marge, -marge, etendue + marge, etendue + marge,
           -0.05, TUILE_DESERT)
 
+    decor += cactus_du_desert(etendue, rng)
+
     faces = sum(maillage.finir() for maillage in m.values())
-    return {"etendue": etendue, "lampes": lampes, "faces": faces}
+    return {"etendue": etendue, "lampes": lampes, "decor": decor, "faces": faces}
 
 
 def main() -> None:
@@ -354,12 +458,22 @@ def main() -> None:
              "vers": [round(vx, 3), 0.0, round(-vy, 3)]}
             for x, y, vx, vy in info["lampes"]
         ],
+        # Meme raison pour le mobilier : instancie au lancement plutot que
+        # fondu dans le maillage. Une poubelle est alors un fichier partage
+        # par ses trois cents exemplaires, pas trois cents fois ses faces.
+        "decor": info["decor"],
     }, indent=1), encoding="utf-8")
+
+    types = {}
+    for d in info["decor"]:
+        types[d["type"]] = types.get(d["type"], 0) + 1
 
     print("")
     print(f"ville      {a.blocs} x {a.blocs} ilots, {info['etendue']:.0f} m de cote")
     print(f"graine     {a.seed}")
     print(f"lampes     {len(info['lampes'])}")
+    print(f"decor      {len(info['decor'])} : "
+          + ", ".join(f"{n} {t}" for t, n in sorted(types.items())))
     print(f"faces      {info['faces']}")
     print(f"sortie     {sortie}")
 

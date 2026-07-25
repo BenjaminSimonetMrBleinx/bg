@@ -58,6 +58,8 @@ func _poser_exterieur() -> void:
 				% nom_affiche + "blender -b -P outils/gen_maison.py")
 		return
 
+	_poser_jardin()
+
 	# Accrochee au seuil plutot qu'a une position ecrite en dur : la maison
 	# peut changer de taille, la lumiere reste au-dessus de la porte.
 	var porche := OmniLight3D.new()
@@ -97,6 +99,43 @@ func _poser_interieur() -> void:
 	lampe.omni_range = 16.0
 	lampe.omni_attenuation = 1.2
 	_racine_int.add_child(lampe)
+
+
+# Le devant de la maison, meuble a partir du seuil et non de coordonnees
+# ecrites en dur : la maison peut grandir ou se deplacer, le jardin suit.
+#
+# Volontairement peu de choses, et toutes en retrait de l'allee : ce qui
+# encombre le chemin de la porte se paie a chaque fois qu'on rentre chez soi.
+const JARDIN := [
+	# (fichier, decalage lateral, decalage vers la rue, angle en degres)
+	["boite_lettres", 2.4, 0.4, 0.0],
+	["poubelle", -3.1, 1.0, 25.0],
+	["poubelle", -3.7, 1.3, -15.0],
+	["cactus", 4.6, -0.6, 0.0],
+]
+
+
+func _poser_jardin() -> void:
+	if _seuil == null:
+		return
+	var parent := Node3D.new()
+	parent.name = "Jardin"
+	add_child(parent)
+
+	for entree in JARDIN:
+		var chemin := "res://assets/decor/%s.glb" % entree[0]
+		if not ResourceLoader.exists(chemin):
+			push_error("maison %s : decor '%s' introuvable" % [nom_affiche, entree[0]])
+			continue
+		var n := (ResourceLoader.load(chemin) as PackedScene).instantiate() as Node3D
+		# Le seuil est devant la porte, en +Z local : on s'ecarte en X et on
+		# avance encore un peu vers la rue.
+		n.position = _seuil.position + Vector3(entree[1], 0.0, entree[2])
+		n.rotation.y = deg_to_rad(entree[3])
+		n.name = "%s_%d" % [entree[0], parent.get_child_count()]
+		parent.add_child(n)
+		if entree[0] == "cactus":
+			_collisionner(n)
 
 
 func _poser_habitant() -> void:

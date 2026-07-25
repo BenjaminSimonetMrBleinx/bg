@@ -418,6 +418,29 @@ def uni(base, grain: float = 0.10, veine: bool = False):
     return rendu
 
 
+def panneau_stop(u: float, v: float):
+    """Panneau rouge barre de blanc. On ne lit jamais le mot a cette taille :
+    ce qui identifie un stop, c'est le rouge et la barre claire."""
+    n = hache(int(u * 150), int(v * 150))
+    if 0.42 < v < 0.58 and 0.18 < u < 0.82:
+        g = 232 + n * 16
+        return (g, g, g * 0.98)
+    base = (162, 34, 30)
+    g = 0.92 + n * 0.14
+    return (base[0] * g, base[1] * g, base[2] * g)
+
+
+def cactus(u: float, v: float):
+    """Saguaro : vert sourd, cotes verticales marquees, epines claires."""
+    n = hache(int(u * 200), int(v * 200))
+    cote = abs(((u * 6.0) % 1.0) - 0.5) * 2.0        # 0 au creux, 1 sur l'arete
+    base = (62, 92, 58)
+    g = (0.80 + cote * 0.34) * (0.94 + n * 0.12)
+    if n > 0.93 and cote > 0.7:
+        return (198, 196, 168)                        # epine
+    return (base[0] * g, base[1] * g, base[2] * g)
+
+
 def crepi(u: float, v: float):
     """Enduit gratte beige, le revetement d'Albuquerque."""
     n = hache(int(u * 210), int(v * 210))
@@ -605,6 +628,23 @@ def main() -> None:
     ]:
         ecrire_png(dossier / f"{nom}.png", t // 4, t // 4,
                    rendre(t // 4, t // 4, uni(base, grain, veine)))
+        faits.append(f"{nom}.png")
+
+    # --- mobilier urbain ---
+    for nom, base, grain, veine in [
+        ("plastique", (46, 62, 50), 0.10, False),
+        ("rouille", (122, 80, 54), 0.16, False),
+        ("bois_banc", (112, 76, 46), 0.12, True),
+        ("rouge_borne", (156, 44, 36), 0.10, False),
+        ("beton", (128, 124, 116), 0.09, False),
+    ]:
+        ecrire_png(dossier / f"{nom}.png", t // 4, t // 4,
+                   rendre(t // 4, t // 4, uni(base, grain, veine)))
+        faits.append(f"{nom}.png")
+
+    for nom, fn in [("panneau_stop", panneau_stop), ("cactus", cactus)]:
+        ecrire_png(dossier / f"{nom}.png", t // 2, t // 2,
+                   rendre(t // 2, t // 2, fn))
         faits.append(f"{nom}.png")
 
     # --- maisons ---

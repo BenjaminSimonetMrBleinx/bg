@@ -339,3 +339,51 @@ C'est le genre de test qui passe pour de mauvaises raisons, et on ne l'apprend q
 autre chose. Il force maintenant la caméra à se placer d'un coup.
 
 Dix suites, toujours.
+
+---
+
+## V10 — Habiller les rues et les jardins
+
+Huit accessoires générés — poubelle, benne, boîte aux lettres, banc, panneau, bouche
+d'incendie, saguaro, climatiseur — pour **234 faces au total**. Ce sont des silhouettes vues
+de loin dans le brouillard, jamais des maillages de héros : huit côtés suffisent à lire un
+cylindre, et coûtent trois fois moins qu'un cercle lisse.
+
+**Rien de tout ça n'est cuit dans le maillage de la ville.** Le générateur écrit seulement
+où poser, dans le même JSON que les lampadaires ; le jeu instancie au lancement. Trois cents
+poubelles fondues dans le `.glb` pèsent trois cents fois le prix d'une seule. Et chaque type
+n'est chargé **qu'une fois** : cent exemplaires d'une `PackedScene` partagent son maillage et
+sa texture, là où un `ResourceLoader.load` par exemplaire les rechargerait à chaque appel.
+
+139 éléments posés, 6 modèles.
+
+**Le mobilier va contre les façades, pas au bord du trottoir**, parce que les lampadaires
+occupent déjà la bordure. Les deux rangées ne se croisent jamais et le passage reste libre au
+milieu — un trottoir infranchissable serait pire que vide.
+
+**Presque rien n'a de collision.** Une poubelle qui arrête une voiture est plus pénible
+qu'une poubelle qu'on traverse. Seuls la benne, le banc, le cactus et le panneau sont
+solides : ceux-là, on ne pardonne pas de passer au travers.
+
+Les jardins sont meublés **à partir du seuil**, pas de coordonnées écrites en dur : la maison
+peut grandir ou déménager, la boîte aux lettres suit. Volontairement peu de choses, et toutes
+en retrait de l'allée — ce qui encombre le chemin de la porte se paie à chaque fois qu'on
+rentre chez soi.
+
+Et soixante-douze saguaros semés autour de la ville. Le désert est un aplat parfaitement plat
+et parfaitement vide : de nuit, il ne se distinguait pas du néant. Quelques silhouettes
+suffisent à lui rendre une échelle.
+
+### Ce que le test a trouvé
+
+`test_decor.gd` vérifie qu'aucun élément ne traîne au milieu d'un carrefour — une poubelle
+sur la chaussée ne provoque aucune erreur, elle attend juste qu'on lui rentre dedans à
+quarante — et que rien ne coince le point de départ.
+
+Il a surtout trouvé autre chose : **133 des 139 nœuds s'appelaient `@Node3D@35`.** Godot
+refuse deux frères homonymes et renomme le second. Sur cent trente éléments, l'arbre devenait
+illisible et le recensement par type ne voulait plus rien dire. Rien ne cassait — c'est
+précisément le genre de chose qu'on ne voit que si on la mesure. Ils sont nommés maintenant,
+et le test échoue si un seul redevient anonyme.
+
+Onze suites.

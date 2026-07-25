@@ -6,7 +6,7 @@
     .\bg.ps1 jouer          lance le jeu
     .\bg.ps1 editeur        ouvre l editeur Godot sur le projet
     .\bg.ps1 generer        regenere tout : textures, ville, vehicule,
-                            personnages, maisons, objets
+                            personnages, maisons, objets, decor
     .\bg.ps1 capture        rend une image hors ecran dans .tmp/
     .\bg.ps1 verif          verifie que le projet charge (headless)
     .\bg.ps1 exporter       fabrique build\BG.exe, jouable sans rien installer
@@ -148,6 +148,8 @@ switch ($Commande) {
             & $Blender -b -P 'outils/gen_maison.py' -- --nom toutes
             Write-Host "`n--- objets ---" -ForegroundColor Cyan
             & $Blender -b -P 'outils/gen_objets.py' -- --nom tous
+            Write-Host "`n--- decor ---" -ForegroundColor Cyan
+            & $Blender -b -P 'outils/gen_decor.py' -- --nom tous
             # Sans reimport, Godot continue de servir l ancienne version depuis
             # son cache et on corrige a l aveugle en croyant que rien ne change.
             if ($GodotConsole -and (Test-Path $GodotConsole)) {
@@ -301,7 +303,8 @@ switch ($Commande) {
             @{ nom = 'son du moteur'; script = 'res://outils/test_moteur.gd' },
             @{ nom = 'entrer dans les maisons'; script = 'res://outils/test_maison.gd' },
             @{ nom = 'habitants et dialogue'; script = 'res://outils/test_dialogue.gd' },
-            @{ nom = 'roue des outils'; script = 'res://outils/test_outils.gd' }
+            @{ nom = 'roue des outils'; script = 'res://outils/test_outils.gd' },
+            @{ nom = 'mobilier urbain'; script = 'res://outils/test_decor.gd' }
         )
         $echecs = 0
         foreach ($s in $suites) {
