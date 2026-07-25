@@ -182,3 +182,29 @@ Pour mémoire, la frontière :
 
 Quand une envie tombe dans la colonne de droite, la dire — c'est souvent moins de travail
 qu'il n'y paraît, et c'est le bon moment pour décider si ça vaut le coup.
+
+---
+
+## 5. Livrer un modèle 3D fait à la main
+
+Pose le fichier dans **`assets/modeles/`** — `.obj`, `.fbx`, `.dae`, `.stl` ou `.glb`, peu
+importe. Puis :
+
+```powershell
+blender -b -P outils/importer_modele.py -- --fichier assets/modeles/ton_fichier.obj `
+        --sortie game/assets/personnages/ton_nom.glb --hauteur 1.78
+```
+
+La conversion met à l'échelle, pose les pieds à l'origine et oriente vers l'avant du jeu.
+Elle affiche aussi ce qu'elle a trouvé : nombre de faces, présence d'UV, dimensions.
+
+> **Note — sans coordonnées de texture, le modèle reste d'une seule couleur.**
+> Aucun script n'invente un dépliage. Un personnage livré sans UV n'aura ni visage ni
+> vêtements : il sera propre, gris, et muet visuellement. C'est le premier point à vérifier
+> dans la sortie de l'outil.
+
+> **Note — un maillage d'un seul bloc ne peut pas marcher.**
+> L'animation fait tourner des segments nommés : `Bassin`, `Torse`, `CuisseG`, `CuisseD`,
+> `TibiaG`, `TibiaD`, `BrasG`, `BrasD`, `AvantBrasG`, `AvantBrasD`. Un modèle qui les porte
+> entre dans l'animation existante sans une ligne de code. Un modèle d'un bloc ne peut servir
+> que de statue — ce qui est parfois exactement ce qu'on veut.
