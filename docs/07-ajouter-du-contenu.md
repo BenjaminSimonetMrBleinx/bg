@@ -208,3 +208,41 @@ Elle affiche aussi ce qu'elle a trouvé : nombre de faces, présence d'UV, dimen
 > `TibiaG`, `TibiaD`, `BrasG`, `BrasD`, `AvantBrasG`, `AvantBrasD`. Un modèle qui les porte
 > entre dans l'animation existante sans une ligne de code. Un modèle d'un bloc ne peut servir
 > que de statue — ce qui est parfois exactement ce qu'on veut.
+
+### Rendre un modèle sculpté animable
+
+Deux passes, dans cet ordre — le découpage conserve les UV et le matériau, donc on texture
+d'abord :
+
+```powershell
+# 1. Déplier et peindre
+blender -b -P outils/texturer_modele.py -- --fichier assets/modeles/ton_fichier.obj `
+        --sortie game/assets/personnages/ton_nom_texture.glb --qui walter --taille 512
+
+# 2. Découper en segments animables
+blender -b -P outils/segmenter_modele.py -- `
+        --fichier game/assets/personnages/ton_nom_texture.glb `
+        --sortie game/assets/personnages/ton_nom_anime.glb
+```
+
+Le résultat entre dans l'animation existante **sans une ligne de code** : `silhouette.gd`
+retrouve ses segments par leur nom.
+
+> **Note — le dépliage automatique place les îlots n'importe où.**
+> On ne peut donc pas peindre « le visage sur la tête » en regardant l'image. L'outil prend
+> le problème à l'envers : il classe chaque face par sa **position dans le corps** — hauteur,
+> distance à l'axe, orientation — et peint sa case UV en conséquence. Le dépliage ne sert que
+> d'adresse.
+
+> **Note — le pivot compte plus que la découpe.**
+> L'origine de chaque segment doit tomber sur son articulation. Sinon la cuisse tourne autour
+> du genou et la jambe part en hélice. Les articulations sont mesurées sur la géométrie
+> réelle, pas supposées : un modèle plus large ou plus étroit que le nôtre reste correct.
+
+> **Note — les articulations sont franches, et ça se voit.**
+> À l'épaule et à la hanche, la matière se sépare quand l'angle est grand. C'était le cas sur
+> PS1, ça l'est ici. C'est le prix pour qu'un modèle sculpté entre dans une animation écrite
+> pour des boîtes — et à distance de jeu, personne ne le remarque.
+
+Les seuils de découpe (`--epaule`, `--hanche`, `--bras`…) sont réglables : un modèle aux
+proportions inhabituelles se rattrape sans toucher au script.
