@@ -4,9 +4,24 @@
 # curseur pendant que le jeu tourne. C'est la verticale ou le jeu devient bon
 # ou pas, donc c'est celle ou l'iteration doit etre la plus rapide possible.
 #
-# Repere Godot : l'avant du vehicule est -Z, la droite est +X.
+# Repere : l'avant du vehicule est -Z, la droite est +X, comme partout
+# ailleurs dans Godot (Camera3D, look_at, etc.).
+#
+# ATTENTION, piege verifie a la mesure : le VehicleBody3D de Godot fait
+# exception. Une poussee positive deplace la caisse vers +Z, pas vers -Z.
+# Mesure faite par outils/test_sens.gd : 9,81 m parcourus a l oppose du nez.
+# On corrige avec SENS_POUSSEE plutot que de retourner toute la scene, pour
+# ne pas melanger deux conventions dans le meme projet.
 class_name Vehicule
 extends VehicleBody3D
+
+const SENS_POUSSEE := -1.0
+
+## En dessous de cette vitesse (m/s, signee), une commande de frein bascule
+## en marche arriere. Le signe est essentiel : une premiere version comparait
+## la vitesse NON signee et oscillait entre freiner et reculer plusieurs fois
+## par seconde.
+const SEUIL_MARCHE_ARRIERE := 0.8
 
 @export var reglages: Reglages
 
@@ -86,19 +101,30 @@ func _propulser(gaz: float, kmh: float) -> void:
 		brake = reglages.force_frein * 1.7
 		return
 
+	# Vitesse SIGNEE le long du nez : positive en marche avant, negative en
+	# marche arriere. C'est ce signe qui permet de distinguer "je freine" de
+	# "je recule" — sans lui, les deux etats s'echangent en boucle.
+	var avance := -global_transform.basis.z.dot(linear_velocity)
+
 	if gaz > 0.0:
-		# La resistance fait la vitesse maximale ; on coupe simplement la
-		# poussee au-dela plutot que de brider la vitesse, ce qui donnerait
-		# une sensation de mur.
-		engine_force = gaz * reglages.acceleration if kmh < reglages.vitesse_max_kmh else 0.0
-		brake = 0.0
-	elif gaz < 0.0:
-		if kmh < 4.0:
-			engine_force = gaz * reglages.acceleration * 0.45   # marche arriere
-			brake = 0.0
+		if avance < -SEUIL_MARCHE_ARRIERE:
+			# On roule en arriere : la commande d'avance freine d'abord.
+			engine_force = 0.0
+			brake = gaz * reglages.force_frein
 		else:
+			# La resistance fait la vitesse maximale ; on coupe la poussee
+			# au-dela plutot que de brider la vitesse, ce qui donnerait une
+			# sensation de mur.
+			var pousser: bool = kmh < reglages.vitesse_max_kmh
+			engine_force = SENS_POUSSEE * gaz * reglages.acceleration if pousser else 0.0
+			brake = 0.0
+	elif gaz < 0.0:
+		if avance > SEUIL_MARCHE_ARRIERE:
 			engine_force = 0.0
 			brake = -gaz * reglages.force_frein
+		else:
+			engine_force = SENS_POUSSEE * gaz * reglages.acceleration * 0.45
+			brake = 0.0
 	else:
 		engine_force = 0.0
 		brake = reglages.force_frein * 0.05                     # frein moteur

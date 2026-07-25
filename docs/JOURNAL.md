@@ -67,4 +67,22 @@ humaine. Ville de 2 × 2 îlots, 122 m de côté, 743 faces. Voiture de 54 faces
 tournent sans erreur, la voiture tient la route, mais le ressenti se teste au clavier.
 C'est le seul point où Benjamin est indispensable.
 
+**Deux bugs remontés par Benjamin au premier essai au clavier**, et ils valident la
+méthode : je ne pouvais pas les trouver seul.
+
+6. **Le `VehicleBody3D` de Godot pousse vers +Z, pas vers -Z.** Exception à la convention
+   du moteur, où tout le reste — caméras, `look_at` — regarde vers -Z. J'ai tranché en
+   mesurant plutôt qu'en relisant la documentation : `outils/test_sens.gd` applique une
+   poussée et projette le déplacement sur le nez. Verdict sans appel, 9,81 m à l'envers.
+   Corrigé par une constante `SENS_POUSSEE`, pas en retournant la scène — mélanger deux
+   conventions dans un même projet coûte plus cher qu'un signe documenté.
+7. **La marche arrière tremblait parce que je comparais une vitesse NON signée.** Reculer
+   fait monter cette vitesse, elle repasse le seuil, le code croit qu'on avance et freine,
+   la vitesse retombe, il repart en arrière. Plusieurs fois par seconde. Corrigé en
+   projetant la vélocité sur l'axe du nez : le signe distingue enfin « je freine » de
+   « je recule ».
+
+Le test de sens est resté dans le dépôt comme non-régression, accessible par
+`.\bg.ps1 test`. C'est typiquement le piège qui revient à la première refonte.
+
 **Prochain** : V4, Walter jouable à pied.

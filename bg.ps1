@@ -17,7 +17,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('jouer', 'editeur', 'generer', 'capture', 'verif', 'outils')]
+    [ValidateSet('jouer', 'editeur', 'generer', 'capture', 'verif', 'test', 'outils')]
     [string]$Commande = 'jouer',
 
     [int]$Blocs = 2,
@@ -108,5 +108,15 @@ switch ($Commande) {
         Exiger $GodotConsole 'Godot (console)'
         & $GodotConsole --headless --path $Projet --script 'res://outils/verif.gd'
         exit $LASTEXITCODE
+    }
+
+    'test' {
+        # Tests de comportement : ils ont besoin d un vrai rendu, donc pas
+        # de --headless. Une fenetre s ouvre brievement.
+        Exiger $Godot 'Godot'
+        Write-Host "`n--- sens de conduite ---" -ForegroundColor Cyan
+        & $Godot --path $Projet --script 'res://outils/test_sens.gd'
+        if ($LASTEXITCODE -ne 0) { Write-Host "ECHEC" -ForegroundColor Red; exit 1 }
+        Write-Host "OK" -ForegroundColor Green
     }
 }
