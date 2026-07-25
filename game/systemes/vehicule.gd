@@ -48,6 +48,14 @@ func _ready() -> void:
 ## curseur et de sentir la difference au tour de roue suivant.
 func appliquer_reglages() -> void:
 	mass = reglages.masse
+
+	# Centre de gravite abaisse sous l'essieu. Godot le place par defaut au
+	# centre du volume, c'est-a-dire a hauteur de portiere : la caisse penche
+	# alors assez en virage pour que son flanc touche le sol, ce qui freine
+	# net et la fait rebondir en sortie de courbe.
+	center_of_mass_mode = RigidBody3D.CENTER_OF_MASS_MODE_CUSTOM
+	center_of_mass = Vector3(0.0, reglages.centre_gravite, 0.0)
+
 	for r in _toutes():
 		r.suspension_travel = reglages.suspension_course
 		r.suspension_stiffness = reglages.suspension_raideur
@@ -79,11 +87,53 @@ func _physics_process(delta: float) -> void:
 
 	_braquer(direction, kmh, delta)
 	_propulser(gaz, kmh)
+	_anti_roulis()
 
 	var r := clampf(kmh / maxf(1.0, reglages.vitesse_max_kmh), 0.0, 1.0)
 	if absf(r - _regime) > 0.02:
 		_regime = r
 		regime_change.emit(r)
+
+
+# Barre anti-roulis, essieu par essieu.
+#
+# Godot n'en fournit pas : ses quatre roues sont independantes, et rien ne
+# s'oppose au roulis a part la raideur des ressorts. On la simule en
+# comparant la compression des deux roues d'un meme essieu, et en appliquant
+# une force verticale opposee au desequilibre.
+#
+# C'est ce qui manquait apres avoir rendu leur adherence aux roues : plus de
+# grip veut dire plus de force laterale, donc plus de roulis. Raidir les
+# ressorts aurait durci toute la voiture, y compris en ligne droite, pour
+# corriger un defaut qui n'existe qu'en virage.
+func _anti_roulis() -> void:
+	if reglages.anti_roulis <= 0.0:
+		return
+
+	# Au moins trois roues au sol : en l'air, redresser la caisse ferait
+	# tourner la voiture autour de rien, et a l'atterrissage elle serait
+	# droite comme par magie.
+	var au_sol := 0
+	for r in _toutes():
+		if r.is_in_contact():
+			au_sol += 1
+	if au_sol < 3:
+		return
+
+	# Angle de gite : le flanc droit de la caisse s'eleve ou s'abaisse par
+	# rapport a l'horizontale. On ne lit pas les suspensions — Godot n'expose
+	# pas leur compression — mais l'assiette de la caisse, qui en est le
+	# resultat direct.
+	var droite := global_transform.basis.x
+	var roulis := asin(clampf(droite.y, -1.0, 1.0))
+
+	# Vitesse de gite, pour amortir : sans elle on ajoute un ressort de plus
+	# a une voiture qui rebondit deja, et elle oscille au lieu de se poser.
+	var avant := -global_transform.basis.z
+	var vitesse_roulis := angular_velocity.dot(avant)
+
+	var k := reglages.anti_roulis * mass * 12.0
+	apply_torque(avant * (-roulis * k - vitesse_roulis * k * 0.35))
 
 
 # Le braquage se resserre avec la vitesse. Sans ca, la voiture pivote sur

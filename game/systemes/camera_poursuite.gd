@@ -178,16 +178,17 @@ static func _facteur(lissage: float, delta: float) -> float:
 func _recentrer(delta: float) -> void:
 	if not (_cible is CharacterBody3D):
 		return
-	var v: Vector3 = (_cible as CharacterBody3D).velocity
-	v.y = 0.0
-	# Un seuil bas, mais pas nul : sous cette vitesse le vecteur n'est plus
-	# qu'un residu numerique, et la camera se mettrait a vibrer a l'arret.
-	if v.length() < 0.4:
-		return
-
-	var direction := v.normalized()
-	var voulu := atan2(-direction.x, -direction.z)          # derriere lui
-	_cap = rotate_toward(_cap, voulu, reglages.pieton_recentrage * delta)
+	# On suit son ORIENTATION, pas sa vitesse.
+	#
+	# Depuis que gauche et droite le font pivoter au lieu de le deplacer, sa
+	# direction ne vient plus de la camera : la suivre ne peut plus creer de
+	# boucle. Et surtout, suivre la vitesse ferait passer la camera DEVANT
+	# lui des qu'il recule — on marcherait a reculons en se voyant de face.
+	#
+	# Sans seuil de vitesse, non plus : pivoter sur place doit faire tourner
+	# la camera, sinon on tourne le dos a l'ecran sans que le cadre bouge.
+	_cap = rotate_toward(_cap, _cible.rotation.y,
+			reglages.pieton_recentrage * delta)
 
 
 ## Visee libre. Recoit un deplacement de souris en PIXELS.
@@ -197,11 +198,24 @@ func _recentrer(delta: float) -> void:
 ## en dehors, qui les recoit et appelle cette methode. Un _input local ne
 ## serait jamais declenche, sans que rien ne le signale.
 func tourner(deplacement: Vector2) -> void:
+	# Le signe est NEGATIF, et ce n'est pas arbitraire.
+	#
+	# _cap designe la direction du sujet VERS la camera. Le regard est donc
+	# l'oppose, et son lacet vaut _cap. Or en Godot un lacet positif tourne
+	# vers -X, c'est-a-dire vers la GAUCHE quand on regarde vers -Z. Pour que
+	# la souris vers la droite fasse tourner la vue a droite, il faut donc
+	# diminuer.
+	#
+	# La premiere version ajoutait, et le test affirmait que c'etait le bon
+	# sens : j'avais inscrit le defaut dans sa propre verification.
+	# Le signe negatif ne vaut QUE pour l'horizontale. Une premiere version le
+	# mettait dans la sensibilite elle-meme, et inversait donc aussi le haut
+	# et le bas en corrigeant la gauche et la droite.
 	var s := reglages.souris_sensibilite
 	if _pieton:
-		_cap += deplacement.x * s
+		_cap -= deplacement.x * s
 	else:
-		_orbite += deplacement.x * s
+		_orbite -= deplacement.x * s
 
 	var sens := 1.0 if reglages.souris_inversee else -1.0
 	_tangage = clampf(_tangage + deplacement.y * s * sens,

@@ -83,10 +83,15 @@ func _process(_d: float) -> bool:
 		_verifier(not is_equal_approx(cap, _cap_avant),
 				"un mouvement horizontal tourne la camera (%.3f -> %.3f)"
 				% [_cap_avant, cap])
-		# Le sens compte : une souris inversee par accident se remarque en
-		# jouant, jamais dans un test qui regarderait seulement "ca bouge".
-		_verifier(cap > _cap_avant,
-				"vers la droite tourne dans le bon sens")
+		# Le sens compte, et il a ete inverse pendant une journee : la souris
+		# vers la droite faisait tourner la vue a gauche.
+		#
+		# _cap va du sujet VERS la camera, le regard est son oppose, et un
+		# lacet positif tourne vers la gauche en Godot. Regarder a droite
+		# DIMINUE donc _cap. La premiere version de ce test affirmait
+		# l'inverse : il validait le defaut au lieu de l'attraper.
+		_verifier(cap < _cap_avant,
+				"vers la droite fait tourner la vue a droite")
 
 		_bouger(0.0, -140.0)
 		_etape = 2

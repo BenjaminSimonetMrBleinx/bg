@@ -88,8 +88,15 @@ func _process(_d: float) -> bool:
 		var m = _maisons[0]
 		_j.global_position = m.seuil() + Vector3(0.0, 0.2, 0.6)
 		_j.velocity = Vector3.ZERO
+		# On tourne LE PERSONNAGE, pas seulement la camera.
+		#
+		# La camera se recentre desormais en continu sur son orientation, sans
+		# seuil de vitesse : poser un cap a la main serait defait en un
+		# dixieme de seconde. Il regarde la rue, la camera est donc derriere
+		# lui — c'est-a-dire dans la maison, ce qu'on veut mesurer.
+		_j.rotation.y = PI
 		_cam.call("recaler")
-		_cam.set("_cap", PI)          # derriere lui = vers la maison
+		_cam.set("_cap", PI)
 		_etape = 1
 		_n = 0
 		return false

@@ -20,11 +20,15 @@ const MESURE := 90        # fenetre d'observation
 const DERIVE_MAX := 20.0  # degres tolerés sur la fenetre
 const CADRAGE_MAX := 35.0 # ecart tolere entre l'axe du personnage et la camera
 
+# Les commandes sont celles d'un char : gauche et droite PIVOTENT, avant et
+# arriere deplacent. Le test verifie donc deux choses differentes selon la
+# touche, et c'est le coeur du sujet — une version anterieure exigeait un
+# deplacement pour les quatre, ce qui n'a plus de sens.
 const CAS := [
-	{"nom": "avancer", "action": "gaz"},
-	{"nom": "reculer", "action": "frein"},
-	{"nom": "aller a gauche", "action": "gauche"},
-	{"nom": "aller a droite", "action": "droite"},
+	{"nom": "avancer", "action": "gaz", "bouge": true},
+	{"nom": "reculer", "action": "frein", "bouge": true},
+	{"nom": "pivoter a gauche", "action": "gauche", "bouge": false},
+	{"nom": "pivoter a droite", "action": "droite", "bouge": false},
 ]
 
 var _j: Node3D
@@ -78,23 +82,43 @@ func _process(_d: float) -> bool:
 		var ecart := rad_to_deg(absf(avant.normalized().angle_to(
 				-vers_camera.normalized())))
 
-		# Sans ce controle, une derive nulle voudrait simplement dire que le
-		# personnage n'a pas bouge — le test passerait pour la mauvaise raison.
-		if parcouru < 1.0:
-			_erreurs.append(nom + " (immobile)")
-			printerr("  ECHEC %-16s n'a pas bouge (%.2f m) : bloque en %s"
-					% [nom, parcouru, _j.global_position])
-		elif derive >= DERIVE_MAX:
-			_erreurs.append(nom)
-			printerr("  ECHEC %-16s tourne sans fin (derive %.1f deg sur 1,5 s)"
-					% [nom, derive])
-		elif ecart > CADRAGE_MAX:
-			_erreurs.append(nom + " (camera mal placee)")
-			printerr("  ECHEC %-16s la camera est restee de cote (%.0f deg "
-					% [nom, ecart] + "de l'axe du personnage)")
+		if CAS[_cas]["bouge"]:
+			# Avancer et reculer : il se deplace, EN LIGNE DROITE, et la
+			# camera reste dans son dos. Une derive nulle sans deplacement
+			# ferait passer le test pour la mauvaise raison.
+			if parcouru < 1.0:
+				_erreurs.append(nom + " (immobile)")
+				printerr("  ECHEC %-18s n'a pas bouge (%.2f m) : bloque en %s"
+						% [nom, parcouru, _j.global_position])
+			elif derive >= DERIVE_MAX:
+				_erreurs.append(nom)
+				printerr("  ECHEC %-18s tourne sans fin (derive %.1f deg)"
+						% [nom, derive])
+			elif ecart > CADRAGE_MAX:
+				_erreurs.append(nom + " (camera mal placee)")
+				printerr("  ECHEC %-18s la camera n'est pas dans son dos (%.0f deg)"
+						% [nom, ecart])
+			else:
+				print("  ok   %-18s %.1f m, derive %.1f deg, camera a %.0f deg"
+						% [nom, parcouru, derive, ecart])
 		else:
-			print("  ok   %-16s %.1f m, derive %.1f deg, camera a %.0f deg de l'axe"
-					% [nom, parcouru, derive, ecart])
+			# Pivoter : il tourne SANS avancer. C'est la demande explicite —
+			# appuyer sur gauche ou droite a l'arret le faisait partir en
+			# avant, ce qui rendait impossible de simplement se retourner.
+			if parcouru > 0.5:
+				_erreurs.append(nom + " (il avance)")
+				printerr("  ECHEC %-18s se deplace en pivotant (%.2f m)"
+						% [nom, parcouru])
+			elif derive < 20.0:
+				_erreurs.append(nom + " (ne tourne pas)")
+				printerr("  ECHEC %-18s ne pivote pas (%.1f deg)" % [nom, derive])
+			elif ecart > CADRAGE_MAX:
+				_erreurs.append(nom + " (camera mal placee)")
+				printerr("  ECHEC %-18s la camera n'a pas suivi le pivot (%.0f deg)"
+						% [nom, ecart])
+			else:
+				print("  ok   %-18s pivote de %.0f deg sans avancer (%.2f m), camera a %.0f deg"
+						% [nom, derive, parcouru, ecart])
 		Input.action_release(CAS[_cas]["action"])
 		_cas += 1
 		if _cas >= CAS.size():

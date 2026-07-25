@@ -45,14 +45,19 @@ func recenser(racine: Node) -> int:
 
 
 ## A appeler chaque image de physique, avec la vitesse au sol en m/s.
+##
+## La vitesse peut etre NEGATIVE : le cycle tourne alors a l'envers, et le
+## personnage marche vraiment a reculons. Avec une vitesse absolue il
+## avancerait des jambes en se deplacant en arriere, ce qui se voit tout de
+## suite.
 func avancer(vitesse_au_sol: float, delta: float) -> void:
-	if vitesse_au_sol < 0.15:
+	if absf(vitesse_au_sol) < 0.15:
 		# Retour a la position de repos, sans a-coup.
 		_phase = lerp_angle(_phase, 0.0, clampf(8.0 * delta, 0.0, 1.0))
 		_poser(0.0)
 		return
 
-	_phase = fmod(_phase + (vitesse_au_sol * delta)
+	_phase = fposmod(_phase + (vitesse_au_sol * delta)
 			/ maxf(0.05, _reglages.foulee) * TAU, TAU)
 	_poser(1.0)
 

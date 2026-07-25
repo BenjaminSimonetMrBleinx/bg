@@ -1,7 +1,18 @@
 # Walter a pied.
 #
 # Ce script ne s'occupe que de ce qui est PROPRE au joueur : lire les touches,
-# se deplacer par rapport a la camera, et franchir les bordures de trottoir.
+# le faire pivoter et avancer, et franchir les bordures de trottoir.
+#
+# Les commandes sont celles des jeux de l'epoque : GAUCHE et DROITE font
+# PIVOTER sur place, AVANT et ARRIERE deplacent selon l'orientation du
+# personnage. La camera n'entre pas dans le calcul.
+#
+# Ce n'est pas de la nostalgie. Pendant trois versions, la direction se
+# lisait sur la camera — et comme la camera suit le personnage, aller sur le
+# cote la faisait tourner, ce qui faisait tourner la direction, ce qui la
+# faisait tourner encore. On y a repondu en bloquant la camera, puis en
+# figeant le repere a l'appui. Les deux marchaient et aucun n'etait franc.
+# Ici la boucle n'existe pas : il n'y a rien a casser.
 #
 # La marche elle-meme vit dans silhouette.gd, partagee avec les pietons de la
 # rue. Elle y a ete deplacee parce que le maillage est le meme pour tout le
@@ -11,8 +22,8 @@ class_name Joueur
 extends CharacterBody3D
 
 @export var reglages: Reglages
-## Sert a orienter les deplacements : avancer, c'est aller vers ou la camera
-## regarde, pas vers -Z du monde.
+## Conserve pour la compatibilite de la scene. Le deplacement ne s'en sert
+## plus du tout : c'est precisement ce qui a regle le probleme.
 @export var camera: NodePath
 
 var _cam: Camera3D
@@ -50,12 +61,35 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	var voulu := _direction_voulue()
-
 	if not is_on_floor():
 		velocity.y -= _gravite * delta
 
-	var cible := voulu * reglages.marche_vitesse
+	# Gauche et droite PIVOTENT, elles ne deplacent pas. Avant et arriere
+	# deplacent selon l'orientation du personnage, jamais selon la camera.
+	#
+	# C'est la commande des jeux de l'epoque, et elle regle definitivement le
+	# probleme qui nous a poursuivis : tant que la direction se lisait sur la
+	# camera, aller sur le cote la faisait tourner, ce qui faisait tourner la
+	# direction. Ici, la camera n'entre plus dans le calcul du tout.
+	var pivot := Input.get_axis("gauche", "droite")
+	if not bloque and absf(pivot) > 0.01:
+		rotation.y -= pivot * deg_to_rad(reglages.pivot_vitesse) * delta
+
+	var avance := 0.0
+	if not bloque:
+		avance = Input.get_axis("frein", "gaz")
+
+	var devant := -global_transform.basis.z
+	devant.y = 0.0
+	devant = devant.normalized()
+
+	# Reculer est plus lent qu'avancer : personne ne court a reculons.
+	var allure := reglages.marche_vitesse
+	if avance < 0.0:
+		allure *= reglages.marche_arriere
+
+	var voulu := devant * avance
+	var cible := voulu * allure
 	var k := clampf(reglages.marche_acceleration * delta, 0.0, 1.0)
 	velocity.x = lerpf(velocity.x, cible.x, k)
 	velocity.z = lerpf(velocity.z, cible.z, k)
@@ -63,8 +97,10 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_franchir(voulu, delta)
 
-	_orienter(voulu, delta)
-	_silhouette.avancer(Vector2(velocity.x, velocity.z).length(), delta)
+	# Vitesse SIGNEE : la silhouette inverse le cycle de marche quand on
+	# recule, sinon il marche a l'endroit en se deplacant a l'envers.
+	var au_sol := Vector2(velocity.x, velocity.z).length()
+	_silhouette.avancer(au_sol * signf(avance) if absf(avance) > 0.01 else au_sol, delta)
 
 
 # Franchissement des bordures de trottoir.
@@ -132,65 +168,14 @@ var bloque: bool = false
 # C'est ce qui casse la poursuite mutuelle. "Aller a gauche" veut dire a
 # gauche DE CE QU'ON VOIT ; si on relisait la camera a chaque image pendant
 # qu'elle se replace derriere le personnage, la direction tournerait avec
-# elle et il marcherait en cercle. Une premiere version reglait ca en
-# empechant la camera de tourner ailleurs que vers l'avant : le probleme
-# disparaissait, mais la camera ne suivait plus quand on allait sur le cote,
-# et il fallait donner un coup d'avance pour la remettre en place.
-#
-# En figeant le repere, les deux problemes tombent : la trajectoire reste
-# droite, et la camera peut se replacer librement.
-var _avant_ref: Vector3 = Vector3.FORWARD
-var _droite_ref: Vector3 = Vector3.RIGHT
-var _reference_valide: bool = false
-
-
-func _direction_voulue() -> Vector3:
-	if bloque:
-		_reference_valide = false
-		return Vector3.ZERO
-	var axe := Input.get_vector("gauche", "droite", "gaz", "frein")
-	if axe.length_squared() < 0.01:
-		# Relacher rend la main a la camera : le prochain appui repartira de
-		# ce qu'on voit a ce moment-la.
-		_reference_valide = false
-		return Vector3.ZERO
-
-	if not _reference_valide:
-		# Tant que la camera n'a pas pris sa place, on ne fige rien : on
-		# figerait une orientation perimee, et pour toute la duree de
-		# l'appui puisque le repere ne se relit plus ensuite.
-		if _cam != null and not _cam.call("pret"):
-			return Vector3.ZERO
-		var base := (_cam.global_transform.basis if _cam != null
-				else global_transform.basis)
-		var f := -base.z
-		var d := base.x
-		f.y = 0.0
-		d.y = 0.0
-		if f.length() > 0.01 and d.length() > 0.01:
-			_avant_ref = f.normalized()
-			_droite_ref = d.normalized()
-			_reference_valide = true
-
-	return (_droite_ref * axe.x + _avant_ref * -axe.y).normalized()
-
-
 ## Angle de lacet pour qu'un noeud regarde dans la direction donnee.
 ##
 ## L'avant d'un noeud Godot est -Z, d'ou les deux negations. Sans elles on
-## obtient l'angle oppose : le personnage marche a reculons, la camera ancree
-## derriere lui bascule de l'autre cote, ce qui inverse la notion d'avant et
-## le fait pivoter encore. Resultat, il tourne en boucle sans jamais se
-## stabiliser — une rétroaction, pas un simple defaut d'orientation.
+## obtient l'angle oppose. Le joueur ne s'en sert plus — il pivote a la
+## commande — mais les pietons de la rue, eux, se tournent vers leur
+## destination et en ont besoin.
 static func lacet_vers(direction: Vector3) -> float:
 	return atan2(-direction.x, -direction.z)
-
-
-func _orienter(voulu: Vector3, delta: float) -> void:
-	if voulu.length_squared() < 0.01:
-		return
-	rotation.y = rotate_toward(rotation.y, lacet_vers(voulu),
-			reglages.marche_rotation * delta)
 
 
 ## Vitesse au sol en km/h, pour le HUD et les sons de pas.

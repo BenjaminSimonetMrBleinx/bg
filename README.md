@@ -46,12 +46,21 @@ sautant chaque étape inutile. Ou double-clic sur `JOUER.bat`.
 **Tu démarres sur le trottoir devant chez Walter.** Sa porte est éclairée à deux pas, celle
 de Jesse vingt mètres plus loin, la voiture est garée le long de la rue.
 
-| Touche | Action |
-|---|---|
-| **W A S D** / flèches | Marcher, puis conduire |
-| **F** | Fait toujours la chose la plus proche : monter, descendre, entrer, parler, sortir |
-| Espace | Frein à main |
-| **Tab** maintenu, ou clic droit | Roue des outils — viser avec gauche/droite, relâcher pour équiper |
+| Touche | À pied | Au volant |
+|---|---|---|
+| **W** / haut | Avancer | Accélérer |
+| **S** / bas | Reculer | Freiner, puis marche arrière |
+| **A** **D** / gauche droite | **Pivoter sur place** | Braquer |
+| **Souris** | Regarder autour | Regarder autour |
+| **Molette** | Rapprocher ou éloigner la caméra | idem |
+| **F** | Fait toujours la chose la plus proche : monter, descendre, entrer, parler, sortir | |
+| Espace | — | Frein à main |
+| **Tab** maintenu, ou clic droit | Roue des outils — viser avec gauche/droite, relâcher pour équiper | |
+| Échap | Rend le curseur de la souris | |
+
+**À pied, gauche et droite font pivoter, elles ne déplacent pas.** Seuls avant et arrière
+déplacent, dans l'axe du personnage. La caméra n'entre pas dans le calcul : où qu'elle
+regarde, « avancer » veut toujours dire la même chose.
 
 Les touches sont liées par **position physique**, pas par caractère : elles se lisent `WASD`
 en QWERTY et QWERTZ, `ZQSD` en AZERTY, sans rien changer.

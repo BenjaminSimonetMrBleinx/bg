@@ -35,20 +35,56 @@ extends Resource
 ## Masse du vehicule en kg. Influence l'inertie et le transfert de charge.
 @export_range(400.0, 3000.0, 10.0) var masse: float = 1350.0
 
-## Adherence laterale des roues avant.
-@export_range(0.0, 2.0, 0.01) var adherence_avant: float = 0.85
+## Adherence des roues avant.
+##
+## ATTENTION A L'UNITE. Ce n'est pas un coefficient entre 0 et 1 : Godot
+## attend un facteur de glissement dont la valeur normale est 10,5. En
+## dessous de 2, on roule litteralement sur de la glace.
+##
+## Les valeurs etaient a 0,85 et 0,78 — lues comme un pourcentage d'adherence.
+## La voiture chassait de l'arriere en permanence, se rattrapait, rechassait :
+## d'ou le dandinement gauche-droite en acceleration. Et les roues patinant au
+## lieu d'entrainer, elle perdait aussi de la reprise.
+@export_range(0.5, 25.0, 0.1) var adherence_avant: float = 11.0
 
-## Adherence laterale des roues arriere. En dessous de l'avant, ca part en glisse.
-@export_range(0.0, 2.0, 0.01) var adherence_arriere: float = 0.78
+## Adherence des roues arriere. Legerement sous l'avant : au-dessus, la
+## voiture sous-vire betement et ne tourne plus.
+@export_range(0.5, 25.0, 0.1) var adherence_arriere: float = 10.0
 
 ## Hauteur de caisse au repos. Bas = sportif, haut = monospace mou.
 @export_range(0.05, 0.8, 0.01) var suspension_course: float = 0.22
 
 ## Raideur des ressorts. Bas = la caisse plonge dans les virages.
-@export_range(5.0, 200.0, 1.0) var suspension_raideur: float = 42.0
+##
+## Elle decide aussi de la GARDE AU SOL, ce qui n'est pas evident : plus le
+## ressort est mou, plus la caisse s'affaisse sur ses roues. A 42 elle ne
+## gardait que 24 cm sous le plancher — et 9 degres de roulis en mangent 14.
+## Le flanc raclait donc en virage, ce qui freinait net. A 140, la garde
+## monte a 35 cm et le probleme disparait a la source.
+@export_range(5.0, 500.0, 1.0) var suspension_raideur: float = 140.0
 
-## Amortissement. Trop bas, la voiture rebondit sans fin.
-@export_range(0.0, 5.0, 0.05) var suspension_amorti: float = 0.6
+## Amortissement des suspensions.
+##
+## Il doit suivre la raideur, pas etre choisi seul : un ressort raide mal
+## amorti oscille au lieu de se poser. L'ordre de grandeur utile est
+## 0,5 x racine(raideur) — soit environ 3,2 pour une raideur de 42. La valeur
+## etait a 0,6, cinq fois trop bas, et la caisse rebondissait a chaque
+## transfert de charge.
+@export_range(0.0, 20.0, 0.05) var suspension_amorti: float = 5.9
+
+## Hauteur du centre de gravite, en metres par rapport a l'origine de la
+## caisse. NEGATIF = plus bas, donc moins de roulis.
+##
+## C'est le reglage decisif du roulis, bien plus que la raideur. Par defaut
+## Godot le place au centre du volume : la caisse penche alors tellement en
+## virage qu'elle finit par toucher le sol de son flanc, ce qui freine
+## brutalement et la fait rebondir en sortie. Le descendre sous l'essieu
+## supprime la cause au lieu de raidir les ressorts pour la masquer.
+@export_range(-1.2, 0.5, 0.05) var centre_gravite: float = -0.45
+
+## Rigidite anti-roulis, en proportion. 0 = les deux roues d'un essieu sont
+## independantes et la caisse penche librement ; 1 = elles sont solidaires.
+@export_range(0.0, 1.0, 0.05) var anti_roulis: float = 0.55
 
 # ------------------------------------------------------------------ camera
 @export_group("Camera")
@@ -243,6 +279,15 @@ extends Resource
 ## par seconde. Bas = il pivote lourdement, haut = il se retourne net.
 @export_range(0.2, 12.0, 0.1) var marche_rotation: float = 5.0
 
+## Vitesse de pivot sur place, en degres par seconde. Gauche et droite ne
+## deplacent pas : elles tournent. Trop bas, on passe son temps a viser une
+## porte ; trop haut, on ne peut plus s'arreter dans une direction.
+@export_range(30.0, 400.0, 5.0) var pivot_vitesse: float = 165.0
+
+## Vitesse de marche arriere, en proportion de la vitesse avant. On recule
+## toujours plus lentement qu'on avance.
+@export_range(0.1, 1.0, 0.05) var marche_arriere: float = 0.55
+
 @export_subgroup("Camera a pied")
 
 ## Recul de la camera quand on marche. Plus court qu'en voiture.
@@ -253,10 +298,14 @@ extends Resource
 @export_range(0.01, 1.0, 0.01) var pieton_lissage: float = 0.22
 
 ## Vitesse a laquelle la camera se replace derriere le personnage, en
-## radians par seconde. Elle ne le fait que lorsqu'il s'ELOIGNE d'elle :
-## sinon la camera suivrait le personnage qui suit la camera, et reculer
-## ferait tourner en rond sans jamais se stabiliser.
-@export_range(0.1, 8.0, 0.1) var pieton_recentrage: float = 1.6
+## radians par seconde.
+##
+## Elle doit rester AU-DESSUS de pivot_vitesse, sinon elle prend un retard
+## qui s'accumule tant qu'on tourne : a 1,6 rad/s contre un pivot a 165 deg/s
+## (2,9 rad/s), le personnage avait fait un demi-tour de plus qu'elle au bout
+## d'une seconde et demie. Ici 4,0 rad/s, soit 229 deg/s : le retard se
+## stabilise a quelques degres au lieu de croitre.
+@export_range(0.1, 12.0, 0.1) var pieton_recentrage: float = 4.0
 
 @export_subgroup("Marche procedurale")
 

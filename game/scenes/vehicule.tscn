@@ -20,8 +20,16 @@
 [ext_resource type="AudioStream" path="res://assets/sons/vehicule/moteur_demarrage.wav" id="9_demarrage"]
 [ext_resource type="AudioStream" path="res://assets/sons/vehicule/moteur_arret.wav" id="10_arret"]
 
+; Le bas de la boite s'arrete a 0,55 au-dessus de l'origine, pas a 0,39.
+;
+; Ce sont les ROUES qui portent la voiture : la caisse n'a aucune raison de
+; descendre jusqu'a leur niveau. A 0,39 son coin inferieur passait sous le
+; sol des 12 degres de gite — mesure a -0,008 m — et raclait en virage, ce
+; qui freinait net et renvoyait la caisse dans l'autre sens.
+;
+; Le haut ne bouge pas : on retire de l'epaisseur par le bas.
 [sub_resource type="BoxShape3D" id="forme_caisse"]
-size = Vector3(1.86, 1.2, 4.6)
+size = Vector3(1.86, 1.04, 4.6)
 
 [sub_resource type="BoxShape3D" id="forme_toit"]
 size = Vector3(1.8, 0.55, 2.7)
@@ -32,7 +40,7 @@ script = ExtResource("1_vehicule")
 reglages = ExtResource("2_reglages")
 
 [node name="Collision" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.99, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.07, 0)
 shape = SubResource("forme_caisse")
 
 [node name="CollisionToit" type="CollisionShape3D" parent="."]
@@ -48,11 +56,11 @@ use_as_steering = true
 wheel_roll_influence = 0.08
 wheel_radius = 0.34
 wheel_rest_length = 0.15
-wheel_friction_slip = 0.85
+wheel_friction_slip = 11.0
 suspension_travel = 0.22
-suspension_stiffness = 42.0
-damping_compression = 0.6
-damping_relaxation = 0.84
+suspension_stiffness = 200.0
+damping_compression = 7.1
+damping_relaxation = 9.9
 
 [node name="Mesh" parent="RoueAvantG" instance=ExtResource("4_roue")]
 
@@ -63,11 +71,11 @@ use_as_steering = true
 wheel_roll_influence = 0.08
 wheel_radius = 0.34
 wheel_rest_length = 0.15
-wheel_friction_slip = 0.85
+wheel_friction_slip = 11.0
 suspension_travel = 0.22
-suspension_stiffness = 42.0
-damping_compression = 0.6
-damping_relaxation = 0.84
+suspension_stiffness = 200.0
+damping_compression = 7.1
+damping_relaxation = 9.9
 
 [node name="Mesh" parent="RoueAvantD" instance=ExtResource("4_roue")]
 
@@ -77,11 +85,11 @@ use_as_traction = true
 wheel_roll_influence = 0.08
 wheel_radius = 0.34
 wheel_rest_length = 0.15
-wheel_friction_slip = 0.78
+wheel_friction_slip = 10.0
 suspension_travel = 0.22
-suspension_stiffness = 42.0
-damping_compression = 0.6
-damping_relaxation = 0.84
+suspension_stiffness = 200.0
+damping_compression = 7.1
+damping_relaxation = 9.9
 
 [node name="Mesh" parent="RoueArriereG" instance=ExtResource("4_roue")]
 
@@ -91,11 +99,11 @@ use_as_traction = true
 wheel_roll_influence = 0.08
 wheel_radius = 0.34
 wheel_rest_length = 0.15
-wheel_friction_slip = 0.78
+wheel_friction_slip = 10.0
 suspension_travel = 0.22
-suspension_stiffness = 42.0
-damping_compression = 0.6
-damping_relaxation = 0.84
+suspension_stiffness = 200.0
+damping_compression = 7.1
+damping_relaxation = 9.9
 
 [node name="Mesh" parent="RoueArriereD" instance=ExtResource("4_roue")]
 

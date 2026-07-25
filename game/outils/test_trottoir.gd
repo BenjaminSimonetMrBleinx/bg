@@ -52,6 +52,16 @@ func _process(_d: float) -> bool:
 		_j.velocity = Vector3.ZERO
 		# On oriente la camera pour que "avancer" pointe vers +X, donc vers
 		# la bordure. Le cap designe la direction du sujet VERS la camera.
+		# On oriente LE PERSONNAGE vers la bordure, pas la camera.
+		#
+		# Depuis que gauche et droite pivotent au lieu de deplacer, "avancer"
+		# suit l'axe du personnage et la camera n'entre plus dans le calcul.
+		# Ce test reglait auparavant le cap de la camera, ce qui n'a plus le
+		# moindre effet sur la direction prise.
+		#
+		# L'avant d'un noeud Godot est -Z : un lacet de -90 deg le fait
+		# regarder vers +X, donc vers la bordure.
+		_j.rotation.y = -PI / 2.0
 		_cam.set("_cap", -PI / 2.0)
 		# Et on la force a s'y placer d'un coup. Regler le cap ne suffit pas :
 		# la camera rejoint sa position en lissage, et "avancer" est calcule a

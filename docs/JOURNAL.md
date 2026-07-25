@@ -699,3 +699,39 @@ contenait pas.
 
 **État** : neuf répliques en vraie voix, dix en synthèse, dans la même conversation. Le
 mélange fonctionne, c'est ce qui permet d'avancer par morceaux.
+
+### Le virage : la caisse raclait vraiment
+
+*« Quand je tourne j'ai l'impression qu'elle touche le sol sur le côté et ça la ralentit. »*
+Impression exacte, et mesurée : **garde au sol de −0,008 m** en courbe. Le bas de caisse
+passait sous le sol.
+
+Trois causes empilées, trouvées une par une :
+
+**Les corrections précédentes n'étaient pas actives.** `reglages.tres` écrase les valeurs par
+défaut du script — l'adhérence y était toujours à 0,85. J'avais corrigé le script en croyant
+avoir corrigé le jeu. C'est le fichier de Benjamin, mais des unités fausses ne sont pas un
+goût : corrigé là où ça compte.
+
+**La raideur décide de la garde au sol**, ce qui n'est pas évident : plus le ressort est mou,
+plus la caisse s'affaisse sur ses roues. À 42 elle ne gardait que 24 cm sous le plancher — et
+12° de gîte en mangent 20.
+
+**La boîte de collision descendait jusqu'aux roues.** Ce sont les roues qui portent la
+voiture ; la caisse n'a aucune raison d'aller si bas. Son bas est remonté de 0,39 à 0,55.
+
+Résultat : **0,140 m de garde en virage**, contre-roulis de 1,2°, et elle garde sa vitesse.
+
+**Une barre anti-roulis écrite puis mesurée inutile.** Elle réduisait le contre-roulis de
+moitié à 1,0 — gardée — mais au-delà elle coûtait dix km/h sans rien gagner sur la gîte. Le
+roulis ne venait pas des ressorts mais de la suspension arrivée en butée : aucun couple ne
+peut corriger ça.
+
+**Et une leçon de mesure.** Mon premier indicateur d'oscillation annonçait 8 degrés *par
+image* — un non-sens physique. Il comparait deux images consécutives mais ne mettait à jour sa
+référence qu'après la quarantième, si bien que le premier écart valait quarante images de
+mouvement. Le test mesure maintenant la **garde au sol**, pas l'angle : une caisse peut
+pencher de quinze degrés sans rien racler si elle est haute, et frotter à huit si elle est
+basse. L'angle seul ne dit rien.
+
+Dix-huit suites.

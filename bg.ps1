@@ -365,6 +365,12 @@ switch ($Commande) {
             @{ cle = 'sens'; nom = 'sens de conduite'
                script = 'res://outils/test_sens.gd'
                couvre = @('systemes/vehicule', 'gen_voiture', 'scenes/vehicule') }
+            @{ cle = 'conduite'; nom = 'tenue de route'
+               script = 'res://outils/test_conduite.gd'
+               couvre = @('systemes/vehicule', 'scenes/vehicule', 'systemes/reglages') }
+            @{ cle = 'virage'; nom = 'comportement en virage'
+               script = 'res://outils/test_virage.gd'
+               couvre = @('systemes/vehicule', 'scenes/vehicule', 'systemes/reglages') }
             @{ cle = 'montee'; nom = 'montee et descente'
                script = 'res://outils/test_montee.gd'
                couvre = @('systemes/controleur', 'systemes/vehicule', 'systemes/joueur') }
