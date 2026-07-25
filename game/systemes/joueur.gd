@@ -156,6 +156,11 @@ func _direction_voulue() -> Vector3:
 		return Vector3.ZERO
 
 	if not _reference_valide:
+		# Tant que la camera n'a pas pris sa place, on ne fige rien : on
+		# figerait une orientation perimee, et pour toute la duree de
+		# l'appui puisque le repere ne se relit plus ensuite.
+		if _cam != null and not _cam.call("pret"):
+			return Vector3.ZERO
 		var base := (_cam.global_transform.basis if _cam != null
 				else global_transform.basis)
 		var f := -base.z

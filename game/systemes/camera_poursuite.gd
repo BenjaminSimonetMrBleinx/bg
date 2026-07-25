@@ -165,6 +165,14 @@ func _recentrer(delta: float) -> void:
 	_cap = rotate_toward(_cap, voulu, reglages.pieton_recentrage * delta)
 
 
+## La camera a-t-elle deja pris sa place ? Le personnage fige son repere de
+## deplacement sur elle : tant qu'elle n'est pas posee, il figerait une
+## orientation perimee et partirait dans une direction qui n'a rien a voir
+## avec ce qu'on voit — pour toute la duree de l'appui.
+func pret() -> bool:
+	return _initialisee
+
+
 ## Resserre ou relache le cadrage. Appele au passage d'une porte.
 func interieur(dedans: bool) -> void:
 	_dedans = dedans
