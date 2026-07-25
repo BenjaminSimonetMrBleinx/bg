@@ -49,12 +49,17 @@ function Stop-Net($t) {
 # erreur bloquante - le script annoncait donc un echec sur un envoi
 # parfaitement reussi. On isole les appels natifs et on ne juge que le code
 # de sortie, seul indicateur fiable.
+# Aucun bloc param() ici, volontairement : on passe par $args.
+#
+# Avec un parametre nomme $Arguments, PowerShell traitait "Invoke-Git add -A"
+# comme un -A abrege de -Arguments et reclamait une valeur qui ne venait
+# jamais. Les noms de parametres s abregent, et les drapeaux courts de git
+# entrent en collision avec a peu pres n importe quel nom qu on choisirait.
 function Invoke-Git {
-    param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
     $ancien = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'
     try {
-        $lignes = & git @Arguments 2>&1 | ForEach-Object { "$_" }
+        $lignes = & git @args 2>&1 | ForEach-Object { "$_" }
         return [pscustomobject]@{ Code = $LASTEXITCODE; Lignes = $lignes }
     } finally {
         $ErrorActionPreference = $ancien

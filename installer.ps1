@@ -43,13 +43,16 @@ function Update-Chemin {
 # tout va bien. Avec ErrorActionPreference a Stop, PowerShell 5.1 en fait une
 # erreur bloquante et le script s arrete sur un succes. On isole donc les
 # appels externes et on ne juge que le code de sortie.
+# Pas de bloc param() : un parametre nomme se laisse abreger, et les
+# drapeaux courts des outils appeles (-A, -e, -m...) seraient pris pour lui.
 function Invoke-Externe {
-    param([string]$Programme,
-          [Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
+    $prog = $args[0]
+    $reste = @()
+    if ($args.Count -gt 1) { $reste = $args[1..($args.Count - 1)] }
     $ancien = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'
     try {
-        $lignes = & $Programme @Arguments 2>&1 | ForEach-Object { "$_" }
+        $lignes = & $prog @reste 2>&1 | ForEach-Object { "$_" }
         return [pscustomobject]@{ Code = $LASTEXITCODE; Lignes = $lignes }
     } finally {
         $ErrorActionPreference = $ancien
