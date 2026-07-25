@@ -51,7 +51,7 @@ MAISONS = {
             (3.6, 1.9, 2.4, 0.9, 0.85, "chemise"),       # canape
             (-4.2, -2.2, 0.7, 0.7, 1.10, "pantalon"),    # colonne, appoint
         ],
-        "habitant": (2.0, 1.4),
+        "habitant": (1.0, 1.4),
     },
     "jesse": {
         # Bardage bois, deux niveaux, nettement moins bien tenu.
@@ -67,7 +67,7 @@ MAISONS = {
             (2.4, 1.8, 1.2, 0.9, 1.30, "bardage"),
             (-2.4, -2.0, 1.0, 0.6, 0.95, "chemise"),
         ],
-        "habitant": (-1.6, 1.2),
+        "habitant": (0.0, 1.5),
     },
 }
 
@@ -231,6 +231,29 @@ def construire_exterieur(spec: dict, mats: dict) -> int:
 # ------------------------------------------------------------------ interieur
 
 
+def verifier(nom: str, spec: dict) -> None:
+    """Refuse une piece ou l'habitant se tient dans un meuble.
+
+    Ca s'est produit : Jesse etait plante au milieu de son plan de travail,
+    coupe a la taille. Rien ne plantait, rien ne s'affichait en rouge — il
+    fallait aller le voir. Un habitant est un point, un meuble est une boite,
+    la verification tient en six lignes, autant la faire ici une fois pour
+    toutes plutot que de la redecouvrir en jouant.
+    """
+    hx, hy = spec["piece"][0] / 2, spec["piece"][1] / 2
+    px, py = spec["habitant"]
+    marge = 0.45                              # demi-largeur d'un personnage
+
+    if abs(px) > hx - marge or abs(py) > hy - marge:
+        raise SystemExit(f"{nom} : l'habitant {spec['habitant']} est dans un mur")
+
+    for mx, my, ml, mp, _mh, _tex in spec["meubles"]:
+        if (abs(px - mx) < ml / 2 + marge) and (abs(py - my) < mp / 2 + marge):
+            raise SystemExit(
+                f"{nom} : l'habitant {spec['habitant']} est dans le meuble "
+                f"pose en ({mx}, {my}). Le deplacer dans MAISONS.")
+
+
 def construire_interieur(spec: dict, mats: dict) -> int:
     """Piece fermee, murs tournes vers l'INTERIEUR.
 
@@ -303,6 +326,7 @@ def main() -> None:
 
     for nom in noms:
         spec = MAISONS[nom]
+        verifier(nom, spec)
         for suffixe, batir in (("ext", construire_exterieur),
                                ("int", construire_interieur)):
             bpy.ops.wm.read_factory_settings(use_empty=True)

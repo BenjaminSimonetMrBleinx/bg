@@ -257,3 +257,8 @@ extends Resource
 @export_range(0.6, 6.0, 0.1) var interieur_recul: float = 2.1
 
 @export_range(0.3, 4.0, 0.1) var interieur_hauteur: float = 1.5
+
+## Distance a laquelle un habitant accepte de parler, en metres. Plus courte
+## que la porte : sinon, entrer dans une piece ou quelqu'un se tient pres de
+## l'entree proposerait les deux choses a la fois.
+@export_range(0.5, 6.0, 0.1) var portee_dialogue: float = 2.2

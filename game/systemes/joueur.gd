@@ -137,7 +137,15 @@ func _franchir(voulu: Vector3, delta: float) -> void:
 		_refus = ""
 
 
+## Coupe les commandes sans arreter la physique : pendant un dialogue, le
+## personnage doit ralentir et reposer ses pieds normalement. Suspendre le
+## traitement le figerait en pleine foulee, une jambe en l'air.
+var bloque: bool = false
+
+
 func _direction_voulue() -> Vector3:
+	if bloque:
+		return Vector3.ZERO
 	var axe := Input.get_vector("gauche", "droite", "gaz", "frein")
 	if axe.length_squared() < 0.01:
 		return Vector3.ZERO

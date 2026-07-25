@@ -11,6 +11,11 @@ extends Node3D
 @export var geometrie_ext: PackedScene
 @export var geometrie_int: PackedScene
 
+## L'habitant, pose sur le repere "Habitant" de l'interieur. Sa cle renvoie
+## a donnees/dialogues.json. Laisser vide pour une maison inoccupee.
+@export var habitant_geometrie: PackedScene
+@export var habitant_cle: String = ""
+
 ## Deplacement applique a l'interieur, en local. Doit etre assez grand pour
 ## sortir completement de la ville, et different d'une maison a l'autre.
 @export var decalage_interieur: Vector3 = Vector3(-600.0, 0.0, 600.0)
@@ -32,6 +37,7 @@ var _seuil: Node3D
 var _sortie: Node3D
 var _habitant: Node3D
 var _racine_int: Node3D
+var _pnj: Pnj
 
 
 func _ready() -> void:
@@ -81,6 +87,8 @@ func _poser_interieur() -> void:
 	if _sortie == null:
 		push_error("maison %s : repere 'Sortie' absent du .glb" % nom_affiche)
 
+	_poser_habitant()
+
 	var lampe := OmniLight3D.new()
 	lampe.name = "Plafonnier"
 	lampe.position = Vector3(0.0, 2.35, 0.0)
@@ -89,6 +97,23 @@ func _poser_interieur() -> void:
 	lampe.omni_range = 16.0
 	lampe.omni_attenuation = 1.2
 	_racine_int.add_child(lampe)
+
+
+func _poser_habitant() -> void:
+	if habitant_geometrie == null or habitant_cle == "":
+		return
+	_pnj = Pnj.new()
+	_pnj.name = "Habitant"
+	_pnj.cle = habitant_cle
+	_pnj.geometrie = habitant_geometrie
+	# Sur le repere, en local : c'est le meme repere que celui rendu par
+	# place_habitant(), mais on n'a pas encore d'ancetre pour le global.
+	_pnj.position = (_habitant.position if _habitant != null
+			else Vector3(0.0, 0.0, -1.5))
+	# Dos au fond de la piece, donc face a la porte : c'est la premiere chose
+	# qu'on voit en entrant, et un PNJ de dos passerait pour un meuble.
+	_pnj.rotation.y = PI
+	_racine_int.add_child(_pnj)
 
 
 # Les .glb ne contiennent que des maillages. On leur fabrique des corps
@@ -115,6 +140,11 @@ func entree() -> Vector3:
 ## Ou se tient le personnage de la maison.
 func place_habitant() -> Vector3:
 	return _habitant.global_position if _habitant != null else _interieur_centre()
+
+
+## L'habitant, ou null si la maison est vide.
+func habitant() -> Pnj:
+	return _pnj
 
 
 func _interieur_centre() -> Vector3:

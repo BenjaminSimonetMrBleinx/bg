@@ -127,3 +127,45 @@ téléportation masquée par un écran noir : quand elle se trompe, elle ne plan
 dépose le joueur dans un mur et personne ne voit rien. Huit suites maintenant.
 
 **Prochain** : V7, les personnages dans les maisons et le dialogue.
+
+---
+
+## V7 — Les habitants et le dialogue
+
+Skyler chez Walter, Jesse chez lui. On leur parle avec la même touche que le reste, et le
+texte ne vit nulle part dans le code : il est dans `game/donnees/dialogues.json`, que
+Guillaume peut réécrire sans ouvrir Godot. Reparler à quelqu'un donne la conversation
+suivante, puis ça recommence — trois par personnage pour l'instant. C'est peu, mais des PNJ
+qui radotent est ce qui fait le plus vite sentir qu'un monde est vide.
+
+**Les personnages sortent du même générateur.** Un visage PS2 est une texture sur une boîte —
+aucune géométrie ne représente un nez à ce budget de triangles. Tout le personnage tient donc
+dans une poignée de traits, et ces traits sont maintenant des paramètres : calvitie, lunettes,
+bouc, couleur de peau, couleur de cheveux. Ajouter un habitant coûte une entrée de
+dictionnaire dans `gen_textures.py`, pas une fonction de plus. Le maillage, lui, ne change
+jamais — ce qui veut dire que l'animation procédurale écrite pour Walter marchera telle
+quelle sur n'importe lequel d'entre eux.
+
+**Jesse se tenait à l'intérieur de son plan de travail**, coupé à la taille. Rien ne plantait,
+rien ne s'affichait en rouge — il fallait aller le voir. Un habitant est un point, un meuble
+est une boîte : la vérification tient en six lignes, elle est maintenant faite à la
+génération et refuse d'exporter une pièce mal fichue.
+
+**Les cheveux de Skyler étaient blond doré et son visage ne se lisait plus.** À trente pixels
+de haut, cette teinte se confond avec la carnation : on ne voyait qu'un bloc uni. Passé en
+blond cendré. À cette résolution le contraste passe avant la justesse de la teinte, et c'est
+une règle qui vaudra pour tous les personnages à venir.
+
+**Le personnage se fige sans qu'on suspende sa physique.** Un simple `set_process(false)`
+pendant le dialogue l'aurait arrêté net, une jambe en l'air. Un drapeau `bloque` coupe les
+commandes, il finit son pas et repose ses pieds normalement.
+
+Un piège de méthode, aussi : ma première lecture des captures concluait « Skyler est de dos ».
+Elle était simplement quatre mètres plus loin que Jesse dans le cadre, donc sa tête faisait
+vingt pixels. J'ai vérifié de quel côté le générateur pose le visage — en interrogeant les UV
+du maillage, pas en relisant le code — avant de toucher à quoi que ce soit. Bien m'en a pris :
+l'orientation était juste, le problème était le contraste.
+
+Neuf suites.
+
+**Prochain** : V8, la roue des outils.

@@ -23,6 +23,9 @@ extends Node
 ## Joue les ambiances. Facultatif : sans lui on entre quand meme, en silence.
 @export var audio: NodePath
 
+## Deroule les conversations. Facultatif : sans lui les habitants sont muets.
+@export var dialogue: NodePath
+
 enum Etat { A_PIED, AU_VOLANT, DEDANS }
 
 var _etat: int = Etat.A_PIED
@@ -32,6 +35,7 @@ var _c: Camera3D
 var _invite: Label
 var _fondu: ColorRect
 var _audio: Audio
+var _dialogue: Dialogue
 var _maisons: Array[Maison] = []
 
 ## La maison dans laquelle on se trouve. Nulle des qu'on est dehors.
@@ -57,11 +61,17 @@ func _ready() -> void:
 
 	_fondu = get_node_or_null(fondu) as ColorRect
 	_audio = get_node_or_null(audio) as Audio
+	_dialogue = get_node_or_null(dialogue) as Dialogue
+	if _dialogue != null:
+		_dialogue.termine.connect(func() -> void: _j.bloque = false)
 	var racine := get_node_or_null(maisons)
 	if racine != null:
 		for n in racine.get_children():
 			if n is Maison:
 				_maisons.append(n as Maison)
+		# Les habitants sont crees par la maison, apres son _ready. On leur
+		# donne le joueur a surveiller une fois la scene complete.
+		call_deferred("_presenter_le_joueur")
 
 	_v.quitter_le_volant()
 	_c.suivre(_j)
@@ -82,14 +92,56 @@ func _process(_delta: float) -> void:
 				_descendre()
 
 		Etat.DEDANS:
-			var vers_sortie := _j.global_position.distance_to(_dedans.entree())
-			var sortable := vers_sortie <= reglages.portee_porte
-			_afficher("F   Sortir" if sortable else "")
-			if sortable and Input.is_action_just_pressed("interagir"):
-				_sortir()
+			_dans_la_maison()
 
 		_:
 			_a_pied()
+
+
+func _presenter_le_joueur() -> void:
+	for m in _maisons:
+		var p := m.habitant()
+		if p != null:
+			p.observer(_j)
+
+
+# Une conversation en cours capte la touche avant tout le reste : rien ne
+# serait plus desagreable que de ressortir de la maison en voulant lire la
+# replique suivante.
+func _dans_la_maison() -> void:
+	if _dialogue != null and _dialogue.actif():
+		_afficher("F   Suite")
+		if Input.is_action_just_pressed("interagir"):
+			_dialogue.avancer()
+		return
+
+	var p := _dedans.habitant()
+	if p != null:
+		var d_p := _j.global_position.distance_to(p.global_position)
+		if d_p <= reglages.portee_dialogue:
+			_afficher("F   Parler a %s" % _nom_de(p))
+			if Input.is_action_just_pressed("interagir"):
+				_parler(p)
+			return
+
+	var sortable := _j.global_position.distance_to(_dedans.entree()) \
+			<= reglages.portee_porte
+	_afficher("F   Sortir" if sortable else "")
+	if sortable and Input.is_action_just_pressed("interagir"):
+		_sortir()
+
+
+func _parler(p: Pnj) -> void:
+	if _dialogue == null:
+		return
+	if _dialogue.demarrer(p.cle):
+		# Immobilise sans suspendre la physique : il finit son pas au lieu de
+		# se figer une jambe en l'air.
+		_j.bloque = true
+
+
+func _nom_de(p: Pnj) -> String:
+	return _dialogue.nom_de(p.cle) if _dialogue != null else p.cle.capitalize()
 
 
 # A pied, deux interactions se disputent la meme touche. On tranche par la

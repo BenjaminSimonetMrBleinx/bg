@@ -51,6 +51,15 @@ PROFONDEUR_TORSE = 0.23
 ECART_EPAULE = 0.21
 ECART_HANCHE = 0.11
 
+# Un personnage, c'est une taille et un jeu de textures. Le maillage, lui, ne
+# change pas : c'est ce qui permet a joueur.gd d'animer n'importe lequel
+# d'entre eux sans savoir de qui il s'agit.
+PERSONNAGES = {
+    "walter": {"taille": 1.00},
+    "skyler": {"taille": 0.97},
+    "jesse": {"taille": 0.96},
+}
+
 
 def arguments() -> argparse.Namespace:
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
@@ -161,7 +170,7 @@ def construire(mats: dict) -> tuple:
                        bassin, (0, 0, 0.06))
     total += n
 
-    _, n = segment("Tete", mats["tete_walter"],
+    _, n = segment("Tete", mats["tete"],
                    (0.20, 0.21, 0.24), (0, 0, 0.13),
                    torse, (0, 0, Y_TETE - Y_HANCHE - 0.06), visage=True)
     total += n
@@ -213,29 +222,40 @@ def main() -> None:
         sortie = racine_disque / sortie
     sortie.mkdir(parents=True, exist_ok=True)
 
-    bpy.ops.wm.read_factory_settings(use_empty=True)
+    qui = list(PERSONNAGES) if a.nom == "tous" else [a.nom]
+    for nom in qui:
+        if nom not in PERSONNAGES:
+            raise SystemExit("personnage inconnu : %s" % nom)
+        spec = PERSONNAGES[nom]
 
-    noms = ["tete_walter", "peau", "chemise", "pantalon", "chaussure"]
-    mats = {n: materiau(n, textures) for n in noms}
+        bpy.ops.wm.read_factory_settings(use_empty=True)
 
-    racine, faces = construire(mats)
+        # Les cles sont generiques, les fichiers sont propres au personnage :
+        # construire() n'a donc pas a savoir de qui il fabrique le corps.
+        mats = {
+            "tete": materiau(f"tete_{nom}", textures),
+            "peau": materiau(f"peau_{nom}", textures),
+            "chemise": materiau(f"haut_{nom}", textures),
+            "pantalon": materiau(f"bas_{nom}", textures),
+            "chaussure": materiau("chaussure", textures),
+        }
 
-    # Le personnage regarde vers +Y dans Blender, que l'exportateur envoie sur
-    # -Z : la convention Godot, et celle du reste du projet.
-    fichier = sortie / f"{a.nom}.glb"
-    bpy.ops.export_scene.gltf(
-        filepath=str(fichier),
-        export_format="GLB",
-        export_apply=True,
-        export_yup=True,
-        export_cameras=False,
-        export_lights=False,
-    )
+        racine, faces = construire(mats)
+        racine.scale = (spec["taille"],) * 3
 
-    print("")
-    print(f"personnage {a.nom}, {faces} faces, {HAUTEUR} m")
-    print(f"segments   {len([o for o in bpy.data.objects if o.type == 'MESH'])}")
-    print(f"sortie     {fichier}")
+        # Le personnage regarde vers +Y dans Blender, que l'exportateur envoie
+        # sur -Z : la convention Godot, et celle du reste du projet.
+        fichier = sortie / f"{nom}.glb"
+        bpy.ops.export_scene.gltf(
+            filepath=str(fichier),
+            export_format="GLB",
+            export_apply=True,
+            export_yup=True,
+            export_cameras=False,
+            export_lights=False,
+        )
+        print("personnage %-8s %3d faces  %.2f m  -> %s"
+              % (nom, faces, HAUTEUR * spec["taille"], fichier.name))
 
 
 if __name__ == "__main__":

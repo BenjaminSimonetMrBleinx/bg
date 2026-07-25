@@ -221,100 +221,176 @@ def feu(couleur):
     return fn
 
 
-def tete_walter(u: float, v: float):
-    """Atlas de tete. Moitie gauche (u < 0.5) : le visage, plaque sur la face
-    avant du cube. Moitie droite : crane et nuque, uni.
+# Un visage PS2 est une texture sur une boite — aucune geometrie ne represente
+# un nez ou un oeil a ce budget de triangles. Tout le personnage tient donc
+# dans ces quelques traits, et c'est pour ca qu'ils sont parametres : ajouter
+# un habitant coute une entree de dictionnaire, pas une fonction de plus.
+VISAGES = {
+    "walter": {
+        "peau": (194, 156, 130), "poil": (58, 49, 45),
+        "cheveux": "calvitie", "lunettes": True,
+        "moustache": True, "bouc": True,
+    },
+    "skyler": {
+        # Blond CENDRE, pas dore. Une premiere version l'avait a (196,166,102)
+        # : a trente pixels de haut, ces cheveux-la se confondaient avec la
+        # carnation et son visage ne se lisait plus du tout. A cette
+        # resolution, le contraste passe avant la justesse de la teinte.
+        "peau": (208, 172, 148), "poil": (146, 112, 68),
+        "cheveux": "longs", "lunettes": False,
+        "moustache": False, "bouc": False,
+    },
+    "jesse": {
+        "peau": (198, 160, 132), "poil": (46, 40, 38),
+        "cheveux": "courts", "lunettes": False,
+        "moustache": False, "bouc": False, "barbe_naissante": True,
+    },
+}
 
-    Un visage PS2 est une texture sur une boite — aucune geometrie ne
-    represente un nez ou un oeil a ce budget de triangles.
+
+def visage(traits: dict):
+    """Fabrique l'atlas de tete d'un personnage.
+
+    Moitie gauche de l'atlas (u < 0.5) : le visage, plaque sur la face avant
+    du cube. Moitie droite : crane et nuque.
     """
-    n = hache(int(u * 200), int(v * 200))
-    peau = (194 + n * 14, 156 + n * 12, 130 + n * 10)
-    poil = (58 + n * 13, 49 + n * 11, 45 + n * 10)
+    base_peau = traits["peau"]
+    base_poil = traits["poil"]
+    coupe = traits.get("cheveux", "courts")
 
-    if u >= 0.5:                                  # arriere et cotes du crane
-        return peau
+    def rendu(u: float, v: float):
+        n = hache(int(u * 200), int(v * 200))
+        peau = (base_peau[0] + n * 14, base_peau[1] + n * 12, base_peau[2] + n * 10)
+        poil = (base_poil[0] + n * 13, base_poil[1] + n * 11, base_poil[2] + n * 10)
 
-    # v croit vers le BAS dans un PNG : on le retourne pour raisonner en
-    # hauteur de visage, 1 = sommet du crane, 0 = menton. Une premiere
-    # version l'oubliait et Walter portait son bouc sur le front.
-    fu, fv = u * 2.0, 1.0 - v
+        # v croit vers le BAS dans un PNG : on le retourne pour raisonner en
+        # hauteur de visage, 1 = sommet du crane, 0 = menton. Une premiere
+        # version l'oubliait et Walter portait son bouc sur le front.
+        fu, fv = (u - 0.5) * 2.0 if u >= 0.5 else u * 2.0, 1.0 - v
 
-    # calvitie : sommet degage, couronne de cheveux courts sur les cotes
-    if fv > 0.845:
-        return peau
-    if 0.60 < fv < 0.865 and (fu < 0.13 or fu > 0.87):
-        return poil
+        if u >= 0.5:                              # arriere et cotes du crane
+            if coupe == "calvitie":
+                return peau
+            if coupe == "longs":
+                return poil if fv > 0.25 else peau
+            return poil if fv > 0.70 else peau
 
-    # sourcils
-    if 0.645 < fv < 0.685 and (0.20 < fu < 0.42 or 0.58 < fu < 0.80):
-        return poil
+        # implantation des cheveux, vue de face
+        if coupe == "calvitie":
+            if fv <= 0.845 and 0.60 < fv < 0.865 and (fu < 0.13 or fu > 0.87):
+                return poil
+        elif coupe == "longs":
+            # frange haute, et deux masses qui descendent le long du visage
+            if fv > 0.815:
+                return poil
+            if fv > 0.25 and (fu < 0.145 or fu > 0.855):
+                return poil
+        else:
+            if fv > 0.795:
+                return poil
+            if fv > 0.62 and (fu < 0.12 or fu > 0.88):
+                return poil
 
-    oeil_g = 0.235 < fu < 0.405
-    oeil_d = 0.595 < fu < 0.765
-
-    # lunettes : monture fine, dessinee avant les yeux pour l'encadrer
-    monture = 0.505 < fv < 0.625
-    if monture and (0.220 < fu < 0.420 or 0.580 < fu < 0.780):
-        bord_v = fv < 0.525 or fv > 0.605
-        bord_u = (0.220 < fu < 0.238 or 0.402 < fu < 0.420
-                  or 0.580 < fu < 0.598 or 0.762 < fu < 0.780)
-        if bord_v or bord_u:
-            return (66, 62, 58)
-    if 0.556 < fv < 0.572 and 0.420 <= fu <= 0.580:
-        return (66, 62, 58)                       # pont de lunettes
-    if 0.556 < fv < 0.572 and (fu < 0.13 or fu > 0.87):
-        return (66, 62, 58)                       # branches
-
-    # yeux
-    if 0.530 < fv < 0.600 and (oeil_g or oeil_d):
-        centre = 0.320 if oeil_g else 0.680
-        if abs(fu - centre) < 0.030 and 0.545 < fv < 0.585:
-            return (34, 36, 42)                   # pupille
-        return (222, 220, 214)                    # sclere
-
-    # nez : une simple ombre laterale, aucune geometrie a ce budget
-    if 0.36 < fv < 0.50 and 0.455 < fu < 0.475:
-        return (peau[0] * 0.86, peau[1] * 0.86, peau[2] * 0.86)
-
-    # moustache
-    if 0.300 < fv < 0.355 and 0.345 < fu < 0.655:
-        return poil
-
-    # bouc : se resserre vers le menton
-    if fv < 0.300 and 0.325 < fu < 0.675:
-        marge = abs(fu - 0.5) / 0.175
-        if fv > 0.075 + marge * 0.085:
+        # sourcils
+        if 0.645 < fv < 0.685 and (0.20 < fu < 0.42 or 0.58 < fu < 0.80):
             return poil
 
-    return peau
+        oeil_g = 0.235 < fu < 0.405
+        oeil_d = 0.595 < fu < 0.765
+
+        if traits.get("lunettes"):
+            # monture fine, dessinee avant les yeux pour les encadrer
+            monture = 0.505 < fv < 0.625
+            if monture and (0.220 < fu < 0.420 or 0.580 < fu < 0.780):
+                bord_v = fv < 0.525 or fv > 0.605
+                bord_u = (0.220 < fu < 0.238 or 0.402 < fu < 0.420
+                          or 0.580 < fu < 0.598 or 0.762 < fu < 0.780)
+                if bord_v or bord_u:
+                    return (66, 62, 58)
+            if 0.556 < fv < 0.572 and 0.420 <= fu <= 0.580:
+                return (66, 62, 58)               # pont
+            if 0.556 < fv < 0.572 and (fu < 0.13 or fu > 0.87):
+                return (66, 62, 58)               # branches
+
+        # yeux
+        if 0.530 < fv < 0.600 and (oeil_g or oeil_d):
+            centre = 0.320 if oeil_g else 0.680
+            if abs(fu - centre) < 0.030 and 0.545 < fv < 0.585:
+                return (34, 36, 42)               # pupille
+            return (222, 220, 214)                # sclere
+
+        # nez : une simple ombre laterale, aucune geometrie a ce budget
+        if 0.36 < fv < 0.50 and 0.455 < fu < 0.475:
+            return (peau[0] * 0.86, peau[1] * 0.86, peau[2] * 0.86)
+
+        if traits.get("moustache") and 0.300 < fv < 0.355 and 0.345 < fu < 0.655:
+            return poil
+
+        # bouc : se resserre vers le menton
+        if traits.get("bouc") and fv < 0.300 and 0.325 < fu < 0.675:
+            marge = abs(fu - 0.5) / 0.175
+            if fv > 0.075 + marge * 0.085:
+                return poil
+
+        # barbe de trois jours : on assombrit, on ne remplace pas
+        if traits.get("barbe_naissante") and fv < 0.36 and 0.26 < fu < 0.74:
+            m = 0.86 + n * 0.06
+            return (peau[0] * m, peau[1] * m, peau[2] * m)
+
+        return peau
+
+    return rendu
 
 
-def peau(u: float, v: float):
+def carnation(base):
     """Mains, avant-bras : carnation unie et bruitee."""
-    n = hache(int(u * 200), int(v * 200))
-    return (196 + n * 14, 156 + n * 12, 128 + n * 10)
+    def rendu(u: float, v: float):
+        n = hache(int(u * 200), int(v * 200))
+        return (base[0] + n * 14, base[1] + n * 12, base[2] + n * 10)
+    return rendu
 
 
-def chemise(u: float, v: float):
-    """Chemise vert sourd. Boutonniere verticale et col plus clair."""
-    n = hache(int(u * 180), int(v * 180))
-    base = (92, 108, 88)
-    if v > 0.90:                                   # col
-        g = 1.16 + n * 0.12
-    elif abs(u - 0.5) < 0.022:                     # boutonniere
-        g = 0.78 + n * 0.10
-    else:
-        g = 0.92 + n * 0.16
-    return (base[0] * g, base[1] * g, base[2] * g)
+def haut(base, capuche: bool = False):
+    """Chemise ou sweat. Boutonniere verticale, col plus clair."""
+    def rendu(u: float, v: float):
+        n = hache(int(u * 180), int(v * 180))
+        if v > 0.90:                              # col, ou capuche
+            g = 1.32 + n * 0.12 if capuche else 1.16 + n * 0.12
+        elif abs(u - 0.5) < 0.022 and not capuche:
+            g = 0.78 + n * 0.10                   # boutonniere
+        elif capuche and 0.42 < v < 0.50 and abs(u - 0.5) < 0.20:
+            g = 0.72 + n * 0.10                   # poche ventrale
+        else:
+            g = 0.92 + n * 0.16
+        return (base[0] * g, base[1] * g, base[2] * g)
+    return rendu
 
 
-def pantalon(u: float, v: float):
-    """Pantalon kaki, legerement plus sombre en bas de jambe."""
-    n = hache(int(u * 170), int(v * 170))
-    base = (118, 106, 84)
-    g = 0.88 + n * 0.16 - max(0.0, 0.25 - v) * 0.5
-    return (base[0] * g, base[1] * g, base[2] * g)
+def bas(base):
+    """Pantalon, legerement plus sombre en bas de jambe."""
+    def rendu(u: float, v: float):
+        n = hache(int(u * 170), int(v * 170))
+        g = 0.88 + n * 0.16 - max(0.0, 0.25 - v) * 0.5
+        return (base[0] * g, base[1] * g, base[2] * g)
+    return rendu
+
+
+# Tenues, dans le meme esprit que les visages.
+TENUES = {
+    "walter": {"peau": (196, 156, 128), "haut": (92, 108, 88),
+               "capuche": False, "bas": (118, 106, 84)},
+    "skyler": {"peau": (210, 174, 150), "haut": (128, 156, 186),
+               "capuche": False, "bas": (64, 66, 76)},
+    "jesse": {"peau": (200, 162, 132), "haut": (132, 54, 48),
+              "capuche": True, "bas": (58, 64, 82)},
+}
+
+
+# Conservees sous leur ancien nom : le reste du projet les appelle ainsi.
+tete_walter = visage(VISAGES["walter"])
+peau = carnation(TENUES["walter"]["peau"])
+chemise = haut(TENUES["walter"]["haut"])
+pantalon = bas(TENUES["walter"]["bas"])
 
 
 def chaussure(u: float, v: float):
@@ -481,14 +557,25 @@ def main() -> None:
     faits += ["vitre.png", "pneu.png", "jante.png", "feu_avant.png", "feu_arriere.png"]
 
     # --- personnages ---
-    ecrire_png(dossier / "tete_walter.png", t, t, rendre(t, t, tete_walter))
+    # Un jeu de quatre textures par personnage, sous un suffixe commun : le
+    # generateur de maillage n'a alors qu'un nom a connaitre.
+    for qui, traits in VISAGES.items():
+        tenue = TENUES[qui]
+        ecrire_png(dossier / f"tete_{qui}.png", t, t, rendre(t, t, visage(traits)))
+        ecrire_png(dossier / f"peau_{qui}.png", t // 2, t // 2,
+                   rendre(t // 2, t // 2, carnation(tenue["peau"])))
+        ecrire_png(dossier / f"haut_{qui}.png", t, t,
+                   rendre(t, t, haut(tenue["haut"], tenue["capuche"])))
+        ecrire_png(dossier / f"bas_{qui}.png", t, t, rendre(t, t, bas(tenue["bas"])))
+        faits.append(f"tete/peau/haut/bas_{qui}.png")
+
+    # Anciens noms, encore references par les .glb deja exportes.
     ecrire_png(dossier / "peau.png", t // 2, t // 2, rendre(t // 2, t // 2, peau))
     ecrire_png(dossier / "chemise.png", t, t, rendre(t, t, chemise))
     ecrire_png(dossier / "pantalon.png", t, t, rendre(t, t, pantalon))
     ecrire_png(dossier / "chaussure.png", t // 2, t // 2,
                rendre(t // 2, t // 2, chaussure))
-    faits += ["tete_walter.png", "peau.png", "chemise.png", "pantalon.png",
-              "chaussure.png"]
+    faits += ["peau.png", "chemise.png", "pantalon.png", "chaussure.png"]
 
     # --- maisons ---
     for nom, fn in [("crepi", crepi), ("bardage", bardage), ("toit", toit),

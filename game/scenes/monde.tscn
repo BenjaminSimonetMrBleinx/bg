@@ -11,7 +11,7 @@
 ; Le vehicule demarre sur la chaussee verticale du couloir 0, qui court le
 ; long de -Z : il est donc deja dans le bon sens.
 
-[gd_scene load_steps=18 format=3 uid="uid://bgmonde0v0001"]
+[gd_scene load_steps=22 format=3 uid="uid://bgmonde0v0001"]
 
 [ext_resource type="Script" path="res://rendu/rendu_ps2.gd" id="1_rendu"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
@@ -28,12 +28,23 @@
 [ext_resource type="PackedScene" path="res://assets/maisons/walter_int.glb" id="13_walter_int"]
 [ext_resource type="PackedScene" path="res://assets/maisons/jesse_ext.glb" id="14_jesse_ext"]
 [ext_resource type="PackedScene" path="res://assets/maisons/jesse_int.glb" id="15_jesse_int"]
+[ext_resource type="Script" path="res://systemes/dialogue.gd" id="16_dialogue"]
+[ext_resource type="PackedScene" path="res://assets/personnages/skyler.glb" id="17_skyler"]
+[ext_resource type="PackedScene" path="res://assets/personnages/jesse.glb" id="18_jesse"]
 
 [sub_resource type="ViewportTexture" id="tex_ecran"]
 viewport_path = NodePath("Rendu")
 
 [sub_resource type="Environment" id="env"]
 background_mode = 1
+
+[sub_resource type="StyleBoxFlat" id="fond_dialogue"]
+bg_color = Color(0.055, 0.063, 0.09, 0.867)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.322, 0.298, 0.243, 1)
 
 [node name="Monde" type="Node"]
 script = ExtResource("1_rendu")
@@ -70,6 +81,8 @@ nom_affiche = "Walter"
 geometrie_ext = ExtResource("12_walter_ext")
 geometrie_int = ExtResource("13_walter_int")
 decalage_interieur = Vector3(-600, 0, 600)
+habitant_geometrie = ExtResource("17_skyler")
+habitant_cle = "skyler"
 
 [node name="Jesse" type="Node3D" parent="Rendu/Scene3D/Maisons"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 86, 0, -129)
@@ -78,6 +91,8 @@ nom_affiche = "Jesse"
 geometrie_ext = ExtResource("14_jesse_ext")
 geometrie_int = ExtResource("15_jesse_int")
 decalage_interieur = Vector3(-600, 0, 900)
+habitant_geometrie = ExtResource("18_jesse")
+habitant_cle = "jesse"
 lumiere_couleur = Color(1, 0.831, 0.639, 1)
 lumiere_energie = 2.6
 
@@ -117,6 +132,41 @@ theme_override_font_sizes/font_size = 17
 horizontal_alignment = 1
 vertical_alignment = 1
 
+; Le cadre de dialogue, en bas de l'ecran comme sur PS2. Il est cache tant
+; qu'aucune conversation ne tourne.
+[node name="CadreDialogue" type="PanelContainer" parent="Rendu/Interface"]
+visible = false
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -104.0
+offset_right = -24.0
+offset_bottom = -14.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("fond_dialogue")
+
+[node name="Marge" type="MarginContainer" parent="Rendu/Interface/CadreDialogue"]
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 7
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 7
+
+[node name="Colonne" type="VBoxContainer" parent="Rendu/Interface/CadreDialogue/Marge"]
+theme_override_constants/separation = 3
+
+[node name="Qui" type="Label" parent="Rendu/Interface/CadreDialogue/Marge/Colonne"]
+theme_override_colors/font_color = Color(0.949, 0.776, 0.42, 1)
+theme_override_font_sizes/font_size = 15
+
+[node name="Texte" type="Label" parent="Rendu/Interface/CadreDialogue/Marge/Colonne"]
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.949, 0.941, 0.914, 1)
+theme_override_font_sizes/font_size = 15
+autowrap_mode = 3
+
 ; Le fondu de porte. Declare APRES l'invite, donc dessine par-dessus : pendant
 ; le noir, plus rien ne doit rester lisible a l'ecran.
 [node name="Fondu" type="ColorRect" parent="Rendu/Interface"]
@@ -133,6 +183,12 @@ script = ExtResource("9_audio")
 reglages = ExtResource("2_reglages")
 ambiance_exterieure = ExtResource("10_ambiance")
 
+[node name="Dialogue" type="Node" parent="."]
+script = ExtResource("16_dialogue")
+cadre = NodePath("../Rendu/Interface/CadreDialogue")
+etiquette_nom = NodePath("../Rendu/Interface/CadreDialogue/Marge/Colonne/Qui")
+etiquette_texte = NodePath("../Rendu/Interface/CadreDialogue/Marge/Colonne/Texte")
+
 [node name="Controleur" type="Node" parent="."]
 script = ExtResource("8_controleur")
 reglages = ExtResource("2_reglages")
@@ -143,6 +199,7 @@ invite = NodePath("../Rendu/Interface/Invite")
 maisons = NodePath("../Rendu/Scene3D/Maisons")
 fondu = NodePath("../Rendu/Interface/Fondu")
 audio = NodePath("../Audio")
+dialogue = NodePath("../Dialogue")
 
 [node name="Affichage" type="CanvasLayer" parent="."]
 layer = -1
