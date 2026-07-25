@@ -26,7 +26,7 @@ aux questions, on fige la direction, on code ensuite.
 | | |
 |---|---|
 | Genre | Monde ouvert type GTA — missions principales + quêtes annexes |
-| Direction artistique | 3D low-poly PS2 : vertex snapping, textures 64 px, brouillard, 320×240 upscalé |
+| Direction artistique | 3D low-poly PS2 : filtrage bilinéaire, perspective corrigée, textures 128 px, éclairage par sommet, brouillard, rendu ~512×448 |
 | Moteur | Godot 4.7 — choix définitif, pas un choix de prototype |
 | Modélisation | Blender 5.2 |
 | Plateforme | Windows, puis Linux |

@@ -9,7 +9,7 @@
 | Sujet | Décision |
 |---|---|
 | Genre | Monde ouvert type GTA — missions principales + quêtes annexes |
-| Direction artistique | 3D low-poly PS2 : vertex snapping, affine texture mapping, textures 64 px, brouillard épais, rendu 320×240 upscalé |
+| Direction artistique | 3D low-poly **PS2**, pas PS1 : filtrage bilinéaire, perspective corrigée, précision sous-pixel, textures 128 px, éclairage par sommet, brouillard épais, rendu ~512×448 |
 | Univers | Breaking Bad, Albuquerque, Nouveau-Mexique |
 | Moteur | **Godot 4.7** — choix définitif |
 | Modélisation | Blender 5.2, pipeline procédural en Python |
