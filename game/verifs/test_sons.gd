@@ -50,6 +50,7 @@ func _process(_d: float) -> bool:
 		return true
 	print("  ok   le groupe '%s' repond" % Audio.GROUPE)
 
+	_le_rangement()
 	_la_banque()
 	_les_lecteurs()
 	_les_pas()
@@ -63,6 +64,32 @@ func _process(_d: float) -> bool:
 		printerr("TEST SONS ECHOUE : %d probleme(s)" % _erreurs.size())
 		quit(1)
 	return true
+
+
+# Rien ne doit trainer a la racine de assets/sons/.
+#
+# Un fichier pose la n'est branche sur rien, et il est le plus souvent le
+# DOUBLON d'un fichier deja range — donc une version perimee de celui qui
+# sert. C'est arrive deux fois : une livraison faite avec une version
+# anterieure du script de rangement, puis un « git add -A » en plein rebase
+# qui a ressuscite les vingt-huit originaux d'avant leur conversion en PCM.
+#
+# Les deux fois, le jeu marchait parfaitement. C'est bien le probleme.
+func _le_rangement() -> void:
+	print("\n--- rien ne traine a la racine de assets/sons/ ---")
+	var vrac: Array[String] = []
+	for f in DirAccess.get_files_at("res://assets/sons"):
+		# .import et .remap sont poses par Godot a cote des sources ; ici il
+		# n'y a pas de source, donc leur seule presence est deja le symptome.
+		if f.get_extension() in ["wav", "ogg", "mp3", "import"]:
+			vrac.append(f)
+	if vrac.is_empty():
+		print("  ok   la racine ne contient que le LISEZ-MOI")
+	else:
+		_verifier(false, "%d fichier(s) a la racine : %s"
+				% [vrac.size(), ", ".join(vrac)])
+		printerr("        Ils doivent aller dans vehicule/, pas/, maison/, "
+				+ "interface/, telephone/ ou ambiance/.")
 
 
 # Chaque nom cite dans le code doit exister dans la banque. C'est la faute la

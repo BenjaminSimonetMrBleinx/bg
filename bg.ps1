@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Lanceur du projet BG. Evite d avoir a retenir les chemins.
 
@@ -49,7 +49,7 @@ param(
     [switch]$Modifies,
 
     # Pour 'voix' : refabrique meme ce qui existe deja. A utiliser apres avoir
-    # touche a un profil dans donnees\voix.json — le nom de fichier depend du
+    # touche a un profil dans donnees\voix.json - le nom de fichier depend du
     # TEXTE, pas du timbre, donc rien ne se regenere tout seul.
     [switch]$Refaire,
 
@@ -64,7 +64,7 @@ param(
     [switch]$Integrer,
 
     # Pour 'voix' : decoupe une longue prise en segments parles. C est le cas
-    # normal — on n arrete pas le micro entre chaque phrase.
+    # normal - on n arrete pas le micro entre chaque phrase.
     [string]$Decouper = '',
     [double]$Seuil = -40.0,
     [double]$Pause = 0.6,
@@ -298,7 +298,7 @@ switch ($Commande) {
     'voix' {
         # La synthese est fournie avec Windows : rien a installer, rien en
         # ligne. Le script est en PowerShell parce que l API vocale est une
-        # API .NET — Python devrait passer par un pont pour y acceder.
+        # API .NET - Python devrait passer par un pont pour y acceder.
         & (Join-Path $Racine 'outils\gen_voix.ps1') -Racine $Racine `
             -Refaire:$Refaire -Voix:$Voix -Script:$Script -Integrer:$Integrer `
             -Decouper $Decouper -Seuil $Seuil -Pause $Pause `
@@ -523,7 +523,7 @@ switch ($Commande) {
             }
         }
 
-        Write-Host "`n$($choisies.Count) suite(s) — $raison" -ForegroundColor Gray
+        Write-Host "`n$($choisies.Count) suite(s) - $raison" -ForegroundColor Gray
         $echecs = @()
         foreach ($s in $choisies) {
             Write-Host "`n--- $($s.nom) ---" -ForegroundColor Cyan

@@ -52,7 +52,7 @@
   "interface/menu_item_hold.wav  — nappe de maintien pendant que la roue est",
   "  ouverte. Demande une boucle qui demarre et s'arrete avec la roue, pas un",
   "  bruitage ponctuel : a faire quand on saura si ca alourdit le geste.",
-  "interface/stp_time.wav  — le ralenti a l'ouverture de la roue. Meme sujet.",
+  "interface/stop_time.wav  — le ralenti a l'ouverture de la roue. Meme sujet.",
   "telephone/phone_ring.wav  — attend la fonctionnalite telephone.",
   "vehicule/choc_leger_01..04.wav et choc_fort_01..04.wav  — RIEN ne detecte",
   "  les collisions aujourd'hui. C'est le seul lot qui demande un mecanisme neuf."

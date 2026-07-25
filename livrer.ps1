@@ -313,6 +313,49 @@ foreach ($f in $fichiers) {
     }
 }
 
+# Un script casse ne se voit PAS sur la machine qui l envoie.
+#
+# PowerShell 7 lit un .ps1 en UTF-8 quoi qu il arrive. PowerShell 5.1, celui
+# livre avec Windows et celui que lance JOUER.bat, le lit en CP-1252 s il n y a
+# pas de marque d octets au debut. Un tiret cadratin devient alors trois
+# caracteres dont un guillemet, qui ferme la chaine ou il se trouve et casse la
+# totalite du fichier a partir de la.
+#
+# C est arrive : bg.ps1 est parti parfaitement fonctionnel d ici, et repondait
+# a l arrivee par « Le terminateur " est manquant » sur une ligne qui n avait
+# jamais ete touchee. On verifie donc AVANT d envoyer, avec le meme analyseur
+# que celui qui echouera.
+$scripts = @($fichiers | Where-Object { $_.Fichier -match '\.ps1$' -and (Test-Path $_.Fichier) })
+if ($scripts.Count -gt 0) {
+    $casses = @()
+    foreach ($s in $scripts) {
+        $octets = [System.IO.File]::ReadAllBytes((Resolve-Path $s.Fichier).Path)
+        $bom = ($octets.Length -ge 3 -and $octets[0] -eq 0xEF -and $octets[1] -eq 0xBB)
+        $accents = @($octets | Where-Object { $_ -gt 127 }).Count -gt ($(if ($bom) { 3 } else { 0 }))
+        if ($accents -and -not $bom) {
+            $casses += "$($s.Fichier) : caracteres accentues SANS marque d octets"
+        }
+        $err = $null; $jetons = $null
+        [void][System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path $s.Fichier).Path, [ref]$jetons, [ref]$err)
+        if ($err.Count -gt 0) {
+            $casses += "$($s.Fichier) : $($err[0].Message)"
+        }
+    }
+    if ($casses.Count -gt 0) {
+        Souci "Un script ne s executerait pas chez l autre :"
+        $casses | ForEach-Object { Info "  $_" }
+        Stop-Net @"
+Rien n a ete envoye.
+
+Le fichier fonctionne peut-etre ici et pas ailleurs : c est le symptome d un
+encodage sans marque d octets. Reenregistre-le en UTF-8 AVEC BOM, ou retire
+les caracteres accentues, puis relance.
+"@
+    }
+    Bien "$($scripts.Count) script(s) verifie(s)"
+}
+
 if ($Quoi) {
     Write-Host "`n  Mode apercu : rien n a ete envoye.`n" -ForegroundColor Cyan
     exit 0
