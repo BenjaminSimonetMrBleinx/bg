@@ -179,8 +179,12 @@ automatiquement.
 
 ## Nommage, dépôt, livraison
 
+Les sons vont **directement là où le moteur les lit**. Contrairement aux
+`.blend`, un fichier audio ne subit aucune transformation avant d'entrer dans
+le jeu : une seconde copie n'apporterait rien et divergerait.
+
 ```
-assets/sons/
+game/assets/sons/
   vehicule/     moteur_*, portiere_*, pneus_*, choc_*, klaxon
   personnage/   pas_*, entrer_vehicule, sortir_vehicule
   maison/       porte_maison_*, amb_interieur_*, transition_*
@@ -188,6 +192,9 @@ assets/sons/
   interface/    roue_*, dialogue_*, equiper_*
   musique/      mus_*
 ```
+
+Godot compresse à l'import, donc déposer un WAV non compressé ne gonfle pas
+le jeu exporté — seule la version compressée y entre.
 
 - Minuscules, underscores, **pas d'accents ni d'espaces** dans les noms de fichiers.
 - Variantes numérotées sur deux chiffres : `pas_asphalte_01.wav`.

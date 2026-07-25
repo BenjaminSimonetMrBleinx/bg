@@ -198,7 +198,7 @@ dans l'historique même après suppression.
 ## 6. Où mettre quoi
 
 ```
-assets/sons/        tes WAV, par categorie
+game/assets/sons/   tes WAV, par categorie
 assets/personnages/ tes .blend de personnages
 assets/vehicules/   tes .blend de vehicules
 assets/ville/       tes .blend de decor

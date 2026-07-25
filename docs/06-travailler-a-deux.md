@@ -20,7 +20,7 @@ d'organisation, c'est la seule façon de ne pas perdre de travail.
 
 | | Territoire | Tranche |
 |---|---|---|
-| **Guillaume** | `assets/` — sons, `.blend` sources, textures retouchées | le **son** et le **look** |
+| **Guillaume** | `game/assets/sons/` pour l'audio, `assets/` pour les `.blend` sources | le **son** et le **look** |
 | **Benjamin** | `game/systemes/reglages.tres`, le périmètre, les priorités | l'**architecture** et ce qu'on fait |
 | **Claude** | `game/`, `outils/`, `docs/` | rien. Il propose, vous décidez |
 

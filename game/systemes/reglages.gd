@@ -141,6 +141,22 @@ extends Resource
 
 @export var phare_couleur: Color = Color(1.0, 0.949, 0.855)
 
+# ------------------------------------------------------------------- audio
+@export_group("Audio")
+
+## Volumes en decibels, pas en pourcentage : l'oreille percoit le son de
+## facon logarithmique. -6 dB, c'est la moitie de la puissance ressentie ;
+## -80 dB, c'est le silence.
+@export_range(-40.0, 6.0, 0.5) var volume_maitre: float = 0.0
+@export_range(-40.0, 6.0, 0.5) var volume_ambiance: float = -8.0
+@export_range(-40.0, 6.0, 0.5) var volume_effets: float = 0.0
+@export_range(-40.0, 6.0, 0.5) var volume_musique: float = -6.0
+@export_range(-40.0, 6.0, 0.5) var volume_interface: float = -3.0
+
+## Duree du fondu au lancement de l'ambiance, en secondes. Une nappe qui
+## demarre a plein volume s'entend comme un declic.
+@export_range(0.0, 10.0, 0.1) var ambiance_fondu: float = 2.5
+
 # ------------------------------------------------------------------ joueur
 @export_group("Joueur a pied")
 

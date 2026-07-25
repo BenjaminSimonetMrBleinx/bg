@@ -11,7 +11,7 @@
 ; Le vehicule demarre sur la chaussee verticale du couloir 0, qui court le
 ; long de -Z : il est donc deja dans le bon sens.
 
-[gd_scene load_steps=11 format=3 uid="uid://bgmonde0v0001"]
+[gd_scene load_steps=13 format=3 uid="uid://bgmonde0v0001"]
 
 [ext_resource type="Script" path="res://rendu/rendu_ps2.gd" id="1_rendu"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
@@ -21,6 +21,8 @@
 [ext_resource type="Script" path="res://systemes/camera_poursuite.gd" id="6_camera"]
 [ext_resource type="PackedScene" path="res://scenes/joueur.tscn" id="7_joueur"]
 [ext_resource type="Script" path="res://systemes/controleur.gd" id="8_controleur"]
+[ext_resource type="Script" path="res://systemes/audio.gd" id="9_audio"]
+[ext_resource type="AudioStream" path="res://assets/sons/ambiance/amb_rue_jour.ogg" id="10_ambiance"]
 
 [sub_resource type="ViewportTexture" id="tex_ecran"]
 viewport_path = NodePath("Rendu")
@@ -81,6 +83,11 @@ theme_override_constants/outline_size = 5
 theme_override_font_sizes/font_size = 17
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="Audio" type="Node" parent="."]
+script = ExtResource("9_audio")
+reglages = ExtResource("2_reglages")
+ambiance_exterieure = ExtResource("10_ambiance")
 
 [node name="Controleur" type="Node" parent="."]
 script = ExtResource("8_controleur")
