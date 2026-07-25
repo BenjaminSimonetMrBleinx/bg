@@ -70,9 +70,13 @@ Pas besoin de retenir les chemins, tout passe par le lanceur :
 
 | Touche | Action |
 |---|---|
-| ZQSD / flèches | Conduire |
+| **W A S D** / flèches | Conduire |
 | Espace | Frein à main |
 | F | Interagir |
+
+Les touches sont liées par **position physique**, pas par caractère. Les mêmes
+touches fonctionnent donc quelle que soit la disposition du clavier : elles se
+lisent `WASD` en QWERTY et QWERTZ, `ZQSD` en AZERTY, sans rien changer au code.
 
 ## Structure
 
