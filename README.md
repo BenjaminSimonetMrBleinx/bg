@@ -17,6 +17,7 @@ aux questions, on fige la direction, on code ensuite.
 
 | Document | Contenu |
 |---|---|
+| [`docs/05-demarrage.md`](docs/05-demarrage.md) | **Machine neuve : commence ici.** Git LFS avant le clone |
 | [`docs/00-questions.md`](docs/00-questions.md) | Les questions de cadrage, à remplir |
 | [`docs/01-cadrage.md`](docs/01-cadrage.md) | Décisions verrouillées, choix du moteur, répartition du travail |
 | [`docs/02-methode.md`](docs/02-methode.md) | Comment on code ce jeu au quotidien |
@@ -45,11 +46,17 @@ Pas de missions, pas d'IA, pas de trafic, pas de personnage animé. Le jalon ser
 
 ## Mise en route
 
+**L'ordre compte** : Git LFS s'installe *avant* le clone. Sinon les textures
+arrivent sous forme de pointeurs texte de 130 octets et rien ne s'ouvre.
+
 ```bash
+git lfs install                                              # une fois par machine
 git clone https://github.com/BenjaminSimonetMrBleinx/bg.git
 cd bg
-git lfs install
 ```
+
+Déjà cloné sans LFS ? `git lfs install` puis `git lfs pull` répare sans
+recloner. Détails dans [docs/05-demarrage.md](docs/05-demarrage.md).
 
 Outils : [Godot 4.7](https://godotengine.org/download) · [Blender 5.2](https://www.blender.org/download/) · [Python 3.12](https://www.python.org/downloads/) · [Git LFS](https://git-lfs.com/)
 
