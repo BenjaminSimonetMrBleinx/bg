@@ -107,7 +107,7 @@ Write-Host "`n$($repliques.Count) replique(s) dans dialogues.json" -ForegroundCo
 $Depot = Join-Path $Racine 'assets\voix'
 $Index = Join-Path $Depot 'index.json'
 
-function Ecrire-Script {
+function Write-ScriptVoix {
     New-Item -ItemType Directory -Force -Path $Depot | Out-Null
     $lignes = @()
     $table = @()
@@ -156,14 +156,18 @@ livrer trois aujourd'hui et le reste plus tard, sans rien casser.
 # ------------------------------------------------------------- integration
 #
 # Prend ce que le comedien a depose et le met la ou le jeu le cherche.
-function Integrer-Depot {
+function Import-Depot {
     if (-not (Test-Path $Index)) {
         Write-Host "`nAucun index. Lance d abord : .\bg.ps1 voix -Script" -ForegroundColor Yellow
         return 0
     }
     $table = Get-Content $Index -Raw -Encoding UTF8 | ConvertFrom-Json
+    # On exclut les archives : sans ca, chaque passage reintegrerait les
+    # prises deja traitees, les rearchiverait sous un nom double, et le
+    # dossier gonflerait a chaque livraison.
     $fichiers = @(Get-ChildItem $Depot -File -Include *.wav, *.mp3, *.ogg, *.flac `
-                  -Recurse -ErrorAction SilentlyContinue)
+                  -Recurse -ErrorAction SilentlyContinue |
+                  Where-Object { $_.DirectoryName -notlike '*\originaux*' })
     if ($fichiers.Count -eq 0) { return 0 }
 
     $n = 0
@@ -190,16 +194,25 @@ function Integrer-Depot {
             continue
         }
         Write-Host ("  {0}  {1,-9} {2}" -f $num, $ligne.qui, $ligne.texte) -ForegroundColor Gray
-        Remove-Item $f.FullName -Force
+
+        # La prise d origine est ARCHIVEE, jamais supprimee.
+        #
+        # Ce qui part dans le jeu est ecrase, compresse et ramene a 22 kHz :
+        # c est une impasse, on ne remonte pas de la. Si quelqu un depose sa
+        # seule copie et qu on l efface apres conversion, la prise est perdue
+        # et il faut la refaire. Une premiere version faisait exactement ca.
+        $archives = Join-Path $Depot 'originaux'
+        New-Item -ItemType Directory -Force -Path $archives | Out-Null
+        Move-Item $f.FullName (Join-Path $archives ("{0}_{1}" -f $num, $f.Name)) -Force
         $n++
     }
     return $n
 }
 
-if ($Script) { Ecrire-Script; exit 0 }
+if ($Script) { Write-ScriptVoix; exit 0 }
 
 if ($Integrer) {
-    $n = Integrer-Depot
+    $n = Import-Depot
     Write-Host ""
     if ($n -eq 0) {
         Write-Host "Aucun enregistrement a integrer." -ForegroundColor Gray

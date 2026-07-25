@@ -641,3 +641,10 @@ des extraits existants. Le circuit ci-dessus accepte n'importe quel enregistreme
 de vraies répliques découpées de la série : ça ne met aucun mot dans la bouche de personne.
 
 Seize suites.
+
+**Correctif immediat, trouve en verifiant l'ordre des etapes** : l'integration **supprimait**
+la prise d'origine apres conversion. Ce qui part dans le jeu est ecrase, compresse et ramene a
+22 kHz — c'est une impasse, on ne remonte pas de la. Quelqu'un qui depose sa seule copie
+l'aurait perdue et aurait du refaire la prise. Les originaux sont maintenant archives dans
+`assets/voix/originaux/`, suivis par LFS, et le scan les exclut pour ne pas les reintegrer en
+boucle a chaque livraison.
