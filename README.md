@@ -30,7 +30,7 @@ aux questions, on fige la direction, on code ensuite.
 | Moteur | Godot 4.7 — choix définitif, pas un choix de prototype |
 | Modélisation | Blender 5.2 |
 | Plateforme | Windows, puis Linux |
-| Licence | Non commercial, jamais vendu, aucun asset officiel |
+| Diffusion | Dépôt privé, non commercial, jamais vendu |
 
 ## Premier jalon
 

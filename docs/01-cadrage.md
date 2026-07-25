@@ -13,8 +13,9 @@
 | Univers | Breaking Bad, Albuquerque, Nouveau-Mexique |
 | Moteur | **Godot 4.7** — choix définitif |
 | Modélisation | Blender 5.2, pipeline procédural en Python |
-| Juridique | Fan game non commercial, aucun asset officiel |
-| Dépôt | Public, dédié, séparé du monorepo professionnel |
+| Juridique | Fan game non commercial. Médias de la série utilisés, aucun droit revendiqué |
+| Dépôt | **Privé**, dédié, séparé du monorepo professionnel |
+| Médias de la série | Dans `assets-ref/`, **jamais versionnés** — l'historique git est irréversible |
 | Rôles | Benjamin : stack, systèmes, intégration · Guillaume : son, 3D, script |
 
 ## 2. Le premier jalon
