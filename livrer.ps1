@@ -228,8 +228,12 @@ if (Test-Path "livraisons/sons") {
 # Meme principe pour les voix, mais elles ont besoin d etre converties et
 # RENOMMEES : le jeu les retrouve par une empreinte du texte, que personne ne
 # doit calculer a la main. On depose des numeros, le script fait le reste.
+# Sans exclure les archives, le compte annoncait « 24 enregistrements a
+# integrer » puis « aucun enregistrement a integrer » deux lignes plus bas :
+# l integration, elle, ignore deja originaux/.
 $depot_voix = @(Get-ChildItem "livraisons/voix" -File -Include *.wav,*.mp3,*.ogg,*.flac `
-                -Recurse -ErrorAction SilentlyContinue)
+                -Recurse -ErrorAction SilentlyContinue |
+                Where-Object { $_.DirectoryName -notlike '*\originaux*' })
 if ($depot_voix.Count -gt 0) {
     Info "$($depot_voix.Count) enregistrement(s) de voix a integrer..."
     $ancien = $ErrorActionPreference
@@ -354,6 +358,45 @@ les caracteres accentues, puis relance.
 "@
     }
     Bien "$($scripts.Count) script(s) verifie(s)"
+}
+
+# Un envoi qui touche au jeu sans bouger le numero laisse deux versions
+# differentes portant le meme nom. C est exactement ce qui rend inutile la
+# question « tu es sur quelle version » — et donc l affichage a l ecran.
+#
+# On ne bloque pas : un envoi de docs ou d outils n a aucune raison de bumper.
+# On demande, une fois, au moment ou l on peut encore le faire.
+$touche_jeu = @($fichiers | Where-Object {
+    $_.Fichier -match '^game/(systemes|scenes|rendu|donnees|assets)/' -or
+    $_.Fichier -eq 'game/project.godot'
+})
+if ($touche_jeu.Count -gt 0) {
+    $version = ''
+    $l = Select-String -Path 'game/project.godot' -Pattern '^config/version="(.+)"' |
+         Select-Object -First 1
+    if ($l) { $version = $l.Matches[0].Groups[1].Value }
+
+    $ancienne = ''
+    $ancien = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    $texte = (& git show 'origin/main:game/project.godot' 2>$null) -join "`n"
+    $ErrorActionPreference = $ancien
+    if ($texte -match 'config/version="(.+)"') { $ancienne = $Matches[1] }
+
+    if ($version -and $ancienne -and $version -eq $ancienne) {
+        Souci "Le jeu a change ($($touche_jeu.Count) fichier(s)) mais la version reste $version."
+        Info  "Elle se bouge dans game/project.godot, ligne config/version."
+        Info  "Voir docs/10-versions.md pour ce qui merite un chiffre."
+        # -Quoi ne demande rien : il montre. Poser la question ici bloquait le
+        # mode apercu, qui est justement celui qu'on lance sans y assister.
+        if (-not $Oui -and -not $Quoi) {
+            $r = Read-Host "`n  Envoyer quand meme sans bouger la version ? [o/N]"
+            if ($r -notmatch '^[oOyY]') {
+                Write-Host "`n  Annule. Bouge la version, puis relance.`n" -ForegroundColor Yellow
+                exit 0
+            }
+        }
+    }
 }
 
 if ($Quoi) {
