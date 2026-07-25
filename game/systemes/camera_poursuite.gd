@@ -17,6 +17,16 @@ var _position_lissee: Vector3
 var _regard_lisse: Vector3
 var _initialisee: bool = false
 
+## Cap de la camera a pied, en radians. C'est une variable A PART ENTIERE,
+## surtout pas deduite de l'orientation du personnage.
+##
+## Si la camera se placait derriere lui pendant que ses deplacements sont
+## calcules par rapport a la camera, les deux se poursuivraient : avancer
+## converge par hasard, mais reculer ou aller sur le cote n'a aucun point
+## d'equilibre et le personnage tourne en rond sans fin. Rendre ce cap
+## independant est la seule facon de casser la boucle.
+var _cap: float = 0.0
+
 
 func _ready() -> void:
 	if reglages == null:
@@ -39,10 +49,13 @@ func suivre(n: Node3D) -> void:
 	_cible = n
 	_vehicule = n as Vehicule
 	_pieton = n is Joueur
+	_cap = n.rotation.y          # on demarre derriere le sujet
 	set_physics_process(true)
 
 
 func _physics_process(delta: float) -> void:
+	if _pieton:
+		_recentrer(delta)
 	var voulue := _ancrage()
 	var vise := _cible.global_position + Vector3.UP * reglages.cible_hauteur
 
@@ -77,8 +90,37 @@ static func _facteur(lissage: float, delta: float) -> float:
 
 # Derriere et au-dessus, dans le repere du vehicule : la camera accompagne les
 # virages au lieu de rester plaquee sur un axe du monde.
+# Le cap ne se replace derriere le personnage que s'il S'ELOIGNE de la
+# camera. Quand il vient vers elle ou passe sur le cote, le cap tient bon :
+# c'est ce qui empeche la poursuite mutuelle, et c'est aussi le comportement
+# des cameras de suivi de l'epoque.
+func _recentrer(delta: float) -> void:
+	if not (_cible is CharacterBody3D):
+		return
+	var v: Vector3 = (_cible as CharacterBody3D).velocity
+	v.y = 0.0
+	if v.length() < 0.4:
+		return
+
+	var direction := v.normalized()
+	var vers_camera := Vector3(sin(_cap), 0.0, cos(_cap))   # du sujet vers la camera
+	# Seuil volontairement franc. A 0,15 on est trop pres de la
+	# perpendiculaire : un deplacement lateral le franchit par intermittence,
+	# le cap se met a bouger, et la poursuite mutuelle repart.
+	if direction.dot(-vers_camera) <= 0.5:
+		return                                              # il ne s'eloigne pas franchement
+
+	var voulu := atan2(-direction.x, -direction.z)          # derriere lui
+	_cap = rotate_toward(_cap, voulu, reglages.pieton_recentrage * delta)
+
+
 func _ancrage() -> Vector3:
+	if _pieton:
+		var derriere := Vector3(sin(_cap), 0.0, cos(_cap))
+		return (_cible.global_position
+				+ derriere * reglages.pieton_recul
+				+ Vector3.UP * reglages.pieton_hauteur)
 	var base := _cible.global_transform.basis
-	var recul := reglages.pieton_recul if _pieton else reglages.recul
-	var hauteur := reglages.pieton_hauteur if _pieton else reglages.hauteur
-	return _cible.global_position + base.z * recul + Vector3.UP * hauteur
+	return (_cible.global_position
+			+ base.z * reglages.recul
+			+ Vector3.UP * reglages.hauteur)

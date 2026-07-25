@@ -156,6 +156,11 @@ extends Resource
 ## Hauteur des yeux a pied.
 @export_range(0.5, 2.5, 0.05) var oeil_hauteur: float = 1.65
 
+## Hauteur maximale d'obstacle franchie sans sauter, en metres. Les trottoirs
+## font 18 cm : sans ce franchissement, on reste bloque contre eux, ce qui est
+## intenable dans une ville. Trop haut, on escalade les voitures.
+@export_range(0.0, 0.8, 0.01) var hauteur_marche: float = 0.34
+
 ## Vitesse de rotation du personnage vers sa direction de marche, en tours
 ## par seconde. Bas = il pivote lourdement, haut = il se retourne net.
 @export_range(0.2, 12.0, 0.1) var marche_rotation: float = 5.0
@@ -168,6 +173,12 @@ extends Resource
 @export_range(0.5, 6.0, 0.1) var pieton_hauteur: float = 1.9
 
 @export_range(0.01, 1.0, 0.01) var pieton_lissage: float = 0.22
+
+## Vitesse a laquelle la camera se replace derriere le personnage, en
+## radians par seconde. Elle ne le fait que lorsqu'il s'ELOIGNE d'elle :
+## sinon la camera suivrait le personnage qui suit la camera, et reculer
+## ferait tourner en rond sans jamais se stabiliser.
+@export_range(0.1, 8.0, 0.1) var pieton_recentrage: float = 1.6
 
 @export_subgroup("Marche procedurale")
 

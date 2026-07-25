@@ -22,7 +22,18 @@ var _phase: float = 0.0
 var _cam: Camera3D
 var _membres: Dictionary = {}
 var _bassin_y: float = 0.0
+var _rayon: float = 0.28
 var _gravite: float = ProjectSettings.get_setting("physics/3d/default_gravity", 14.0)
+
+## Diagnostic, lu par les tests : nombre de bordures effectivement franchies,
+## et raison du dernier refus. Un franchissement rate est silencieux sinon, et
+## on passe son temps a supposer pourquoi.
+var franchissements: int = 0
+var _refus: String = ""
+
+
+func raison_refus() -> String:
+	return _refus
 
 
 func _ready() -> void:
@@ -32,6 +43,12 @@ func _ready() -> void:
 		return
 	_cam = get_node_or_null(camera) as Camera3D
 	_recenser_membres()
+
+	# Le franchissement doit degager le rayon de la capsule AU-DELA de
+	# l'arete, sinon on retombe dedans. On le lit plutot que de le supposer.
+	var forme := $Collision as CollisionShape3D
+	if forme != null and forme.shape is CapsuleShape3D:
+		_rayon = (forme.shape as CapsuleShape3D).radius
 
 
 # Les segments sont retrouves par nom plutot que par chemin : la structure
@@ -61,9 +78,63 @@ func _physics_process(delta: float) -> void:
 	velocity.z = lerpf(velocity.z, cible.z, k)
 
 	move_and_slide()
+	_franchir(voulu, delta)
 
 	_orienter(voulu, delta)
 	_animer(delta)
+
+
+# Franchissement des bordures de trottoir.
+#
+# CharacterBody3D ne monte aucune marche tout seul : il glisse le long des
+# obstacles verticaux, quelle que soit leur hauteur. Une bordure de 18 cm
+# suffit donc a bloquer net, ce qui est intenable dans une ville.
+#
+# La methode est celle de tous les moteurs : lever, avancer, reposer. Si rien
+# ne se trouve sous les pieds apres l'avancee, on annule — sinon on grimperait
+# dans le vide.
+func _franchir(voulu: Vector3, delta: float) -> void:
+	if voulu.length_squared() < 0.01:
+		return
+	if not is_on_wall():
+		_refus = "pas de mur"
+		return
+	# Contre une ARETE — le haut d'une bordure — la normale de contact est
+	# diagonale, pas horizontale : mesure faite, n.y valait 0,40 sur un
+	# trottoir de 18 cm. Une premiere version exigeait n.y proche de zero et
+	# rejetait donc exactement le cas a traiter. On ne rejette plus que ce qui
+	# est franchement un sol, et on raisonne sur la composante horizontale.
+	var normale := get_wall_normal()
+	if normale.y > 0.75:
+		_refus = "c'est un sol (n.y=%.2f)" % normale.y
+		return
+	var horizontale := Vector3(normale.x, 0.0, normale.z)
+	if horizontale.length() < 0.2:
+		_refus = "normale sans composante horizontale"
+		return
+	horizontale = horizontale.normalized()
+	if voulu.dot(-horizontale) < 0.2:
+		_refus = "on ne pousse pas dedans (%.2f)" % voulu.dot(-horizontale)
+		return
+
+	var pas := reglages.hauteur_marche
+	if pas <= 0.0:
+		return
+	var sauvegarde := global_position
+
+	# Il faut avancer d'au moins un rayon de capsule au-dela de l'arete :
+	# une avancee proportionnelle au pas de temps ne suffit jamais, on
+	# retombe dans la bordure et on reste bloque.
+	var portee := _rayon + 0.26
+	global_position += Vector3.UP * (pas + 0.02)
+	move_and_collide(voulu.normalized() * portee)
+	var gagne := global_position.distance_to(sauvegarde)
+	if move_and_collide(Vector3.DOWN * (pas + 0.12)) == null:
+		global_position = sauvegarde
+		_refus = "rien sous les pieds apres %.2f m" % gagne
+	else:
+		franchissements += 1
+		_refus = ""
 
 
 func _direction_voulue() -> Vector3:
