@@ -53,6 +53,16 @@ ESPACEMENT_LAMPES = 20.0
 FACADES = ["facade_a", "facade_b", "facade_c", "facade_d"]
 HAUTEURS = [4.6, 5.8, 7.1, 8.4, 9.7, 11.2]
 
+# Parcelles laissees vides, ou l'on pose ensuite des batiments faits main.
+# Un tuple par cote d'ilot : (ilot_x, ilot_y, cote).
+#
+# Repere par ilot plutot qu'en metres : la reserve reste au bon endroit si
+# la taille des ilots ou le nombre de blocs change.
+#
+# La facade sud de l'ilot (0, 0) donne sur le carrefour de depart. C'est la
+# que vivent Walter et Jesse : a vingt metres du point ou commence la partie.
+RESERVES = {(0, 0, "sud")}
+
 
 # ------------------------------------------------------------------ utilitaires
 
@@ -250,12 +260,20 @@ def construire(n: int, rng: random.Random, mats: dict) -> dict:
                   ox + BLOC - BATI, oy + BLOC - BATI, 0.02, TUILE_SOL)
 
             # immeubles : une rangee par cote de l'ilot
-            for cx0, cy0, cx1, cy1, axe in [
-                (ox, oy, ox + BLOC, oy + BATI, "x"),
-                (ox, oy + BLOC - BATI, ox + BLOC, oy + BLOC, "x"),
-                (ox, oy + BATI, ox + BATI, oy + BLOC - BATI, "y"),
-                (ox + BLOC - BATI, oy + BATI, ox + BLOC, oy + BLOC - BATI, "y"),
+            for cx0, cy0, cx1, cy1, axe, cote in [
+                (ox, oy, ox + BLOC, oy + BATI, "x", "sud"),
+                (ox, oy + BLOC - BATI, ox + BLOC, oy + BLOC, "x", "nord"),
+                (ox, oy + BATI, ox + BATI, oy + BLOC - BATI, "y", "ouest"),
+                (ox + BLOC - BATI, oy + BATI, ox + BLOC, oy + BLOC - BATI, "y", "est"),
             ]:
+                # Une parcelle reservee reste vide : c'est la qu'on pose les
+                # batiments faits main. Sans ca, il n'y a pas un metre carre
+                # libre en bordure de rue et les maisons finissent hors de la
+                # ville, dans le desert, ou personne ne va jamais.
+                if (bx, by, cote) in RESERVES:
+                    dalle(m["desert"], cx0, cy0, cx1, cy1, 0.02, TUILE_SOL)
+                    continue
+
                 longueur = (cx1 - cx0) if axe == "x" else (cy1 - cy0)
                 pos = 0.0
                 while longueur - pos > 5.0:

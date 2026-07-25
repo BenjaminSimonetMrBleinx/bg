@@ -53,6 +53,14 @@ func _process(_d: float) -> bool:
 		# On oriente la camera pour que "avancer" pointe vers +X, donc vers
 		# la bordure. Le cap designe la direction du sujet VERS la camera.
 		_cam.set("_cap", -PI / 2.0)
+		# Et on la force a s'y placer d'un coup. Regler le cap ne suffit pas :
+		# la camera rejoint sa position en lissage, et "avancer" est calcule a
+		# partir de son orientation REELLE, pas du cap voulu. Tant qu'elle est
+		# en route, le personnage marche dans une autre direction. Ce test a
+		# tenu tant que le point de depart de la partie etait a dix metres
+		# d'ici ; en l'eloignant, il s'est mis a echouer sans que le
+		# franchissement ait change.
+		_cam.set("_initialisee", false)
 		Input.action_press("gaz")
 		_lance = true
 		return false

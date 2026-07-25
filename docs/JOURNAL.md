@@ -299,3 +299,43 @@ remarque pas, et ça supprime une classe entière de « chez moi ça marche ».
 C'est la troisième fois que ce cache nous coûte du temps — les maisons, puis les personnages,
 puis ça. Il est maintenant traité une fois pour toutes, dans la seule commande que tout le
 monde utilise.
+
+---
+
+## Correctif — les maisons étaient injouables, et c'est un défaut de conception
+
+Benjamin ne les trouvait pas. Elles étaient au nord, dans le désert au-delà de la dernière
+rue, à cent mètres du point de départ. La raison était mécanique : le générateur bâtit les
+quatre côtés de chaque îlot, il ne restait **pas un mètre carré libre en bordure de rue**.
+Le désert était le seul emplacement possible.
+
+En jeu, ça donnait deux maisons au bout du monde, dans le noir, sans rien pour indiquer d'y
+aller. On fait naturellement demi-tour avant de les atteindre. Une explication n'y aurait
+rien changé.
+
+**Le générateur accepte maintenant des parcelles réservées.** Un `RESERVES` repéré par îlot
+et par côté — pas en mètres, pour que ça survive à un changement de taille d'îlot. Le côté
+réservé reçoit un sol en terre au lieu d'immeubles. Walter et Jesse occupent la façade sud
+de l'îlot (0, 0), qui donne sur le carrefour de départ.
+
+**Et le point de départ est passé devant chez Walter**, sur le trottoir, porte éclairée à
+deux pas. C'est aussi ce qui a du sens narrativement : Walter part de chez lui.
+
+### Deux choses trouvées en déplaçant, qu'aucune n'aurait été trouvée autrement
+
+**La voiture partait vers le bord de la carte.** Garée le long d'une rue horizontale, elle
+demandait un quart de tour — et le quart de tour que j'avais écrit l'orientait vers -X, à dix
+mètres du vide. Mesuré par `test_sens.gd`, qui applique une poussée et projette le
+déplacement, plutôt que déduit du contenu de la matrice.
+
+**Le test de franchissement de bordure s'est mis à échouer sans que le franchissement ait
+changé.** Il place la caméra par son cap pour que « avancer » pointe vers le trottoir — mais
+la caméra rejoint sa position **en lissage**, et la direction de marche est calculée à partir
+de son orientation réelle, pas du cap voulu. Tant qu'elle était en route, le personnage
+marchait ailleurs. Le test tenait uniquement parce que le point de départ était à dix mètres
+de là ; en l'éloignant, il s'est cassé.
+
+C'est le genre de test qui passe pour de mauvaises raisons, et on ne l'apprend qu'en changeant
+autre chose. Il force maintenant la caméra à se placer d'un coup.
+
+Dix suites, toujours.

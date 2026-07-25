@@ -68,9 +68,15 @@ script = ExtResource("3_ville")
 reglages = ExtResource("2_reglages")
 geometrie = ExtResource("4_geometrie")
 
-; Les deux maisons bordent la rue du haut de la grille (le couloir z = -115),
-; sur le desert qui la longe : c'est le seul endroit de la carte ou il reste
-; de la place devant une chaussee, les ilots etant entierement batis.
+; Les deux maisons occupent la parcelle reservee sur la facade sud de l'ilot
+; (0, 0) — voir RESERVES dans outils/gen_ville.py. Elles donnent sur le
+; carrefour de depart, a une vingtaine de metres du point ou commence la
+; partie.
+;
+; Elles etaient auparavant au nord, dans le desert au-dela de la derniere
+; rue, faute de place en bordure de chaussee. En jeu ca donnait deux maisons
+; au bout du monde, dans le noir, sans rien pour indiquer d'y aller : on
+; faisait demi-tour avant de les atteindre.
 ;
 ; Leur porte regarde +Z, donc la rue. Les interieurs sont poses tres loin, a
 ; des distances differentes pour qu'ils ne puissent jamais se voir l'un
@@ -78,7 +84,7 @@ geometrie = ExtResource("4_geometrie")
 [node name="Maisons" type="Node3D" parent="Rendu/Scene3D"]
 
 [node name="Walter" type="Node3D" parent="Rendu/Scene3D/Maisons"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, -129)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 0, -20)
 script = ExtResource("11_maison")
 nom_affiche = "Walter"
 geometrie_ext = ExtResource("12_walter_ext")
@@ -88,7 +94,7 @@ habitant_geometrie = ExtResource("17_skyler")
 habitant_cle = "skyler"
 
 [node name="Jesse" type="Node3D" parent="Rendu/Scene3D/Maisons"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 86, 0, -129)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 0, -19.5)
 script = ExtResource("11_maison")
 nom_affiche = "Jesse"
 geometrie_ext = ExtResource("14_jesse_ext")
@@ -99,11 +105,18 @@ habitant_cle = "jesse"
 lumiere_couleur = Color(1, 0.831, 0.639, 1)
 lumiere_energie = 2.6
 
+; La voiture est garee le long de la rue du bas, donc tournee d'un quart de
+; tour. Le sens a ete MESURE, pas deduit : test_sens.gd applique une poussee
+; et projette le deplacement. Avec le quart de tour oppose, elle partait vers
+; -X, c'est-a-dire vers le bord de la carte a dix metres de la.
 [node name="Vehicule" parent="Rendu/Scene3D" instance=ExtResource("5_vehicule")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.6, 0.6, -22)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 17, 0.6, -7)
 
+; Sur le trottoir devant chez Walter, assez pres pour la voir, assez loin
+; pour qu'aucune invite ne s'affiche avant d'avoir fait un pas. Il regarde
+; -Z, donc les maisons.
 [node name="Joueur" parent="Rendu/Scene3D" instance=ExtResource("7_joueur")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.2, 0.3, -20.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.5, 0.3, -12)
 camera = NodePath("../../Camera3D")
 
 [node name="Camera3D" type="Camera3D" parent="Rendu"]
