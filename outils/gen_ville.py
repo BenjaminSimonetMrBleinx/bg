@@ -82,6 +82,17 @@ ESPACEMENT_DECOR = 9.0
 # parfaite, et ca se voit tout de suite d'en haut comme depuis la rue.
 PROBA_CLIM = 0.4
 
+# Voitures a l'arret le long des trottoirs. Purement decoratives — une rue
+# vide de vehicules ne se lit pas comme une ville, quelle que soit la
+# densite du mobilier.
+ESPACEMENT_VOITURES = 13.0
+PROBA_PLACE_OCCUPEE = 0.55
+
+# Passants. Chacun arpente un segment de trottoir. Pas de foule : dix
+# silhouettes qui bougent en donnent plus qu'une centaine d'immobiles.
+PIETONS_PAR_COTE = 1
+LONGUEUR_TRAJET = 26.0
+
 
 # ------------------------------------------------------------------ utilitaires
 
@@ -263,6 +274,70 @@ def mobilier_de_cote(ox: float, oy: float, cote: str,
     return objets
 
 
+def voitures_de_cote(ox: float, oy: float, cote: str,
+                     rng: random.Random) -> list[dict]:
+    """Voitures garees le long du trottoir, nez dans le sens de la rue."""
+    bord = TROTTOIR + 1.15          # a un metre du trottoir, sur la chaussee
+    objets: list[dict] = []
+
+    if cote == "ouest":
+        fixe, angle, axe = ox - bord, 0.0, "y"
+    elif cote == "est":
+        fixe, angle, axe = ox + BLOC + bord, math.pi, "y"
+    elif cote == "sud":
+        fixe, angle, axe = oy - bord, math.pi / 2, "x"
+    else:
+        fixe, angle, axe = oy + BLOC + bord, -math.pi / 2, "x"
+
+    debut = (oy if axe == "y" else ox) + 4.0
+    pos = debut
+    while pos < debut + BLOC - 8.0:
+        if rng.random() < PROBA_PLACE_OCCUPEE:
+            x, y = (fixe, pos) if axe == "y" else (pos, fixe)
+            objets.append({
+                "type": "voiture_garee",
+                "pos": [round(x, 3), 0.0, round(-y, 3)],
+                "angle": round(angle + rng.uniform(-0.03, 0.03), 3),
+            })
+        pos += ESPACEMENT_VOITURES
+    return objets
+
+
+def pietons_de_cote(ox: float, oy: float, cote: str,
+                    rng: random.Random) -> list[dict]:
+    """Trajets de passants : un segment de trottoir, parcouru en aller-retour.
+
+    Le trajet est au MILIEU du trottoir, entre les lampadaires cote bordure
+    et le mobilier cote facade. Sans cette voie centrale, les passants
+    passeraient leur temps a buter dans une poubelle.
+    """
+    milieu = TROTTOIR / 2.0
+    trajets: list[dict] = []
+
+    if cote == "ouest":
+        fixe, axe = ox - milieu, "y"
+    elif cote == "est":
+        fixe, axe = ox + BLOC + milieu, "y"
+    elif cote == "sud":
+        fixe, axe = oy - milieu, "x"
+    else:
+        fixe, axe = oy + BLOC + milieu, "x"
+
+    base = (oy if axe == "y" else ox)
+    for _ in range(PIETONS_PAR_COTE):
+        a = base + rng.uniform(2.0, BLOC - LONGUEUR_TRAJET - 2.0)
+        b = a + LONGUEUR_TRAJET * rng.uniform(0.7, 1.0)
+        p1 = (fixe, a) if axe == "y" else (a, fixe)
+        p2 = (fixe, b) if axe == "y" else (b, fixe)
+        trajets.append({
+            "depart": [round(p1[0], 2), 0.2, round(-p1[1], 2)],
+            "arrivee": [round(p2[0], 2), 0.2, round(-p2[1], 2)],
+            "allure": round(rng.uniform(0.55, 0.95), 2),
+            "modele": rng.choice(["passant_a", "passant_b", "passant_c"]),
+        })
+    return trajets
+
+
 def cactus_du_desert(etendue: float, rng: random.Random,
                      combien: int = 70) -> list[dict]:
     """Seme des cactus autour de la ville.
@@ -296,6 +371,7 @@ def construire(n: int, rng: random.Random, mats: dict) -> dict:
     etendue = n * BLOC + (n + 1) * COULOIR
     lampes: list[tuple[float, float, float, float]] = []
     decor: list[dict] = []
+    pietons: list[dict] = []
 
     # --- chaussees et carrefours -------------------------------------------
     # Corridor k : [k*PAS, k*PAS + COULOIR]. Chaussee au centre : +TROTTOIR.
@@ -369,6 +445,8 @@ def construire(n: int, rng: random.Random, mats: dict) -> dict:
                     continue
 
                 decor += mobilier_de_cote(ox, oy, cote, rng)
+                decor += voitures_de_cote(ox, oy, cote, rng)
+                pietons += pietons_de_cote(ox, oy, cote, rng)
 
                 longueur = (cx1 - cx0) if axe == "x" else (cy1 - cy0)
                 pos = 0.0
@@ -412,7 +490,8 @@ def construire(n: int, rng: random.Random, mats: dict) -> dict:
     decor += cactus_du_desert(etendue, rng)
 
     faces = sum(maillage.finir() for maillage in m.values())
-    return {"etendue": etendue, "lampes": lampes, "decor": decor, "faces": faces}
+    return {"etendue": etendue, "lampes": lampes, "decor": decor,
+            "pietons": pietons, "faces": faces}
 
 
 def main() -> None:
@@ -462,6 +541,7 @@ def main() -> None:
         # fondu dans le maillage. Une poubelle est alors un fichier partage
         # par ses trois cents exemplaires, pas trois cents fois ses faces.
         "decor": info["decor"],
+        "pietons": info["pietons"],
     }, indent=1), encoding="utf-8")
 
     types = {}
@@ -472,6 +552,7 @@ def main() -> None:
     print(f"ville      {a.blocs} x {a.blocs} ilots, {info['etendue']:.0f} m de cote")
     print(f"graine     {a.seed}")
     print(f"lampes     {len(info['lampes'])}")
+    print(f"pietons    {len(info['pietons'])}")
     print(f"decor      {len(info['decor'])} : "
           + ", ".join(f"{n} {t}" for t, n in sorted(types.items())))
     print(f"faces      {info['faces']}")

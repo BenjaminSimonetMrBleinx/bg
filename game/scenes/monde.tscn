@@ -11,7 +11,7 @@
 ; Le vehicule demarre sur la chaussee verticale du couloir 0, qui court le
 ; long de -Z : il est donc deja dans le bon sens.
 
-[gd_scene load_steps=25 format=3 uid="uid://bgmonde0v0001"]
+[gd_scene load_steps=26 format=3 uid="uid://bgmonde0v0001"]
 
 [ext_resource type="Script" path="res://rendu/rendu_ps2.gd" id="1_rendu"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
@@ -34,6 +34,7 @@
 [ext_resource type="Script" path="res://systemes/equipement.gd" id="19_equipement"]
 [ext_resource type="Script" path="res://systemes/roue.gd" id="20_roue"]
 [ext_resource type="Script" path="res://systemes/hud.gd" id="21_hud"]
+[ext_resource type="Script" path="res://systemes/foule.gd" id="22_foule"]
 
 [sub_resource type="ViewportTexture" id="tex_ecran"]
 viewport_path = NodePath("Rendu")
@@ -67,6 +68,12 @@ environment = SubResource("env")
 script = ExtResource("3_ville")
 reglages = ExtResource("2_reglages")
 geometrie = ExtResource("4_geometrie")
+
+; Les passants. Leurs trajets viennent du generateur de ville, comme les
+; lampadaires : une ville regeneree repeuple ses trottoirs toute seule.
+[node name="Foule" type="Node3D" parent="Rendu/Scene3D"]
+script = ExtResource("22_foule")
+reglages = ExtResource("2_reglages")
 
 ; Les deux maisons occupent la parcelle reservee sur la facade sud de l'ilot
 ; (0, 0) — voir RESERVES dans outils/gen_ville.py. Elles donnent sur le

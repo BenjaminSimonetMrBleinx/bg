@@ -19,6 +19,13 @@ var etendue: float = 0.0
 
 const DECOR := "res://assets/decor/%s.glb"
 
+## Elements de decor qui ne sont pas des .glb du dossier decor. La voiture
+## garee est une scene composee : une caisse et quatre roues, comme le
+## vehicule jouable mais sans physique.
+const SCENES := {
+	"voiture_garee": "res://scenes/voiture_garee.tscn",
+}
+
 ## Le mobilier n'a pas besoin de collision : ce sont des objets bas, et une
 ## poubelle qui arrete une voiture est plus penible qu'une poubelle qu'on
 ## traverse. Ceux-la seuls sont solides, parce qu'on ne pardonne pas de
@@ -128,7 +135,7 @@ func _poser_decor() -> void:
 	for entree in liste:
 		var type := str(entree.get("type", ""))
 		if not modeles.has(type):
-			var chemin := DECOR % type
+			var chemin: String = SCENES.get(type, DECOR % type)
 			modeles[type] = (ResourceLoader.load(chemin) as PackedScene
 					if ResourceLoader.exists(chemin) else null)
 		if modeles[type] == null:
@@ -144,6 +151,8 @@ func _poser_decor() -> void:
 		# devient illisible et on ne peut plus dire ce qui a ete pose.
 		n.name = "%s_%03d" % [type, parent.get_child_count()]
 		parent.add_child(n)
+		# La voiture garee porte deja son corps statique : lui en fabriquer
+		# un second par maillage doublerait la collision et la ferait vibrer.
 		if type in SOLIDES:
 			_ajouter_collisions(n)
 

@@ -442,3 +442,57 @@ Ce qui change de jour, au-delà des couleurs :
 plante pas, elle donne une ville de nuit avec un soleil.
 
 Douze suites.
+
+---
+
+## V12 — La caméra, et la vie dans les rues
+
+### La caméra ne traverse plus les murs
+
+Un rayon du sujet vers la caméra, et un rapprochement si quelque chose bloque. Deux
+décisions comptent :
+
+**Le clamp est appliqué APRÈS le lissage**, sur la position finale, pas sur la position
+visée. Lisser vers une cible déjà corrigée laisserait la caméra traverser le mur pendant
+qu'elle rattrape — c'est-à-dire exactement au moment où ça se voit.
+
+**Se rapprocher est instantané, s'éloigner est progressif.** Traverser un mur ne serait-ce
+qu'une image se remarque ; un retour progressif au recul nominal, non.
+
+**Mon premier test passait sans rien prouver.** Il collait le joueur au mur et mesurait —
+sauf que dans cette configuration la caméra reste dehors toute seule. Il fallait construire
+le cas exprès : joueur devant la façade, **cap tourné vers la maison**, pour que la position
+idéale tombe à l'intérieur du bâtiment. Contre-épreuve faite en désactivant la parade :
+*« recul 4,07 m, obstacle OUI — la caméra est dans le bâtiment »*. Avec la parade, elle est
+ramenée à 2,22 m.
+
+Un test qui ne peut pas échouer ne vaut rien. Le vérifier coûte deux minutes.
+
+### La vie
+
+**La marche procédurale a quitté `joueur.gd`** pour `silhouette.gd`. Elle n'avait rien à y
+faire de particulier : le maillage est le même pour tout le monde, seules les textures
+changent. Un passant mérite exactement la démarche de Walter, et la dupliquer aurait garanti
+qu'elles divergent au premier réglage.
+
+**Vingt-et-une voitures garées** le long des trottoirs. Ce sont des `StaticBody3D`, pas des
+`VehicleBody3D` endormis : une rue de véhicules physiques coûterait une simulation complète
+par voiture, et la moindre d'entre elles se mettrait à glisser.
+
+**Quinze passants**, qui font l'aller-retour sur un segment de trottoir. Aucune recherche de
+chemin, aucune décision. C'est volontaire : une foule crédible ne demande pas d'intelligence,
+elle demande du **mouvement** et de la **variété**. Trois apparences, trois tailles, des
+allures tirées entre 0,55 et 0,95, et des pauses désynchronisées aux extrémités — sinon toute
+la rue fait demi-tour en même temps.
+
+Leur voie passe **au milieu du trottoir**, entre les lampadaires côté bordure et le mobilier
+côté façade. Sans cette voie centrale, ils passeraient leur temps à buter dans une poubelle.
+
+Ils sont sur la couche de collision du joueur, pas celle du décor : un passant qui croise la
+ligne de vue collerait sinon la caméra à la nuque.
+
+`test_foule.gd` mesure un **déplacement réel** entre deux instants. Un passant coincé contre
+une poubelle a l'air parfaitement normal sur une capture — debout, bien placé, bien texturé.
+Il ne bouge simplement jamais.
+
+Quatorze suites.

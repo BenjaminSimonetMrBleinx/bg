@@ -1,15 +1,12 @@
 # Walter a pied.
 #
-# La marche est animee par code, pas par un clip. Le personnage exporte est
-# une hierarchie de segments rigides, et ce script fait tourner les
-# articulations. Trois avantages concrets :
+# Ce script ne s'occupe que de ce qui est PROPRE au joueur : lire les touches,
+# se deplacer par rapport a la camera, et franchir les bordures de trottoir.
 #
-#   - la cadence se cale d'elle-meme sur la vitesse reelle, parce que la phase
-#     avance avec la DISTANCE parcourue et non avec le temps. Les pieds ne
-#     patinent jamais, quel que soit le reglage de vitesse.
-#   - tout est au curseur dans reglages.tres : foulee, amplitudes, rebond.
-#   - Guillaume peut remplacer les maillages sans toucher a l'animation, tant
-#     que les segments gardent leurs noms.
+# La marche elle-meme vit dans silhouette.gd, partagee avec les pietons de la
+# rue. Elle y a ete deplacee parce que le maillage est le meme pour tout le
+# monde : la dupliquer aurait garanti que les deux demarches divergent au
+# premier reglage.
 class_name Joueur
 extends CharacterBody3D
 
@@ -18,10 +15,10 @@ extends CharacterBody3D
 ## regarde, pas vers -Z du monde.
 @export var camera: NodePath
 
-var _phase: float = 0.0
 var _cam: Camera3D
-var _membres: Dictionary = {}
-var _bassin_y: float = 0.0
+
+## La marche procedurale, partagee avec les pietons de la rue.
+var _silhouette: Silhouette
 var _rayon: float = 0.28
 var _gravite: float = ProjectSettings.get_setting("physics/3d/default_gravity", 14.0)
 
@@ -42,28 +39,14 @@ func _ready() -> void:
 		set_physics_process(false)
 		return
 	_cam = get_node_or_null(camera) as Camera3D
-	_recenser_membres()
+	_silhouette = Silhouette.new(reglages)
+	_silhouette.recenser(self)
 
 	# Le franchissement doit degager le rayon de la capsule AU-DELA de
 	# l'arete, sinon on retombe dedans. On le lit plutot que de le supposer.
 	var forme := $Collision as CollisionShape3D
 	if forme != null and forme.shape is CapsuleShape3D:
 		_rayon = (forme.shape as CapsuleShape3D).radius
-
-
-# Les segments sont retrouves par nom plutot que par chemin : la structure
-# exacte du .glb importe peut varier d'une version de Godot a l'autre, mais
-# les noms viennent du generateur et sont stables.
-func _recenser_membres() -> void:
-	for nom in ["Bassin", "Torse", "CuisseG", "CuisseD", "TibiaG", "TibiaD",
-				"BrasG", "BrasD", "AvantBrasG", "AvantBrasD"]:
-		var n := find_child(nom, true, false)
-		if n is Node3D:
-			_membres[nom] = n
-		else:
-			push_warning("joueur : segment '%s' introuvable" % nom)
-	if _membres.has("Bassin"):
-		_bassin_y = (_membres["Bassin"] as Node3D).position.y
 
 
 func _physics_process(delta: float) -> void:
@@ -81,7 +64,7 @@ func _physics_process(delta: float) -> void:
 	_franchir(voulu, delta)
 
 	_orienter(voulu, delta)
-	_animer(delta)
+	_silhouette.avancer(Vector2(velocity.x, velocity.z).length(), delta)
 
 
 # Franchissement des bordures de trottoir.
@@ -173,58 +156,6 @@ func _orienter(voulu: Vector3, delta: float) -> void:
 		return
 	rotation.y = rotate_toward(rotation.y, lacet_vers(voulu),
 			reglages.marche_rotation * delta)
-
-
-func _animer(delta: float) -> void:
-	var au_sol := Vector2(velocity.x, velocity.z).length()
-
-	if au_sol < 0.15:
-		# Retour a la position de repos, sans a-coup.
-		_phase = lerp_angle(_phase, 0.0, clampf(8.0 * delta, 0.0, 1.0))
-		_poser(0.0)
-		return
-
-	# La phase avance avec la distance, pas avec le temps.
-	_phase = fmod(_phase + (au_sol * delta) / maxf(0.05, reglages.foulee) * TAU, TAU)
-	_poser(1.0)
-
-
-func _poser(intensite: float) -> void:
-	var jambe := deg_to_rad(reglages.amplitude_jambe) * intensite
-	var genou := deg_to_rad(reglages.amplitude_genou) * intensite
-	var bras := deg_to_rad(reglages.amplitude_bras) * intensite
-	var coude := deg_to_rad(reglages.amplitude_coude) * intensite
-
-	var s := sin(_phase)
-	var so := sin(_phase + PI)
-
-	_tourner("CuisseG", s * jambe)
-	_tourner("CuisseD", so * jambe)
-	# Le genou ne plie que vers l'arriere : on ne garde que la moitie negative
-	# du cycle. Un genou qui plie a l'envers est le defaut le plus visible
-	# d'une marche procedurale ratee.
-	_tourner("TibiaG", -maxf(0.0, sin(_phase - 0.7)) * genou)
-	_tourner("TibiaD", -maxf(0.0, sin(_phase + PI - 0.7)) * genou)
-
-	_tourner("BrasG", so * bras)
-	_tourner("BrasD", s * bras)
-	_tourner("AvantBrasG", -(0.5 + 0.5 * sin(_phase + PI)) * coude)
-	_tourner("AvantBrasD", -(0.5 + 0.5 * sin(_phase)) * coude)
-
-	# Le bassin monte deux fois par foulee, une fois par appui.
-	if _membres.has("Bassin"):
-		var b: Node3D = _membres["Bassin"]
-		b.position.y = _bassin_y + absf(sin(_phase)) * reglages.rebond * intensite
-
-	# Un leger roulis du torse enleve l'impression de pantin.
-	if _membres.has("Torse"):
-		var t: Node3D = _membres["Torse"]
-		t.rotation.z = s * deg_to_rad(reglages.roulis_torse) * intensite
-
-
-func _tourner(nom: String, angle: float) -> void:
-	if _membres.has(nom):
-		(_membres[nom] as Node3D).rotation.x = angle
 
 
 ## Vitesse au sol en km/h, pour le HUD et les sons de pas.

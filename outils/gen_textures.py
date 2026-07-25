@@ -256,6 +256,23 @@ VISAGES = {
         "cheveux": "courts", "lunettes": False,
         "moustache": False, "bouc": False, "barbe_naissante": True,
     },
+    # Passants anonymes. Trois suffisent : dans une rue, on ne compare pas
+    # les visages, on remarque seulement s'ils sont tous identiques.
+    "passant_a": {
+        "peau": (176, 134, 104), "poil": (34, 28, 26),
+        "cheveux": "courts", "lunettes": False,
+        "moustache": False, "bouc": False,
+    },
+    "passant_b": {
+        "peau": (222, 186, 158), "poil": (128, 92, 56),
+        "cheveux": "longs", "lunettes": True,
+        "moustache": False, "bouc": False,
+    },
+    "passant_c": {
+        "peau": (142, 104, 78), "poil": (26, 22, 22),
+        "cheveux": "calvitie", "lunettes": False,
+        "moustache": True, "bouc": False,
+    },
 }
 
 
@@ -394,6 +411,12 @@ TENUES = {
                "capuche": False, "bas": (64, 66, 76)},
     "jesse": {"peau": (200, 162, 132), "haut": (132, 54, 48),
               "capuche": True, "bas": (58, 64, 82)},
+    "passant_a": {"peau": (178, 136, 106), "haut": (74, 84, 104),
+                  "capuche": False, "bas": (48, 50, 56)},
+    "passant_b": {"peau": (224, 188, 160), "haut": (168, 148, 112),
+                  "capuche": False, "bas": (86, 78, 70)},
+    "passant_c": {"peau": (144, 106, 80), "haut": (108, 122, 96),
+                  "capuche": True, "bas": (62, 68, 78)},
 }
 
 

@@ -58,6 +58,12 @@ PERSONNAGES = {
     "walter": {"taille": 1.00},
     "skyler": {"taille": 0.97},
     "jesse": {"taille": 0.96},
+    # Les passants varient de taille : une rue ou tout le monde mesure
+    # pareil se lit comme une rangee de copies, meme avec des visages
+    # differents.
+    "passant_a": {"taille": 1.04},
+    "passant_b": {"taille": 0.93},
+    "passant_c": {"taille": 0.99},
 }
 
 
