@@ -67,6 +67,11 @@ if (-not (Present 'git' @("$env:ProgramFiles\Git\cmd\git.exe"))) { $manque += 'G
 if (-not (Present 'blender' @("$env:ProgramFiles\Blender Foundation\Blender *\blender.exe"))) { $manque += 'Blender' }
 if (-not (Present 'godot' @("$env:LOCALAPPDATA\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_*\Godot_v*_win64.exe"))) { $manque += 'Godot' }
 if (-not (Present 'python' @("$env:LOCALAPPDATA\Programs\Python\Python3*\python.exe"))) { $manque += 'Python' }
+# ffmpeg n etait pas dans cette liste, alors que installer.ps1 le pose. Un
+# equipier arrive avant qu on en ait besoin ne l avait donc jamais : sa
+# livraison de sons ou de voix echouait sur "ffmpeg introuvable", et go.ps1
+# repondait "tout est deja installe" a la ligne d avant.
+if (-not (Present 'ffmpeg' @("$env:LOCALAPPDATA\Microsoft\WinGet\Packages\Gyan.FFmpeg_*\*\bin\ffmpeg.exe"))) { $manque += 'ffmpeg' }
 
 if ($manque.Count -gt 0) {
     Titre "1. Installation"
