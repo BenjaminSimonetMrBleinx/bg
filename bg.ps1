@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Lanceur du projet BG. Evite d avoir a retenir les chemins.
 
@@ -71,9 +71,12 @@ function Initialize-Projet {
 switch ($Commande) {
 
     'outils' {
-        [pscustomobject]@{ Outil = 'Godot';   Chemin = $Godot   ?? 'ABSENT' }
-        [pscustomobject]@{ Outil = 'Blender'; Chemin = $Blender ?? 'ABSENT' }
-        [pscustomobject]@{ Outil = 'Python';  Chemin = $Python  ?? 'ABSENT' }
+        # Pas d'operateur ?? ici : il n'existe qu'a partir de PowerShell 7,
+        # et Windows livre encore la 5.1 par defaut.
+        function Ou-Absent($v) { if ($v) { $v } else { 'ABSENT' } }
+        [pscustomobject]@{ Outil = 'Godot';   Chemin = Ou-Absent $Godot }
+        [pscustomobject]@{ Outil = 'Blender'; Chemin = Ou-Absent $Blender }
+        [pscustomobject]@{ Outil = 'Python';  Chemin = Ou-Absent $Python }
         [pscustomobject]@{ Outil = 'Projet';  Chemin = $Projet }
     }
 

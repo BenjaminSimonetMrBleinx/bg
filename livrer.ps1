@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Envoie ton travail sur GitHub. Une seule commande.
 

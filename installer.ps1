@@ -1,11 +1,11 @@
-<#
+﻿<#
 .SYNOPSIS
     Installe tout ce dont le projet a besoin. A lancer une fois.
 
 .DESCRIPTION
     Detecte ce qui manque, l installe via winget, repare le telechargement
     des fichiers binaires, et verifie que le jeu se lance. Ce qui est deja
-    present est laisse tranquille — le script peut etre relance sans risque.
+    present est laisse tranquille - le script peut etre relance sans risque.
 
     Certaines installations demandent une confirmation Windows : c est normal,
     reponds oui.
@@ -66,7 +66,7 @@ $OUTILS = @(
 
 Write-Host @"
 
-  BG — installation
+  BG - installation
   =================
   Le script installe ce qui manque et laisse le reste tranquille.
   Il peut etre relance autant de fois que tu veux.
@@ -105,7 +105,7 @@ foreach ($o in $OUTILS) {
     if ($chemin) {
         Bien "$($o.nom) deja installe"
     } else {
-        Souci "$($o.nom) manquant — $($o.pourquoi)"
+        Souci "$($o.nom) manquant : $($o.pourquoi)"
         $a_installer += $o
     }
 }
@@ -228,7 +228,7 @@ Write-Host @"
   Ce qu il y a a faire       docs\04-brief-son.md
 
   Si un outil n a pas ete trouve au controle final, ferme ce terminal,
-  rouvre-le et relance .\installer.ps1 — Windows a parfois besoin d une
+  rouvre-le et relance .\installer.ps1 - Windows a parfois besoin d une
   nouvelle session pour voir ce qui vient d etre installe.
 
 "@ -ForegroundColor Green
