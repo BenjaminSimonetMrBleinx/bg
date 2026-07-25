@@ -76,8 +76,8 @@ func _physics_process(delta: float) -> void:
 	_position_lissee = _position_lissee.lerp(voulue, _facteur(lissage, delta))
 	_regard_lisse = _regard_lisse.lerp(vise, _facteur(reglages.lissage_rotation, delta))
 
-	global_position = _position_lissee
-	if _position_lissee.distance_squared_to(_regard_lisse) > 0.01:
+	global_position = _degager(_position_lissee, _regard_lisse, delta)
+	if global_position.distance_squared_to(_regard_lisse) > 0.01:
 		look_at(_regard_lisse, Vector3.UP)
 
 	# Le champ de vision ne s'ouvre qu'en vehicule : a pied, l'ecart de
@@ -87,6 +87,49 @@ func _physics_process(delta: float) -> void:
 		fov = lerpf(reglages.fov_arret, reglages.fov_pleine_vitesse, t)
 	elif _pieton:
 		fov = reglages.fov_arret
+
+
+# Distance actuellement concedee a un obstacle. Gardee d'une image a l'autre
+# pour que le retour au recul normal soit progressif.
+var _recul_libre: float = 0.0
+
+
+# Rapproche la camera si un mur la separe du sujet.
+#
+# Le clamp est fait APRES le lissage, sur la position finale, et pas sur la
+# position visee. Lisser vers une cible deja corrigee laisserait la camera
+# traverser le mur pendant qu'elle rattrape — c'est-a-dire exactement au
+# moment ou ca se voit.
+func _degager(position: Vector3, regard: Vector3, delta: float) -> Vector3:
+	if not reglages.camera_collision:
+		return position
+
+	var vers := position - regard
+	var distance := vers.length()
+	if distance < 0.05:
+		return position
+	var direction := vers / distance
+
+	var espace := get_world_3d().direct_space_state
+	var requete := PhysicsRayQueryParameters3D.create(regard, position)
+	# Seulement le decor : le sujet suivi est evidemment sur le trajet, et le
+	# joueur vit sur sa propre couche pour cette raison.
+	requete.collision_mask = 1
+	if _cible is CollisionObject3D:
+		requete.exclude = [(_cible as CollisionObject3D).get_rid()]
+
+	var touche := espace.intersect_ray(requete)
+	var libre := distance
+	if not touche.is_empty():
+		libre = maxf(0.2, regard.distance_to(touche["position"]) - reglages.camera_marge)
+
+	# Se rapprocher est instantane, s'eloigner est progressif.
+	if libre < _recul_libre or _recul_libre <= 0.0:
+		_recul_libre = libre
+	else:
+		_recul_libre = move_toward(_recul_libre, libre, reglages.camera_retour * delta)
+
+	return regard + direction * minf(_recul_libre, distance)
 
 
 static func _facteur(lissage: float, delta: float) -> float:

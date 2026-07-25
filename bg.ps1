@@ -318,7 +318,8 @@ switch ($Commande) {
             @{ nom = 'habitants et dialogue'; script = 'res://outils/test_dialogue.gd' },
             @{ nom = 'roue des outils'; script = 'res://outils/test_outils.gd' },
             @{ nom = 'mobilier urbain'; script = 'res://outils/test_decor.gd' },
-            @{ nom = 'jour et nuit'; script = 'res://outils/test_jour.gd' }
+            @{ nom = 'jour et nuit'; script = 'res://outils/test_jour.gd' },
+            @{ nom = 'camera et murs'; script = 'res://outils/test_camera_murs.gd' }
         )
         $echecs = 0
         foreach ($s in $suites) {

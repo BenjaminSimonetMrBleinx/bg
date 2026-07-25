@@ -75,6 +75,21 @@ extends Resource
 ## Hauteur du point vise, au dessus du vehicule.
 @export_range(0.0, 5.0, 0.1) var cible_hauteur: float = 1.2
 
+## La camera se rapproche quand un mur la separe du sujet. Sans ca, elle
+## passe au travers et on voit l'envers du decor — le defaut le plus visible
+## d'une camera de poursuite, et celui qui ne pardonne pas dans un interieur.
+@export var camera_collision: bool = true
+
+## Distance conservee devant l'obstacle, en metres. Trop court, le plan de
+## coupe de la camera entre quand meme dans le mur.
+@export_range(0.05, 1.5, 0.05) var camera_marge: float = 0.32
+
+## Vitesse a laquelle elle revient a son recul normal une fois degagee, en
+## metres par seconde. Le rapprochement, lui, est INSTANTANE : traverser un
+## mur ne serait-ce qu'une image se voit, alors qu'un retour progressif ne
+## se remarque pas.
+@export_range(0.5, 40.0, 0.5) var camera_retour: float = 7.0
+
 # ------------------------------------------------------------------- rendu
 @export_group("Rendu PS2")
 
