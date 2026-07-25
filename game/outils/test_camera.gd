@@ -18,6 +18,7 @@ const POSE := 40          # le temps que tout se pose
 const STABILISATION := 260  # le temps de faire son demi-tour et de filer droit
 const MESURE := 90        # fenetre d'observation
 const DERIVE_MAX := 20.0  # degres tolerés sur la fenetre
+const CADRAGE_MAX := 35.0 # ecart tolere entre l'axe du personnage et la camera
 
 const CAS := [
 	{"nom": "avancer", "action": "gaz"},
@@ -27,6 +28,7 @@ const CAS := [
 ]
 
 var _j: Node3D
+var _cam: Camera3D
 var _n := 0
 var _cas := 0
 var _phase := 0
@@ -47,7 +49,8 @@ func _process(_d: float) -> bool:
 
 	if _j == null:
 		_j = _trouver(root, "Joueur") as Node3D
-		if _j == null:
+		_cam = _trouver(root, "Camera3D") as Camera3D
+		if _j == null or _cam == null:
 			printerr("Joueur introuvable")
 			quit(1)
 			return true
@@ -64,19 +67,34 @@ func _process(_d: float) -> bool:
 		var parcouru := _j.global_position.distance_to(_debut_pos)
 		var nom: String = CAS[_cas]["nom"]
 
+		# La camera doit avoir fini derriere lui, quelle que soit la direction
+		# prise. C'est ce qui manquait : elle ne se replacait qu'en avancant,
+		# et il fallait donner un coup d'avance pour la remettre en place
+		# apres etre alle sur le cote.
+		var vers_camera := _cam.global_position - _j.global_position
+		vers_camera.y = 0.0
+		var avant := -_j.global_transform.basis.z
+		avant.y = 0.0
+		var ecart := rad_to_deg(absf(avant.normalized().angle_to(
+				-vers_camera.normalized())))
+
 		# Sans ce controle, une derive nulle voudrait simplement dire que le
 		# personnage n'a pas bouge — le test passerait pour la mauvaise raison.
 		if parcouru < 1.0:
 			_erreurs.append(nom + " (immobile)")
 			printerr("  ECHEC %-16s n'a pas bouge (%.2f m) : bloque en %s"
 					% [nom, parcouru, _j.global_position])
-		elif derive < DERIVE_MAX:
-			print("  ok   %-16s %.1f m parcourus, derive %.1f deg"
-					% [nom, parcouru, derive])
-		else:
+		elif derive >= DERIVE_MAX:
 			_erreurs.append(nom)
 			printerr("  ECHEC %-16s tourne sans fin (derive %.1f deg sur 1,5 s)"
 					% [nom, derive])
+		elif ecart > CADRAGE_MAX:
+			_erreurs.append(nom + " (camera mal placee)")
+			printerr("  ECHEC %-16s la camera est restee de cote (%.0f deg "
+					% [nom, ecart] + "de l'axe du personnage)")
+		else:
+			print("  ok   %-16s %.1f m, derive %.1f deg, camera a %.0f deg de l'axe"
+					% [nom, parcouru, derive, ecart])
 		Input.action_release(CAS[_cas]["action"])
 		_cas += 1
 		if _cas >= CAS.size():

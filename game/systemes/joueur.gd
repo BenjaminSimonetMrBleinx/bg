@@ -126,18 +126,48 @@ func _franchir(voulu: Vector3, delta: float) -> void:
 var bloque: bool = false
 
 
+# Repere fige au moment ou l'on commence a bouger, et garde tant que la
+# touche est tenue.
+#
+# C'est ce qui casse la poursuite mutuelle. "Aller a gauche" veut dire a
+# gauche DE CE QU'ON VOIT ; si on relisait la camera a chaque image pendant
+# qu'elle se replace derriere le personnage, la direction tournerait avec
+# elle et il marcherait en cercle. Une premiere version reglait ca en
+# empechant la camera de tourner ailleurs que vers l'avant : le probleme
+# disparaissait, mais la camera ne suivait plus quand on allait sur le cote,
+# et il fallait donner un coup d'avance pour la remettre en place.
+#
+# En figeant le repere, les deux problemes tombent : la trajectoire reste
+# droite, et la camera peut se replacer librement.
+var _avant_ref: Vector3 = Vector3.FORWARD
+var _droite_ref: Vector3 = Vector3.RIGHT
+var _reference_valide: bool = false
+
+
 func _direction_voulue() -> Vector3:
 	if bloque:
+		_reference_valide = false
 		return Vector3.ZERO
 	var axe := Input.get_vector("gauche", "droite", "gaz", "frein")
 	if axe.length_squared() < 0.01:
+		# Relacher rend la main a la camera : le prochain appui repartira de
+		# ce qu'on voit a ce moment-la.
+		_reference_valide = false
 		return Vector3.ZERO
-	var base := _cam.global_transform.basis if _cam != null else global_transform.basis
-	var avant := -base.z
-	var droite := base.x
-	avant.y = 0.0
-	droite.y = 0.0
-	return (droite * axe.x + avant * -axe.y).normalized()
+
+	if not _reference_valide:
+		var base := (_cam.global_transform.basis if _cam != null
+				else global_transform.basis)
+		var f := -base.z
+		var d := base.x
+		f.y = 0.0
+		d.y = 0.0
+		if f.length() > 0.01 and d.length() > 0.01:
+			_avant_ref = f.normalized()
+			_droite_ref = d.normalized()
+			_reference_valide = true
+
+	return (_droite_ref * axe.x + _avant_ref * -axe.y).normalized()
 
 
 ## Angle de lacet pour qu'un noeud regarde dans la direction donnee.

@@ -138,26 +138,29 @@ static func _facteur(lissage: float, delta: float) -> float:
 
 # Derriere et au-dessus, dans le repere du vehicule : la camera accompagne les
 # virages au lieu de rester plaquee sur un axe du monde.
-# Le cap ne se replace derriere le personnage que s'il S'ELOIGNE de la
-# camera. Quand il vient vers elle ou passe sur le cote, le cap tient bon :
-# c'est ce qui empeche la poursuite mutuelle, et c'est aussi le comportement
-# des cameras de suivi de l'epoque.
+# Le cap se replace derriere le personnage DANS TOUTES LES DIRECTIONS.
+#
+# Ca n'a pas toujours ete possible. Tant que le personnage relisait la camera
+# a chaque image pour savoir ou est "la gauche", les deux se poursuivaient :
+# aller sur le cote faisait tourner la camera, qui faisait tourner la
+# direction, qui faisait tourner la camera. La parade d'alors etait de ne
+# recentrer que lorsqu'il s'eloignait franchement — ce qui reglait le cercle
+# mais laissait la camera plantee des qu'on allait sur le cote ou en arriere.
+#
+# Depuis que le personnage fige son repere au moment de l'appui (voir
+# joueur.gd), la boucle n'existe plus et cette restriction n'a plus lieu
+# d'etre. La camera peut faire son travail.
 func _recentrer(delta: float) -> void:
 	if not (_cible is CharacterBody3D):
 		return
 	var v: Vector3 = (_cible as CharacterBody3D).velocity
 	v.y = 0.0
+	# Un seuil bas, mais pas nul : sous cette vitesse le vecteur n'est plus
+	# qu'un residu numerique, et la camera se mettrait a vibrer a l'arret.
 	if v.length() < 0.4:
 		return
 
 	var direction := v.normalized()
-	var vers_camera := Vector3(sin(_cap), 0.0, cos(_cap))   # du sujet vers la camera
-	# Seuil volontairement franc. A 0,15 on est trop pres de la
-	# perpendiculaire : un deplacement lateral le franchit par intermittence,
-	# le cap se met a bouger, et la poursuite mutuelle repart.
-	if direction.dot(-vers_camera) <= 0.5:
-		return                                              # il ne s'eloigne pas franchement
-
 	var voulu := atan2(-direction.x, -direction.z)          # derriere lui
 	_cap = rotate_toward(_cap, voulu, reglages.pieton_recentrage * delta)
 
