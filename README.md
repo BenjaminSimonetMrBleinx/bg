@@ -51,7 +51,28 @@ cd bg
 git lfs install
 ```
 
-Outils : [Godot 4.7](https://godotengine.org/download) · [Blender 5.2](https://www.blender.org/download/) · [Git LFS](https://git-lfs.com/)
+Outils : [Godot 4.7](https://godotengine.org/download) · [Blender 5.2](https://www.blender.org/download/) · [Python 3.12](https://www.python.org/downloads/) · [Git LFS](https://git-lfs.com/)
+
+Pas besoin de retenir les chemins, tout passe par le lanceur :
+
+```powershell
+.\bg.ps1 outils     # ou en est la chaine d outils
+.\bg.ps1 jouer      # lance le jeu
+.\bg.ps1 editeur    # ouvre l editeur Godot (pour regler reglages.tres)
+.\bg.ps1 generer    # regenere textures, ville et vehicule
+.\bg.ps1 capture    # rend une image hors ecran dans .tmp/
+.\bg.ps1 verif      # verifie que le projet charge
+```
+
+`generer` accepte `-Blocs 4 -Graine 1234` pour changer la taille et le tirage de la ville.
+
+## Commandes en jeu
+
+| Touche | Action |
+|---|---|
+| ZQSD / flèches | Conduire |
+| Espace | Frein à main |
+| F | Interagir |
 
 ## Structure
 
