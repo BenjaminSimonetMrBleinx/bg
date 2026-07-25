@@ -62,6 +62,52 @@ jamais sur une boutique console. L'argument s'annule pour ce projet.
 **Le vrai plafond du projet n'est pas le moteur : c'est la capacité de deux personnes à
 produire du contenu.** C'est là que meurent les mondes ouverts.
 
+### Le cas Unreal Engine 5
+
+Écarté, mais pas parce qu'il serait faible — **sur le genre visé, c'est le plus fort des
+trois.**
+
+Ce qu'il apporte réellement :
+
+- **Chaos Vehicles** : la meilleure physique de véhicule prête à l'emploi du marché. Une
+  voiture conduisible en cinq minutes depuis le template. C'est la boucle centrale d'un
+  GTA-like, et le point le plus faible de Godot.
+- **World Partition** : streaming de monde ouvert automatique. Godot n'a aucun équivalent.
+- **Blueprints** : le meilleur scénario « l'artiste fait du gameplay sans coder » qui existe.
+- **PCG** pour la génération procédurale de ville, et d'excellents outils de terrain.
+
+Trois conflits structurels le disqualifient pour **ce** projet :
+
+1. **Le moteur travaille contre l'esthétique.** UE5 existe pour Nanite, Lumen et TSR. Le
+   look PS1 impose de tout éteindre — et le TAA/TSR efface précisément les transitions
+   franches et le tramage, c'est-à-dire notre dither 15 bits. Désactivable
+   (`r.AntiAliasingMethod=0`), mais on retire les fonctions phares du moteur pour arriver
+   là où Godot démarre.
+2. **Les scènes et les Blueprints sont binaires.** Impossible de les générer, de les
+   modifier ou même de les lire par script. Le modèle de travail retenu pour ce projet
+   casse structurellement.
+3. **Un `.uasset` ne se merge pas.** À deux sur le même niveau, ce n'est pas un conflit à
+   résoudre : c'est le travail de l'un qui est jeté. La réponse d'Unreal est Perforce avec
+   verrouillage exclusif, pas GitHub.
+
+S'y ajoute le pratique : plus de 100 Go installés, un compte Epic, une compilation de
+shaders réputée pénible, et un C++ à conventions propres (`UPROPERTY`, `UCLASS`,
+ramasse-miettes) très loin de TypeScript.
+
+**Unreal redeviendrait le bon choix si trois choses changeaient :** Guillaume connaît déjà
+les Blueprints et prend le gameplay, on renonce à générer l'essentiel du code, et on
+accepte des semaines plutôt qu'un week-end. C'est un projet valable — ce n'est pas
+celui-ci.
+
+### Ce que coûte Godot, honnêtement
+
+Deux manques réels, à connaître plutôt qu'à découvrir : **le streaming du monde ouvert est
+à écrire**, et **la conduite se règle à la main** avec peu de documentation. Ces coûts
+arrivent au mois trois, pas au premier jalon — mais ils arrivent.
+
+Classement pour ce projet : **Godot > Unity > Unreal.**
+Pour un monde ouvert photoréaliste à six personnes, l'ordre s'inverse exactement.
+
 ## 4. La contrainte d'échelle
 
 GTA III : environ 23 personnes, deux ans, à temps plein. Ici : deux personnes, le soir.
