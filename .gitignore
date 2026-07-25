@@ -26,6 +26,12 @@ __pycache__/
 # Temporaires du projet — tout ce qui est régénérable
 .tmp/
 
+# Médias issus de la série — référence, placeholders, sources sonores.
+# Ne rentrent JAMAIS dans git : un binaire commité reste dans l'historique
+# même après suppression, et l'en sortir casse les clones existants.
+# Synchronisés entre nous par un autre canal. Voir DISCLAIMER.md.
+assets-ref/
+
 # OS
 Thumbs.db
 desktop.ini
