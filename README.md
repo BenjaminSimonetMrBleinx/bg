@@ -17,7 +17,8 @@ aux questions, on fige la direction, on code ensuite.
 
 | Document | Contenu |
 |---|---|
-| [`docs/05-demarrage.md`](docs/05-demarrage.md) | **Machine neuve : commence ici.** Git LFS avant le clone |
+| [`docs/05-demarrage.md`](docs/05-demarrage.md) | **Machine neuve : commence ici.** Une commande, `.\go.ps1` |
+| [`docs/06-travailler-a-deux.md`](docs/06-travailler-a-deux.md) | Qui fait quoi, qui tranche quoi, et pourquoi personne n'attend personne |
 | [`docs/00-questions.md`](docs/00-questions.md) | Les questions de cadrage, à remplir |
 | [`docs/01-cadrage.md`](docs/01-cadrage.md) | Décisions verrouillées, choix du moteur, répartition du travail |
 | [`docs/02-methode.md`](docs/02-methode.md) | Comment on code ce jeu au quotidien |
