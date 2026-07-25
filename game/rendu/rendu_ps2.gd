@@ -41,6 +41,13 @@ func _configurer_viewport() -> void:
 	_viewport.use_hdr_2d = false
 	_viewport.positional_shadow_atlas_size = 1024
 
+	# Indispensable, et desactive par defaut : sans ecouteur audio 3D, TOUT
+	# son positionne place dans ce viewport est muet. La camera devient
+	# l'oreille. Les lecteurs non positionnes (ambiance, musique) sortent
+	# quand meme, ce qui rend la panne particulierement trompeuse : on entend
+	# la rue, on n'entend jamais le moteur.
+	_viewport.audio_listener_enable_3d = true
+
 
 func _configurer_ecran() -> void:
 	# Lineaire = flou PS2. Nearest = texels carres PS1. Le curseur est dans
