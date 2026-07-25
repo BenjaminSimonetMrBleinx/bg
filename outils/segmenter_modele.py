@@ -118,9 +118,14 @@ def main() -> None:
 
         if h >= a.cou:
             return "Tete"
-        # Un bras est loin de l'axe ET au-dessus du poignet. En dessous, on
-        # est dans la main, qui pend plus bas que la hanche.
-        if abs(lat) > a.bras and h > a.poignet - 0.06:
+        # Tout ce qui est loin de l'axe appartient au bras, quelle que soit
+        # la hauteur — sauf tout en bas, ou ce sont les pieds.
+        #
+        # Une premiere version exigeait aussi h > poignet - 0.06. La main
+        # deborde de cette bande : sa partie basse tombait donc dans la
+        # CUISSE et partait avec elle a chaque foulee. En jeu, des eclats de
+        # peau flottaient autour des hanches, et rien ne le signalait.
+        if abs(lat) > a.bras and h > 0.32:
             if h >= a.coude:
                 return "Bras" + cote
             if h >= a.poignet:

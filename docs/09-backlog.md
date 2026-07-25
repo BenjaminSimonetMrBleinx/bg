@@ -77,3 +77,39 @@ Trois façons d'en tirer quelque chose, par coût croissant :
 - **Aucun son de pas.** Le brief en prévoit, ils ne sont pas enregistrés.
 - **Les objets de la roue ne s'utilisent pas.** Ils s'équipent et se voient, rien de plus.
   Décidé : on ne fait pas l'arme pour l'instant.
+
+---
+
+## Le Walt sculpté : ce qui marche et ce qui reste moche
+
+Audit fait en captures, huit vues, après passage en personnage jouable.
+
+**Ce qui est bon** : la silhouette, la démarche, les vêtements, le chapeau qui se pose sur la
+tête, le revolver dans la main. À distance de jeu — la tête fait **douze pixels** — il se lit
+parfaitement.
+
+**Un vrai bug trouvé et corrigé** : la partie basse des mains tombait dans la **cuisse** et
+partait avec elle à chaque foulée. Des éclats de peau flottaient autour des hanches. La cause
+était un seuil qui n'attribuait au segment « main » qu'une bande étroite autour du poignet.
+
+**Ce qui reste moche, et pourquoi :**
+
+- **Les mains restent éclatées.** Le maillage source est un bloc unique sans séparation entre
+  la main et la hanche. Une coupe par plans horizontaux ne peut pas trouver un poignet : elle
+  coupe où on lui dit, pas où est l'articulation.
+- **Le visage est rugueux de près.** La tête fait environ 130 faces. Une texture projetée
+  casse sur chaque facette, et aucun réglage n'y changera rien — c'est une limite de la
+  géométrie, pas du script.
+
+**Ce qui le règlerait vraiment.** Que Guillaume ouvre le `.blend` et **sépare le maillage en
+parties nommées** (`Bassin`, `Torse`, `CuisseG`…) avec les origines sur les articulations.
+C'est une demi-heure pour quelqu'un qui a le fichier ouvert, contre des heures de réglage à
+l'aveugle de mon côté. `segmenter_modele.py` devient alors inutile : le modèle entre
+directement dans l'animation.
+
+Même chose pour le visage : un dépliage à la main de la seule tête, et une texture peinte
+dessus, valent tous les réglages automatiques du monde.
+
+**En attendant, deux choix défendables :** le garder tel quel — les défauts sont invisibles à
+distance de jeu — ou revenir au personnage généré, qui est laid mais cohérent avec la ville et
+les passants.

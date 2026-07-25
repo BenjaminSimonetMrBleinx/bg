@@ -142,6 +142,9 @@ class Image:
 # ----------------------------------------------------------------- le corps
 
 
+COU = 0.855          # fraction de la hauteur ou commence la tete
+
+
 def region(centre, normale, boite) -> str:
     """A quelle partie du corps appartient cette face ?
 
@@ -155,17 +158,22 @@ def region(centre, normale, boite) -> str:
 
     if h < 0.055:
         return "chaussure"
-    if h > 0.90:
+    if h > COU:
         # L'avant de la tete recoit le visage. En Blender l'avant est -Y.
-        return "visage" if normale[1] < -0.35 else "crane"
-    if h > 0.855:
+        #
+        # Le seuil est LARGE : a -0,35 le visage s'arretait net sur une arete
+        # verticale, et de trois quarts on voyait une joue nue a cote d'un
+        # oeil. En prenant tout ce qui n'est pas franchement de dos, le
+        # dessin fait le tour et la couture disparait.
+        return "visage" if normale[1] < -0.25 else "crane"
+    if h > COU - 0.02:
         return "peau"                                        # cou
-    # Les mains pendent a hauteur de hanche, loin de l'axe.
-    if lat > 0.72 and 0.42 < h < 0.60:
-        return "peau"
-    # Les avant-bras aussi, un peu plus haut.
-    if lat > 0.78 and 0.58 < h < 0.72:
-        return "peau"
+    # Bras et mains : tout ce qui est loin de l'axe, du haut du bras jusqu'en
+    # bas. Le classement doit suivre EXACTEMENT celui de segmenter_modele.py,
+    # sinon un morceau de main est peint en pantalon puis anime comme une
+    # main — et personne ne comprend d'ou vient la tache.
+    if lat > 0.55 and h > 0.32:
+        return "chemise" if h >= 0.640 else "peau"
     if h > 0.50:
         return "chemise"
     return "pantalon"
@@ -239,13 +247,23 @@ def main() -> None:
     boite = ((min(xs), max(xs)), (min(ys), max(ys)), (min(zs), max(zs)))
     (xmin, xmax), _, (zmin, zmax) = boite
 
-    # Reperes de la tete, mesures sur les faces qui la composent — pas sur la
-    # boite entiere. Cadrer le visage sur la largeur des EPAULES l'ecraserait
-    # au milieu du crane, minuscule et decentre.
-    tete_bas = zmin + 0.90 * (zmax - zmin)
-    tetes = [v.co.x for v in me.vertices if v.co.z > tete_bas]
-    tete_gauche = min(tetes) if tetes else xmin
-    tete_droite = max(tetes) if tetes else xmax
+    # Reperes de la tete, mesures sur la TETE ENTIERE, depuis le cou.
+    #
+    # Une premiere version les mesurait au-dessus de 90 % de la hauteur —
+    # c'est-a-dire sur le sommet du crane, sa partie la plus etroite. Le
+    # visage se retrouvait comprime au milieu du front, et le bouc, dessine
+    # dans le bas de l'atlas, bavait sur la bouche.
+    tete_bas = zmin + COU * (zmax - zmin)
+    tetes = [v.co for v in me.vertices if v.co.z > tete_bas]
+    tete_gauche = min(p.x for p in tetes) if tetes else xmin
+    tete_droite = max(p.x for p in tetes) if tetes else xmax
+    tete_avant = min(p.y for p in tetes) if tetes else 0.0
+    tete_arriere = max(p.y for p in tetes) if tetes else 0.0
+
+    # Centre du corps, pour l'enroulement du tissu.
+    cx = (xmin + xmax) / 2.0
+    ys = [v.co.y for v in me.vertices]
+    cy = (min(ys) + max(ys)) / 2.0
 
     image = Image(a.taille, (int(tenue["haut"][0]), int(tenue["haut"][1]), int(tenue["haut"][2])))
     uv = me.uv_layers.active.data
@@ -259,37 +277,49 @@ def main() -> None:
         coords = [(uv[i].uv[0], uv[i].uv[1]) for i in poly.loop_indices]
         points = [tuple(me.vertices[i].co) for i in poly.vertices]
 
+        # TOUT est peint depuis la position 3D, jamais depuis les UV.
+        #
+        # Peindre le tissu d'apres ses coordonnees UV donnait un resultat
+        # mouchete : le depliage automatique decoupe le vetement en dizaines
+        # d'ilots sans rapport entre eux, et le motif — col, boutonniere —
+        # se retrouvait disperse au hasard. En enroulant la texture autour du
+        # corps, la boutonniere descend le long du buste et le col fait le
+        # tour du cou, comme un vetement.
         if r == "visage":
-            # Le visage est projete DEPUIS L'AVANT : la position 3D du pixel
-            # decide de l'endroit ou l'on pioche dans l'atlas de tete. C'est
-            # ce qui met les yeux a hauteur des yeux, sans depliage manuel —
-            # et par PIXEL, donc le dessin ne suit pas le decoupage.
             def couleur_de(p):
                 fx = (p[0] - tete_gauche) / max(1e-6, tete_droite - tete_gauche)
                 fz = (p[2] - tete_bas) / max(1e-6, zmax - tete_bas)
                 # Moitie gauche de l'atlas = le visage ; v croit vers le bas.
-                return visage(0.5 * min(0.999, max(0.0, fx)),
-                              1.0 - min(0.999, max(0.0, fz)))
+                # Borne a [0,15 ; 0,85] : les bords de l atlas portent la
+                # couronne de cheveux, qui plaquee sur une tempe donne une
+                # tache sombre sans rapport avec une chevelure.
+                fx = 0.15 + 0.70 * min(1.0, max(0.0, fx))
+                return visage(0.5 * fx, 1.0 - min(0.999, max(0.0, fz)))
         elif r == "crane":
             def couleur_de(p):
                 fz = (p[2] - tete_bas) / max(1e-6, zmax - tete_bas)
-                return visage(0.75, 1.0 - min(0.999, max(0.0, fz)))
+                # Moitie droite de l'atlas : crane et nuque, sans traits.
+                return visage(0.5 + 0.48 * abs((p[0] - cx) / max(1e-6, tete_droite - cx)),
+                              1.0 - min(0.999, max(0.0, fz)))
         elif r == "peau":
-            couleur_de = peau
-        elif r == "chemise":
-            couleur_de = haut
-        elif r == "pantalon":
-            couleur_de = bas
+            def couleur_de(p):
+                return peau(p[0] * 3.1 % 1.0, p[2] * 3.1 % 1.0)
+        elif r in ("chemise", "pantalon", "chaussure"):
+            fn = haut if r == "chemise" else (bas if r == "pantalon" else chaussure)
+            hauteur_tissu = 0.62 if r == "chemise" else 0.9
+            def couleur_de(p, _fn=fn, _h=hauteur_tissu):
+                # u fait le tour du corps, v monte : la texture s'enroule.
+                angle = math.atan2(p[1] - cy, p[0] - cx)
+                u = (angle / (2.0 * math.pi)) + 0.5
+                v = ((p[2] - zmin) / max(1e-6, zmax - zmin)) / _h
+                return _fn(u % 1.0, v % 1.0)
         else:
             couleur_de = chaussure
 
-        # Le visage et le crane sont peints en 3D, le reste en UV : une
-        # texture de tissu n'a aucune raison de suivre la geometrie.
-        en_3d = r in ("visage", "crane")
         for k in range(1, len(coords) - 1):
-            tri = [coords[0], coords[k], coords[k + 1]]
-            pts = [points[0], points[k], points[k + 1]] if en_3d else None
-            image.triangle(tri, couleur_de, pts)
+            image.triangle([coords[0], coords[k], coords[k + 1]],
+                           couleur_de,
+                           [points[0], points[k], points[k + 1]])
 
     sortie = Path(a.sortie)
     if not sortie.is_absolute():
