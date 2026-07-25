@@ -14,6 +14,18 @@ Après toute modification décrite ici :
 `generer` est sans risque : les générateurs écrivent toujours le même résultat pour les
 mêmes entrées. On peut le relancer autant qu'on veut.
 
+> **Note — passer par `generer`, jamais par Blender directement.**
+> Godot garde une copie importée de chaque fichier 3D. Régénérer un `.glb` à la main sans
+> lui dire de le relire laisse le jeu servir l'ancienne version : on corrige, on relance,
+> rien ne change, et on cherche l'erreur ailleurs. Ça nous est arrivé deux fois en un
+> week-end. `.\bg.ps1 generer` fait le réimport à la fin, c'est tout l'intérêt.
+
+> **Note — `generer` couvre tout.**
+> Textures, ville, véhicule, personnages **et** maisons. Une version antérieure oubliait
+> les deux derniers : on pouvait modifier un visage ou déplacer un habitant sans qu'aucun
+> changement n'apparaisse. Si un doute revient un jour, la liste est en tête de la commande
+> dans `bg.ps1`.
+
 ---
 
 ## 1. Changer ou ajouter des répliques
@@ -44,10 +56,16 @@ Un seul fichier : **`game/donnees/dialogues.json`**. Rien à régénérer, le je
 - **Garder les répliques courtes.** L'écran fait 512 pixels de large et le cadre en affiche
   trois lignes. Au-delà, le texte est coupé.
 
-**Le piège :** une virgule en trop et *tout le monde* devient muet, sans qu'aucune erreur
-n'apparaisse ailleurs — la maison s'ouvre, le personnage est là, il n'a simplement rien à
-dire. `.\bg.ps1 test` le détecte, et le jeu écrit `DIALOGUE : N personnage(s) chargés` au
-démarrage. Si N est faux, le fichier est cassé.
+> **Note — une virgule en trop rend *tout le monde* muet.**
+> Et sans qu'aucune erreur n'apparaisse ailleurs : la maison s'ouvre, le personnage est là,
+> il n'a simplement rien à dire. Deux façons de le voir tout de suite — `.\bg.ps1 test`, et
+> la ligne `DIALOGUE : N personnage(s) chargés` écrite au démarrage du jeu. Si N ne
+> correspond pas au nombre de personnages du fichier, il est cassé.
+
+> **Note — les accents et apostrophes passent sans problème.**
+> Le fichier est en UTF-8, écrire « t'as pas frappé » est correct. En revanche une
+> apostrophe ne doit jamais fermer une chaîne : c'est `"texte": "t'as"`, avec des
+> guillemets doubles autour. JSON n'accepte pas les guillemets simples.
 
 ---
 
@@ -72,9 +90,12 @@ Trois entrées de dictionnaire, dans deux fichiers. Aucune fonction à écrire.
 Un visage PS2 est une texture peinte sur une boîte : aucune géométrie ne représente un nez
 ou un œil à ce budget de triangles. Tout le personnage tient donc dans ces quelques traits.
 
-**Règle apprise à la dure :** le contraste entre `poil` et `peau` doit être franc. À trente
-pixels de haut, un blond doré sur une peau claire donne un bloc uni sans visage. Le
-réalisme de la teinte perd contre la lisibilité, systématiquement.
+> **Note — le contraste entre `poil` et `peau` doit être franc.**
+> Une tête fait vingt à trente pixels de haut à l'écran. Skyler avait des cheveux blond
+> doré sur une peau claire : son visage ne se lisait plus du tout, on ne voyait qu'un bloc
+> uni. Passé en blond cendré, elle est redevenue lisible. À cette résolution, le réalisme
+> de la teinte perd contre la lisibilité, systématiquement — et ça vaudra pour tous les
+> personnages à venir.
 
 ### b. Sa tenue — même fichier, dictionnaire `TENUES`
 
@@ -116,9 +137,10 @@ Là, il faut ouvrir Godot une fois — c'est la seule étape qui le demande.
 Le personnage se pose tout seul sur le repère `Habitant` de la pièce, face à la porte, et
 se tourne vers le joueur quand celui-ci approche.
 
-**Si la clé ne correspond à rien dans `dialogues.json`**, le personnage apparaît mais reste
-muet. `.\bg.ps1 test` vérifie exactement ce point, parce que c'est une panne qui ne se voit
-pas autrement qu'en allant lui parler.
+> **Note — une clé mal orthographiée donne un personnage muet, pas une erreur.**
+> Il apparaît, il se tourne vers vous, et l'invite « Parler à » ne mène à rien.
+> `.\bg.ps1 test` vérifie exactement ce point, parce que ça ne se voit pas autrement qu'en
+> allant lui parler.
 
 ---
 
@@ -137,9 +159,12 @@ Dans `outils/gen_maison.py`, dictionnaire `MAISONS` :
 },
 ```
 
-Le repère est centré sur la pièce. **Le générateur refuse d'exporter si l'habitant se
-retrouve dans un meuble ou dans un mur** — ça s'est produit, Jesse était planté au milieu
-de son plan de travail, coupé à la taille, et rien ne le signalait.
+Le repère est centré sur la pièce.
+
+> **Note — le générateur refuse d'exporter une pièce mal fichue.**
+> Si l'habitant se retrouve dans un meuble ou dans un mur, `generer` s'arrête et dit lequel.
+> Ce n'est pas de la prudence gratuite : Jesse était planté au milieu de son plan de
+> travail, coupé à la taille, et rien ne le signalait — il fallait aller le voir.
 
 ---
 

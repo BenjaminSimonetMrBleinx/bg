@@ -26,6 +26,9 @@ extends Node
 ## Deroule les conversations. Facultatif : sans lui les habitants sont muets.
 @export var dialogue: NodePath
 
+## La roue des outils. Facultative : sans elle, on joue les mains vides.
+@export var roue: NodePath
+
 enum Etat { A_PIED, AU_VOLANT, DEDANS }
 
 var _etat: int = Etat.A_PIED
@@ -36,6 +39,7 @@ var _invite: Label
 var _fondu: ColorRect
 var _audio: Audio
 var _dialogue: Dialogue
+var _roue: Roue
 var _maisons: Array[Maison] = []
 
 ## La maison dans laquelle on se trouve. Nulle des qu'on est dehors.
@@ -62,6 +66,7 @@ func _ready() -> void:
 	_fondu = get_node_or_null(fondu) as ColorRect
 	_audio = get_node_or_null(audio) as Audio
 	_dialogue = get_node_or_null(dialogue) as Dialogue
+	_roue = get_node_or_null(roue) as Roue
 	if _dialogue != null:
 		_dialogue.termine.connect(func() -> void: _j.bloque = false)
 	var racine := get_node_or_null(maisons)
@@ -84,6 +89,8 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	if _transition:
 		return
+	if _gerer_la_roue():
+		return
 
 	match _etat:
 		Etat.AU_VOLANT:
@@ -96,6 +103,32 @@ func _process(_delta: float) -> void:
 
 		_:
 			_a_pied()
+
+
+# Renvoie vrai si la roue a pris la main : elle capte alors gauche et droite,
+# qui servent a choisir. Sans ce court-circuit, Walter marcherait de cote
+# pendant qu'on tourne la roue.
+func _gerer_la_roue() -> bool:
+	if _roue == null:
+		return false
+
+	if _roue.ouverte():
+		_afficher("")
+		# On valide au RELACHEMENT, pas a l'appui : c'est ce qui fait de la
+		# roue un geste continu plutot qu'un menu ou l'on entre et d'ou l'on
+		# sort. On garde la touche, on vise, on lache.
+		if Input.is_action_just_released("roue"):
+			_roue.fermer(true)
+			_j.bloque = false
+		return true
+
+	var occupe := _dialogue != null and _dialogue.actif()
+	if not occupe and Input.is_action_just_pressed("roue"):
+		_roue.ouvrir()
+		if _roue.ouverte():
+			_j.bloque = true
+			return true
+	return false
 
 
 func _presenter_le_joueur() -> void:

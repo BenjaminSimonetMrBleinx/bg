@@ -1,0 +1,50 @@
+{
+  "_lisez_moi": [
+    "Les objets que Walter peut tenir, et comment ils se posent sur lui.",
+    "",
+    "  cle       identifiant interne, sert aussi de nom de fichier .glb",
+    "  nom       ce qui s'affiche dans la roue",
+    "  ancrage   segment du corps : MainD, MainG, ou Tete",
+    "  position  decalage en metres dans le repere de ce segment",
+    "  rotation  en DEGRES, ordre X puis Y puis Z",
+    "  echelle   1.0 = taille modelisee",
+    "",
+    "Tout est modifiable a chaud : relancer le jeu suffit, rien a regenerer.",
+    "Ajouter une entree ajoute automatiquement une part a la roue."
+  ],
+
+  "outils": [
+    {
+      "cle": "arme",
+      "nom": "Revolver",
+      "ancrage": "MainD",
+      "position": [0.0, -0.03, 0.0],
+      "rotation": [0.0, 0.0, 0.0],
+      "echelle": 1.0
+    },
+    {
+      "cle": "meth",
+      "nom": "Cristal",
+      "ancrage": "MainD",
+      "position": [0.0, -0.04, 0.0],
+      "rotation": [180.0, 0.0, 0.0],
+      "echelle": 1.0
+    },
+    {
+      "cle": "livre",
+      "nom": "Feuilles d'herbe",
+      "ancrage": "MainD",
+      "position": [0.0, -0.04, 0.01],
+      "rotation": [180.0, 0.0, 18.0],
+      "echelle": 1.0
+    },
+    {
+      "cle": "chapeau",
+      "nom": "Porkpie",
+      "ancrage": "Tete",
+      "position": [0.0, 0.24, 0.0],
+      "rotation": [0.0, 0.0, 0.0],
+      "echelle": 1.0
+    }
+  ]
+}

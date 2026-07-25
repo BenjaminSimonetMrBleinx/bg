@@ -262,3 +262,17 @@ extends Resource
 ## que la porte : sinon, entrer dans une piece ou quelqu'un se tient pres de
 ## l'entree proposerait les deux choses a la fois.
 @export_range(0.5, 6.0, 0.1) var portee_dialogue: float = 2.2
+
+
+@export_group("Roue des outils")
+
+## Rayon du cercle de parts, en pixels de l'ecran interne (512 x 384).
+@export_range(30.0, 160.0, 1.0) var roue_rayon: float = 92.0
+
+## Duree d'ouverture, en secondes. Court : c'est un geste, pas un menu.
+@export_range(0.02, 0.6, 0.01) var roue_ouverture: float = 0.12
+
+## Ralenti pendant que la roue est ouverte. 1 = pas de ralenti, 0 = arret
+## complet. Les jeux de l'epoque ralentissaient sans figer, ce qui garde le
+## monde vivant derriere sans mettre le joueur en danger.
+@export_range(0.05, 1.0, 0.05) var roue_ralenti: float = 0.25

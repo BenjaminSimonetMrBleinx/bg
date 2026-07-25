@@ -11,7 +11,7 @@
 ; Le vehicule demarre sur la chaussee verticale du couloir 0, qui court le
 ; long de -Z : il est donc deja dans le bon sens.
 
-[gd_scene load_steps=22 format=3 uid="uid://bgmonde0v0001"]
+[gd_scene load_steps=24 format=3 uid="uid://bgmonde0v0001"]
 
 [ext_resource type="Script" path="res://rendu/rendu_ps2.gd" id="1_rendu"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
@@ -31,6 +31,8 @@
 [ext_resource type="Script" path="res://systemes/dialogue.gd" id="16_dialogue"]
 [ext_resource type="PackedScene" path="res://assets/personnages/skyler.glb" id="17_skyler"]
 [ext_resource type="PackedScene" path="res://assets/personnages/jesse.glb" id="18_jesse"]
+[ext_resource type="Script" path="res://systemes/equipement.gd" id="19_equipement"]
+[ext_resource type="Script" path="res://systemes/roue.gd" id="20_roue"]
 
 [sub_resource type="ViewportTexture" id="tex_ecran"]
 viewport_path = NodePath("Rendu")
@@ -167,6 +169,19 @@ theme_override_colors/font_color = Color(0.949, 0.941, 0.914, 1)
 theme_override_font_sizes/font_size = 15
 autowrap_mode = 3
 
+; La roue des outils. Sous le fondu, pour qu'un passage de porte la recouvre
+; si elle etait restee ouverte.
+[node name="Roue" type="Control" parent="Rendu/Interface"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("20_roue")
+reglages = ExtResource("2_reglages")
+equipement = NodePath("../../../Equipement")
+
 ; Le fondu de porte. Declare APRES l'invite, donc dessine par-dessus : pendant
 ; le noir, plus rien ne doit rester lisible a l'ecran.
 [node name="Fondu" type="ColorRect" parent="Rendu/Interface"]
@@ -182,6 +197,10 @@ color = Color(0, 0, 0, 0)
 script = ExtResource("9_audio")
 reglages = ExtResource("2_reglages")
 ambiance_exterieure = ExtResource("10_ambiance")
+
+[node name="Equipement" type="Node" parent="."]
+script = ExtResource("19_equipement")
+porteur = NodePath("../Rendu/Scene3D/Joueur")
 
 [node name="Dialogue" type="Node" parent="."]
 script = ExtResource("16_dialogue")
@@ -200,6 +219,7 @@ maisons = NodePath("../Rendu/Scene3D/Maisons")
 fondu = NodePath("../Rendu/Interface/Fondu")
 audio = NodePath("../Audio")
 dialogue = NodePath("../Dialogue")
+roue = NodePath("../Rendu/Interface/Roue")
 
 [node name="Affichage" type="CanvasLayer" parent="."]
 layer = -1

@@ -169,3 +169,45 @@ l'orientation était juste, le problème était le contraste.
 Neuf suites.
 
 **Prochain** : V8, la roue des outils.
+
+---
+
+## V8 — La roue des outils
+
+Revolver, cristal, « Feuilles d'herbe » et le porkpie. On maintient **Tab** (ou le clic
+droit), on choisit avec gauche/droite, on relâche pour équiper. Rechoisir ce qu'on tient
+déjà le range — sinon il n'y a aucun moyen de revenir aux mains vides une fois qu'on a pris
+quelque chose.
+
+**La roue est dessinée, pas assemblée en nœuds.** Le nombre de parts vient de
+`donnees/outils.json` : ajouter une entrée ajoute une part, sans toucher à quoi que ce soit.
+Une roue faite de nœuds posés à la main devrait être refaite à chaque objet ajouté.
+
+**On valide au relâchement, pas à l'appui.** C'est ce qui fait de la roue un geste continu
+plutôt qu'un menu où l'on entre et d'où l'on sort. Et le temps ralentit sans se figer —
+`Engine.time_scale` à 0,25 — ce que faisaient les jeux de l'époque : le monde reste vivant
+derrière, mais on n'est pas en danger pendant qu'on choisit.
+
+Les objets sont accrochés **une fois pour toutes** au démarrage puis simplement masqués. Les
+instancier au changement provoquerait un temps de chargement au moment précis où l'on tourne
+la roue, c'est-à-dire au pire moment.
+
+**Les quatre orientations étaient fausses au premier essai** — revolver pointant le sol,
+livre à plat comme un plateau. Les objets sont modélisés avec l'axe long vers le haut et le
+point de prise à l'origine : après conversion glTF, la rotation nulle donne déjà une prise
+correcte. Mes valeurs « corrigeaient » un problème qui n'existait pas. Tout est dans le
+fichier de données, donc corrigé sans rien régénérer.
+
+**Un piège de capture, à retenir.** Mon premier gros plan sur la main a photographié
+**Skyler**. `find_child("MainD")` depuis la racine descend en profondeur, et les maisons
+viennent avant le joueur dans l'arbre — tous les personnages ont les mêmes noms de segments.
+Chercher depuis le joueur, jamais depuis la racine.
+
+**Et un piège Godot qui a failli passer.** La première version du test annonçait « le
+revolver apparaît » pour les quatre outils, y compris les mains vides : `visible` est
+**local** en Godot, un maillage garde `visible = true` sous un parent masqué. C'est
+`is_visible_in_tree()` qu'il faut. Un test qui valide toujours est pire que pas de test.
+
+Dix suites.
+
+**Prochain** : V9, HUD, export Windows, et le week-end est bouclé.
