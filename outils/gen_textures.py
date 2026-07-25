@@ -403,6 +403,21 @@ def chaussure(u: float, v: float):
     return (g, g * 0.94, g * 0.88)
 
 
+def uni(base, grain: float = 0.10, veine: bool = False):
+    """Matiere unie et bruitee, pour les objets tenus en main.
+
+    Ils font quelques centimetres a l'ecran : une texture detaillee y serait
+    invisible, et seule la teinte compte. Le grain evite l'aplat plastique.
+    """
+    def rendu(u: float, v: float):
+        n = hache(int(u * 190), int(v * 190))
+        g = 1.0 + (n - 0.5) * 2.0 * grain
+        if veine:                                  # tranche de pages, planches
+            g *= 0.90 + 0.10 * ((int(v * 26) % 2))
+        return (base[0] * g, base[1] * g, base[2] * g)
+    return rendu
+
+
 def crepi(u: float, v: float):
     """Enduit gratte beige, le revetement d'Albuquerque."""
     n = hache(int(u * 210), int(v * 210))
@@ -576,6 +591,21 @@ def main() -> None:
     ecrire_png(dossier / "chaussure.png", t // 2, t // 2,
                rendre(t // 2, t // 2, chaussure))
     faits += ["peau.png", "chemise.png", "pantalon.png", "chaussure.png"]
+
+    # --- objets tenus en main ---
+    for nom, base, grain, veine in [
+        ("metal", (118, 120, 126), 0.09, False),
+        ("metal_sombre", (58, 58, 62), 0.09, False),
+        ("cristal", (150, 196, 214), 0.14, False),
+        ("cristal_clair", (196, 232, 244), 0.16, False),
+        ("couverture", (96, 62, 46), 0.10, False),
+        ("pages", (226, 218, 196), 0.06, True),
+        ("feutre", (48, 46, 48), 0.08, False),
+        ("feutre_sombre", (30, 28, 30), 0.08, False),
+    ]:
+        ecrire_png(dossier / f"{nom}.png", t // 4, t // 4,
+                   rendre(t // 4, t // 4, uni(base, grain, veine)))
+        faits.append(f"{nom}.png")
 
     # --- maisons ---
     for nom, fn in [("crepi", crepi), ("bardage", bardage), ("toit", toit),

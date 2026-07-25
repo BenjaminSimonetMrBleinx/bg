@@ -5,7 +5,7 @@
 .EXAMPLE
     .\bg.ps1 jouer          lance le jeu
     .\bg.ps1 editeur        ouvre l editeur Godot sur le projet
-    .\bg.ps1 generer        regenere textures, ville et vehicule
+    .\bg.ps1 generer        regenere textures, ville, vehicule, personnages, maisons
     .\bg.ps1 capture        rend une image hors ecran dans .tmp/
     .\bg.ps1 verif          verifie que le projet charge (headless)
     .\bg.ps1 outils         affiche l etat de la chaine d outils
@@ -109,6 +109,12 @@ switch ($Commande) {
             & $Blender -b -P 'outils/gen_ville.py' -- --blocs $Blocs --seed $Graine
             Write-Host "`n--- vehicule ($Couleur) ---" -ForegroundColor Cyan
             & $Blender -b -P 'outils/gen_voiture.py' -- --couleur $Couleur
+            Write-Host "`n--- personnages ---" -ForegroundColor Cyan
+            & $Blender -b -P 'outils/gen_personnage.py' -- --nom tous
+            Write-Host "`n--- maisons ---" -ForegroundColor Cyan
+            & $Blender -b -P 'outils/gen_maison.py' -- --nom toutes
+            # Sans reimport, Godot continue de servir l ancienne version depuis
+            # son cache et on corrige a l aveugle en croyant que rien ne change.
             if ($GodotConsole -and (Test-Path $GodotConsole)) {
                 Write-Host "`n--- reimport Godot ---" -ForegroundColor Cyan
                 & $GodotConsole --headless --path $Projet --import | Out-Null
