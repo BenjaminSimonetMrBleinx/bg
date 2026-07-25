@@ -155,3 +155,42 @@ extends Resource
 
 ## Hauteur des yeux a pied.
 @export_range(0.5, 2.5, 0.05) var oeil_hauteur: float = 1.65
+
+## Vitesse de rotation du personnage vers sa direction de marche, en tours
+## par seconde. Bas = il pivote lourdement, haut = il se retourne net.
+@export_range(0.2, 12.0, 0.1) var marche_rotation: float = 5.0
+
+@export_subgroup("Camera a pied")
+
+## Recul de la camera quand on marche. Plus court qu'en voiture.
+@export_range(1.0, 12.0, 0.1) var pieton_recul: float = 3.6
+
+@export_range(0.5, 6.0, 0.1) var pieton_hauteur: float = 1.9
+
+@export_range(0.01, 1.0, 0.01) var pieton_lissage: float = 0.22
+
+@export_subgroup("Marche procedurale")
+
+## Longueur d'une foulee, en metres. C'est elle qui cale la cadence sur la
+## vitesse reelle : la phase avance avec la DISTANCE parcourue, pas avec le
+## temps, donc les pieds ne patinent jamais.
+@export_range(0.3, 2.5, 0.05) var foulee: float = 1.15
+
+## Amplitude du balancement des cuisses, en degres.
+@export_range(0.0, 80.0, 1.0) var amplitude_jambe: float = 34.0
+
+## Flexion maximale du genou, en degres. Le genou ne plie que vers l'arriere.
+@export_range(0.0, 110.0, 1.0) var amplitude_genou: float = 46.0
+
+## Balancement des bras, en degres. Oppose aux jambes.
+@export_range(0.0, 70.0, 1.0) var amplitude_bras: float = 26.0
+
+## Flexion du coude, en degres.
+@export_range(0.0, 90.0, 1.0) var amplitude_coude: float = 22.0
+
+## Oscillation verticale du bassin a chaque pas, en metres.
+@export_range(0.0, 0.20, 0.005) var rebond: float = 0.045
+
+## Roulis du torse a chaque foulee, en degres. Discret, mais c'est lui qui
+## enleve l'impression de pantin.
+@export_range(0.0, 20.0, 0.5) var roulis_torse: float = 4.0

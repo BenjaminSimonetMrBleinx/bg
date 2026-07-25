@@ -1,0 +1,26 @@
+; Walter a pied.
+;
+; La capsule de collision fait 1,78 m comme le personnage. Le maillage est
+; une hierarchie de segments rigides animee par joueur.gd — pas de squelette,
+; pas de clip d'animation.
+
+[gd_scene load_steps=5 format=3 uid="uid://bgjoueur000001"]
+
+[ext_resource type="Script" path="res://systemes/joueur.gd" id="1_joueur"]
+[ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
+[ext_resource type="PackedScene" path="res://assets/personnages/walter.glb" id="3_walter"]
+
+[sub_resource type="CapsuleShape3D" id="capsule"]
+radius = 0.28
+height = 1.78
+
+[node name="Joueur" type="CharacterBody3D"]
+collision_layer = 2
+script = ExtResource("1_joueur")
+reglages = ExtResource("2_reglages")
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.89, 0)
+shape = SubResource("capsule")
+
+[node name="Walter" parent="." instance=ExtResource("3_walter")]

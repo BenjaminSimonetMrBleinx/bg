@@ -221,6 +221,112 @@ def feu(couleur):
     return fn
 
 
+def tete_walter(u: float, v: float):
+    """Atlas de tete. Moitie gauche (u < 0.5) : le visage, plaque sur la face
+    avant du cube. Moitie droite : crane et nuque, uni.
+
+    Un visage PS2 est une texture sur une boite — aucune geometrie ne
+    represente un nez ou un oeil a ce budget de triangles.
+    """
+    n = hache(int(u * 200), int(v * 200))
+    peau = (194 + n * 14, 156 + n * 12, 130 + n * 10)
+    poil = (58 + n * 13, 49 + n * 11, 45 + n * 10)
+
+    if u >= 0.5:                                  # arriere et cotes du crane
+        return peau
+
+    # v croit vers le BAS dans un PNG : on le retourne pour raisonner en
+    # hauteur de visage, 1 = sommet du crane, 0 = menton. Une premiere
+    # version l'oubliait et Walter portait son bouc sur le front.
+    fu, fv = u * 2.0, 1.0 - v
+
+    # calvitie : sommet degage, couronne de cheveux courts sur les cotes
+    if fv > 0.845:
+        return peau
+    if 0.60 < fv < 0.865 and (fu < 0.13 or fu > 0.87):
+        return poil
+
+    # sourcils
+    if 0.645 < fv < 0.685 and (0.20 < fu < 0.42 or 0.58 < fu < 0.80):
+        return poil
+
+    oeil_g = 0.235 < fu < 0.405
+    oeil_d = 0.595 < fu < 0.765
+
+    # lunettes : monture fine, dessinee avant les yeux pour l'encadrer
+    monture = 0.505 < fv < 0.625
+    if monture and (0.220 < fu < 0.420 or 0.580 < fu < 0.780):
+        bord_v = fv < 0.525 or fv > 0.605
+        bord_u = (0.220 < fu < 0.238 or 0.402 < fu < 0.420
+                  or 0.580 < fu < 0.598 or 0.762 < fu < 0.780)
+        if bord_v or bord_u:
+            return (66, 62, 58)
+    if 0.556 < fv < 0.572 and 0.420 <= fu <= 0.580:
+        return (66, 62, 58)                       # pont de lunettes
+    if 0.556 < fv < 0.572 and (fu < 0.13 or fu > 0.87):
+        return (66, 62, 58)                       # branches
+
+    # yeux
+    if 0.530 < fv < 0.600 and (oeil_g or oeil_d):
+        centre = 0.320 if oeil_g else 0.680
+        if abs(fu - centre) < 0.030 and 0.545 < fv < 0.585:
+            return (34, 36, 42)                   # pupille
+        return (222, 220, 214)                    # sclere
+
+    # nez : une simple ombre laterale, aucune geometrie a ce budget
+    if 0.36 < fv < 0.50 and 0.455 < fu < 0.475:
+        return (peau[0] * 0.86, peau[1] * 0.86, peau[2] * 0.86)
+
+    # moustache
+    if 0.300 < fv < 0.355 and 0.345 < fu < 0.655:
+        return poil
+
+    # bouc : se resserre vers le menton
+    if fv < 0.300 and 0.325 < fu < 0.675:
+        marge = abs(fu - 0.5) / 0.175
+        if fv > 0.075 + marge * 0.085:
+            return poil
+
+    return peau
+
+
+def peau(u: float, v: float):
+    """Mains, avant-bras : carnation unie et bruitee."""
+    n = hache(int(u * 200), int(v * 200))
+    return (196 + n * 14, 156 + n * 12, 128 + n * 10)
+
+
+def chemise(u: float, v: float):
+    """Chemise vert sourd. Boutonniere verticale et col plus clair."""
+    n = hache(int(u * 180), int(v * 180))
+    base = (92, 108, 88)
+    if v > 0.90:                                   # col
+        g = 1.16 + n * 0.12
+    elif abs(u - 0.5) < 0.022:                     # boutonniere
+        g = 0.78 + n * 0.10
+    else:
+        g = 0.92 + n * 0.16
+    return (base[0] * g, base[1] * g, base[2] * g)
+
+
+def pantalon(u: float, v: float):
+    """Pantalon kaki, legerement plus sombre en bas de jambe."""
+    n = hache(int(u * 170), int(v * 170))
+    base = (118, 106, 84)
+    g = 0.88 + n * 0.16 - max(0.0, 0.25 - v) * 0.5
+    return (base[0] * g, base[1] * g, base[2] * g)
+
+
+def chaussure(u: float, v: float):
+    """Cuir sombre, semelle plus claire."""
+    n = hache(int(u * 180), int(v * 180))
+    if v < 0.22:
+        g = 78 + n * 14
+        return (g, g, g + 3)
+    g = 42 + n * 12
+    return (g, g * 0.94, g * 0.88)
+
+
 def mur(base):
     """Pignon aveugle : crepi seul, pour les cotes et l'arriere des immeubles."""
 
@@ -291,6 +397,16 @@ def main() -> None:
     ecrire_png(dossier / "feu_arriere.png", t // 4, t // 4,
                rendre(t // 4, t // 4, feu((196, 42, 34))))
     faits += ["vitre.png", "pneu.png", "jante.png", "feu_avant.png", "feu_arriere.png"]
+
+    # --- personnages ---
+    ecrire_png(dossier / "tete_walter.png", t, t, rendre(t, t, tete_walter))
+    ecrire_png(dossier / "peau.png", t // 2, t // 2, rendre(t // 2, t // 2, peau))
+    ecrire_png(dossier / "chemise.png", t, t, rendre(t, t, chemise))
+    ecrire_png(dossier / "pantalon.png", t, t, rendre(t, t, pantalon))
+    ecrire_png(dossier / "chaussure.png", t // 2, t // 2,
+               rendre(t // 2, t // 2, chaussure))
+    faits += ["tete_walter.png", "peau.png", "chemise.png", "pantalon.png",
+              "chaussure.png"]
 
     print(f"{len(faits)} textures ecrites dans {dossier}/")
     for f in faits:

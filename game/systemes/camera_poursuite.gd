@@ -12,6 +12,7 @@ extends Camera3D
 
 var _cible: Node3D
 var _vehicule: Vehicule
+var _pieton: bool = false
 var _position_lissee: Vector3
 var _regard_lisse: Vector3
 var _initialisee: bool = false
@@ -22,13 +23,23 @@ func _ready() -> void:
 		push_error("camera_poursuite : aucune ressource Reglages assignee")
 		set_physics_process(false)
 		return
-	_cible = get_node_or_null(cible) as Node3D
-	if _cible == null:
+	var n := get_node_or_null(cible) as Node3D
+	if n == null:
 		push_warning("camera_poursuite : cible introuvable (%s)" % cible)
 		set_physics_process(false)
 		return
-	_vehicule = _cible as Vehicule
+	suivre(n)
 	fov = reglages.fov_arret
+
+
+## Change de sujet. Appele au moment ou l'on monte dans le vehicule ou l'on
+## en descend : le cadrage n'est pas le meme a pied qu'au volant, et la
+## camera se replace sans transition brutale grace au lissage.
+func suivre(n: Node3D) -> void:
+	_cible = n
+	_vehicule = n as Vehicule
+	_pieton = n is Joueur
+	set_physics_process(true)
 
 
 func _physics_process(delta: float) -> void:
@@ -43,16 +54,21 @@ func _physics_process(delta: float) -> void:
 	# Lissage independant du framerate : a 30 comme a 144 images/s, la camera
 	# met le meme temps reel a rattraper. Sans ca, tout reglage trouve sur une
 	# machine serait faux sur l'autre.
-	_position_lissee = _position_lissee.lerp(voulue, _facteur(reglages.lissage_position, delta))
+	var lissage := reglages.pieton_lissage if _pieton else reglages.lissage_position
+	_position_lissee = _position_lissee.lerp(voulue, _facteur(lissage, delta))
 	_regard_lisse = _regard_lisse.lerp(vise, _facteur(reglages.lissage_rotation, delta))
 
 	global_position = _position_lissee
 	if _position_lissee.distance_squared_to(_regard_lisse) > 0.01:
 		look_at(_regard_lisse, Vector3.UP)
 
+	# Le champ de vision ne s'ouvre qu'en vehicule : a pied, l'ecart de
+	# vitesse est trop faible pour que ca veuille dire quelque chose.
 	if _vehicule != null:
 		var t := clampf(_vehicule.vitesse_kmh() / maxf(1.0, reglages.vitesse_max_kmh), 0.0, 1.0)
 		fov = lerpf(reglages.fov_arret, reglages.fov_pleine_vitesse, t)
+	elif _pieton:
+		fov = reglages.fov_arret
 
 
 static func _facteur(lissage: float, delta: float) -> float:
@@ -63,6 +79,6 @@ static func _facteur(lissage: float, delta: float) -> float:
 # virages au lieu de rester plaquee sur un axe du monde.
 func _ancrage() -> Vector3:
 	var base := _cible.global_transform.basis
-	return (_cible.global_position
-			+ base.z * reglages.recul
-			+ Vector3.UP * reglages.hauteur)
+	var recul := reglages.pieton_recul if _pieton else reglages.recul
+	var hauteur := reglages.pieton_hauteur if _pieton else reglages.hauteur
+	return _cible.global_position + base.z * recul + Vector3.UP * hauteur

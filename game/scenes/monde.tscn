@@ -11,7 +11,7 @@
 ; Le vehicule demarre sur la chaussee verticale du couloir 0, qui court le
 ; long de -Z : il est donc deja dans le bon sens.
 
-[gd_scene load_steps=9 format=3 uid="uid://bgmonde0v0001"]
+[gd_scene load_steps=10 format=3 uid="uid://bgmonde0v0001"]
 
 [ext_resource type="Script" path="res://rendu/rendu_ps2.gd" id="1_rendu"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
@@ -19,6 +19,7 @@
 [ext_resource type="PackedScene" path="res://assets/ville/ville.glb" id="4_geometrie"]
 [ext_resource type="PackedScene" path="res://scenes/vehicule.tscn" id="5_vehicule"]
 [ext_resource type="Script" path="res://systemes/camera_poursuite.gd" id="6_camera"]
+[ext_resource type="PackedScene" path="res://scenes/joueur.tscn" id="7_joueur"]
 
 [sub_resource type="ViewportTexture" id="tex_ecran"]
 viewport_path = NodePath("Rendu")
@@ -45,16 +46,20 @@ reglages = ExtResource("2_reglages")
 geometrie = ExtResource("4_geometrie")
 
 [node name="Vehicule" parent="Rendu/Scene3D" instance=ExtResource("5_vehicule")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.6, -22)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.6, 0.6, -22)
+
+[node name="Joueur" parent="Rendu/Scene3D" instance=ExtResource("7_joueur")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.2, 0.3, -20.5)
+camera = NodePath("../../Camera3D")
 
 [node name="Camera3D" type="Camera3D" parent="Rendu"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 3, -15)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.2, 2.2, -17)
 fov = 70.0
 near = 0.15
 far = 400.0
 script = ExtResource("6_camera")
 reglages = ExtResource("2_reglages")
-cible = NodePath("../Scene3D/Vehicule")
+cible = NodePath("../Scene3D/Joueur")
 
 [node name="Affichage" type="CanvasLayer" parent="."]
 layer = -1
