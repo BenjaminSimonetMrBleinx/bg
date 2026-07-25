@@ -16,11 +16,13 @@ fermée côté Godot aussi, pas seulement côté Blender.
 
 **Surprises** — quatre, toutes utiles pour la suite :
 
-1. **L'éclairage par sommet exige de la géométrie tessellée.** Un sol de 4 sommets n'est
-   éclairé qu'à ses 4 coins, donc noir partout ailleurs. Les jeux PS2 tessellaient leurs
-   sols pour cette raison exacte. **Le générateur de ville devra découper la chaussée en
-   cellules de 2 m environ**, sinon les lampadaires n'éclaireront rien.
-2. **Par sommet et par pixel donnent le même rendu à 512×288.** L'écart est invisible à
+1. **Fausse piste, corrigée le jour même.** J'ai d'abord conclu que l'éclairage par sommet
+   imposait de tesseller toutes les grandes surfaces — un sol de 4 sommets n'étant éclairé
+   qu'à ses 4 coins. C'était vrai en par-sommet, mais **on a gardé le par-pixel**, et là un
+   sol de 4 sommets s'éclaire très bien. La vraie cause du sol noir était le point 4.
+   Leçon de méthode : j'ai tiré une règle générale d'une observation faite dans une
+   configuration qu'on allait justement abandonner. Les docs ont été corrigées.
+2. **Par sommet et par pixel donnent le même rendu à 512×384.** L'écart est invisible à
    cette résolution. On garde le par-pixel : plus prévisible, et le look PS2 vient du
    filtrage, de la basse résolution et du brouillard, pas du mode d'ombrage.
 3. **L'ambiante doit être nettement au-dessus de la couleur du brouillard**, sinon tout ce
@@ -29,5 +31,8 @@ fermée côté Godot aussi, pas seulement côté Blender.
    bug d'éclairage mais de composition : le lampadaire le plus proche était à 16 m. Dans le
    jeu réel, ce sont les phares du véhicule qui régleront ça — à ne pas oublier en V3.
 
-**Prochain** : V2, textures 128 px et générateur de ville. Le sol tessellé est une
-contrainte d'entrée, pas une optimisation à faire plus tard.
+**Aussi** : passage en **4/3** (rendu interne 512 × 384, fenêtre 1024 × 768, ratio verrouillé
+donc bandes noires sur écran large). Et convention audio arrêtée : WAV+QOA pour les
+bruitages, Ogg pour la musique, jamais de MP3, tout son 3D en mono.
+
+**Prochain** : V2, textures 128 px et générateur de ville.

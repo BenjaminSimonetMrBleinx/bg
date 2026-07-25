@@ -104,6 +104,26 @@ extends Resource
 ## Filtrage lineaire des textures. Vrai = flou PS2. Faux = texels carres PS1.
 @export var filtrage_lineaire: bool = true
 
+# ------------------------------------------------------------------- lampes
+@export_group("Lampadaires")
+
+## Intensite de chaque lampadaire. C'est le reglage qui decide si la rue est
+## sinistre ou accueillante.
+@export_range(0.0, 40.0, 0.5) var lampe_energie: float = 9.0
+
+## Rayon d'action, en metres. Au dela, la lumiere est coupee net.
+@export_range(1.0, 80.0, 1.0) var lampe_portee: float = 24.0
+
+## Courbe de decroissance. Bas = la lumiere porte loin et reste plate.
+@export_range(0.1, 6.0, 0.1) var lampe_attenuation: float = 1.0
+
+## Couleur des lampadaires. Le sodium orange est le plus caracteristique.
+@export var lampe_couleur: Color = Color(1.0, 0.827, 0.596)
+
+## Ombres portees. Coup de fouet visuel, mais couteux quand toutes les rues
+## sont eclairees. A tester une fois la ville complete.
+@export var lampe_ombres: bool = false
+
 # ------------------------------------------------------------------ joueur
 @export_group("Joueur a pied")
 

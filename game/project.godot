@@ -14,8 +14,10 @@ config/features=PackedStringArray("4.7", "Forward Plus")
 
 [display]
 
-window/size/viewport_width=1280
-window/size/viewport_height=720
+; 4/3 assume : bandes noires sur un ecran large, comme un jeu d'epoque.
+; "keep" garde le ratio quoi qu'il arrive, on ne deforme jamais l'image.
+window/size/viewport_width=1024
+window/size/viewport_height=768
 window/stretch/mode="viewport"
 window/stretch/aspect="keep"
 
