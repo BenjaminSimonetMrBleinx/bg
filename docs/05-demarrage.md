@@ -1,6 +1,50 @@
 # Démarrage
 
-Pour Guillaume, ou pour toute machine neuve.
+Pour Guillaume, ou pour toute machine neuve. Compte vingt minutes, dont
+quinze d'attente pendant les téléchargements.
+
+---
+
+## 0. Partir de zéro
+
+### Ouvrir PowerShell
+
+Touche `Windows`, taper `powershell`, `Entrée`. Une fenêtre s'ouvre : c'est
+là qu'on colle les commandes. Clic droit colle, `Entrée` exécute.
+
+### Installer Git
+
+C'est la seule chose à installer soi-même — le reste suit tout seul ensuite.
+`winget` est livré avec Windows 10 et 11, il n'y a rien à télécharger.
+
+```powershell
+winget install --id Git.Git -e
+```
+
+**Ferme ensuite la fenêtre PowerShell et rouvre-en une neuve.** Windows ne
+voit un outil fraîchement installé qu'à partir d'une nouvelle session — sans
+ça, la commande suivante dira que `git` n'existe pas.
+
+### Choisir où poser le projet
+
+```powershell
+cd $HOME\Documents
+```
+
+Le projet créera un dossier `bg` à cet endroit. N'importe quel autre dossier
+convient, mais évite OneDrive : la synchronisation permanente entre en
+conflit avec git.
+
+### Récupérer le projet
+
+```powershell
+git clone https://github.com/BenjaminSimonetMrBleinx/bg.git
+cd bg
+```
+
+Le dépôt est privé : **une fenêtre de connexion GitHub va s'ouvrir**.
+Connecte-toi avec ton compte, autorise, et c'est réglé pour de bon. C'est le
+seul moment déroutant de toute l'installation, et il n'arrive qu'une fois.
 
 ---
 

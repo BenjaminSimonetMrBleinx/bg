@@ -46,10 +46,17 @@ Pas de missions, pas d'IA, pas de trafic, pas de personnage animé. Le jalon ser
 
 ## Mise en route
 
+Sur une machine neuve, Git est la seule chose à poser soi-même — `winget` est
+livré avec Windows. **Rouvrir PowerShell entre les deux** : Windows ne voit un
+outil fraîchement installé qu'à partir d'une nouvelle session.
+
 ```powershell
-git clone https://github.com/BenjaminSimonetMrBleinx/bg.git
+winget install --id Git.Git -e
+# fermer PowerShell, en rouvrir un
+cd $HOME\Documents
+git clone https://github.com/BenjaminSimonetMrBleinx/bg.git   # connexion GitHub demandee
 cd bg
-.\installer.ps1        # installe et configure tout, relancable sans risque
+.\installer.ps1        # installe et configure le reste, relancable sans risque
 ```
 
 `installer.ps1` détecte ce qui manque, l'installe via winget, configure Git
