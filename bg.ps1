@@ -10,6 +10,7 @@
     .\bg.ps1 capture        rend une image hors ecran dans .tmp/
     .\bg.ps1 verif          verifie que le projet charge (headless)
     .\bg.ps1 exporter       fabrique build\BG.exe, jouable sans rien installer
+    .\bg.ps1 nettoyer       vide .tmp et build (tout y est regenerable)
     .\bg.ps1 outils         affiche l etat de la chaine d outils
 
 .NOTES
@@ -19,7 +20,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('jouer', 'editeur', 'generer', 'capture', 'verif', 'test', 'son', 'sons', 'reparer', 'exporter', 'outils')]
+    [ValidateSet('jouer', 'editeur', 'generer', 'capture', 'verif', 'test', 'son', 'sons', 'reparer', 'exporter', 'nettoyer', 'outils')]
     [string]$Commande = 'jouer',
 
     [int]$Blocs = 2,
@@ -173,6 +174,29 @@ switch ($Commande) {
         Initialize-Projet
         & $GodotConsole --headless --path $Projet --script 'res://outils/verif.gd'
         exit $LASTEXITCODE
+    }
+
+    'nettoyer' {
+        # Ne touche QUE a ce que le projet sait refabriquer : les captures et
+        # fichiers de travail de .tmp, et l executable de build. Jamais aux
+        # assets, qui contiennent le travail livre par Guillaume, ni au cache
+        # .godot, dont la reconstruction coute dix secondes a chacun.
+        $total = 0
+        foreach ($cible in @($Tmp, (Join-Path $Racine 'build'))) {
+            if (-not (Test-Path $cible)) { continue }
+            $mo = [math]::Round((Get-ChildItem $cible -Recurse -File -ErrorAction SilentlyContinue |
+                   Measure-Object Length -Sum).Sum / 1MB, 1)
+            Remove-Item $cible -Recurse -Force -ErrorAction SilentlyContinue
+            Write-Host "  $cible  ($mo Mo)" -ForegroundColor Gray
+            $total += $mo
+        }
+        if ($total -eq 0) {
+            Write-Host "`nDeja propre." -ForegroundColor Green
+        } else {
+            Write-Host "`n$total Mo liberes. Tout est regenerable :" -ForegroundColor Green
+            Write-Host "  .\bg.ps1 capture   pour les images" -ForegroundColor Gray
+            Write-Host "  .\bg.ps1 exporter  pour l executable" -ForegroundColor Gray
+        }
     }
 
     'exporter' {
