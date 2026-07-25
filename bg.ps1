@@ -38,7 +38,15 @@ param(
     # contenter de les signaler. Le drapeau etait utilise dans le corps du
     # script sans jamais avoir ete declare ici : PowerShell refusait la
     # commande, et la conversion etait donc inatteignable.
-    [switch]$Corriger
+    [switch]$Corriger,
+
+    # Pour 'test' : ne joue que les suites dont la cle ou le nom contient ce
+    # texte. .\bg.ps1 test -Suite camera
+    [string]$Suite = '',
+
+    # Pour 'test' : demande a git ce qui a bouge et n en joue que les suites
+    # concernees. C est le mode a utiliser avant chaque commit.
+    [switch]$Modifies
 )
 
 $ErrorActionPreference = 'Stop'
@@ -306,33 +314,121 @@ switch ($Commande) {
         # sortie et toutes les suites paraissent echouer.
         Exiger $GodotConsole 'Godot (console)'
         Initialize-Projet
+        # Chaque suite declare les FICHIERS qu elle couvre. C est ce qui
+        # permet de ne rejouer que ce qui est concerne par une modification,
+        # au lieu de payer la totale a chaque commit.
+        #
+        # Les motifs sont volontairement larges : une suite lancee pour rien
+        # coute quelques secondes, une suite oubliee coute un bug livre.
         $suites = @(
-            @{ nom = 'sens de conduite'; script = 'res://outils/test_sens.gd' },
-            @{ nom = 'montee et descente'; script = 'res://outils/test_montee.gd' },
-            @{ nom = 'orientation de marche'; script = 'res://outils/test_marche.gd' },
-            @{ nom = 'boucle camera'; script = 'res://outils/test_camera.gd' },
-            @{ nom = 'franchissement de bordure'; script = 'res://outils/test_trottoir.gd' },
-            @{ nom = 'audio'; script = 'res://outils/test_audio.gd' },
-            @{ nom = 'son du moteur'; script = 'res://outils/test_moteur.gd' },
-            @{ nom = 'entrer dans les maisons'; script = 'res://outils/test_maison.gd' },
-            @{ nom = 'habitants et dialogue'; script = 'res://outils/test_dialogue.gd' },
-            @{ nom = 'roue des outils'; script = 'res://outils/test_outils.gd' },
-            @{ nom = 'mobilier urbain'; script = 'res://outils/test_decor.gd' },
-            @{ nom = 'jour et nuit'; script = 'res://outils/test_jour.gd' },
-            @{ nom = 'camera et murs'; script = 'res://outils/test_camera_murs.gd' },
-            @{ nom = 'passants'; script = 'res://outils/test_foule.gd' }
+            @{ cle = 'sens'; nom = 'sens de conduite'
+               script = 'res://outils/test_sens.gd'
+               couvre = @('systemes/vehicule', 'gen_voiture', 'scenes/vehicule') }
+            @{ cle = 'montee'; nom = 'montee et descente'
+               script = 'res://outils/test_montee.gd'
+               couvre = @('systemes/controleur', 'systemes/vehicule', 'systemes/joueur') }
+            @{ cle = 'marche'; nom = 'orientation de marche'
+               script = 'res://outils/test_marche.gd'
+               couvre = @('systemes/joueur', 'systemes/silhouette', 'gen_personnage') }
+            @{ cle = 'camera'; nom = 'boucle camera'
+               script = 'res://outils/test_camera.gd'
+               couvre = @('systemes/camera_poursuite', 'systemes/joueur') }
+            @{ cle = 'trottoir'; nom = 'franchissement de bordure'
+               script = 'res://outils/test_trottoir.gd'
+               couvre = @('systemes/joueur', 'gen_ville', 'systemes/camera_poursuite') }
+            @{ cle = 'audio'; nom = 'audio'
+               script = 'res://outils/test_audio.gd'
+               couvre = @('systemes/audio', 'assets/sons', 'default_bus_layout') }
+            @{ cle = 'moteur'; nom = 'son du moteur'
+               script = 'res://outils/test_moteur.gd'
+               couvre = @('systemes/moteur_audio', 'systemes/vehicule', 'rendu/rendu_ps2', 'assets/sons') }
+            @{ cle = 'maison'; nom = 'entrer dans les maisons'
+               script = 'res://outils/test_maison.gd'
+               couvre = @('systemes/maison', 'systemes/controleur', 'gen_maison') }
+            @{ cle = 'dialogue'; nom = 'habitants et dialogue'
+               script = 'res://outils/test_dialogue.gd'
+               couvre = @('systemes/dialogue', 'systemes/pnj', 'systemes/maison', 'donnees/dialogues') }
+            @{ cle = 'outils'; nom = 'roue des outils'
+               script = 'res://outils/test_outils.gd'
+               couvre = @('systemes/roue', 'systemes/equipement', 'donnees/outils', 'gen_objets') }
+            @{ cle = 'decor'; nom = 'mobilier urbain'
+               script = 'res://outils/test_decor.gd'
+               couvre = @('systemes/ville', 'gen_decor', 'gen_ville', 'systemes/maison') }
+            @{ cle = 'jour'; nom = 'jour et nuit'
+               script = 'res://outils/test_jour.gd'
+               couvre = @('rendu/rendu_ps2', 'systemes/reglages', 'systemes/ville', 'gen_textures', 'donnees/monde') }
+            @{ cle = 'murs'; nom = 'camera et murs'
+               script = 'res://outils/test_camera_murs.gd'
+               couvre = @('systemes/camera_poursuite', 'systemes/maison') }
+            @{ cle = 'foule'; nom = 'passants'
+               script = 'res://outils/test_foule.gd'
+               couvre = @('systemes/foule', 'systemes/pieton', 'systemes/silhouette', 'gen_ville') }
         )
-        $echecs = 0
-        foreach ($s in $suites) {
+
+        # Toute modification de la scene principale ou des reglages touche
+        # tout le monde : ce sont les deux fichiers que chaque suite charge.
+        $Global = @('scenes/monde', 'systemes/reglages.tres', 'project.godot')
+
+        $choisies = $suites
+        $raison = 'toutes'
+
+        if ($Suite) {
+            $choisies = @($suites | Where-Object { $_.cle -like "*$Suite*" -or $_.nom -like "*$Suite*" })
+            $raison = "filtre '$Suite'"
+            if ($choisies.Count -eq 0) {
+                Write-Host "Aucune suite ne correspond a '$Suite'." -ForegroundColor Red
+                Write-Host "Disponibles : $(($suites | ForEach-Object { $_.cle }) -join ', ')" -ForegroundColor Gray
+                exit 1
+            }
+        }
+        elseif ($Modifies) {
+            # On demande a git ce qui a bouge, plutot que de s en remettre a
+            # la memoire de celui qui commite.
+            $ancien = $ErrorActionPreference
+            $ErrorActionPreference = 'Continue'
+            $fichiers = @(& git -C $Racine status --porcelain 2>$null |
+                          ForEach-Object { ($_ -replace '^..\s+', '') -replace '\\', '/' })
+            $ErrorActionPreference = $ancien
+
+            if ($fichiers.Count -eq 0) {
+                Write-Host "Rien de modifie : aucune suite a rejouer." -ForegroundColor Green
+                exit 0
+            }
+            Write-Host "Modifie :" -ForegroundColor Gray
+            $fichiers | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
+
+            $global_touche = @($fichiers | Where-Object {
+                $f = $_; ($Global | Where-Object { $f -like "*$_*" }).Count -gt 0 })
+            if ($global_touche.Count -gt 0) {
+                $raison = 'un fichier partage a bouge'
+            } else {
+                $choisies = @($suites | Where-Object {
+                    $s = $_
+                    ($fichiers | Where-Object {
+                        $f = $_; ($s.couvre | Where-Object { $f -like "*$_*" }).Count -gt 0
+                    }).Count -gt 0
+                })
+                $raison = 'lie aux fichiers modifies'
+                if ($choisies.Count -eq 0) {
+                    Write-Host "`nAucune suite ne couvre ces fichiers." -ForegroundColor Yellow
+                    Write-Host "Si c est du code de jeu, ajoute-le a 'couvre' dans bg.ps1." -ForegroundColor Gray
+                    exit 0
+                }
+            }
+        }
+
+        Write-Host "`n$($choisies.Count) suite(s) — $raison" -ForegroundColor Gray
+        $echecs = @()
+        foreach ($s in $choisies) {
             Write-Host "`n--- $($s.nom) ---" -ForegroundColor Cyan
             & $GodotConsole --path $Projet --script $s.script
-            if ($LASTEXITCODE -ne 0) { $echecs++ }
+            if ($LASTEXITCODE -ne 0) { $echecs += $s.nom }
         }
         Write-Host ""
-        if ($echecs -gt 0) {
-            Write-Host "$echecs suite(s) en echec" -ForegroundColor Red
+        if ($echecs.Count -gt 0) {
+            Write-Host "$($echecs.Count) suite(s) en echec : $($echecs -join ', ')" -ForegroundColor Red
             exit 1
         }
-        Write-Host "$($suites.Count) suites OK" -ForegroundColor Green
+        Write-Host "$($choisies.Count) suite(s) OK" -ForegroundColor Green
     }
 }

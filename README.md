@@ -78,7 +78,9 @@ Rééquiper l'outil qu'on tient déjà le range — c'est le seul moyen de reven
 .\bg.ps1 jouer       # lance le jeu
 .\bg.ps1 editeur     # ouvre l editeur Godot (pour regler reglages.tres)
 .\bg.ps1 generer     # regenere TOUT : textures, ville, vehicule, personnages, maisons, objets
-.\bg.ps1 test        # les 10 suites automatiques
+.\bg.ps1 test            # les 14 suites
+.\bg.ps1 test -Modifies  # seulement celles concernees par ce que tu as change
+.\bg.ps1 test -Suite camera   # celles dont le nom contient "camera"
 .\bg.ps1 verif       # le projet charge-t-il
 .\bg.ps1 capture     # rend une image hors ecran dans .tmp/
 .\bg.ps1 exporter    # fabrique build\BG.exe, jouable sans rien installer
@@ -93,7 +95,15 @@ Rééquiper l'outil qu'on tient déjà le range — c'est le seul moyen de reven
 charger — typiquement un pointeur Git LFS non résolu, importé comme s'il s'agissait du vrai
 fichier. Le cache reste alors faussé et le réimport normal n'y change rien.
 
-`generer` accepte `-Blocs 4 -Graine 1234` pour changer la taille et le tirage de la ville.
+`generer` accepte `-Blocs 4 -Graine 1234` pour changer la taille et le tirage de la ville,
+et `-Moment jour` pour basculer en journée.
+
+**`test -Modifies` est le mode à utiliser avant chaque commit.** Il demande à git ce qui a
+bougé et ne rejoue que les suites concernées — chaque suite déclare les fichiers qu'elle
+couvre, dans `bg.ps1`. Toucher `scenes/monde.tscn`, `reglages.tres` ou `project.godot`
+relance tout : ce sont les trois fichiers que chaque suite charge.
+
+La totale reste à jouer avant de livrer, et après un `generer`.
 
 Pour envoyer son travail :
 

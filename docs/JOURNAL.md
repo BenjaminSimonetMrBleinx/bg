@@ -496,3 +496,53 @@ une poubelle a l'air parfaitement normal sur une capture — debout, bien placé
 Il ne bouge simplement jamais.
 
 Quatorze suites.
+
+---
+
+## V13 — Aller sur le côté, et des tests ciblés
+
+### Le vrai défaut de la caméra à pied
+
+Benjamin : « la caméra est chelou quand je vais à gauche ou à droite, pour faire ce que je
+veux je dois faire avancer ».
+
+C'était une dette que j'avais contractée sciemment sans en mesurer le coût. Le personnage
+relisait l'orientation de la caméra **à chaque image** pour savoir où est « la gauche ». Si
+la caméra tournait pour le suivre, sa direction tournait avec elle, et il marchait en cercle
+— le bug des tout premiers jours. Ma parade d'alors : empêcher la caméra de se recentrer
+ailleurs que sur une marche avant franche. Le cercle disparaissait ; la caméra restait plantée
+dès qu'on allait sur le côté.
+
+**La bonne solution est de figer le repère au moment de l'appui**, et de le garder tant que la
+touche est tenue. « À gauche » veut dire à gauche de ce qu'on voyait *quand on a appuyé*. La
+direction ne dépend plus d'une caméra mobile, la boucle n'existe plus, et la caméra peut faire
+son travail dans les quatre directions.
+
+Mesure après : **6,3 m parcourus en ligne droite, 0° de dérive, caméra à 0° de l'axe** — dans
+les quatre directions. Le test vérifie maintenant aussi le CADRAGE, pas seulement l'absence de
+rotation : c'est précisément ce que l'ancienne version ne regardait pas.
+
+**Le correctif a immédiatement cassé le test de bordure**, et pour une bonne raison : le
+repère est figé à la *première* image d'appui. Si la caméra n'a pas encore pris sa place, on
+fige une orientation périmée — et pour toute la durée de l'appui, puisqu'on ne la relit plus.
+Le personnage partait à angle droit. Ajout d'un garde : tant que la caméra n'est pas posée, on
+ne fige rien.
+
+### Des tests ciblés
+
+Demande de Benjamin, et elle est juste : rejouer quatorze suites pour un changement de trois
+lignes coûte deux minutes à chaque commit.
+
+Chaque suite déclare désormais **les fichiers qu'elle couvre**, et deux modes s'ajoutent :
+
+- `.\bg.ps1 test -Modifies` demande à git ce qui a bougé et ne rejoue que le concerné.
+- `.\bg.ps1 test -Suite camera` filtre par nom.
+
+Essai réel : modifier `camera_poursuite.gd` et `dialogues.json` sélectionne **4 suites sur
+14** — la boucle caméra, les murs, le dialogue, et le franchissement de bordure, qui dépend
+de la caméra sans que ce soit évident.
+
+Deux garde-fous, parce qu'une suite oubliée coûte plus cher qu'une suite jouée pour rien :
+les motifs de couverture sont **volontairement larges**, et toucher `monde.tscn`,
+`reglages.tres` ou `project.godot` relance **tout** — ce sont les trois fichiers que chaque
+suite charge.
