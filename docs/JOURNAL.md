@@ -735,3 +735,29 @@ pencher de quinze degrés sans rien racler si elle est haute, et frotter à huit
 basse. L'angle seul ne dit rien.
 
 Dix-huit suites.
+
+---
+
+## V18 — « I am the one who knocks »
+
+Guillaume a livré la scène de la cuisine, **une piste par comédien** : `dialogue1_Skyler.mp3`
+et `dialogue1_Walt.mp3`, plus le texte. Cinq répliques chacun, qui alternent.
+
+C'est la façon normale de doubler un dialogue — chacun lit sa piste de son côté — et le
+circuit ne savait pas la traiter. Il sait maintenant : `-Assigner -Depuis 1 -Pas 2` pour le
+premier, `-Depuis 2 -Pas 2` pour le second.
+
+**Les seuils de découpage ne sont pas au hasard.** 0,55 s pour Skyler, 1,4 s pour Walt — ce
+sont les seuls qui donnent exactement cinq segments par piste. Trouvés en balayant, pas en
+devinant : à 0,6 s Skyler tombe à quatre, à 0,45 s elle monte à dix.
+
+Les deux MP3 n'ont pas de numéro en tête de nom, donc l'intégration les a **laissés
+tranquilles** au lieu de les affecter en bloc à la réplique 001 — c'est exactement le
+garde-fou écrit après la confession de Walter, et il a servi dès la livraison suivante.
+
+Le cadre de dialogue est passé de 90 à 174 pixels : la tirade finale fait 562 caractères.
+
+**Ce que je ne peux pas vérifier** : que chaque segment tombe sur la bonne réplique. Les
+durées ne collent pas parfaitement aux longueurs de texte, et je ne peux pas écouter. Un
+seul passage en jeu tranche — et si c'est décalé, il suffit de redécouper avec un autre
+seuil, les originaux sont archivés.

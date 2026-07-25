@@ -21,16 +21,16 @@ livrer trois aujourd'hui et le reste plus tard, sans rien casser.
 ## Les repliques
 
 | N° | Qui | Texte |
-|---|---|---|| 001 | **Skyler** | Tu rentres tard. |
-| 002 | **Walter** | J'ai fait des heures au lavage. |
-| 003 | **Skyler** | Le lavage ferme a six heures, Walt. |
-| 004 | **Walter** | ... |
-| 005 | **Skyler** | Walter Junior a demande ou tu etais. |
-| 006 | **Walter** | Je lui parlerai demain. |
-| 007 | **Skyler** | C'est ce que tu as dit hier. |
-| 008 | **Skyler** | Il y a du poulet dans le frigo. |
-| 009 | **Walter** | Merci. |
-| 010 | **Skyler** | Et il faut qu'on parle du toit. |
+|---|---|---|| 001 | **Skyler** | Walt, I've said it before. If you are in danger we go to the police. |
+| 002 | **Walter** | Oh, no, I don't wanna hear about the police. |
+| 003 | **Skyler** | I do not say that lightly. I know what it could do to this family, but if it's the only real choice we have. If it's either that or you getting shot when you open your front door- |
+| 004 | **Walter** | I don't want to hear about the police. |
+| 005 | **Skyler** | You're not some hardened criminal, Walt. You are in over your head. That's what we tell them and that's the truth. |
+| 006 | **Walter** | No, it's not the truth. |
+| 007 | **Skyler** | Of course it is. A school teacher, cancer, desperate for money? |
+| 008 | **Walter** | Okay, we're done here. |
+| 009 | **Skyler** | Roped into working for -- unable to even quit! You told me that yourself Walt. Jesus, what was I thinking? Walt, please, let's both of us stop trying to justify this whole thing and admit that you're in danger. |
+| 010 | **Walter** | Who are you talking to right now? Who is it you think you see? Do you know how much I make a year? I mean, even if I told you, you wouldn't believe it. Do you know what would happen if I suddenly decided to stop going into work? A business big enough that it could be listed on the NASDAQ goes belly up. Disappears! It ceases to exist without me. No, you clearly don't know who you're talking to, so let me clue you in. I am not in danger, Skyler. I am the danger! A guy opens his door and gets shot and you think that of me? No. I am the one who knocks! |
 | 011 | **Walter** | My name is Walter Hartwell White. |
 | 012 | **Walter** | I live at 308 Negra Arroyo Lane, Albuquerque, New Mexico, 87104. |
 | 013 | **Walter** | To all law enforcement entities, this is not an admission of guilt. |

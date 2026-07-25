@@ -12,22 +12,33 @@
 
   "skyler": {
     "nom": "Skyler",
+    "_note": [
+      "« I am the one who knocks », dit par Guillaume et Benjamin.",
+      "",
+      "Chaque voix a ete enregistree SEPAREMENT — c'est ainsi qu'on double un",
+      "dialogue, chacun lisant sa piste de son cote. Les repliques alternent",
+      "donc dans le script, et l'affectation se fait au pas de 2 :",
+      "",
+      "  .\\bg.ps1 voix -Decouper assets\\voix\\dialogue1_Skyler.mp3 -Pause 0.55",
+      "  .\\bg.ps1 voix -Assigner -Depuis 1 -Pas 2",
+      "  .\\bg.ps1 voix -Decouper assets\\voix\\dialogue1_Walt.mp3 -Pause 1.4",
+      "  .\\bg.ps1 voix -Assigner -Depuis 2 -Pas 2",
+      "",
+      "Les seuils ne sont pas au hasard : ce sont les seuls qui donnent",
+      "exactement cinq segments par piste, soit cinq repliques chacun."
+    ],
     "conversations": [
       [
-        { "qui": "Skyler", "texte": "Tu rentres tard." },
-        { "qui": "Walter", "texte": "J'ai fait des heures au lavage." },
-        { "qui": "Skyler", "texte": "Le lavage ferme a six heures, Walt." },
-        { "qui": "Walter", "texte": "..." }
-      ],
-      [
-        { "qui": "Skyler", "texte": "Walter Junior a demande ou tu etais." },
-        { "qui": "Walter", "texte": "Je lui parlerai demain." },
-        { "qui": "Skyler", "texte": "C'est ce que tu as dit hier." }
-      ],
-      [
-        { "qui": "Skyler", "texte": "Il y a du poulet dans le frigo." },
-        { "qui": "Walter", "texte": "Merci." },
-        { "qui": "Skyler", "texte": "Et il faut qu'on parle du toit." }
+        { "qui": "Skyler", "texte": "Walt, I've said it before. If you are in danger we go to the police." },
+        { "qui": "Walter", "texte": "Oh, no, I don't wanna hear about the police." },
+        { "qui": "Skyler", "texte": "I do not say that lightly. I know what it could do to this family, but if it's the only real choice we have. If it's either that or you getting shot when you open your front door-" },
+        { "qui": "Walter", "texte": "I don't want to hear about the police." },
+        { "qui": "Skyler", "texte": "You're not some hardened criminal, Walt. You are in over your head. That's what we tell them and that's the truth." },
+        { "qui": "Walter", "texte": "No, it's not the truth." },
+        { "qui": "Skyler", "texte": "Of course it is. A school teacher, cancer, desperate for money?" },
+        { "qui": "Walter", "texte": "Okay, we're done here." },
+        { "qui": "Skyler", "texte": "Roped into working for -- unable to even quit! You told me that yourself Walt. Jesus, what was I thinking? Walt, please, let's both of us stop trying to justify this whole thing and admit that you're in danger." },
+        { "qui": "Walter", "texte": "Who are you talking to right now? Who is it you think you see? Do you know how much I make a year? I mean, even if I told you, you wouldn't believe it. Do you know what would happen if I suddenly decided to stop going into work? A business big enough that it could be listed on the NASDAQ goes belly up. Disappears! It ceases to exist without me. No, you clearly don't know who you're talking to, so let me clue you in. I am not in danger, Skyler. I am the danger! A guy opens his door and gets shot and you think that of me? No. I am the one who knocks!" }
       ]
     ]
   },

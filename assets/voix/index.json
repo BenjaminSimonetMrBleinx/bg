@@ -2,62 +2,62 @@
   {
     "numero": "001",
     "qui": "Skyler",
-    "texte": "Tu rentres tard.",
-    "cible": "skyler_bcbe317236.wav"
+    "texte": "Walt, I've said it before. If you are in danger we go to the police.",
+    "cible": "skyler_bad9756ef1.wav"
   },
   {
     "numero": "002",
     "qui": "Walter",
-    "texte": "J'ai fait des heures au lavage.",
-    "cible": "walter_f8ce29d0bd.wav"
+    "texte": "Oh, no, I don't wanna hear about the police.",
+    "cible": "walter_04218e9a90.wav"
   },
   {
     "numero": "003",
     "qui": "Skyler",
-    "texte": "Le lavage ferme a six heures, Walt.",
-    "cible": "skyler_e0da6d2ca7.wav"
+    "texte": "I do not say that lightly. I know what it could do to this family, but if it's the only real choice we have. If it's either that or you getting shot when you open your front door-",
+    "cible": "skyler_3b3a39d84b.wav"
   },
   {
     "numero": "004",
     "qui": "Walter",
-    "texte": "...",
-    "cible": "walter_2f43b42fd8.wav"
+    "texte": "I don't want to hear about the police.",
+    "cible": "walter_51476e5d30.wav"
   },
   {
     "numero": "005",
     "qui": "Skyler",
-    "texte": "Walter Junior a demande ou tu etais.",
-    "cible": "skyler_97d5a86e07.wav"
+    "texte": "You're not some hardened criminal, Walt. You are in over your head. That's what we tell them and that's the truth.",
+    "cible": "skyler_c7d248e8ad.wav"
   },
   {
     "numero": "006",
     "qui": "Walter",
-    "texte": "Je lui parlerai demain.",
-    "cible": "walter_457d11a337.wav"
+    "texte": "No, it's not the truth.",
+    "cible": "walter_cf7cf127ff.wav"
   },
   {
     "numero": "007",
     "qui": "Skyler",
-    "texte": "C'est ce que tu as dit hier.",
-    "cible": "skyler_8cd674d6ea.wav"
+    "texte": "Of course it is. A school teacher, cancer, desperate for money?",
+    "cible": "skyler_5ddecdd14d.wav"
   },
   {
     "numero": "008",
-    "qui": "Skyler",
-    "texte": "Il y a du poulet dans le frigo.",
-    "cible": "skyler_f1304cc85b.wav"
+    "qui": "Walter",
+    "texte": "Okay, we're done here.",
+    "cible": "walter_edf6ac252b.wav"
   },
   {
     "numero": "009",
-    "qui": "Walter",
-    "texte": "Merci.",
-    "cible": "walter_25c7ae86f2.wav"
+    "qui": "Skyler",
+    "texte": "Roped into working for -- unable to even quit! You told me that yourself Walt. Jesus, what was I thinking? Walt, please, let's both of us stop trying to justify this whole thing and admit that you're in danger.",
+    "cible": "skyler_db5201b759.wav"
   },
   {
     "numero": "010",
-    "qui": "Skyler",
-    "texte": "Et il faut qu'on parle du toit.",
-    "cible": "skyler_5ee5d80197.wav"
+    "qui": "Walter",
+    "texte": "Who are you talking to right now? Who is it you think you see? Do you know how much I make a year? I mean, even if I told you, you wouldn't believe it. Do you know what would happen if I suddenly decided to stop going into work? A business big enough that it could be listed on the NASDAQ goes belly up. Disappears! It ceases to exist without me. No, you clearly don't know who you're talking to, so let me clue you in. I am not in danger, Skyler. I am the danger! A guy opens his door and gets shot and you think that of me? No. I am the one who knocks!",
+    "cible": "walter_d8030998ea.wav"
   },
   {
     "numero": "011",

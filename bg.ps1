@@ -73,6 +73,9 @@ param(
     # a partir de -Depuis. Et -Reconnaitre les confronte au script.
     [switch]$Assigner,
     [int]$Depuis = 1,
+    # Une replique sur -Pas. 2 quand chaque comedien enregistre sa propre
+    # piste, ce qui est le cas normal d un dialogue a deux.
+    [int]$Pas = 1,
     [switch]$Reconnaitre
 )
 
@@ -256,7 +259,7 @@ switch ($Commande) {
         & (Join-Path $Racine 'outils\gen_voix.ps1') -Racine $Racine `
             -Refaire:$Refaire -Voix:$Voix -Script:$Script -Integrer:$Integrer `
             -Decouper $Decouper -Seuil $Seuil -Pause $Pause `
-            -Assigner:$Assigner -Depuis $Depuis -Reconnaitre:$Reconnaitre
+            -Assigner:$Assigner -Depuis $Depuis -Pas $Pas -Reconnaitre:$Reconnaitre
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         # Les nouveaux .wav doivent etre importes, sinon le jeu cherche des
         # fichiers que Godot n a jamais convertis et reste muet.

@@ -38,6 +38,12 @@ param(
     # Numero de la premiere replique concernee : une prise ne couvre pas
     # forcement le script depuis le debut.
     [int]$Depuis = 1,
+    # Ecart entre deux repliques successives de la prise. 2 = une sur deux.
+    #
+    # C'est le cas normal d'un dialogue : chaque comedien enregistre SA piste
+    # de son cote, et ses repliques sont donc alternees dans le script. Sans
+    # ce pas, il faudrait renommer dix fichiers a la main a chaque livraison.
+    [int]$Pas = 1,
     # Confronte chaque segment au script, par reconnaissance vocale.
     [switch]$Reconnaitre
 )
@@ -380,18 +386,20 @@ if ($Assigner) {
         exit 1
     }
     # Une prise ne couvre pas forcement tout le script : on peut enregistrer
-    # les repliques 11 a 19 et rien d autre. D ou le point de depart.
-    $reste = $repliques.Count - $Depuis + 1
-    if ($segments.Count -gt $reste) {
-        Write-Host "`n$($segments.Count) segment(s) mais seulement $reste replique(s) a partir de $Depuis." -ForegroundColor Yellow
+    # les repliques 11 a 19, ou une sur deux. D ou le depart et le pas.
+    $dernier = $Depuis + ($segments.Count - 1) * $Pas
+    if ($dernier -gt $repliques.Count) {
+        Write-Host "`n$($segments.Count) segment(s) au pas de $Pas depuis $Depuis" -ForegroundColor Yellow
+        Write-Host "iraient jusqu a la replique $dernier, or il n y en a que $($repliques.Count)." -ForegroundColor Yellow
         Write-Host "Redecoupe avec un autre seuil, ou renomme a la main." -ForegroundColor Gray
         exit 1
     }
-    $n = $Depuis - 1
+    $n = $Depuis
     foreach ($s in $segments) {
-        $n++
         Move-Item $s.FullName (Join-Path $Depot ('{0:d3}.wav' -f $n)) -Force
+        $n += $Pas
     }
+    $n = $dernier
     Remove-Item $decoupe -Recurse -Force -ErrorAction SilentlyContinue
     # $n est le numero de la DERNIERE replique, pas le nombre de segments :
     # une premiere version affichait "19 segments affectes de 001 a 019" pour
