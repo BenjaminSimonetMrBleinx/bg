@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="Reglages" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systemes/reglages.gd" id="1_reglages"]
+
+[resource]
+script = ExtResource("1_reglages")
+acceleration = 900.0
+vitesse_max_kmh = 130.0
+force_frein = 45.0
+braquage_max_deg = 32.0
+braquage_reduction_vitesse = 0.62
+braquage_reactivite = 7.0
+masse = 1350.0
+adherence_avant = 0.85
+adherence_arriere = 0.78
+suspension_course = 0.22
+suspension_raideur = 42.0
+suspension_amorti = 0.6
+recul = 6.5
+hauteur = 2.4
+lissage_position = 0.14
+lissage_rotation = 0.09
+fov_arret = 70.0
+fov_pleine_vitesse = 88.0
+cible_hauteur = 1.2
+largeur_rendu = 512
+hauteur_rendu = 288
+brouillard_debut = 7.0
+brouillard_fin = 58.0
+brouillard_couleur = Color(0.141, 0.157, 0.212, 1)
+ciel_couleur = Color(0.031, 0.039, 0.071, 1)
+ambiante = 0.16
+filtrage_lineaire = true
+marche_vitesse = 4.2
+marche_acceleration = 22.0
+portee_interaction = 3.2
+oeil_hauteur = 1.65

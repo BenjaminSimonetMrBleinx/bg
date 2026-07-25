@@ -1,0 +1,120 @@
+# Tous les nombres qui decident du feeling du jeu.
+#
+# Ce fichier appartient a Benjamin. Il se regle dans l'editeur, avec des
+# curseurs, projet lance, sans toucher au code et sans redemarrer.
+#
+# Regle unique et non negociable : des qu'un nombre influence une sensation,
+# il monte ici le jour meme. Une constante de feeling en dur dans un systeme
+# est un bug de methode, meme si le code fonctionne.
+class_name Reglages
+extends Resource
+
+# ---------------------------------------------------------------- vehicule
+@export_group("Vehicule")
+
+## Poussee du moteur. Monte si la voiture parait molle au demarrage.
+@export_range(0.0, 4000.0, 10.0) var acceleration: float = 900.0
+
+## Vitesse maximale en km/h. Purement indicatif : la resistance fait le reste.
+@export_range(0.0, 260.0, 1.0) var vitesse_max_kmh: float = 130.0
+
+## Force de freinage. Trop bas, la voiture flotte ; trop haut, elle bloque net.
+@export_range(0.0, 200.0, 1.0) var force_frein: float = 45.0
+
+## Angle de braquage maximal, en degres.
+@export_range(5.0, 60.0, 0.5) var braquage_max_deg: float = 32.0
+
+## Reduction du braquage a pleine vitesse, en proportion.
+## 0 = on braque autant a 130 qu'a l'arret (nerveux, irrealiste).
+## 1 = les roues ne tournent plus du tout a pleine vitesse.
+@export_range(0.0, 1.0, 0.01) var braquage_reduction_vitesse: float = 0.62
+
+## Vitesse a laquelle les roues rejoignent l'angle demande. Bas = lourd.
+@export_range(1.0, 30.0, 0.1) var braquage_reactivite: float = 7.0
+
+## Masse du vehicule en kg. Influence l'inertie et le transfert de charge.
+@export_range(400.0, 3000.0, 10.0) var masse: float = 1350.0
+
+## Adherence laterale des roues avant.
+@export_range(0.0, 2.0, 0.01) var adherence_avant: float = 0.85
+
+## Adherence laterale des roues arriere. En dessous de l'avant, ca part en glisse.
+@export_range(0.0, 2.0, 0.01) var adherence_arriere: float = 0.78
+
+## Hauteur de caisse au repos. Bas = sportif, haut = monospace mou.
+@export_range(0.05, 0.8, 0.01) var suspension_course: float = 0.22
+
+## Raideur des ressorts. Bas = la caisse plonge dans les virages.
+@export_range(5.0, 200.0, 1.0) var suspension_raideur: float = 42.0
+
+## Amortissement. Trop bas, la voiture rebondit sans fin.
+@export_range(0.0, 5.0, 0.05) var suspension_amorti: float = 0.6
+
+# ------------------------------------------------------------------ camera
+@export_group("Camera")
+
+## Distance de la camera derriere le vehicule.
+@export_range(1.0, 20.0, 0.1) var recul: float = 6.5
+
+## Hauteur de la camera au dessus du vehicule.
+@export_range(0.5, 10.0, 0.1) var hauteur: float = 2.4
+
+## Lissage de la position. Bas = la camera colle, haut = elle traine.
+## C'est le reglage qui change le plus la sensation de vitesse.
+@export_range(0.01, 1.0, 0.01) var lissage_position: float = 0.14
+
+## Lissage de la rotation. Independant du precedent, et volontairement.
+@export_range(0.01, 1.0, 0.01) var lissage_rotation: float = 0.09
+
+## Champ de vision a l'arret, en degres.
+@export_range(40.0, 120.0, 1.0) var fov_arret: float = 70.0
+
+## Champ de vision a pleine vitesse. L'ecart avec fov_arret fait le grisant.
+@export_range(40.0, 130.0, 1.0) var fov_pleine_vitesse: float = 88.0
+
+## Hauteur du point vise, au dessus du vehicule.
+@export_range(0.0, 5.0, 0.1) var cible_hauteur: float = 1.2
+
+# ------------------------------------------------------------------- rendu
+@export_group("Rendu PS2")
+
+## Largeur du rendu interne. La PS2 tournait autour de 512.
+## Tout le reste de l'ecran est un agrandissement de cette image.
+@export_range(160, 1280, 16) var largeur_rendu: int = 512
+
+## Hauteur du rendu interne.
+@export_range(120, 720, 8) var hauteur_rendu: int = 288
+
+## Distance ou le brouillard commence a mordre, en metres.
+@export_range(0.0, 200.0, 1.0) var brouillard_debut: float = 7.0
+
+## Distance ou tout a disparu. C'est la limite d'affichage assumee.
+@export_range(10.0, 400.0, 1.0) var brouillard_fin: float = 58.0
+
+## Couleur du brouillard. Sert aussi de couleur de fond a l'horizon.
+@export var brouillard_couleur: Color = Color(0.141, 0.157, 0.212)
+
+## Couleur du ciel de nuit, au zenith.
+@export var ciel_couleur: Color = Color(0.031, 0.039, 0.071)
+
+## Lumiere ambiante. Sans elle, tout ce qui n'est pas sous un lampadaire
+## est parfaitement noir.
+@export_range(0.0, 1.0, 0.01) var ambiante: float = 0.16
+
+## Filtrage lineaire des textures. Vrai = flou PS2. Faux = texels carres PS1.
+@export var filtrage_lineaire: bool = true
+
+# ------------------------------------------------------------------ joueur
+@export_group("Joueur a pied")
+
+## Vitesse de marche en m/s.
+@export_range(0.5, 12.0, 0.1) var marche_vitesse: float = 4.2
+
+## Acceleration au sol. Haut = demarrage sec.
+@export_range(1.0, 60.0, 0.5) var marche_acceleration: float = 22.0
+
+## Distance maximale pour entrer dans un vehicule.
+@export_range(0.5, 8.0, 0.1) var portee_interaction: float = 3.2
+
+## Hauteur des yeux a pied.
+@export_range(0.5, 2.5, 0.05) var oeil_hauteur: float = 1.65
