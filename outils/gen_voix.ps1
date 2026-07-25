@@ -34,6 +34,17 @@ param(
     [double]$Pause = 0.6,
     # Affecte les segments decoupes aux repliques, dans l ordre. A n utiliser
     # qu apres avoir verifie que la prise suit le script sans reprise.
+    # Combien de segments consecutifs forment chaque replique, dans l ordre.
+    #
+    #   -Grouper "1,1,1,1,1,1,1,1,2,6"
+    #
+    # Le decoupage se fait sur les SILENCES, et une replique longue en contient
+    # toujours : le comedien respire. Seize segments pour dix repliques est le
+    # cas NORMAL, pas un rate. Sans regroupement il fallait recoller a la main
+    # dans un editeur audio, ce qui condamnait chaque livraison a une heure de
+    # travail manuel.
+    [string]$Grouper = '',
+
     [switch]$Assigner,
     # Numero de la premiere replique concernee : une prise ne couvre pas
     # forcement le script depuis le debut.
@@ -224,7 +235,20 @@ function Import-Depot {
         # et il faut la refaire. Une premiere version faisait exactement ca.
         $archives = Join-Path $Depot 'originaux'
         New-Item -ItemType Directory -Force -Path $archives | Out-Null
-        Move-Item $f.FullName (Join-Path $archives ("{0}_{1}" -f $num, $f.Name)) -Force
+        # Une deuxieme livraison de la meme replique porte le meme nom que la
+        # premiere. Le -Force ecrasait alors l archive par la nouvelle prise :
+        # une archive qui ecrase n en est pas une, et c est precisement quand
+        # on refait une prise qu on veut pouvoir revenir a la precedente.
+        $destination = Join-Path $archives ("{0}_{1}" -f $num, $f.Name)
+        if (Test-Path $destination) {
+            $base = [IO.Path]::GetFileNameWithoutExtension($destination)
+            $ext = [IO.Path]::GetExtension($destination)
+            $k = 2
+            while (Test-Path (Join-Path $archives "$base-$k$ext")) { $k++ }
+            $destination = Join-Path $archives "$base-$k$ext"
+            Write-Host "    (la prise precedente est conservee)" -ForegroundColor DarkGray
+        }
+        Move-Item $f.FullName $destination
 
         # On note que cette replique a une vraie voix, pour que la synthese
         # ne repasse jamais dessus.
@@ -385,6 +409,42 @@ if ($Assigner) {
         Write-Host "`nAucun segment. Lance d abord : .\bg.ps1 voix -Decouper <fichier>" -ForegroundColor Yellow
         exit 1
     }
+    # Regroupement : plusieurs segments consecutifs recolles en une replique.
+    if ($Grouper) {
+        $tailles = @($Grouper -split '[,\s]+' | Where-Object { $_ } | ForEach-Object { [int]$_ })
+        $somme = ($tailles | Measure-Object -Sum).Sum
+        if ($somme -ne $segments.Count) {
+            Write-Host "`n-Grouper totalise $somme segment(s), or il y en a $($segments.Count)." -ForegroundColor Yellow
+            Write-Host "Les deux doivent coincider : chaque segment part dans exactement une replique." -ForegroundColor Gray
+            exit 1
+        }
+        $groupes = @()
+        $i = 0
+        $k = 1
+        foreach ($t in $tailles) {
+            $lot = $segments[$i..($i + $t - 1)]
+            $i += $t
+            if ($t -eq 1) { $groupes += $lot[0]; $k++; continue }
+            # ffmpeg concatene une LISTE de fichiers, jamais des arguments : le
+            # filtre concat re-encode et decale les temps, le demultiplexeur non.
+            $liste = Join-Path $decoupe ('lot_{0:d3}.txt' -f $k)
+            Set-Content -Path $liste -Encoding ASCII -Value (
+                $lot | ForEach-Object { "file '$($_.Name)'" })
+            $fusion = Join-Path $decoupe ('fus_{0:d3}.wav' -f $k)
+            Push-Location $decoupe
+            try {
+                & $FFmpeg -y -hide_banner -loglevel error -f concat -safe 0 `
+                    -i $liste -c copy $fusion
+            } finally { Pop-Location }
+            if ($LASTEXITCODE -ne 0) { throw "ffmpeg n a pas pu recoller le groupe $k" }
+            Write-Host ("  replique {0:d3} : {1} segments recolles" -f
+                    ($Depuis + ($k - 1) * $Pas), $t) -ForegroundColor Gray
+            $groupes += (Get-Item $fusion)
+            $k++
+        }
+        $segments = $groupes
+    }
+
     # Une prise ne couvre pas forcement tout le script : on peut enregistrer
     # les repliques 11 a 19, ou une sur deux. D ou le depart et le pas.
     $dernier = $Depuis + ($segments.Count - 1) * $Pas

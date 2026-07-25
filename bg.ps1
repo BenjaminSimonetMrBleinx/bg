@@ -71,6 +71,13 @@ param(
 
     # Pour 'voix' : affecte les segments decoupes aux repliques, dans l ordre,
     # a partir de -Depuis. Et -Reconnaitre les confronte au script.
+    # Pour 'voix' : combien de segments consecutifs forment chaque replique.
+    #   .\bg.ps1 voix -Assigner -Grouper "1,1,1,1,1,1,1,1,2,6"
+    # Une replique longue contient toujours des silences : le comedien respire,
+    # et le decoupage la coupe en deux. Seize segments pour dix repliques est
+    # le cas normal.
+    [string]$Grouper = '',
+
     [switch]$Assigner,
     [int]$Depuis = 1,
     # Une replique sur -Pas. 2 quand chaque comedien enregistre sa propre
@@ -302,7 +309,7 @@ switch ($Commande) {
         & (Join-Path $Racine 'outils\gen_voix.ps1') -Racine $Racine `
             -Refaire:$Refaire -Voix:$Voix -Script:$Script -Integrer:$Integrer `
             -Decouper $Decouper -Seuil $Seuil -Pause $Pause `
-            -Assigner:$Assigner -Depuis $Depuis -Pas $Pas -Reconnaitre:$Reconnaitre
+            -Assigner:$Assigner -Depuis $Depuis -Pas $Pas -Grouper $Grouper -Reconnaitre:$Reconnaitre
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         # Les nouveaux .wav doivent etre importes, sinon le jeu cherche des
         # fichiers que Godot n a jamais convertis et reste muet.
