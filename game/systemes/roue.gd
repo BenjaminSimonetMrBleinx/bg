@@ -17,6 +17,7 @@ signal choisi(index: int)
 @export var equipement: NodePath
 
 var _eq: Equipement
+var _audio: Audio
 var _ouverte: bool = false
 var _selection: int = 0
 var _ouverture: float = 0.0        # 0 fermee, 1 ouverte — pour l'animation
@@ -24,6 +25,7 @@ var _ouverture: float = 0.0        # 0 fermee, 1 ouverte — pour l'animation
 
 func _ready() -> void:
 	_eq = get_node_or_null(equipement) as Equipement
+	_audio = get_tree().get_first_node_in_group(Audio.GROUPE) as Audio
 	visible = false
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_process(true)
@@ -44,6 +46,7 @@ func ouvrir() -> void:
 	# vides : la selection doit toujours commencer quelque part de sense.
 	_selection = _eq.actif() if _eq.actif() >= 0 else 0
 	Engine.time_scale = reglages.roue_ralenti
+	_sonner("roue_ouvre")
 
 
 func fermer(valider: bool) -> void:
@@ -51,9 +54,20 @@ func fermer(valider: bool) -> void:
 		return
 	_ouverte = false
 	Engine.time_scale = 1.0
+	_sonner("roue_ferme")
 	if valider:
 		_eq.equiper(_selection)
 		choisi.emit(_selection)
+
+
+# Le son de l'interface ne passe PAS par pitch_scale du lecteur seul : le jeu
+# est ralenti quand la roue est ouverte, et Godot n'applique pas time_scale a
+# l'audio. Un cran joue a vitesse normale sur un monde au ralenti sonne juste,
+# ce qui est exactement l'effet recherche — c'est le monde qui ralentit, pas
+# le geste.
+func _sonner(nom: String) -> void:
+	if _audio != null:
+		_audio.bruit(nom)
 
 
 func _process(delta: float) -> void:
@@ -86,8 +100,10 @@ func _choisir() -> void:
 		return
 	if Input.is_action_just_pressed("droite"):
 		_selection = (_selection + 1) % n
+		_sonner("roue_cran")
 	elif Input.is_action_just_pressed("gauche"):
 		_selection = (_selection - 1 + n) % n
+		_sonner("roue_cran")
 
 
 func _draw() -> void:

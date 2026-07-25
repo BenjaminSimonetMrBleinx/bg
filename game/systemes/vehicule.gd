@@ -80,6 +80,13 @@ func _toutes() -> Array[VehicleWheel3D]:
 	return _avant + _arriere
 
 
+## Les roues motrices. Le son lit leur adherence pour savoir quand ca crisse :
+## il a besoin des roues elles-memes, pas d'une valeur pre-machee, parce que
+## le seuil est un reglage et qu'il doit rester dans reglages.tres.
+func roues_arriere() -> Array[VehicleWheel3D]:
+	return _arriere
+
+
 func _physics_process(delta: float) -> void:
 	var gaz := Input.get_axis("frein", "gaz")
 	var direction := Input.get_axis("droite", "gauche")

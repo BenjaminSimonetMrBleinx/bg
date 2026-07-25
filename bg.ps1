@@ -389,6 +389,11 @@ switch ($Commande) {
             @{ cle = 'audio'; nom = 'audio'
                script = 'res://verifs/test_audio.gd'
                couvre = @('systemes/audio', 'assets/sons', 'default_bus_layout') }
+            @{ cle = 'sons'; nom = 'sons branches'
+               script = 'res://verifs/test_sons.gd'
+               couvre = @('systemes/audio', 'systemes/roue', 'systemes/equipement',
+                          'systemes/silhouette', 'systemes/joueur', 'systemes/controleur',
+                          'systemes/moteur_audio', 'donnees/sons', 'assets/sons') }
             @{ cle = 'moteur'; nom = 'son du moteur'
                script = 'res://verifs/test_moteur.gd'
                couvre = @('systemes/moteur_audio', 'systemes/vehicule', 'rendu/rendu_ps2', 'assets/sons') }

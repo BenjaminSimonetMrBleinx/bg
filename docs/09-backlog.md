@@ -10,24 +10,24 @@ temps.
 
 ## À brancher — du travail déjà livré qui dort
 
-**Guillaume a livré 28 sons de plus, et aucun n'est branché.** Ils sont rangés par
-mécanisme dans `game/assets/sons/`. La plupart se posent sur du code qui existe déjà :
+Les 28 sons de Guillaume sont branchés, sauf quatre lots. Tout passe par
+`game/donnees/sons.json` : ajouter ou changer un son est une ligne de données, pas de code.
 
-| Dossier | Fichiers | Où ça se branche |
-|---|---|---|
-| `interface/` | `open_menu_item`, `close_menu_item`, `menu_item_hold`, `select_item01..04`, `stp_time` | `roue.gd` — ouverture, crans, validation, fermeture |
-| `interface/` | `item_book`, `item_hat`, `item_meth` | `equipement.gd`, au moment où l'objet arrive en main |
-| `maison/` | `ouvre_porte`, `ferme_porte` | `maison.gd`, sur le seuil |
-| `maison/` | `ambiance_indoors_house` | `audio.gd` a déjà `ambiance(nom)` et les ambiances intérieures |
-| `vehicule/` | `portiere_ouverture`, `portiere_fermeture`, `sit_car` | `controleur.gd`, sur `_monter` et `_descendre` |
-| `vehicule/` | `klaxon` | une action neuve, à ajouter dans `project.godot` |
-| `vehicule/` | `roulement_asphalte` | volume et hauteur suivent la vitesse. C'est ça qui donne le poids d'une voiture, bien plus que le moteur |
-| `vehicule/` | `pneus_crissement` | frein à main et décrochage de l'arrière : lire le `skidinfo` des roues arrière |
-| `pas/` | `steps_beton`, `step_indoors01` | `silhouette.gd`, aux passages de phase du cycle de marche |
-| `telephone/` | `phone_ring` | attend la fonctionnalité téléphone, plus bas |
+**Ce qui reste :**
 
-**Une seule famille demande un mécanisme neuf** : `vehicule/choc_leger_01..04` et
-`choc_fort_01..04`. **Rien ne détecte les collisions aujourd'hui.**
+| Fichiers | Ce qui manque |
+|---|---|
+| `vehicule/choc_leger_01..04`, `choc_fort_01..04` | **Rien ne détecte les collisions.** C'est le seul lot qui demande un mécanisme neuf. La force du choc devrait choisir entre léger et fort. |
+| `interface/menu_item_hold`, `stp_time` | Une nappe qui démarre et s'arrête avec la roue, pas un bruitage ponctuel. À faire quand on saura si ça alourdit le geste ou si ça le porte. |
+| `telephone/phone_ring` | Attend la fonctionnalité téléphone, plus bas. |
+
+**Et deux dettes ouvertes par ce branchement :**
+
+- **Les passants sont muets.** `silhouette.gd` émet le signal `pas` pour tout le monde,
+  mais seul le joueur l'écoute. Quinze passants sonores d'un coup risquaient une grêle de
+  bruits sans qu'on sache d'où elle vient — à reprendre avec une portée courte.
+- **Une seule surface de pas.** Extérieur ou intérieur, rien de plus. Le brief prévoyait
+  asphalte, béton et parquet distincts.
 
 **Vérifier l'alignement des voix de la scène de la cuisine.** Les dix répliques ont été
 affectées séquentiellement, sans que personne n'ait écouté. Si c'est décalé, redécouper avec

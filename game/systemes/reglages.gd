@@ -237,6 +237,42 @@ extends Resource
 ## demarre a plein volume s'entend comme un declic.
 @export_range(0.0, 10.0, 0.1) var ambiance_fondu: float = 2.5
 
+## Distance de reference des bruitages POSITIONNES — portes, portieres, pas.
+## Bien plus courte que celle du moteur : une porte qui claque ne doit pas
+## s'entendre a l'autre bout de la rue, alors qu'une voiture, si.
+@export_range(1.0, 30.0, 0.5) var son_portee: float = 5.0
+@export_range(5.0, 100.0, 1.0) var son_distance_max: float = 34.0
+
+@export_subgroup("Pas")
+
+## Longueur d'une foulee sonore, en fraction du cycle. Le pied se pose deux
+## fois par cycle : ce reglage decale le declic pour le faire coincider avec
+## le contact, qui n'arrive pas exactement au passage par zero.
+@export_range(0.0, 1.0, 0.01) var pas_decalage: float = 0.18
+
+## Variation de hauteur d'un pas a l'autre. Sans elle, quatre variantes
+## sonnent quand meme comme une boucle.
+@export_range(0.0, 0.5, 0.01) var pas_variation: float = 0.12
+
+@export_subgroup("Roulement")
+
+## Volume du roulement des pneus a pleine vitesse, en decibels.
+@export_range(-40.0, 6.0, 0.5) var roulement_volume: float = -9.0
+
+## Vitesse (km/h) a laquelle le roulement atteint son plein volume.
+@export_range(5.0, 120.0, 1.0) var roulement_plein: float = 55.0
+
+## Etirement de la hauteur du roulement avec la vitesse.
+@export_range(0.0, 1.5, 0.05) var roulement_hauteur: float = 0.45
+
+## En dessous de cette adherence (0 = roue qui patine totalement, 1 = accroche
+## parfaite), les pneus crissent.
+@export_range(0.0, 1.0, 0.01) var crissement_seuil: float = 0.55
+
+## Temps minimum entre deux crissements, en secondes. Sans lui, une longue
+## glissade en declenche un par image.
+@export_range(0.1, 5.0, 0.1) var crissement_repos: float = 0.9
+
 @export_subgroup("Moteur")
 
 ## Volume des boucles moteur. C'est le son le plus present du jeu : trop

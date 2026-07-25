@@ -155,6 +155,7 @@ C'est exactement ce que fait `installer.ps1`.
 | **W A S D** / flèches | Marcher, puis conduire |
 | **F** | Monter dans la voiture, en descendre — entrer chez quelqu'un, parler, sortir |
 | Espace | Frein à main |
+| **H** | Klaxon, au volant |
 | **Tab** maintenu, ou clic droit | Roue des outils : viser avec gauche/droite, relâcher pour équiper |
 
 Les touches sont liées par **position physique** : elles se lisent `WASD` en

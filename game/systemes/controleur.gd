@@ -135,6 +135,8 @@ func _process(_delta: float) -> void:
 	match _etat:
 		Etat.AU_VOLANT:
 			_afficher("F   Descendre")
+			if Input.is_action_just_pressed("klaxon") and _audio != null:
+				_audio.bruit_ici("klaxon", _v.global_position)
 			if Input.is_action_just_pressed("interagir"):
 				_descendre()
 
@@ -262,11 +264,13 @@ func _monter() -> void:
 	_j.process_mode = Node.PROCESS_MODE_DISABLED
 	_v.prendre_le_volant()
 	_c.suivre(_v)
+	_geste_portiere(true)
 
 
 func _descendre() -> void:
 	_etat = Etat.A_PIED
 	_v.quitter_le_volant()
+	_geste_portiere(false)
 
 	# On repose Walter a la portiere conducteur, dans le repere du vehicule :
 	# il sort du bon cote quel que soit le sens de la voiture.
@@ -286,10 +290,32 @@ func _descendre() -> void:
 	_c.suivre(_j)
 
 
+# Ouvrir, s'asseoir, refermer. Les trois sons sont ESPACES : joues ensemble
+# ils se superposent en un seul bruit confus, alors qu'echelonnes ils
+# racontent un geste. Les delais sont courts — on ne veut pas faire attendre
+# le joueur, juste eviter la bouillie.
+#
+# Le son suit la voiture et non le joueur : c'est la portiere qui claque.
+func _geste_portiere(monte: bool) -> void:
+	if _audio == null:
+		return
+	var ou := _v.global_position
+	_audio.bruit_ici("portiere_ouvre", ou)
+	if monte:
+		await get_tree().create_timer(0.35).timeout
+		_audio.bruit_ici("assise", ou)
+	await get_tree().create_timer(0.45).timeout
+	# La voiture a pu rouler entre-temps : on relit sa position plutot que de
+	# faire claquer une portiere la ou elle etait.
+	_audio.bruit_ici("portiere_ferme", _v.global_position)
+
+
 func _entrer(m: Maison) -> void:
-	await _passer_la_porte(m.entree(), m.cap_entree())
+	var seuil := m.seuil()
+	await _passer_la_porte(m.entree(), m.cap_entree(), seuil)
 	_etat = Etat.DEDANS
 	_dedans = m
+	_j.interieur = true
 	_c.interieur(true)
 	if _audio != null:
 		_audio.ambiance(m.nom_affiche)
@@ -297,9 +323,10 @@ func _entrer(m: Maison) -> void:
 
 func _sortir() -> void:
 	var m := _dedans
-	await _passer_la_porte(m.seuil(), m.cap_sortie())
+	await _passer_la_porte(m.seuil(), m.cap_sortie(), m.entree())
 	_etat = Etat.A_PIED
 	_dedans = null
+	_j.interieur = false
 	_c.interieur(false)
 	if _audio != null:
 		_audio.ambiance("")
@@ -307,14 +334,22 @@ func _sortir() -> void:
 
 # Noir, on deplace, on rouvre. Le deplacement se fait au creux du fondu :
 # c'est la seule image ou le saut de six cents metres est invisible.
-func _passer_la_porte(destination: Vector3, cap: float) -> void:
+#
+# La porte s'ouvre AVANT le noir et se referme APRES, chacune a sa place
+# reelle : on entend la poignee la ou on etait, et le battant la ou on
+# arrive. Jouer les deux au meme endroit trahissait le saut.
+func _passer_la_porte(destination: Vector3, cap: float, depart: Vector3) -> void:
 	_transition = true
 	_afficher("")
+	if _audio != null:
+		_audio.bruit_ici("porte_ouvre", depart)
 	await _noircir(1.0)
 
 	_j.global_position = destination + Vector3.UP * 0.1
 	_j.velocity = Vector3.ZERO
 	_j.rotation.y = cap
+	if _audio != null:
+		_audio.bruit_ici("porte_ferme", destination)
 	# La camera doit sauter avec lui. Sans ce recalage elle rattraperait la
 	# distance en lissant, et on verrait defiler le vide entre les deux.
 	_c.recaler()

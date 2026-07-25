@@ -168,6 +168,37 @@ Le repère est centré sur la pièce.
 
 ---
 
+## 5. Changer un son, ou en ajouter des variantes
+
+Tout le son du jeu passe par **`game/donnees/sons.json`**. À gauche un nom de mécanisme,
+à droite un ou plusieurs fichiers :
+
+```json
+"roue_cran": [
+ "interface/select_item01.wav",
+ "interface/select_item02.wav"
+]
+```
+
+**Plusieurs fichiers, ce sont des variantes.** Le jeu en tire une au hasard, jamais deux
+fois la même d'affilée. C'est ce qui empêche l'oreille de reconnaître l'échantillon : un
+bruit de pas identique à chaque foulée s'entend au bout de trois secondes, alors que
+quatre variantes passent inaperçues.
+
+Donc, pour enrichir un son déjà en place : déposer le fichier dans `livraisons/sons/`,
+faire `.\go.ps1`, ajouter une ligne ici. Aucun code.
+
+Un nom absent du fichier ne fait rien et le dit une fois dans la console. Un **fichier**
+absent, en revanche, est une erreur franche — c'est presque toujours un import Godot qui
+a échoué, et `.\bg.ps1 reparer` le règle.
+
+> **Le piège qui coûte une soirée : une boucle qui ne boucle pas.** Godot lit par défaut
+> « détecter depuis le WAV », et nos fichiers n'ont pas de marqueur de boucle. Un son
+> d'ambiance ou de roulement s'arrête donc tout seul au bout d'une seconde, sans erreur.
+> Ça se règle dans le `.import` du fichier, `edit/loop_mode=2`.
+
+---
+
 ## Ce qui demande vraiment du code
 
 Pour mémoire, la frontière :
@@ -178,6 +209,7 @@ Pour mémoire, la frontière :
 | Apparence d'un personnage | Un nouveau type de vêtement |
 | Qui habite où | Une nouvelle pièce dans une maison |
 | Meubles, position d'un habitant | Un PNJ qui se déplace |
+| Quel son fait quoi, et ses variantes | Un mécanisme qui n'émet encore aucun son |
 | Tous les réglages de `reglages.tres` | Une nouvelle mécanique |
 
 Quand une envie tombe dans la colonne de droite, la dire — c'est souvent moins de travail

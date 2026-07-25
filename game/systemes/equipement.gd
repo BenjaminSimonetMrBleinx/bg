@@ -26,9 +26,11 @@ var _fiches: Array = []
 var _noeuds: Array[Node3D] = []
 var _actif: int = RIEN
 var _porteur: Node3D
+var _audio: Audio
 
 
 func _ready() -> void:
+	_audio = get_tree().get_first_node_in_group(Audio.GROUPE) as Audio
 	_porteur = get_node_or_null(porteur) as Node3D
 	if _porteur == null:
 		push_error("equipement : porteur introuvable (%s)" % porteur)
@@ -116,4 +118,20 @@ func equiper(i: int) -> void:
 		if _noeuds[k] != null:
 			_noeuds[k].visible = (k == i)
 	_actif = i
+	_sonner(i)
 	change.emit(i)
+
+
+# Le nom du son se DEDUIT de la cle de l'objet : « livre » -> « objet_livre ».
+# Ajouter un objet qui fait du bruit ne demande donc pas de toucher a ce
+# fichier — une entree dans outils.json, une ligne dans sons.json, c'est tout.
+#
+# Un objet sans son declare est un cas parfaitement normal : l'arme n'en a
+# pas. On verifie donc AVANT d'appeler, sinon chaque equipement d'arme
+# imprimerait un avertissement pour un comportement voulu.
+func _sonner(i: int) -> void:
+	if _audio == null or i == RIEN or i >= _fiches.size():
+		return
+	var nom := "objet_%s" % str(_fiches[i].get("cle", ""))
+	if _audio.connait(nom):
+		_audio.bruit(nom)

@@ -7,7 +7,7 @@
 ; empeche la caisse de se retourner dans les virages sans avoir a brider le
 ; braquage.
 
-[gd_scene load_steps=14 format=3 uid="uid://bgvehicule00001"]
+[gd_scene load_steps=16 format=3 uid="uid://bgvehicule00001"]
 
 [ext_resource type="Script" path="res://systemes/vehicule.gd" id="1_vehicule"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
@@ -19,6 +19,8 @@
 [ext_resource type="AudioStream" path="res://assets/sons/vehicule/moteur_haut.wav" id="8_haut"]
 [ext_resource type="AudioStream" path="res://assets/sons/vehicule/moteur_demarrage.wav" id="9_demarrage"]
 [ext_resource type="AudioStream" path="res://assets/sons/vehicule/moteur_arret.wav" id="10_arret"]
+[ext_resource type="AudioStream" path="res://assets/sons/vehicule/roulement_asphalte.wav" id="11_roulement"]
+[ext_resource type="AudioStream" path="res://assets/sons/vehicule/pneus_crissement.wav" id="12_crissement"]
 
 ; Le bas de la boite s'arrete a 0,55 au-dessus de l'origine, pas a 0,39.
 ;
@@ -139,3 +141,5 @@ boucle_charge = ExtResource("7_charge")
 boucle_haut = ExtResource("8_haut")
 demarrage = ExtResource("9_demarrage")
 arret = ExtResource("10_arret")
+roulement = ExtResource("11_roulement")
+crissement = ExtResource("12_crissement")

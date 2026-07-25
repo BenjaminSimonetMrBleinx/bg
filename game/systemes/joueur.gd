@@ -26,7 +26,13 @@ extends CharacterBody3D
 ## plus du tout : c'est precisement ce qui a regle le probleme.
 @export var camera: NodePath
 
+## Est-on a l'interieur d'une maison ? Pose par le controleur au passage de la
+## porte. Ne sert qu'au son des pas : le parquet et le trottoir ne sonnent pas
+## pareil, et le joueur est le seul a savoir ou il est.
+var interieur: bool = false
+
 var _cam: Camera3D
+var _audio: Audio
 
 ## La marche procedurale, partagee avec les pietons de la rue.
 var _silhouette: Silhouette
@@ -44,14 +50,33 @@ func raison_refus() -> String:
 	return _refus
 
 
+# Un pas est joue DEPUIS LES PIEDS, pas depuis le centre du personnage : a la
+# troisieme personne la camera est derriere et au-dessus, et un son emis a
+# hauteur de poitrine s'entend trop pres.
+#
+# La hauteur varie d'un pas a l'autre. Sans elle, deux fichiers seulement — et
+# on n'en a que deux — sonnent comme une boucle au bout de quelques metres.
+func _poser_le_pied() -> void:
+	if _audio == null:
+		return
+	var v := reglages.pas_variation
+	_audio.bruit_ici("pas_interieur" if interieur else "pas_exterieur",
+			global_position, 1.0 + randf_range(-v, v))
+
+
 func _ready() -> void:
 	if reglages == null:
 		push_error("joueur : aucune ressource Reglages assignee")
 		set_physics_process(false)
 		return
 	_cam = get_node_or_null(camera) as Camera3D
+	_audio = get_tree().get_first_node_in_group(Audio.GROUPE) as Audio
 	_silhouette = Silhouette.new(reglages)
 	_silhouette.recenser(self)
+	# Seul le joueur ecoute ses pas. Les quinze passants de la rue emettent le
+	# meme signal, et le brancher pour tout le monde remplirait la rue d'une
+	# grele de pas sans qu'on sache d'ou elle vient.
+	_silhouette.pas.connect(_poser_le_pied)
 
 	# Le franchissement doit degager le rayon de la capsule AU-DELA de
 	# l'arete, sinon on retombe dedans. On le lit plutot que de le supposer.

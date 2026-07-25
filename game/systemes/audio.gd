@@ -25,16 +25,43 @@ const BUS_AMBIANCE := "Ambiance"
 const BUS_EFFETS := "Effets"
 const BUS_INTERFACE := "Interface"
 
+const BANQUE := "res://donnees/sons.json"
+const DOSSIER := "res://assets/sons/"
+
+## Nom du groupe par lequel les autres systemes nous trouvent.
+##
+## Un NodePath exporte par systeme voulant du son aurait demande d'editer la
+## scene principale a chaque fois — et la scene principale est le fichier que
+## TOUTES les suites de tests rechargent. Un groupe se declare ici, une fois,
+## et rien d'autre ne bouge.
+const GROUPE := "audio"
+
 var _ambiance: AudioStreamPlayer
 var _fondu: Tween
+
+## nom de mecanisme -> Array[AudioStream]. Chargee au demarrage, pas a la
+## demande : un chargement de disque au moment ou l'on ouvre la roue s'entend
+## comme un a-coup, et c'est precisement le moment ou le jeu est ralenti.
+var _banque: Dictionary = {}
+
+## Derniere variante tiree, par nom. Sert a ne jamais rejouer la meme deux
+## fois de suite : c'est ce qui distingue quatre variantes d'un vrai hasard,
+## lequel repete volontiers.
+var _derniere: Dictionary = {}
+
+## Noms reclames qui n'existent pas dans la banque. On ne rale qu'une fois
+## par nom, sinon un son manquant dans une boucle noie la console.
+var _inconnus: Dictionary = {}
 
 
 func _ready() -> void:
 	if reglages == null:
 		push_error("audio : aucune ressource Reglages assignee")
 		return
+	add_to_group(GROUPE)
 	appliquer_volumes()
 	diagnostic()
+	_charger_banque()
 	_preparer_ambiance()
 
 
@@ -143,3 +170,106 @@ func jouer(flux: AudioStream, bus: String = BUS_INTERFACE,
 	add_child(p)
 	p.finished.connect(p.queue_free)
 	p.play()
+
+
+# ---------------------------------------------------------------- la banque
+
+func _charger_banque() -> void:
+	if not FileAccess.file_exists(BANQUE):
+		push_error("audio : %s introuvable" % BANQUE)
+		return
+	var lu: Variant = JSON.parse_string(FileAccess.get_file_as_string(BANQUE))
+	if typeof(lu) != TYPE_DICTIONARY:
+		push_error("audio : %s illisible. Verifier les virgules." % BANQUE)
+		return
+
+	var manquants := 0
+	for nom in (lu as Dictionary).get("banque", {}):
+		var flux: Array[AudioStream] = []
+		for fichier in (lu as Dictionary)["banque"][nom]:
+			var chemin: String = DOSSIER + str(fichier)
+			if not ResourceLoader.exists(chemin):
+				# Franche, pas silencieuse : un fichier declare mais absent est
+				# presque toujours un import Godot qui a echoue, et un jeu qui
+				# se contente d'etre muet ne donne aucune piste.
+				push_error("audio : '%s' declare pour '%s' est introuvable. "
+						% [chemin, nom] + "Essayer : .\\bg.ps1 reparer")
+				manquants += 1
+				continue
+			flux.append(ResourceLoader.load(chemin) as AudioStream)
+		if not flux.is_empty():
+			_banque[nom] = flux
+
+	# Les nappes d'interieur viennent du meme fichier : elles etaient jusqu'ici
+	# posees a la main dans la scene, donc invisibles pour qui cherchait "ou
+	# est-ce qu'on decide du son de la maison de Walter".
+	for nom in (lu as Dictionary).get("ambiances", {}):
+		if nom.begins_with("_"):
+			continue
+		var chemin: String = DOSSIER + str((lu as Dictionary)["ambiances"][nom])
+		if ResourceLoader.exists(chemin):
+			ambiances_interieures[nom] = ResourceLoader.load(chemin) as AudioStream
+
+	var variantes := 0
+	for nom in _banque:
+		variantes += (_banque[nom] as Array).size()
+	print("AUDIO : banque de %d mecanisme(s), %d fichier(s)%s"
+			% [_banque.size(), variantes,
+			   ", %d MANQUANT(S)" % manquants if manquants > 0 else ""])
+
+
+## Joue un son de la banque, sans position dans l'espace.
+##
+## C'est le point d'entree de tout le jeu : on nomme un MECANISME, jamais un
+## fichier. Changer le son d'un cran de roue est alors une ligne de JSON, pas
+## une modification de roue.gd.
+func bruit(nom: String, bus: String = BUS_INTERFACE, hauteur: float = 1.0) -> void:
+	var flux := _tirer(nom)
+	if flux != null:
+		jouer(flux, bus, hauteur)
+
+
+## Meme chose, mais emis DEPUIS un point du monde. Une portiere qui claque
+## derriere soi doit s'entendre derriere soi.
+func bruit_ici(nom: String, position: Vector3, hauteur: float = 1.0) -> void:
+	var flux := _tirer(nom)
+	if flux == null:
+		return
+	var p := AudioStreamPlayer3D.new()
+	p.stream = flux
+	p.bus = BUS_EFFETS
+	p.pitch_scale = hauteur
+	p.unit_size = reglages.son_portee
+	p.max_distance = reglages.son_distance_max
+	add_child(p)
+	p.global_position = position
+	p.finished.connect(p.queue_free)
+	p.play()
+
+
+## Le son existe-t-il ? Sert aux systemes qui composent un nom — « objet_%s »
+## — et pour qui l'absence est un cas normal, pas une anomalie.
+func connait(nom: String) -> bool:
+	return _banque.has(nom)
+
+
+func _tirer(nom: String) -> AudioStream:
+	if not _banque.has(nom):
+		if not _inconnus.has(nom):
+			_inconnus[nom] = true
+			push_warning("audio : aucun son nomme '%s'. L'ajouter dans %s"
+					% [nom, BANQUE])
+		return null
+
+	var flux: Array = _banque[nom]
+	if flux.size() == 1:
+		return flux[0]
+
+	# Tirage sans repetition immediate. Un vrai hasard rejoue la meme variante
+	# deux fois de suite une fois sur quatre, et c'est exactement ce que les
+	# variantes servent a eviter.
+	var i := randi() % flux.size()
+	if _derniere.get(nom, -1) == i:
+		i = (i + 1) % flux.size()
+	_derniere[nom] = i
+	return flux[i]
