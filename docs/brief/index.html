@@ -1,0 +1,645 @@
+<title>BG — brief de lancement</title>
+
+<style>
+  :root {
+    --bg:        #E7DFD1;
+    --surface:   #F2ECE1;
+    --surface-2: #DDD3C2;
+    --text:      #1E2126;
+    --muted:     #6B6355;
+    --border:    #CFC4B0;
+    --crystal:   #1B7E9E;
+    --rust:      #B04A22;
+    --hazmat:    #8A6512;
+    --chip-ink:  #F2ECE1;
+
+    --mono: ui-monospace, "Cascadia Mono", "SF Mono", "JetBrains Mono", Consolas, "Liberation Mono", monospace;
+    --sans: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:        #14171C;  --surface:   #1B1F26;  --surface-2: #232832;
+      --text:      #DDE3EA;  --muted:     #8A929E;  --border:    #2C323C;
+      --crystal:   #56C3E3;  --rust:      #E0703F;  --hazmat:    #E8BE4E;
+      --chip-ink:  #14171C;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg:        #14171C;  --surface:   #1B1F26;  --surface-2: #232832;
+    --text:      #DDE3EA;  --muted:     #8A929E;  --border:    #2C323C;
+    --crystal:   #56C3E3;  --rust:      #E0703F;  --hazmat:    #E8BE4E;
+    --chip-ink:  #14171C;
+  }
+  :root[data-theme="light"] {
+    --bg:        #E7DFD1;  --surface:   #F2ECE1;  --surface-2: #DDD3C2;
+    --text:      #1E2126;  --muted:     #6B6355;  --border:    #CFC4B0;
+    --crystal:   #1B7E9E;  --rust:      #B04A22;  --hazmat:    #8A6512;
+    --chip-ink:  #F2ECE1;
+  }
+
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 16px; line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 24px 96px; display: flex; flex-direction: column; gap: 60px; }
+  .prose { max-width: 68ch; }
+  a { color: var(--crystal); }
+  :focus-visible { outline: 2px solid var(--crystal); outline-offset: 3px; }
+  code { font-family: var(--mono); font-size: 0.88em; }
+
+  /* hero */
+  .hero { padding-top: 56px; display: flex; flex-direction: column; gap: 24px; }
+  .eyebrow { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+  h1 {
+    font-family: var(--mono); font-weight: 700;
+    font-size: clamp(1.9rem, 5.2vw, 3.1rem); line-height: 1.04;
+    letter-spacing: -0.025em; text-transform: uppercase; text-wrap: balance; margin: 0;
+  }
+  h1 .dim { color: var(--muted); }
+  .standfirst { max-width: 62ch; font-size: 1.06rem; color: var(--muted); }
+  .horizon-frame { border: 1px solid var(--border); background: #0e1016; line-height: 0; overflow: hidden; }
+  #horizon { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+  .horizon-cap { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-top: 8px; }
+
+  /* sections */
+  section { display: flex; flex-direction: column; gap: 20px; }
+  h2 {
+    font-family: var(--mono); font-size: 0.86rem; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; margin: 0;
+    padding-bottom: 10px; border-bottom: 2px solid var(--text);
+  }
+  h3 { font-family: var(--mono); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rust); margin: 0; }
+  p { margin: 0; }
+  .prose p + p { margin-top: 14px; }
+  strong { font-weight: 650; }
+
+  /* target banner */
+  .target {
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 4px solid var(--crystal); padding: 22px 24px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .target .lede { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--crystal); }
+  .target .say { font-size: 1.24rem; line-height: 1.4; font-weight: 600; text-wrap: balance; }
+  .target .sub { color: var(--muted); font-size: 0.94rem; }
+
+  /* chips */
+  .chip {
+    display: inline-block; font-family: var(--mono); font-size: 0.62rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 7px; white-space: nowrap; color: var(--chip-ink);
+  }
+  .chip.lock { background: var(--crystal); }
+  .chip.open { background: var(--rust); }
+  .chip.bro  { background: var(--hazmat); }
+
+  /* decisions */
+  .decisions { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .row { background: var(--surface); padding: 13px 16px; display: grid; grid-template-columns: 108px 1fr; gap: 3px 18px; align-items: start; }
+  .row .what { font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); grid-column: 2; }
+  .row .val { grid-column: 2; }
+  .row .chip { grid-column: 1; grid-row: 1 / span 2; justify-self: start; margin-top: 3px; }
+
+  /* tables */
+  .scroller { overflow-x: auto; border: 1px solid var(--border); }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 0.88rem; background: var(--surface); }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead th { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; background: var(--surface-2); border-bottom: 2px solid var(--text); white-space: nowrap; }
+  tbody th { font-weight: 500; color: var(--text); width: 34%; }
+  tbody tr:last-child th, tbody tr:last-child td { border-bottom: none; }
+  td.owner { font-family: var(--mono); font-size: 0.78rem; }
+  .full { color: var(--crystal); font-weight: 700; }
+  .part { color: var(--muted); }
+  .none { color: var(--border); }
+  .stop { color: var(--rust); font-weight: 700; }
+
+  /* can / cannot */
+  .duo { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+  .card { background: var(--surface); border: 1px solid var(--border); padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
+  .card.yes { border-top: 3px solid var(--crystal); }
+  .card.no  { border-top: 3px solid var(--rust); }
+  .card h4 { font-family: var(--mono); font-size: 0.76rem; letter-spacing: 0.11em; text-transform: uppercase; margin: 0; }
+  .card.yes h4 { color: var(--crystal); }
+  .card.no  h4 { color: var(--rust); }
+  .card ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 7px; font-size: 0.93rem; }
+  .card li::marker { color: var(--muted); }
+
+  pre { background: var(--surface); border: 1px solid var(--border); padding: 14px 16px; overflow-x: auto; font-family: var(--mono); font-size: 0.78rem; line-height: 1.6; margin: 0; }
+  pre .c { color: var(--muted); }
+
+  /* questions */
+  .qgroups { display: flex; flex-direction: column; gap: 26px; counter-reset: q; }
+  .qgroup { display: flex; flex-direction: column; gap: 10px; }
+  .qlist { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .q { background: var(--surface); padding: 14px 18px; display: grid; grid-template-columns: 30px 1fr; gap: 3px 14px; }
+  .q::before {
+    counter-increment: q; content: counter(q, decimal-leading-zero);
+    font-family: var(--mono); font-size: 0.72rem; font-weight: 700; color: var(--hazmat);
+    grid-row: 1 / span 2; padding-top: 3px;
+  }
+  .q .ask { font-weight: 600; }
+  .q .why { color: var(--muted); font-size: 0.9rem; }
+
+  /* planning */
+  .plan { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .slot { background: var(--surface); padding: 14px 18px; display: grid; grid-template-columns: 148px 1fr; gap: 4px 18px; }
+  .slot .when { font-family: var(--mono); font-size: 0.74rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--crystal); }
+  .slot .goal { font-weight: 600; }
+  .slot .who { grid-column: 2; font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.04em; color: var(--muted); }
+
+  ul.plain { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+  ul.plain li::marker { color: var(--muted); }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+
+  .status { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .st { background: var(--surface); padding: 11px 16px; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; font-size: 0.92rem; }
+  .st .tool { font-family: var(--mono); font-weight: 700; min-width: 130px; }
+  .st .ok { color: var(--crystal); font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .st .wait { color: var(--hazmat); font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .st .todo { color: var(--rust); font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .st .note { color: var(--muted); font-size: 0.88rem; }
+
+  footer { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border-top: 1px solid var(--border); padding-top: 18px; }
+
+  @media (max-width: 620px) {
+    .row, .slot { grid-template-columns: 1fr; }
+    .row .chip { grid-row: auto; grid-column: 1; }
+    .row .what, .row .val, .slot .goal, .slot .who { grid-column: 1; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">BG · Breaking Bad Game · Benjamin + Guillaume · 25 juillet 2026</div>
+    <h1>Un prototype<br><span class="dim">en un week-end</span></h1>
+    <p class="standfirst">
+      GTA-like en 3D low-poly PS2 dans l'univers de Breaking Bad. Le monde ouvert est la
+      destination ; ce document ne parle que des vingt premières heures. Il fixe la cible,
+      répartit le travail entre nous trois, et liste tout ce qui doit être répondu avant de
+      lancer la machine.
+    </p>
+
+    <div>
+      <div class="horizon-frame">
+        <canvas id="horizon" width="320" height="112" role="img"
+                aria-label="Horizon désertique en 3D basse résolution : mesas noyées dans le brouillard, route filant vers le point de fuite."></canvas>
+      </div>
+      <div class="horizon-cap">320 × 112 · tramage bayer 4×4 · 6 niveaux par canal · la cible visuelle</div>
+    </div>
+  </header>
+
+  <section>
+    <h2>La cible du dimanche soir</h2>
+    <div class="target">
+      <div class="lede">Une seule phrase. Tout ce qui n'y contribue pas sort du périmètre.</div>
+      <div class="say">
+        « On conduit une voiture dans quatre blocs d'Albuquerque, de nuit, avec le rendu PS2,
+        et on peut descendre du véhicule. »
+      </div>
+      <div class="sub">
+        Pas de missions. Pas de quêtes annexes. Pas d'IA, pas de trafic, pas de police, pas de
+        cuisine, pas de personnage animé. Ces éléments sont le jeu — ils ne sont pas le prototype.
+        Le prototype sert à répondre à une seule question : est-ce que rouler là-dedans procure
+        déjà quelque chose ?
+      </div>
+    </div>
+    <div class="prose">
+      <p>
+        La nuit n'est pas un choix esthétique gratuit : c'est le levier de production le plus
+        rentable du week-end. Elle divise par trois le nombre de détails à modéliser, rend le
+        brouillard crédible au lieu de suspect, transforme des façades plates en silhouettes,
+        et permet à quelques lampadaires de porter toute l'ambiance.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Verrouillé</h2>
+    <div class="legend">
+      <span class="chip lock">Décidé</span>
+      <span class="chip open">À confirmer ensemble</span>
+      <span class="chip bro">Attente Guillaume</span>
+    </div>
+
+    <div class="decisions">
+      <div class="row"><span class="chip lock">Décidé</span><span class="what">Nom</span>
+        <span class="val"><strong>BG</strong> — Benjamin &amp; Guillaume, et Breaking Bad Game. Le jeu s'appelle <em>Breaking Bad Game</em> à l'écran ; le dépôt s'appelle <code>bg</code>, pour ne pas se faire indexer par un robot de marque.</span></div>
+      <div class="row"><span class="chip lock">Décidé</span><span class="what">Genre</span>
+        <span class="val">Monde ouvert type GTA, missions principales + quêtes annexes. Horizon long ; hors périmètre du week-end.</span></div>
+      <div class="row"><span class="chip lock">Décidé</span><span class="what">Direction artistique</span>
+        <span class="val">3D low-poly PS2 — vertex snapping, textures 64 px, brouillard épais, rendu 320×240 upscalé.</span></div>
+      <div class="row"><span class="chip lock">Décidé</span><span class="what">Moteur</span>
+        <span class="val"><strong>Godot 4.7.</strong> Tranché par la contrainte du week-end, pas par préférence — détail plus bas.</span></div>
+      <div class="row"><span class="chip lock">Décidé</span><span class="what">Juridique</span>
+        <span class="val">Fan game assumé, <strong>non commercial</strong>. Aucun asset officiel : pas de sprites extraits, pas de photos du casting, pas de musique de la série, pas de logo AMC. Tout est refait à la main.</span></div>
+      <div class="row"><span class="chip lock">Décidé</span><span class="what">Dépôt</span>
+        <span class="val">GitHub public dédié, séparé du monorepo professionnel. Guillaume en collaborateur.</span></div>
+      <div class="row"><span class="chip open">Confirmer</span><span class="what">Périmètre</span>
+        <span class="val">La phrase-cible ci-dessus. Elle se valide ou se corrige à deux, mais elle se fige avant vendredi soir.</span></div>
+      <div class="row"><span class="chip bro">Guillaume</span><span class="what">Outils</span>
+        <span class="val">Blender ? Un moteur déjà pratiqué ? Quel DAW ? Ses réponses redistribuent la charge, pas le moteur.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Pourquoi Godot, une fois la contrainte du week-end posée</h2>
+    <div class="prose">
+      <p>
+        Sur le monde ouvert seul, Unity gardait de vrais avantages : streaming, physique de
+        véhicule documentée, Asset Store fourni. Ces avantages comptent au mois six. Ils ne
+        comptent pas à l'heure vingt, et trois faits les annulent sur un week-end.
+      </p>
+    </div>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Fait</th><th>Godot 4.7</th><th>Unity 6</th></tr></thead>
+        <tbody>
+          <tr><th>Temps avant le premier pixel à l'écran</th>
+              <td class="full">120 Mo, aucun compte, ouvre en 5 s</td>
+              <td class="stop">~15 Go, compte, licence, import lent — 3 à 4 h du week-end</td></tr>
+          <tr><th>Claude peut-il écrire les scènes lui-même ?</th>
+              <td class="full">Oui — <code>.tscn</code> et <code>.tres</code> sont du texte</td>
+              <td class="stop">Non, en pratique — YAML à références GUID, trop fragile</td></tr>
+          <tr><th>Look PS2 disponible immédiatement</th>
+              <td class="full">Packs de shaders matures : snapping, affine, dithering, CRT</td>
+              <td class="part">À assembler en Shader Graph</td></tr>
+          <tr><th>Merge git à deux</th>
+              <td class="full">Scènes en texte lisible, mergeables comme du code</td>
+              <td class="part">YAML + <code>.meta</code>, conflits réguliers</td></tr>
+          <tr><th>Pipeline Blender</th>
+              <td class="full"><code>.blend</code> natif, réimport auto à la sauvegarde</td>
+              <td class="part">FBX / glTF, export manuel</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p>
+        La deuxième ligne est la décisive au vu de l'objectif « utiliser Claude au maximum » :
+        Godot est le seul moteur où je peux produire le jeu entier, scènes comprises, sans
+        que personne n'ouvre l'éditeur. Si Guillaume s'avère être un vétéran Unity, on installe
+        Unity en plus — 120 Mo de perdus, rien de grave.
+      </p>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:10px">« Et si on veut pousser le projet, on bascule sur Unity ? »</h3>
+      <div class="prose" style="margin-top:12px">
+        <p>
+          <strong>Non — et il ne faut surtout pas le planifier.</strong> Une migration de moteur
+          est une réécriture. Les assets passent sans douleur ; le code, les scènes, les shaders
+          et tout le réglage de physique, non. « On prototype en Godot puis on bascule » est un
+          piège classique : dans les faits, soit on ne migre jamais, soit on perd des mois.
+        </p>
+        <p>
+          La référence la plus utile est <em>Road to Vostok</em>, un survival open-world développé
+          en solo, qui a fait exactement ce trajet — mais <strong>dans l'autre sens</strong>.
+          Unity → Godot fin 2023, <strong>615 heures rien que pour le portage</strong> : à deux,
+          dix heures par semaine, sept mois pour zéro nouvelle fonctionnalité. Et en 2026 sa
+          version Godot dépasse l'originale Unity — cartes plus grandes, végétation plus dense,
+          meilleur éclairage, sortie en Early Access Steam en avril.
+        </p>
+        <p>
+          Ce jeu fait tourner une forêt finlandaise dense en éclairage moderne. Vous faites du
+          low-poly PS2 noyé dans le brouillard : un ordre de grandeur plus léger. Le plafond de
+          Godot n'est pas celui que vous allez rencontrer.
+        </p>
+        <p>
+          Le seul argument sérieux restant serait le portage console — Godot n'a pas d'export
+          first-party PS5 ou Xbox. Mais un fan game Breaking Bad non commercial ne sortira jamais
+          sur une boutique console : l'argument s'annule pour ce projet précis.
+        </p>
+        <p>
+          <strong>Donc : Godot se décide une fois, définitivement.</strong> Et le vrai plafond du
+          projet n'est pas le moteur — c'est votre capacité à produire du contenu à deux. C'est là
+          que meurent les mondes ouverts, pas dans le renderer.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Ce que Claude peut faire en 3D — et ce qu'il ne peut pas</h2>
+
+    <div class="duo">
+      <div class="card yes">
+        <h4>Réellement faisable</h4>
+        <ul>
+          <li><strong>Géométrie procédurale en Blender</strong> via scripts Python headless : blocs de ville, trottoirs, routes, immeubles modulaires, mobilier urbain, terrain désertique. Le low-poly boxy PS2 est précisément ce qui se génère le mieux.</li>
+          <li><strong>Textures 64 px</strong> générées en Python : asphalte, crépi, briques, fenêtres, panneaux — tuilables, en palette contrainte.</li>
+          <li><strong>Shaders</strong> : vertex snapping, affine texture mapping, tramage, brouillard, CRT. Écrits directement en <code>.gdshader</code>.</li>
+          <li><strong>Tout le code de jeu</strong> : contrôleur de véhicule, caméra, chargement par zones, HUD, sauvegarde, système de missions.</li>
+          <li><strong>Les scènes Godot elles-mêmes</strong>, en écrivant le <code>.tscn</code>.</li>
+          <li><strong>Voir le résultat.</strong> Rendu headless en PNG, puis lecture de l'image — boucle de correction fermée.</li>
+          <li><strong>Le dépôt</strong> : création, CI, releases, issues, documentation.</li>
+        </ul>
+      </div>
+
+      <div class="card no">
+        <h4>Hors de portée — c'est le domaine de Guillaume</h4>
+        <ul>
+          <li><strong>Le son, à 100 %.</strong> Moteur, ambiances, musique, mixage. Je ne produis aucun audio.</li>
+          <li><strong>Les personnages.</strong> Je peux sortir un pantin low-poly générique ; il aura l'air générique.</li>
+          <li><strong>Le rig et l'animation.</strong> Techniquement possible, mais sans feeling — une marche que je génère aura l'air robotique.</li>
+          <li><strong>Les assets « héros »</strong> qu'on regarde de près : l'Aztek de Walt, le camping-car. Ils demandent un œil.</li>
+          <li><strong>Le jugement de goût.</strong> Je rends et je regarde, mais l'arbitrage « ça a la bonne gueule » vous revient.</li>
+          <li><strong>Dire si c'est fun.</strong> Seul quelqu'un qui joue peut le dire.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:10px">La boucle de feedback, concrètement</h3>
+      <pre><code>blender --background --python outils/gen_ville.py -- --blocs 4 --seed 505
+   <span class="c">→ génère géométrie, UV, matériaux · exporte assets/ville/ville.glb</span>
+
+blender --background --python outils/rendu_check.py -- --cam survol
+   <span class="c">→ sort .tmp/check.png en 640×360</span>
+
+<span class="c">→ Claude lit check.png, constate que les trottoirs traversent les façades,
+     corrige gen_ville.py, relance. Sans intervention humaine.</span>
+
+godot --headless --path . --script outils/verif_scene.gd
+   <span class="c">→ vérifie que la scène charge et qu'aucun script ne casse</span></code></pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>Qui fait quoi</h2>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Domaine</th><th>Claude</th><th>Benjamin</th><th>Guillaume</th></tr></thead>
+        <tbody>
+          <tr><th>Ville procédurale — blocs, routes, immeubles</th><td class="owner full">Produit</td><td class="owner part">Relit</td><td class="owner none">—</td></tr>
+          <tr><th>Textures 64 px</th><td class="owner full">Produit</td><td class="owner none">—</td><td class="owner part">Retouche</td></tr>
+          <tr><th>Shader PS2</th><td class="owner full">Produit</td><td class="owner part">Relit</td><td class="owner part">Valide le look</td></tr>
+          <tr><th>Contrôleur de véhicule, physique</th><td class="owner full">Produit</td><td class="owner part">Règle le feeling</td><td class="owner none">—</td></tr>
+          <tr><th>Caméra, HUD, scènes <code>.tscn</code></th><td class="owner full">Produit</td><td class="owner part">Relit</td><td class="owner none">—</td></tr>
+          <tr><th>Dépôt, CI, build, documentation</th><td class="owner full">Produit</td><td class="owner part">Authentifie GitHub</td><td class="owner none">—</td></tr>
+          <tr><th>Véhicule héros — l'Aztek</th><td class="owner part">Ébauche</td><td class="owner none">—</td><td class="owner full">Produit</td></tr>
+          <tr><th>Personnages, rig, animations</th><td class="owner stop">Non</td><td class="owner none">—</td><td class="owner full">Produit</td></tr>
+          <tr><th>Son, musique, ambiances</th><td class="owner stop">Non</td><td class="owner none">—</td><td class="owner full">Produit</td></tr>
+          <tr><th>Direction artistique — l'arbitrage</th><td class="owner part">Propose</td><td class="owner part">Arbitre</td><td class="owner full">Décide</td></tr>
+          <tr><th>Architecture, choix techniques</th><td class="owner part">Propose</td><td class="owner full">Décide</td><td class="owner none">—</td></tr>
+          <tr><th>Playtest — « est-ce que c'est fun ? »</th><td class="owner stop">Non</td><td class="owner full">Décide</td><td class="owner full">Décide</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p>
+        La logique du découpage : je prends la masse technique et répétitive — celle qui se
+        génère, se vérifie et se corrige en boucle. Guillaume prend ce qui demande un œil et
+        une oreille, c'est-à-dire l'âme du jeu. Benjamin arbitre et intègre. Personne ne fait
+        la queue derrière quelqu'un d'autre : c'est la seule contrainte réelle d'un week-end.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Liste complète des questions</h2>
+
+    <div class="qgroups">
+
+      <div class="qgroup">
+        <h3>A · Pour Guillaume — débloquent la répartition</h3>
+        <div class="qlist">
+          <div class="q"><span class="ask">Blender : quel niveau, honnêtement ?</span>
+            <span class="why">Modélisation seule, ou aussi UV, texturing, rig, animation ? Et as-tu déjà exporté vers un moteur, ou seulement fait du rendu ?</span></div>
+          <div class="q"><span class="ask">Un moteur de jeu déjà pratiqué ? Lequel, jusqu'où ?</span>
+            <span class="why">Même « deux tutos Unity » compte. Ça ne change plus le moteur, mais ça change ce que tu peux prendre en autonomie dès samedi.</span></div>
+          <div class="q"><span class="ask">Quand tu dis « script », tu penses à quoi ?</span>
+            <span class="why">Python dans Blender, logique de gameplay dans un moteur, ou écriture et scénario ? Les trois servent, mais ne mènent pas au même rôle.</span></div>
+          <div class="q"><span class="ask">Quel DAW, et quelle ambition sonore ?</span>
+            <span class="why">Pour le week-end, deux sons suffisent : un moteur en boucle et une ambiance nocturne. Dis-moi si tu veux viser plus loin, ça se planifie après.</span></div>
+          <div class="q"><span class="ask">Combien d'heures, samedi et dimanche, réellement ?</span>
+            <span class="why">Sans optimisme. C'est ce chiffre qui dimensionne le périmètre — pas l'envie qu'on a aujourd'hui.</span></div>
+          <div class="q"><span class="ask">Ta machine : OS, GPU, RAM ?</span>
+            <span class="why">Godot et Blender sont légers, mais autant le savoir avant de te faire télécharger 4 Go samedi matin.</span></div>
+          <div class="q"><span class="ask">Git : à l'aise en ligne de commande, ou il te faut GitHub Desktop ?</span>
+            <span class="why">Aucune importance sur le fond, mais je prépare le bon outil et la bonne doc à l'avance plutôt que de te dépanner en plein sprint.</span></div>
+          <div class="q"><span class="ask">Ton compte GitHub, pour l'invitation ?</span>
+            <span class="why">Le dépôt est public, mais il faut t'ajouter en collaborateur pour que tu puisses pousser.</span></div>
+          <div class="q"><span class="ask">Tu veux apprendre à scripter dans le moteur, ou rester sur assets et son ?</span>
+            <span class="why">Les deux réponses sont bonnes et durables. Mais « je livre des assets » et « je code mes objets » ne donnent pas la même organisation de dépôt.</span></div>
+          <div class="q"><span class="ask">Ce week-end, tu préfères modéliser un véhicule ou un décor ?</span>
+            <span class="why">Un seul des deux tient dans le périmètre. La voiture est le plus rentable — c'est ce qu'on regarde pendant 100 % du temps de jeu.</span></div>
+        </div>
+      </div>
+
+      <div class="qgroup">
+        <h3>B · Pour Benjamin — cadrent ma façon de travailler</h3>
+        <div class="qlist">
+          <div class="q"><span class="ask">Combien d'heures de ton côté, samedi et dimanche ?</span>
+            <span class="why">Même règle : le chiffre réel, pas le chiffre espéré.</span></div>
+          <div class="q"><span class="ask">Tu veux coder toi-même, ou me piloter et relire ?</span>
+            <span class="why">Ça change tout mon rythme de livraison. Et vu ta note sur l'effet boîte noire, si tu me pilotes je fais un walkthrough court à chaque bloc livré.</span></div>
+          <div class="q"><span class="ask">GDScript ou C# pour les systèmes ?</span>
+            <span class="why">GDScript itère plus vite et Guillaume peut le lire. C# te donne du typage et rejoint ton .NET. Je recommande GDScript pour le prototype, quitte à basculer les systèmes lourds en C# ensuite.</span></div>
+          <div class="q"><span class="ask">J'installe et je configure sans redemander à chaque fois ?</span>
+            <span class="why">Tu as dit carte blanche — je le prends pour l'outillage du projet. Dis-moi s'il y a une limite que je dois respecter.</span></div>
+          <div class="q"><span class="ask">Peux-tu lancer <code>gh auth login</code> toi-même ?</span>
+            <span class="why">C'est la seule chose que je ne peux pas faire : le flux OAuth est interactif. Une minute, une fois, et j'ai la main sur le dépôt ensuite.</span></div>
+          <div class="q"><span class="ask">Emplacement local : <code>C:\Users\bsi\source\bg</code> te convient ?</span>
+            <span class="why">À côté de <code>workspace</code> et <code>readreceipt</code>, hors du monorepo professionnel.</span></div>
+          <div class="q"><span class="ask">Tu veux des agents spécialisés en parallèle ?</span>
+            <span class="why">Tu l'as autorisé. Concrètement : un agent shader, un agent générateur de ville, un agent véhicule, travaillant en parallèle dans des copies isolées du dépôt. Plus rapide, mais plus difficile à suivre en direct.</span></div>
+        </div>
+      </div>
+
+      <div class="qgroup">
+        <h3>C · À trancher ensemble avant vendredi soir</h3>
+        <div class="qlist">
+          <div class="q"><span class="ask">La phrase-cible est-elle la bonne ?</span>
+            <span class="why">« Conduire dans quatre blocs de nuit, en rendu PS2, et pouvoir descendre. » Si vous la changez, changez-la maintenant — pas samedi à 15 h.</span></div>
+          <div class="q"><span class="ask">Un personnage jouable dès le week-end, ou une capsule sans bras ni jambes ?</span>
+            <span class="why">Un personnage animé, c'est modélisation + rig + walk cycle + blend tree. Facilement six heures de Guillaume. Je recommande la capsule : on teste la sensation de sortir du véhicule sans payer l'animation.</span></div>
+          <div class="q"><span class="ask">Un seul véhicule ? Lequel ?</span>
+            <span class="why">L'Aztek de Walt est le plus iconique et le plus simple — un monospace, c'est une boîte. Le camping-car est plus emblématique mais bien plus gros à modéliser et à faire tenir dans des rues.</span></div>
+          <div class="q"><span class="ask">Le camping-car ce week-end, ou en semaine 2 ?</span>
+            <span class="why">Ma recommandation : semaine 2. Il mérite d'être bien fait, et il ne teste rien que la ville ne teste déjà.</span></div>
+          <div class="q"><span class="ask">Nuit confirmée ?</span>
+            <span class="why">C'est la plus grosse économie de production disponible. Le jour exige des façades détaillées, des ombres crédibles, un ciel. La nuit exige des lampadaires.</span></div>
+          <div class="q"><span class="ask">Du son dès le week-end, ou silence assumé ?</span>
+            <span class="why">Un moteur en boucle plus un vent de désert transforment radicalement la perception, pour environ deux heures de travail. Mon avis : ça vaut largement le coût.</span></div>
+          <div class="q"><span class="ask">Le dépôt public dès vendredi, ou public une fois qu'il y a quelque chose à voir ?</span>
+            <span class="why">Public tout de suite est plus simple à gérer. Public plus tard évite d'exposer trois jours de tâtonnements. Aucune des deux options n'est un problème.</span></div>
+          <div class="q"><span class="ask">Qu'est-ce qui fait qu'on considère le week-end réussi ?</span>
+            <span class="why">À définir avant, pas après — sinon on négocie le verdict avec soi-même dimanche soir. Proposition : vous y jouez vingt minutes chacun sans vous forcer.</span></div>
+        </div>
+      </div>
+
+      <div class="qgroup">
+        <h3>D · Direction du jeu — pas ce week-end, mais à ne pas perdre</h3>
+        <div class="qlist">
+          <div class="q"><span class="ask">On joue Walter White, ou un personnage original dans son monde ?</span>
+            <span class="why">Question plus lourde qu'elle n'en a l'air. Jouer Walt impose la chronologie de la série et son arc. Un personnage original libère complètement le level design et les quêtes annexes — et réduit nettement l'exposition juridique.</span></div>
+          <div class="q"><span class="ask">La chronologie suit la série, ou s'en détache ?</span>
+            <span class="why">Suivre les saisons donne une structure de missions gratuite. S'en détacher évite la comparaison permanente avec une série que tout le monde connaît par cœur.</span></div>
+          <div class="q"><span class="ask">Que fait-on de l'argent ?</span>
+            <span class="why">Dans GTA, l'argent est décoratif. Ici il pourrait être le cœur : blanchir, planquer, dépenser trop et attirer l'attention. C'est peut-être là qu'est votre mécanique signature.</span></div>
+          <div class="q"><span class="ask">Un niveau de recherche à la GTA, ou une jauge de soupçon ?</span>
+            <span class="why">Breaking Bad n'est pas une course-poursuite, c'est une lente montée de pression. Une jauge qui grimpe sur des semaines serait plus fidèle — et plus originale — qu'un gyrophare.</span></div>
+          <div class="q"><span class="ask">Que se passe-t-il quand on échoue ?</span>
+            <span class="why">Mort, arrestation, retour au dernier point ? Ou des conséquences persistantes, sans écran de game over ?</span></div>
+          <div class="q"><span class="ask">Combien de missions principales visez-vous ?</span>
+            <span class="why">Pas pour s'engager, pour calibrer. Cinq missions bien faites valent mieux que trente esquissées, et le nombre détermine la taille de la ville à construire.</span></div>
+          <div class="q"><span class="ask">Le jeu sort un jour, ou reste entre vous ?</span>
+            <span class="why">Une sortie sur itch.io change les priorités : build reproductible, sauvegarde solide, menu, options, manette. À décider tôt, pas au moment de publier.</span></div>
+        </div>
+      </div>
+
+      <div class="qgroup">
+        <h3>E · Workflow Git — travailler à deux sans se marcher dessus</h3>
+        <div class="qlist">
+          <div class="q"><span class="ask">Branches : tout le monde sur <code>main</code>, ou une branche par personne avec PR ?</span>
+            <span class="why">À deux, <code>main</code> direct est plus fluide tant que vous ne touchez pas aux mêmes fichiers — ce qui est le cas, vos domaines sont disjoints. La PR devient utile quand vous voulez vous relire.</span></div>
+          <div class="q"><span class="ask"><code>main</code> est-elle protégée ?</span>
+            <span class="why">Recommandation : protéger contre le force-push et la suppression uniquement, sans exiger de PR. Le bénéfice est réel, la friction quasi nulle.</span></div>
+          <div class="q"><span class="ask">Guillaume : ligne de commande ou GitHub Desktop ?</span>
+            <span class="why">Aucune importance sur le fond. Mais autant préparer le bon outil et la bonne fiche mémo avant, plutôt que de dépanner en plein sprint.</span></div>
+          <div class="q"><span class="ask">Les <code>.blend</code> sources : dans le dépôt via LFS, ou hors dépôt ?</span>
+            <span class="why">Dans le dépôt : tout est versionné au même endroit, on peut revenir en arrière sur un modèle — mais le quota LFS gratuit de GitHub est d'1 Go et se remplit vite. Hors dépôt, avec seulement les <code>.glb</code> exportés dans git : dépôt léger, historique des sources perdu, synchro manuelle. Recommandation : LFS, en surveillant le quota.</span></div>
+          <div class="q"><span class="ask">Un <code>.blend</code> par asset, ou un gros fichier de scène ?</span>
+            <span class="why"><strong>La question la plus importante du bloc.</strong> Un seul gros <code>.blend</code> partagé, c'est un conflit garanti dès que vous travaillez en même temps — et un binaire ne se merge pas : il faut choisir une version et jeter l'autre. Recommandation ferme : un fichier par asset.</span></div>
+          <div class="q"><span class="ask">Rythme de commit : à chaque asset fini, ou en fin de session ?</span>
+            <span class="why">Les petits commits fréquents rendent les retours en arrière indolores. Les gros commits de fin de session sont plus confortables sur le moment, et douloureux ensuite.</span></div>
+          <div class="q"><span class="ask">Suivi des tâches : Issues GitHub, ou un simple <code>TODO.md</code> ?</span>
+            <span class="why">Les Issues sont gratuites et liables aux commits. Un fichier marche aussi et évite de changer d'outil. Ce qui compte, c'est qu'il n'y ait qu'un seul endroit.</span></div>
+          <div class="q"><span class="ask">On tague les builds jouables ?</span>
+            <span class="why">Un tag avec l'exécutable attaché : vous pouvez toujours relancer une version qui marchait, et voir la progression. Coût quasi nul, c'est automatisable.</span></div>
+          <div class="q"><span class="ask">Claude pousse directement sur <code>main</code>, ou passe par des PR que vous relisez ?</span>
+            <span class="why">Direct : nettement plus rapide, mais du code arrive sans que vous l'ayez vu. Par PR : vous gardez la main et la compréhension. Vu ta note sur l'effet boîte noire, la PR est probablement le bon réflexe sur les systèmes de jeu, et le direct convient pour les assets générés et les corrections mécaniques.</span></div>
+          <div class="q"><span class="ask">Qu'est-ce qui n'entre jamais dans le dépôt ?</span>
+            <span class="why">Proposition : les exports de build, les caches Godot, les temporaires Blender, et tout fichier issu de la série — image, son, vidéo, police, logo. Ce dernier point est autant juridique que technique : un fichier reste dans l'historique git même après suppression.</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>Planning du week-end, si tout est répondu</h2>
+    <div class="plan">
+      <div class="slot"><span class="when">Vendredi soir · 2 h</span><span class="goal">Un cube qui tremble.</span>
+        <span class="who">Claude : dépôt, projet Godot, shader PS2 branché · Benjamin : <code>gh auth login</code>, installe Godot · Guillaume : installe Blender, clone</span></div>
+      <div class="slot"><span class="when">Samedi matin · 4 h</span><span class="goal">Survoler une ville générée.</span>
+        <span class="who">Claude : générateur de ville, textures, import · Benjamin : caméra libre, intégration · Guillaume : commence l'Aztek</span></div>
+      <div class="slot"><span class="when">Samedi après-midi · 4 h</span><span class="goal">Rouler. Le moment qui décide de tout.</span>
+        <span class="who">Claude : contrôleur de véhicule, collisions, caméra de poursuite · Benjamin : réglage du feeling · Guillaume : finit l'Aztek, l'exporte</span></div>
+      <div class="slot"><span class="when">Samedi soir · 2 h</span><span class="goal">Que ça ressemble à quelque chose.</span>
+        <span class="who">Claude : brouillard, nuit, lampadaires, tramage · Guillaume : son moteur + ambiance désert</span></div>
+      <div class="slot"><span class="when">Dimanche matin · 4 h</span><span class="goal">Descendre du véhicule.</span>
+        <span class="who">Claude : passage véhicule ↔ à pied, contrôleur capsule · Benjamin : intégration · Guillaume : props urbains</span></div>
+      <div class="slot"><span class="when">Dimanche après-midi · 3 h</span><span class="goal">Un exécutable qu'on lance.</span>
+        <span class="who">Claude : HUD minimal, export Windows, README · tous : on y joue vingt minutes</span></div>
+      <div class="slot"><span class="when">Dimanche soir · 1 h</span><span class="goal">Le verdict.</span>
+        <span class="who">Est-ce que c'était agréable ? Qu'est-ce qui manquait le plus ? On continue, on pivote, ou on arrête — et on l'écrit.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>État de l'outillage</h2>
+    <div class="status">
+      <div class="st"><span class="tool">git-lfs 3.7.1</span><span class="ok">Prêt</span><span class="note">Indispensable : sans lui, les <code>.blend</code> et <code>.wav</code> gonflent l'historique jusqu'à rendre le dépôt inclonable, irréversiblement.</span></div>
+      <div class="st"><span class="tool">GitHub CLI 2.96</span><span class="wait">Installé, non authentifié</span><span class="note">Attend un <code>gh auth login</code> de Benjamin — flux interactif, je ne peux pas le faire.</span></div>
+      <div class="st"><span class="tool">Godot 4.7.1</span><span class="wait">Installation lancée</span><span class="note">120 Mo, aucun compte requis.</span></div>
+      <div class="st"><span class="tool">Blender 5.2</span><span class="wait">Installation lancée</span><span class="note">Pour le pipeline procédural headless et les rendus de contrôle.</span></div>
+      <div class="st"><span class="tool">Python 3.12</span><span class="wait">Installation lancée</span><span class="note">Le <code>python</code> du poste n'était qu'un raccourci Microsoft Store. Nécessaire pour générer les textures.</span></div>
+      <div class="st"><span class="tool">Identité git</span><span class="todo">À configurer</span><span class="note">Aucun <code>user.name</code> ni <code>user.email</code> global — le premier commit partirait sans auteur.</span></div>
+      <div class="st"><span class="tool">Node 16.16</span><span class="note">Trop ancien pour l'outillage web moderne. Sans objet : le projet part sur Godot.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Prochaine étape</h2>
+    <div class="prose">
+      <ul class="plain">
+        <li>Guillaume répond au bloc A. Dix questions, dix minutes.</li>
+        <li>Benjamin répond au bloc B et lance <code>gh auth login</code>.</li>
+        <li>Vous tranchez le bloc C ensemble — c'est celui qui fige le périmètre du week-end.</li>
+        <li>Le bloc D se répond quand vous voulez ; il ne bloque rien, mais il ne faut pas le perdre.</li>
+        <li>Dès que A et B sont là, je crée le dépôt, pose le <code>.gitattributes</code> LFS, le squelette Godot, le générateur de ville et le shader PS2 — pour que vendredi soir serve à jouer, pas à installer.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>Document de travail · révisé à chaque décision prise</footer>
+
+</div>
+
+<script>
+(function () {
+  var c = document.getElementById('horizon');
+  if (!c) return;
+  var W = c.width, H = c.height;
+  var ctx = c.getContext('2d');
+  var img = ctx.createImageData(W, H);
+  var d = img.data;
+
+  var bayer = [0,8,2,10, 12,4,14,6, 3,11,1,9, 15,7,13,5];
+  var LEVELS = 6;
+  var step = 255 / (LEVELS - 1);
+  var HZ = 62;
+
+  var skyTop = [22, 34, 58], skyMid = [104, 78, 92], skyHz = [222, 132, 62];
+  var farGnd = [128, 92, 64], nearGnd = [52, 40, 36];
+  var mesaC = [44, 36, 50], roadC = [38, 36, 42], lineC = [206, 176, 108];
+
+  var mesas = [
+    { x0: -24, x1: 58,  top: 45 },
+    { x0: 42,  x1: 98,  top: 53 },
+    { x0: 148, x1: 206, top: 47 },
+    { x0: 194, x1: 258, top: 37 },
+    { x0: 248, x1: 344, top: 51 }
+  ];
+
+  function mix(a, b, t) {
+    return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  }
+  function quant(v, dx, dy) {
+    var th = (bayer[(dy & 3) * 4 + (dx & 3)] + 0.5) / 16 - 0.5;
+    var q = Math.round((v + th * step) / step) * step;
+    return q < 0 ? 0 : q > 255 ? 255 : q;
+  }
+
+  for (var y = 0; y < H; y++) {
+    for (var x = 0; x < W; x++) {
+      var col;
+      if (y < HZ) {
+        var t = y / HZ;
+        col = t < 0.55 ? mix(skyTop, skyMid, t / 0.55) : mix(skyMid, skyHz, (t - 0.55) / 0.45);
+        for (var m = 0; m < mesas.length; m++) {
+          var s = mesas[m];
+          if (x >= s.x0 && x < s.x1 && y >= s.top) {
+            var fog = (y - s.top) / (HZ - s.top);
+            col = mix(mesaC, skyHz, Math.min(1, fog * 0.82));
+            break;
+          }
+        }
+      } else {
+        var p = (y - HZ) / (H - HZ);
+        col = mix(farGnd, nearGnd, Math.pow(p, 0.7));
+        var half = 1.5 + p * p * 76;
+        var dx = x - W / 2;
+        if (Math.abs(dx) < half) {
+          col = mix(roadC, col, Math.max(0, 1 - p * 1.25) * 0.55);
+          var dash = ((p * p * 150) % 22) < 11;
+          if (dash && Math.abs(dx) < Math.max(0.6, half * 0.035)) {
+            col = mix(lineC, col, 1 - Math.min(1, p * 1.4));
+          }
+        }
+      }
+      if (y % 3 === 2) col = [col[0] * 0.92, col[1] * 0.92, col[2] * 0.92];
+
+      var i = (y * W + x) * 4;
+      d[i] = quant(col[0], x, y);
+      d[i + 1] = quant(col[1], x, y);
+      d[i + 2] = quant(col[2], x, y);
+      d[i + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+})();
+</script>
