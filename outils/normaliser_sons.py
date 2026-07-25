@@ -16,6 +16,7 @@ avec ffmpeg si on le lui demande. Sans --corriger il ne touche a rien.
 from __future__ import annotations
 
 import argparse
+import os
 import shutil
 import struct
 import subprocess
@@ -71,6 +72,26 @@ def examiner(chemin: Path) -> dict:
     return infos
 
 
+def trouver_ffmpeg() -> str | None:
+    """Cherche ffmpeg, y compris la ou winget l'installe.
+
+    winget depose ses paquets dans un dossier qu'il n'ajoute PAS au PATH.
+    Un shutil.which seul concluait donc "ffmpeg est introuvable, installe-le"
+    a quelqu'un qui venait de l'installer — et qui pouvait le reinstaller
+    dix fois sans que ca change quoi que ce soit.
+    """
+    trouve = shutil.which("ffmpeg")
+    if trouve:
+        return trouve
+    local = os.environ.get("LOCALAPPDATA")
+    if not local:
+        return None
+    motif = "Microsoft/WinGet/Packages/Gyan.FFmpeg_*/*/bin/ffmpeg.exe"
+    for candidat in sorted(Path(local).glob(motif)):
+        return str(candidat)
+    return None
+
+
 def convertir(chemin: Path, ffmpeg: str) -> bool:
     """Reecrit le fichier en PCM 48 kHz 16 bits, canaux preserves."""
     temporaire = chemin.with_suffix(".converti.wav")
@@ -108,7 +129,7 @@ def main() -> None:
         print("aucun fichier audio")
         return
 
-    ffmpeg = shutil.which("ffmpeg")
+    ffmpeg = trouver_ffmpeg()
     a_corriger = []
 
     print(f"{len(fichiers)} fichier(s) dans {racine}\n")

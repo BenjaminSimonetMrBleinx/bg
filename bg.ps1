@@ -25,7 +25,13 @@ param(
 
     [int]$Blocs = 2,
     [int]$Graine = 505,
-    [string]$Couleur = 'voiture_aztek'
+    [string]$Couleur = 'voiture_aztek',
+
+    # Pour 'sons' : convertit les fichiers que Godot refuse au lieu de se
+    # contenter de les signaler. Le drapeau etait utilise dans le corps du
+    # script sans jamais avoir ete declare ici : PowerShell refusait la
+    # commande, et la conversion etait donc inatteignable.
+    [switch]$Corriger
 )
 
 $ErrorActionPreference = 'Stop'
