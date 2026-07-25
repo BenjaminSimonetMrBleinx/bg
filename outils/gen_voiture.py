@@ -147,10 +147,13 @@ def construire_caisse(mats_noms: list) -> Maillage:
                 pts.reverse()
             m.face(pts, [(u0, 0.0), (u1, 0.0), (u1, 1.0), (u0, 1.0)], 1)
 
-        # toit : vitre sur la partie cabine, tolerie ailleurs
-        cabine = -1.7 < x0 < 1.0
+        # Seules les faces superieures reellement inclinees sont vitrees :
+        # pare-brise (i = 4 et 5) et hayon arriere (i = 0). Le toit plat entre
+        # les deux est de la tolerie — une premiere version vitrait tout et la
+        # voiture ressemblait a une serre.
+        vitre_toit = i in (0, 4, 5)
         m.face([(x0, -w0, h0), (x1, -w1, h1), (x1, w1, h1), (x0, w0, h0)],
-               [(u0, 0), (u1, 0), (u1, 1), (u0, 1)], 1 if cabine else 0)
+               [(u0, 0), (u1, 0), (u1, 1), (u0, 1)], 1 if vitre_toit else 0)
         # soubassement
         m.face([(x0, w0, b0), (x1, w1, b1), (x1, -w1, b1), (x0, -w0, b0)],
                [(u0, 0), (u1, 0), (u1, 1), (u0, 1)], 0)
@@ -229,6 +232,15 @@ def main() -> None:
     f_caisse = caisse.finir()
     roue = construire_roue([mats["pneu"], mats["jante"]])
     f_roue = roue.finir()
+
+    # Orientation. La caisse est construite avec l'avant vers +X, mais le
+    # VehicleBody3D de Godot attend l'avant vers -Z. Une rotation de 90 deg
+    # autour de Z avant export ramene +X sur +Y, et l'exportateur glTF envoie
+    # +Y sur -Z. La roue suit : son axe passe de Y a X, ce qui est l'axe
+    # gauche-droite attendu. On applique la rotation plutot que de tordre la
+    # construction, qui reste ainsi lisible.
+    for obj in (caisse.obj, roue.obj):
+        obj.rotation_euler = (0.0, 0.0, math.radians(90.0))
 
     # Un objet par fichier : Godot recoit une scene propre pour chacun.
     for obj, nom in ((caisse.obj, "caisse"), (roue.obj, "roue")):

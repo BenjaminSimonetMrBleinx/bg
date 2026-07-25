@@ -124,6 +124,23 @@ extends Resource
 ## sont eclairees. A tester une fois la ville complete.
 @export var lampe_ombres: bool = false
 
+# ------------------------------------------------------------------- phares
+@export_group("Phares")
+
+## Les phares resolvent le probleme identifie en V1 : sans eux, le premier
+## plan est noir des qu'on s'eloigne d'un lampadaire.
+@export var phares_allumes: bool = true
+
+@export_range(0.0, 40.0, 0.5) var phare_energie: float = 8.0
+
+## Portee du faisceau, en metres. Trop court, on roule dans le vide.
+@export_range(2.0, 120.0, 1.0) var phare_portee: float = 38.0
+
+## Ouverture du cone, en degres.
+@export_range(5.0, 90.0, 1.0) var phare_angle: float = 34.0
+
+@export var phare_couleur: Color = Color(1.0, 0.949, 0.855)
+
 # ------------------------------------------------------------------ joueur
 @export_group("Joueur a pied")
 

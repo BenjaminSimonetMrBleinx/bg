@@ -1,0 +1,110 @@
+; Vehicule joueur.
+;
+; Repere : avant vers -Z, droite vers +X. Empattement 2,75 m, voie 1,64 m,
+; roues de 0,34 m de rayon — les memes valeurs que outils/gen_voiture.py.
+;
+; Le centre de gravite reste a l'origine, au niveau du sol : c'est ce qui
+; empeche la caisse de se retourner dans les virages sans avoir a brider le
+; braquage.
+
+[gd_scene load_steps=8 format=3 uid="uid://bgvehicule00001"]
+
+[ext_resource type="Script" path="res://systemes/vehicule.gd" id="1_vehicule"]
+[ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
+[ext_resource type="PackedScene" path="res://assets/vehicules/caisse.glb" id="3_caisse"]
+[ext_resource type="PackedScene" path="res://assets/vehicules/roue.glb" id="4_roue"]
+
+[sub_resource type="BoxShape3D" id="forme_caisse"]
+size = Vector3(1.86, 1.2, 4.6)
+
+[sub_resource type="BoxShape3D" id="forme_toit"]
+size = Vector3(1.8, 0.55, 2.7)
+
+[node name="Vehicule" type="VehicleBody3D"]
+mass = 1350.0
+script = ExtResource("1_vehicule")
+reglages = ExtResource("2_reglages")
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.99, 0)
+shape = SubResource("forme_caisse")
+
+[node name="CollisionToit" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, 0.15)
+shape = SubResource("forme_toit")
+
+[node name="Caisse" parent="." instance=ExtResource("3_caisse")]
+
+[node name="RoueAvantG" type="VehicleWheel3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.82, 0.49, -1.375)
+use_as_traction = true
+use_as_steering = true
+wheel_roll_influence = 0.08
+wheel_radius = 0.34
+wheel_rest_length = 0.15
+wheel_friction_slip = 0.85
+suspension_travel = 0.22
+suspension_stiffness = 42.0
+damping_compression = 0.6
+damping_relaxation = 0.84
+
+[node name="Mesh" parent="RoueAvantG" instance=ExtResource("4_roue")]
+
+[node name="RoueAvantD" type="VehicleWheel3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.82, 0.49, -1.375)
+use_as_traction = true
+use_as_steering = true
+wheel_roll_influence = 0.08
+wheel_radius = 0.34
+wheel_rest_length = 0.15
+wheel_friction_slip = 0.85
+suspension_travel = 0.22
+suspension_stiffness = 42.0
+damping_compression = 0.6
+damping_relaxation = 0.84
+
+[node name="Mesh" parent="RoueAvantD" instance=ExtResource("4_roue")]
+
+[node name="RoueArriereG" type="VehicleWheel3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.82, 0.49, 1.375)
+use_as_traction = true
+wheel_roll_influence = 0.08
+wheel_radius = 0.34
+wheel_rest_length = 0.15
+wheel_friction_slip = 0.78
+suspension_travel = 0.22
+suspension_stiffness = 42.0
+damping_compression = 0.6
+damping_relaxation = 0.84
+
+[node name="Mesh" parent="RoueArriereG" instance=ExtResource("4_roue")]
+
+[node name="RoueArriereD" type="VehicleWheel3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.82, 0.49, 1.375)
+use_as_traction = true
+wheel_roll_influence = 0.08
+wheel_radius = 0.34
+wheel_rest_length = 0.15
+wheel_friction_slip = 0.78
+suspension_travel = 0.22
+suspension_stiffness = 42.0
+damping_compression = 0.6
+damping_relaxation = 0.84
+
+[node name="Mesh" parent="RoueArriereD" instance=ExtResource("4_roue")]
+
+[node name="PhareG" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.996, 0.0872, 0, -0.0872, 0.996, -0.48, 0.82, -2.34)
+light_color = Color(1, 0.949, 0.855, 1)
+light_energy = 8.0
+spot_range = 38.0
+spot_angle = 34.0
+spot_attenuation = 1.2
+
+[node name="PhareD" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.996, 0.0872, 0, -0.0872, 0.996, 0.48, 0.82, -2.34)
+light_color = Color(1, 0.949, 0.855, 1)
+light_energy = 8.0
+spot_range = 38.0
+spot_angle = 34.0
+spot_attenuation = 1.2

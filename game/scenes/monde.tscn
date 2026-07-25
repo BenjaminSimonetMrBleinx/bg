@@ -1,18 +1,24 @@
 ; Scene principale.
 ;
-; Tout le 3D vit dans le SubViewport "Rendu" a resolution reduite. Le
-; TextureRect "Ecran" l'agrandit en plein ecran.
+; Tout le 3D vit dans le SubViewport "Rendu" a resolution reduite (512x384,
+; 4/3). Le TextureRect "Ecran" l'agrandit en plein ecran.
 ;
-; La ville est generee :
+; La ville et le vehicule sont generes :
 ;   python  outils/gen_textures.py
-;   blender -b -P outils/gen_ville.py -- --blocs 2 --seed 505
+;   blender -b -P outils/gen_ville.py    -- --blocs 2 --seed 505
+;   blender -b -P outils/gen_voiture.py  -- --couleur voiture_aztek
+;
+; Le vehicule demarre sur la chaussee verticale du couloir 0, qui court le
+; long de -Z : il est donc deja dans le bon sens.
 
-[gd_scene load_steps=7 format=3 uid="uid://bgmonde0v0001"]
+[gd_scene load_steps=9 format=3 uid="uid://bgmonde0v0001"]
 
 [ext_resource type="Script" path="res://rendu/rendu_ps2.gd" id="1_rendu"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
 [ext_resource type="Script" path="res://systemes/ville.gd" id="3_ville"]
 [ext_resource type="PackedScene" path="res://assets/ville/ville.glb" id="4_geometrie"]
+[ext_resource type="PackedScene" path="res://scenes/vehicule.tscn" id="5_vehicule"]
+[ext_resource type="Script" path="res://systemes/camera_poursuite.gd" id="6_camera"]
 
 [sub_resource type="ViewportTexture" id="tex_ecran"]
 viewport_path = NodePath("Rendu")
@@ -31,18 +37,24 @@ render_target_update_mode = 4
 [node name="Environnement" type="WorldEnvironment" parent="Rendu"]
 environment = SubResource("env")
 
-[node name="Camera3D" type="Camera3D" parent="Rendu"]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 8, 1.6, -61)
-fov = 70.0
-near = 0.1
-far = 400.0
-
 [node name="Scene3D" type="Node3D" parent="Rendu"]
 
 [node name="Ville" type="Node3D" parent="Rendu/Scene3D"]
 script = ExtResource("3_ville")
 reglages = ExtResource("2_reglages")
 geometrie = ExtResource("4_geometrie")
+
+[node name="Vehicule" parent="Rendu/Scene3D" instance=ExtResource("5_vehicule")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.6, -22)
+
+[node name="Camera3D" type="Camera3D" parent="Rendu"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 3, -15)
+fov = 70.0
+near = 0.15
+far = 400.0
+script = ExtResource("6_camera")
+reglages = ExtResource("2_reglages")
+cible = NodePath("../Scene3D/Vehicule")
 
 [node name="Affichage" type="CanvasLayer" parent="."]
 layer = -1

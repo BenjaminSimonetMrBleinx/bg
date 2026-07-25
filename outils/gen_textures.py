@@ -190,10 +190,12 @@ def vitre(u: float, v: float):
 
 def pneu(u: float, v: float):
     """Gomme sculptee de rainures. u fait le tour, v traverse la bande."""
+    # Assez clair pour se detacher de nuit : une gomme photometriquement juste
+    # est un aplat noir des que le soleil se couche.
     n = hache(int(u * 230), int(v * 230))
-    rainure = 0.66 if (u % 0.11) < 0.042 else 1.0
-    g = (27 + n * 9) * rainure
-    return (g, g, g + 2)
+    rainure = 0.68 if (u % 0.11) < 0.042 else 1.0
+    g = (46 + n * 12) * rainure
+    return (g, g, g + 3)
 
 
 def jante(u: float, v: float):

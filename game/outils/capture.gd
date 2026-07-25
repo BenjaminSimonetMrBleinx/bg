@@ -90,16 +90,26 @@ func _trouver_subviewport(n: Node) -> SubViewport:
 	return null
 
 
+# On cree notre propre camera plutot que de deplacer celle du jeu : la camera
+# de poursuite reecrit sa position a chaque image de physique et annulerait
+# tout placement. Une camera neuve et rendue active contourne le probleme quel
+# que soit le script en place.
 func _placer_camera() -> void:
 	if _cam_pos == Vector3.INF:
 		return
 	var sv := _trouver_subviewport(root)
-	var cam: Camera3D = sv.get_camera_3d() if sv != null else null
-	if cam == null:
+	if sv == null:
 		return
+	var cam := Camera3D.new()
+	cam.name = "CameraCapture"
+	cam.fov = 60.0
+	cam.near = 0.1
+	cam.far = 500.0
+	sv.add_child(cam)
 	cam.global_position = _cam_pos
-	if _cam_cible != Vector3.INF:
+	if _cam_cible != Vector3.INF and _cam_pos.distance_squared_to(_cam_cible) > 0.001:
 		cam.look_at(_cam_cible, Vector3.UP)
+	cam.make_current()
 
 
 func _options() -> Dictionary:

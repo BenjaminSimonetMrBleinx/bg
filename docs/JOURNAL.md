@@ -36,3 +36,35 @@ donc bandes noires sur écran large). Et convention audio arrêtée : WAV+QOA po
 bruitages, Ogg pour la musique, jamais de MP3, tout son 3D en mono.
 
 **Prochain** : V2, textures 128 px et générateur de ville.
+
+---
+
+## 2026-07-25 (suite) — V2 et V3 : la ville existe, la voiture roule
+
+**Voulu** : une ville générée qu'on puisse parcourir, et un véhicule conduisible.
+
+**Obtenu** : les deux. Chaîne complète Python → Blender → glTF → Godot, sans intervention
+humaine. Ville de 2 × 2 îlots, 122 m de côté, 743 faces. Voiture de 54 faces, roue de 30.
+
+**Surprises** :
+
+1. **Une seule travée par texture de façade était une erreur.** Toutes les fenêtres d'un
+   immeuble se retrouvaient dans le même état — bâtiment entièrement éteint, mort. Passé à
+   2 × 2 travées : le mélange allumé/éteint apparaît, et la répétition se voit moins. C'est
+   ce que faisaient les jeux PS2, pour cette raison exacte.
+2. **32 lampadaires à énergie 9 saturent tout.** Le premier rendu était un aplat orange.
+   Descendu à 2,6 avec 17 m de portée. Leçon : l'éclairage se règle après avoir posé
+   *toutes* les sources, jamais sur une seule.
+3. **La caméra de capture était écrasée par la caméra de poursuite**, qui réécrit sa
+   position à chaque image de physique. L'outil crée maintenant sa propre caméra et la rend
+   active — robuste quel que soit le script en place.
+4. **Le toit de la voiture était en verre.** Mon test « est-ce la cabine ? » couvrait tout
+   le pavillon. Seules les faces réellement inclinées — pare-brise et hayon — sont vitrées.
+5. **Une gomme de pneu photométriquement juste est invisible de nuit.** Éclaircie
+   arbitrairement de 27 à 46. Le réalisme perd contre la lisibilité, systématiquement.
+
+**Ce que je ne peux pas juger** : si conduire est agréable. Les 150 images de physique
+tournent sans erreur, la voiture tient la route, mais le ressenti se teste au clavier.
+C'est le seul point où Benjamin est indispensable.
+
+**Prochain** : V4, Walter jouable à pied.
