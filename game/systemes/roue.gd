@@ -57,6 +57,8 @@ func fermer(valider: bool) -> void:
 
 
 func _process(delta: float) -> void:
+	_choisir()
+
 	# L'ouverture s'anime meme quand le jeu est ralenti : sinon la roue met
 	# une demi-seconde reelle a apparaitre et le geste devient mou.
 	var vers := 1.0 if _ouverte else 0.0
@@ -67,13 +69,24 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 
-func _unhandled_input(evenement: InputEvent) -> void:
+# On SCRUTE les touches, on n'ecoute pas les evenements.
+#
+# Ce n'est pas un detail de style : toute l'interface vit dans le SubViewport
+# de rendu, et Godot ne propage pas les evenements d'entree dans un
+# SubViewport qui n'est pas sous un SubViewportContainer. Un _unhandled_input
+# y est silencieusement mort. La premiere version en avait un : la roue
+# s'ouvrait, s'animait, se fermait, et la selection ne bougeait jamais — sans
+# la moindre erreur nulle part. Le reste du jeu scrute deja, c'est la
+# convention du projet.
+func _choisir() -> void:
 	if not _ouverte or _eq == null:
 		return
 	var n := _eq.nombre()
-	if evenement.is_action_pressed("droite"):
+	if n == 0:
+		return
+	if Input.is_action_just_pressed("droite"):
 		_selection = (_selection + 1) % n
-	elif evenement.is_action_pressed("gauche"):
+	elif Input.is_action_just_pressed("gauche"):
 		_selection = (_selection - 1 + n) % n
 
 

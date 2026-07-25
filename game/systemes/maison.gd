@@ -60,6 +60,11 @@ func _poser_exterieur() -> void:
 
 	_poser_jardin()
 
+	# De jour, pas de lumiere de porche : elle existait pour rendre la facade
+	# lisible dans le noir, et en plein soleil elle ne ferait que baver.
+	if Reglages.est_jour():
+		return
+
 	# Accrochee au seuil plutot qu'a une position ecrite en dur : la maison
 	# peut changer de taille, la lumiere reste au-dessus de la porte.
 	var porche := OmniLight3D.new()

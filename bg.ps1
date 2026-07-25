@@ -27,6 +27,13 @@ param(
     [int]$Graine = 505,
     [string]$Couleur = 'voiture_aztek',
 
+    # Pour 'generer' : jour ou nuit. Ce n est pas un curseur de jeu, parce
+    # que l etat des vitres est CUIT dans les textures de facade. Le moment
+    # choisi ici est aussi ecrit dans game\donnees\monde.json, que le jeu
+    # relit pour son ciel, son soleil et ses lampadaires.
+    [ValidateSet('jour', 'nuit')]
+    [string]$Moment = 'nuit',
+
     # Pour 'sons' : convertit les fichiers que Godot refuse au lieu de se
     # contenter de les signaler. Le drapeau etait utilise dans le corps du
     # script sans jamais avoir ete declare ici : PowerShell refusait la
@@ -142,8 +149,8 @@ switch ($Commande) {
         Exiger $Blender 'Blender'
         Push-Location $Racine
         try {
-            Write-Host "`n--- textures ---" -ForegroundColor Cyan
-            & $Python 'outils/gen_textures.py'
+            Write-Host "`n--- textures ($Moment) ---" -ForegroundColor Cyan
+            & $Python 'outils/gen_textures.py' --moment $Moment
             Write-Host "`n--- ville ($Blocs x $Blocs, graine $Graine) ---" -ForegroundColor Cyan
             & $Blender -b -P 'outils/gen_ville.py' -- --blocs $Blocs --seed $Graine
             Write-Host "`n--- vehicule ($Couleur) ---" -ForegroundColor Cyan
@@ -310,7 +317,8 @@ switch ($Commande) {
             @{ nom = 'entrer dans les maisons'; script = 'res://outils/test_maison.gd' },
             @{ nom = 'habitants et dialogue'; script = 'res://outils/test_dialogue.gd' },
             @{ nom = 'roue des outils'; script = 'res://outils/test_outils.gd' },
-            @{ nom = 'mobilier urbain'; script = 'res://outils/test_decor.gd' }
+            @{ nom = 'mobilier urbain'; script = 'res://outils/test_decor.gd' },
+            @{ nom = 'jour et nuit'; script = 'res://outils/test_jour.gd' }
         )
         $echecs = 0
         foreach ($s in $suites) {

@@ -74,6 +74,13 @@ func _poser_lampes() -> void:
 	parent.name = "Lampes"
 	add_child(parent)
 
+	# De jour, on ne cree meme pas les lumieres. Les eteindre reviendrait a
+	# payer trente-deux OmniLight3D qui n'eclairent rien : sur PS2 comme
+	# aujourd'hui, une source coute meme quand son energie est nulle.
+	if Reglages.est_jour():
+		print("ville : il fait jour, aucun lampadaire allume")
+		return
+
 	for entree in data.get("lampes", []):
 		var p: Array = entree["pos"]
 		var v: Array = entree.get("vers", [0.0, 0.0, 0.0])

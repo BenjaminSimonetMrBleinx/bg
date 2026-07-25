@@ -15,6 +15,7 @@ on transpose.
 from __future__ import annotations
 
 import argparse
+import json
 import struct
 import zlib
 from pathlib import Path
@@ -126,7 +127,7 @@ def trottoir(u: float, v: float):
     return (g, g, g + 7)
 
 
-def facade(base, graine: int):
+def facade(base, graine: int, jour: bool = False):
     """Une tuile = **2 x 2 travees** de fenetre, aux etats differents.
 
     Une seule travee par tuile donnerait un immeuble dont toutes les vitres
@@ -152,9 +153,19 @@ def facade(base, graine: int):
             # encadrement clair
             if bu < 0.235 or bu > 0.765 or bv < 0.295 or bv > 0.795:
                 return (base[0] * 1.26, base[1] * 1.24, base[2] * 1.20)
-            # vitrage : allume chaud, allume vert, ou eteint
             k = hache(cu * 17 + graine * 5, cv * 23 + graine * 3)
             j = 0.88 + hache(int(u * 220), int(v * 220)) * 0.24
+            if jour:
+                # De jour, aucune fenetre n'est "allumee" : elles renvoient le
+                # ciel. Les etats sont donc des inclinaisons de reflet, pas des
+                # lampes — sinon on obtient des carres jaunes qui brillent en
+                # plein soleil, ce qui trahit tout de suite la texture de nuit.
+                if k > 0.86:
+                    return (126 * j, 152 * j, 176 * j)
+                if k > 0.46:
+                    return (98 * j, 126 * j, 154 * j)
+                return (72 * j, 92 * j, 116 * j)
+            # De nuit : allume chaud, allume vert, ou eteint.
             if k > 0.86:
                 return (94 * j, 200 * j, 126 * j)
             if k > 0.46:
@@ -478,17 +489,31 @@ def porte(u: float, v: float):
     return (base[0] * g, base[1] * g, base[2] * g)
 
 
-def fenetre_maison(u: float, v: float):
-    """Fenetre a deux vantaux, eclairee de l'interieur."""
-    if u < 0.07 or u > 0.93 or v < 0.07 or v > 0.93:
-        return (188, 178, 162)                     # dormant clair
-    if 0.47 < u < 0.53:
-        return (188, 178, 162)                     # meneau
-    n = hache(int(u * 120), int(v * 120))
-    chaud = 0.82 + v * 0.35
-    return (206 * chaud * (0.92 + n * 0.14),
-            170 * chaud * (0.92 + n * 0.14),
-            108 * chaud * (0.92 + n * 0.14))
+def fenetre_maison_fn(jour: bool = False):
+    """Fenetre a deux vantaux. Eclairee de l'interieur la nuit, renvoyant le
+    ciel le jour."""
+
+    def fn(u: float, v: float):
+        if u < 0.07 or u > 0.93 or v < 0.07 or v > 0.93:
+            return (188, 178, 162)                 # dormant clair
+        if 0.47 < u < 0.53:
+            return (188, 178, 162)                 # meneau
+        n = hache(int(u * 120), int(v * 120))
+        if jour:
+            # Un reflet de ciel qui s'assombrit vers le bas de la vitre.
+            ciel = 1.10 - v * 0.38
+            return (118 * ciel * (0.94 + n * 0.12),
+                    146 * ciel * (0.94 + n * 0.12),
+                    172 * ciel * (0.94 + n * 0.12))
+        chaud = 0.82 + v * 0.35
+        return (206 * chaud * (0.92 + n * 0.14),
+                170 * chaud * (0.92 + n * 0.14),
+                108 * chaud * (0.92 + n * 0.14))
+
+    return fn
+
+
+fenetre_maison = fenetre_maison_fn(False)
 
 
 def parquet(u: float, v: float):
@@ -556,10 +581,14 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--sortie", default="game/assets/textures")
     ap.add_argument("--taille", type=int, default=128)
+    ap.add_argument("--moment", default="nuit", choices=["jour", "nuit"],
+                    help="l'etat des vitres est cuit dans la texture")
+    ap.add_argument("--donnees", default="game/donnees/monde.json")
     args = ap.parse_args()
 
     dossier = Path(args.sortie)
     t = args.taille
+    jour = args.moment == "jour"
     faits = []
 
     ecrire_png(dossier / "route.png", t, t, rendre(t, t, route))
@@ -576,7 +605,8 @@ def main() -> None:
     faits.append("trottoir.png")
 
     for i, (nom, couleur) in enumerate(FACADES.items()):
-        ecrire_png(dossier / f"{nom}.png", t, t, rendre(t, t, facade(couleur, i * 13)))
+        ecrire_png(dossier / f"{nom}.png", t, t,
+                   rendre(t, t, facade(couleur, i * 13, jour)))
         ecrire_png(dossier / f"{nom}_mur.png", t, t, rendre(t, t, mur(couleur)))
         faits.append(f"{nom}.png + _mur")
 
@@ -649,13 +679,35 @@ def main() -> None:
 
     # --- maisons ---
     for nom, fn in [("crepi", crepi), ("bardage", bardage), ("toit", toit),
-                    ("porte", porte), ("fenetre_maison", fenetre_maison),
+                    ("porte", porte),
+                    ("fenetre_maison", fenetre_maison_fn(jour)),
                     ("parquet", parquet), ("mur_interieur", mur_interieur),
                     ("carrelage", carrelage)]:
         ecrire_png(dossier / f"{nom}.png", t, t, rendre(t, t, fn))
         faits.append(f"{nom}.png")
 
-    print(f"{len(faits)} textures ecrites dans {dossier}/")
+    # Le moment de la journee est ecrit ICI, une seule fois, par celui qui
+    # cuit les vitres. Le jeu le relit au lancement pour choisir son ciel, son
+    # soleil et l'allumage des lampadaires.
+    #
+    # Une source unique, parce que le contraire ne pardonne pas : un reglage
+    # de nuit cote jeu avec des textures de jour donne une ville noire aux
+    # fenetres bleues, et personne ne sait lequel des deux a tort.
+    donnees = Path(args.donnees)
+    if not donnees.is_absolute():
+        donnees = Path.cwd() / donnees
+    donnees.parent.mkdir(parents=True, exist_ok=True)
+    donnees.write_text(json.dumps({
+        "_lisez_moi": [
+            "Ecrit par outils/gen_textures.py. Ne pas modifier a la main :",
+            "l'etat des vitres est cuit dans les textures, et changer ce",
+            "fichier seul donnerait un ciel de jour sur des fenetres de nuit.",
+            "Pour changer : .\\bg.ps1 generer -Moment jour",
+        ],
+        "moment": args.moment,
+    }, indent=1, ensure_ascii=False), encoding="utf-8")
+
+    print(f"{len(faits)} textures ecrites dans {dossier}/  (moment : {args.moment})")
     for f in faits:
         print(f"  {f}")
 

@@ -278,8 +278,95 @@ extends Resource
 @export_range(0.05, 1.0, 0.05) var roue_ralenti: float = 0.25
 
 
+@export_group("Jour")
+
+## Ces valeurs ne servent QUE si donnees/monde.json dit "jour". Le moment
+## n'est pas un curseur : l'etat des vitres est cuit dans les textures, et
+## il se change par .\bg.ps1 generer -Moment jour.
+
+@export var jour_ciel: Color = Color(0.404, 0.573, 0.788)
+
+## Brume de chaleur, pas brouillard. Elle blanchit le lointain au lieu de
+## l'assombrir — c'est ce qui donne l'echelle du desert a midi.
+@export var jour_brouillard: Color = Color(0.741, 0.769, 0.784)
+
+@export_range(0.0, 3.0, 0.01) var jour_ambiante: float = 0.62
+
+## Le soleil. Haut et dur : Albuquerque est a deux mille metres, la lumiere
+## y est franche et les ombres nettes.
+@export_range(0.0, 8.0, 0.05) var soleil_energie: float = 1.35
+@export var soleil_couleur: Color = Color(1.0, 0.973, 0.925)
+
+## Hauteur du soleil au-dessus de l'horizon, en degres. Bas = fin de journee,
+## ombres longues. Haut = midi, ombres courtes.
+@export_range(5.0, 89.0, 1.0) var soleil_hauteur: float = 58.0
+
+## Orientation du soleil, en degres.
+@export_range(-180.0, 180.0, 1.0) var soleil_azimut: float = 35.0
+
+@export var soleil_ombres: bool = true
+
+## De jour, on voit beaucoup plus loin. Garder les distances de nuit
+## donnerait une purée blanche à trente metres.
+@export_range(10.0, 400.0, 5.0) var jour_brouillard_debut: float = 90.0
+@export_range(20.0, 900.0, 5.0) var jour_brouillard_fin: float = 340.0
+
+## Combien la brume mange le ciel. A 1, elle le recouvre entierement et on
+## obtient un aplat gris pale au lieu du bleu d'Albuquerque. C'est bon de
+## nuit, ou le ciel EST le brouillard ; de jour il faut le laisser respirer.
+@export_range(0.0, 1.0, 0.05) var jour_brume_ciel: float = 0.25
+
+
 @export_group("Affichage")
 
 ## Duree d'affichage du nom d'un outil qu'on vient d'equiper, en secondes.
 ## L'objet se voit dans la main : le nom n'a d'interet qu'a cet instant.
 @export_range(0.3, 6.0, 0.1) var hud_annonce: float = 1.6
+
+
+# ------------------------------------------------------------ jour ou nuit
+
+const MONDE := "res://donnees/monde.json"
+
+## Lu une fois, puis garde : la question est posee par cinq systemes a chaque
+## demarrage, et le fichier ne bouge pas en cours de partie.
+static var _moment := ""
+
+
+## Fait-il jour ? La reponse vient de donnees/monde.json, ecrit par le
+## generateur de textures — parce que l'etat des vitres y est CUIT. Un
+## booleen a part dans ce fichier-ci pourrait le contredire, et on aurait un
+## ciel de midi sur des fenetres allumees sans savoir lequel a tort.
+static func est_jour() -> bool:
+	if _moment == "":
+		_moment = "nuit"
+		if FileAccess.file_exists(MONDE):
+			var lu: Variant = JSON.parse_string(
+					FileAccess.get_file_as_string(MONDE))
+			if typeof(lu) == TYPE_DICTIONARY:
+				_moment = str((lu as Dictionary).get("moment", "nuit"))
+			else:
+				push_error("reglages : %s illisible, on reste de nuit" % MONDE)
+	return _moment == "jour"
+
+
+## Couleur du ciel du moment.
+func ciel() -> Color:
+	return jour_ciel if est_jour() else ciel_couleur
+
+
+## Couleur de la brume ou du brouillard du moment.
+func brume() -> Color:
+	return jour_brouillard if est_jour() else brouillard_couleur
+
+
+func lumiere_ambiante() -> float:
+	return jour_ambiante if est_jour() else ambiante
+
+
+func brume_debut() -> float:
+	return jour_brouillard_debut if est_jour() else brouillard_debut
+
+
+func brume_fin() -> float:
+	return jour_brouillard_fin if est_jour() else brouillard_fin

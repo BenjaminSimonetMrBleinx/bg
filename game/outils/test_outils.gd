@@ -16,6 +16,10 @@ var _roue: Node
 var _j: Node
 var _erreurs: Array[String] = []
 
+## Etape de la sequence d'appuis, qui s'etale sur plusieurs trames.
+var _etape := 0
+var _depart := 0
+
 
 func _initialize() -> void:
 	var ps := ResourceLoader.load("res://scenes/monde.tscn") as PackedScene
@@ -42,6 +46,8 @@ func _trouver(n: Node, nom: String) -> Node:
 
 func _process(_d: float) -> bool:
 	_n += 1
+	if _etape > 0:
+		return _suite()
 	if _n < POSE:
 		return false
 
@@ -83,14 +89,57 @@ func _process(_d: float) -> bool:
 	_verifier(not _roue.call("ouverte"), "la roue est fermee au repos")
 	_roue.call("ouvrir")
 	_verifier(_roue.call("ouverte"), "elle s'ouvre")
+
 	_verifier(not is_equal_approx(Engine.time_scale, 1.0),
 			"le temps ralentit (x%.2f)" % Engine.time_scale)
-	_roue.call("fermer", true)
-	_verifier(not _roue.call("ouverte"), "elle se ferme")
-	# Un ralenti qui survit a la fermeture est le pire des bugs de ce genre :
-	# tout le jeu devient mou et rien n'indique pourquoi.
-	_verifier(is_equal_approx(Engine.time_scale, 1.0),
-			"et le temps repart a la vitesse normale")
+
+	# La selection se teste sur PLUSIEURS trames.
+	#
+	# is_action_just_pressed reste vrai jusqu'a la fin de la trame ou la
+	# touche a ete enfoncee, meme si on l'a relachee entre-temps. Deux appuis
+	# dans la meme trame comptent donc tous les deux pour le premier. Une
+	# premiere version de ce test le faisait et concluait que "gauche" ne
+	# marchait pas, alors que le fautif etait le test.
+	#
+	# Le vrai point verifie ici : la roue vit dans le SubViewport, et Godot
+	# n'y propage PAS les evenements d'entree. Un _unhandled_input y est
+	# silencieusement mort — la roue s'ouvre, s'anime, se ferme, et la
+	# selection ne bouge jamais, sans la moindre erreur nulle part.
+	_depart = int(_roue.get("_selection"))
+	_etape = 1
+	Input.action_press("droite")
+	return false
+
+
+func _selection() -> int:
+	return int(_roue.get("_selection"))
+
+
+func _suite() -> bool:
+	match _etape:
+		1:
+			Input.action_release("droite")
+			_verifier(_selection() != _depart,
+					"droite change la selection (%d -> %d)"
+					% [_depart, _selection()])
+			_etape = 2
+			return false
+		2:
+			Input.action_press("gauche")
+			_etape = 3
+			return false
+		3:
+			Input.action_release("gauche")
+			_verifier(_selection() == _depart,
+					"gauche revient en arriere (%d)" % _selection())
+			_roue.call("fermer", true)
+			_verifier(not _roue.call("ouverte"), "elle se ferme")
+			_verifier(_eq.call("actif") == _depart,
+					"l'outil vise est bien celui qu'on equipe")
+			# Un ralenti qui survit a la fermeture est le pire bug de ce
+			# genre : tout le jeu devient mou et rien n'indique pourquoi.
+			_verifier(is_equal_approx(Engine.time_scale, 1.0),
+					"et le temps repart a la vitesse normale")
 
 	print("")
 	if _erreurs.is_empty():

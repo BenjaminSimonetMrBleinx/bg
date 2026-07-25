@@ -62,7 +62,10 @@ func appliquer_reglages() -> void:
 		p.spot_range = reglages.phare_portee
 		p.spot_angle = reglages.phare_angle
 		p.light_color = reglages.phare_couleur
-		p.visible = reglages.phares_allumes
+		# De jour ils ne servent a rien et se voient : un cone de lumiere en
+		# plein soleil est le detail qui trahit une scene de nuit eclaircie a
+		# la va-vite.
+		p.visible = reglages.phares_allumes and not Reglages.est_jour()
 
 
 func _toutes() -> Array[VehicleWheel3D]:
@@ -165,4 +168,7 @@ func quitter_le_volant() -> void:
 func basculer_phares() -> void:
 	reglages.phares_allumes = not reglages.phares_allumes
 	for p in _phares:
-		p.visible = reglages.phares_allumes
+		# De jour ils ne servent a rien et se voient : un cone de lumiere en
+		# plein soleil est le detail qui trahit une scene de nuit eclaircie a
+		# la va-vite.
+		p.visible = reglages.phares_allumes and not Reglages.est_jour()

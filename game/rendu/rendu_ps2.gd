@@ -68,30 +68,58 @@ func _configurer_environnement() -> void:
 		_environnement.environment = env
 
 	env.background_mode = Environment.BG_COLOR
-	env.background_color = reglages.ciel_couleur
+	env.background_color = reglages.ciel()
 
 	# Sans ambiante, tout ce qui n'est pas sous un lampadaire est un aplat
 	# parfaitement noir — illisible, et ce n'est pas ce que faisait la PS2.
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = reglages.brouillard_couleur
-	env.ambient_light_energy = reglages.ambiante
+	env.ambient_light_color = reglages.brume()
+	env.ambient_light_energy = reglages.lumiere_ambiante()
 
 	# Le brouillard n'est pas un effet d'ambiance : c'est ce qui masque la
-	# limite d'affichage. Meme role que dans GTA III.
+	# limite d'affichage. Meme role que dans GTA III. De jour il change de
+	# nature sans changer de fonction : une brume de chaleur qui BLANCHIT le
+	# lointain au lieu de l'assombrir.
 	env.fog_enabled = true
 	env.fog_mode = Environment.FOG_MODE_DEPTH
-	env.fog_light_color = reglages.brouillard_couleur
+	env.fog_light_color = reglages.brume()
 	env.fog_light_energy = 1.0
-	env.fog_depth_begin = reglages.brouillard_debut
-	env.fog_depth_end = reglages.brouillard_fin
+	env.fog_depth_begin = reglages.brume_debut()
+	env.fog_depth_end = reglages.brume_fin()
 	env.fog_depth_curve = 1.0
-	env.fog_sky_affect = 1.0
+	env.fog_sky_affect = reglages.jour_brume_ciel if Reglages.est_jour() else 1.0
+
+	_configurer_soleil()
 
 	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
 	env.glow_enabled = false
 	env.ssao_enabled = false
 	env.ssil_enabled = false
 	env.sdfgi_enabled = false
+
+
+# De nuit, il n'y a aucune source directionnelle : tout vient des lampadaires
+# et des phares. De jour, il en faut une, sinon la ville reste un aplat
+# ambiant sans une seule ombre et tout parait plat.
+func _configurer_soleil() -> void:
+	var scene := scene_3d()
+	var soleil := scene.get_node_or_null("Soleil") as DirectionalLight3D
+
+	if not Reglages.est_jour():
+		if soleil != null:
+			soleil.queue_free()
+		return
+
+	if soleil == null:
+		soleil = DirectionalLight3D.new()
+		soleil.name = "Soleil"
+		scene.add_child(soleil)
+
+	soleil.light_color = reglages.soleil_couleur
+	soleil.light_energy = reglages.soleil_energie
+	soleil.shadow_enabled = reglages.soleil_ombres
+	soleil.rotation_degrees = Vector3(
+		-reglages.soleil_hauteur, reglages.soleil_azimut, 0.0)
 
 
 ## La camera active du monde. Les autres systemes passent par ici plutot que

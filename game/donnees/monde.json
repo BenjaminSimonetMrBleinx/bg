@@ -1,0 +1,9 @@
+{
+ "_lisez_moi": [
+  "Ecrit par outils/gen_textures.py. Ne pas modifier a la main :",
+  "l'etat des vitres est cuit dans les textures, et changer ce",
+  "fichier seul donnerait un ciel de jour sur des fenetres de nuit.",
+  "Pour changer : .\\bg.ps1 generer -Moment jour"
+ ],
+ "moment": "jour"
+}

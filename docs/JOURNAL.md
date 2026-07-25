@@ -387,3 +387,58 @@ précisément le genre de chose qu'on ne voit que si on la mesure. Ils sont nomm
 et le test échoue si un seul redevient anonyme.
 
 Onze suites.
+
+---
+
+## V11 — La roue ne répondait pas, et le jeu passe en journée
+
+### Le bug de la roue
+
+Benjamin : « j'arrive pas à changer d'objet sélectionné ». Diagnostic en une phrase :
+**la roue lisait les touches par événement, et toute l'interface vit dans le `SubViewport`
+de rendu.** Godot ne propage pas les événements d'entrée dans un `SubViewport` qui n'est pas
+sous un `SubViewportContainer` : le `_unhandled_input` y était silencieusement mort.
+
+Rien ne le signalait. La roue s'ouvrait, s'animait, ralentissait le temps, se fermait — et la
+sélection ne bougeait jamais. Le reste du jeu scrute déjà les touches (`Input.is_action_...`),
+ce qui explique que l'ouverture et la fermeture, elles, marchaient.
+
+Passée en scrutation, comme la convention du projet le voulait depuis le début.
+
+**Le test a d'abord échoué pour une mauvaise raison**, ce qui vaut d'être noté :
+`is_action_just_pressed` reste vrai **jusqu'à la fin de la trame** où la touche a été
+enfoncée, même après relâchement. Deux appuis dans la même trame comptent tous les deux pour
+le premier. Le test concluait que « gauche » ne marchait pas alors que le fautif était le
+test. Il s'étale maintenant sur plusieurs trames.
+
+### La journée
+
+Le moment de la journée n'est **pas** un curseur, et c'est le point de conception :
+**l'état des vitres est cuit dans les textures de façade**. Un booléen côté jeu pourrait
+contredire les textures, et on obtiendrait un ciel de midi sur des fenêtres allumées sans
+savoir lequel des deux a tort.
+
+Le générateur de textures écrit donc le moment dans `game/donnees/monde.json` en même temps
+qu'il cuit les vitres. Cinq systèmes le relisent : le rendu pour son ciel et son soleil, la
+ville pour ses lampadaires, la maison pour son porche, le véhicule pour ses phares.
+**Une seule source, écrite par celui qui décide.**
+
+`.\bg.ps1 generer -Moment jour`
+
+Ce qui change de jour, au-delà des couleurs :
+
+- **Un soleil.** De nuit il n'y a aucune source directionnelle, tout vient des lampadaires.
+  Sans soleil, la ville de jour est un aplat ambiant sans une seule ombre, et tout paraît plat.
+- **Aucun lampadaire créé** — pas éteint, pas créé. Une source coûte même quand son énergie
+  est nulle, sur PS2 comme aujourd'hui.
+- **Les vitres renvoient le ciel** au lieu d'être allumées. Sinon on obtient des carrés jaunes
+  qui brillent en plein soleil, ce qui trahit immédiatement une scène de nuit éclaircie.
+- **La brume blanchit le lointain au lieu de l'assombrir**, et on voit à 340 m au lieu de 58.
+- **La brume ne mange plus le ciel.** `fog_sky_affect` à 1 convient à la nuit, où le ciel
+  *est* le brouillard. De jour, ça donnait un aplat gris pâle au lieu du bleu d'Albuquerque.
+  Descendu à 0,25.
+
+`test_jour.gd` vérifie que la bascule est appliquée partout : une bascule à moitié faite ne
+plante pas, elle donne une ville de nuit avec un soleil.
+
+Douze suites.
