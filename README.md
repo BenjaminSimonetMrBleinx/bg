@@ -73,6 +73,15 @@ Pas besoin de retenir les chemins, tout passe par le lanceur :
 
 `generer` accepte `-Blocs 4 -Graine 1234` pour changer la taille et le tirage de la ville.
 
+Pour envoyer son travail sur GitHub, une seule commande, qui vérifie tout et
+explique quoi faire en cas de souci :
+
+```powershell
+.\livrer.ps1                       # verifie, recupere, montre, envoie
+.\livrer.ps1 "sons de portieres"   # avec ta propre description
+.\livrer.ps1 -Quoi                 # montre sans rien envoyer
+```
+
 ## Commandes en jeu
 
 | Touche | Action |

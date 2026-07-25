@@ -327,6 +327,88 @@ def chaussure(u: float, v: float):
     return (g, g * 0.94, g * 0.88)
 
 
+def crepi(u: float, v: float):
+    """Enduit gratte beige, le revetement d'Albuquerque."""
+    n = hache(int(u * 210), int(v * 210))
+    gros = hache(int(u * 44) + 9, int(v * 44) + 23)
+    g = 0.90 + n * 0.16 + gros * 0.06
+    return (172 * g, 152 * g, 122 * g)
+
+
+def bardage(u: float, v: float):
+    """Bardage bois horizontal, un peu fatigue. Pour la maison de Jesse."""
+    n = hache(int(u * 190), int(v * 190))
+    lame = (v % 0.125) / 0.125
+    ombre = 0.72 if lame < 0.10 else (1.06 if lame < 0.20 else 1.0)
+    g = (0.88 + n * 0.18) * ombre
+    return (126 * g, 108 * g, 88 * g)
+
+
+def toit(u: float, v: float):
+    """Gravier de toiture terrasse, ou bardeaux vus de loin."""
+    n = hache(int(u * 240), int(v * 240))
+    g = 62 + n * 20
+    return (g, g * 0.95, g * 0.88)
+
+
+def porte(u: float, v: float):
+    """Porte a panneaux, poignee doree."""
+    n = hache(int(u * 150), int(v * 150))
+    base = (104, 66, 44)
+    if 0.62 < u < 0.72 and 0.44 < v < 0.52:
+        return (196, 164, 92)                      # poignee
+    cadre = u < 0.10 or u > 0.90 or v < 0.06 or v > 0.94
+    panneau = (0.20 < u < 0.80) and (0.14 < v < 0.44 or 0.56 < v < 0.86)
+    g = 1.14 if cadre else (0.84 if panneau else 1.0)
+    g *= 0.94 + n * 0.12
+    return (base[0] * g, base[1] * g, base[2] * g)
+
+
+def fenetre_maison(u: float, v: float):
+    """Fenetre a deux vantaux, eclairee de l'interieur."""
+    if u < 0.07 or u > 0.93 or v < 0.07 or v > 0.93:
+        return (188, 178, 162)                     # dormant clair
+    if 0.47 < u < 0.53:
+        return (188, 178, 162)                     # meneau
+    n = hache(int(u * 120), int(v * 120))
+    chaud = 0.82 + v * 0.35
+    return (206 * chaud * (0.92 + n * 0.14),
+            170 * chaud * (0.92 + n * 0.14),
+            108 * chaud * (0.92 + n * 0.14))
+
+
+def parquet(u: float, v: float):
+    """Lames de bois, decalees d'une rangee a l'autre."""
+    rangee = int(v * 6)
+    decalage = 0.5 if rangee % 2 else 0.0
+    uu = (u * 3 + decalage) % 1.0
+    n = hache(int(u * 200) + rangee, int(v * 200))
+    joint = 0.68 if uu < 0.03 or (v * 6) % 1.0 < 0.05 else 1.0
+    g = (0.90 + n * 0.18) * joint
+    return (128 * g, 96 * g, 62 * g)
+
+
+def mur_interieur(u: float, v: float):
+    """Peinture mate, plinthe sombre en pied de mur."""
+    n = hache(int(u * 170), int(v * 170))
+    if v < 0.055:
+        g = 0.60 + n * 0.10
+        return (188 * g, 180 * g, 168 * g)
+    g = 0.94 + n * 0.10
+    return (196 * g, 188 * g, 174 * g)
+
+
+def carrelage(u: float, v: float):
+    """Sol de cuisine, damier discret."""
+    cx, cy = int(u * 8), int(v * 8)
+    n = hache(int(u * 160), int(v * 160))
+    clair = (cx + cy) % 2 == 0
+    joint = ((u * 8) % 1.0 < 0.06) or ((v * 8) % 1.0 < 0.06)
+    g = (0.95 + n * 0.10) * (0.78 if joint else 1.0)
+    base = 178 if clair else 140
+    return (base * g, base * g * 0.99, base * g * 0.94)
+
+
 def mur(base):
     """Pignon aveugle : crepi seul, pour les cotes et l'arriere des immeubles."""
 
@@ -407,6 +489,14 @@ def main() -> None:
                rendre(t // 2, t // 2, chaussure))
     faits += ["tete_walter.png", "peau.png", "chemise.png", "pantalon.png",
               "chaussure.png"]
+
+    # --- maisons ---
+    for nom, fn in [("crepi", crepi), ("bardage", bardage), ("toit", toit),
+                    ("porte", porte), ("fenetre_maison", fenetre_maison),
+                    ("parquet", parquet), ("mur_interieur", mur_interieur),
+                    ("carrelage", carrelage)]:
+        ecrire_png(dossier / f"{nom}.png", t, t, rendre(t, t, fn))
+        faits.append(f"{nom}.png")
 
     print(f"{len(faits)} textures ecrites dans {dossier}/")
     for f in faits:

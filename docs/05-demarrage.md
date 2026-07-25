@@ -67,19 +67,53 @@ Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 Les touches sont liées par **position physique** : elles se lisent `WASD` en
 QWERTY et QWERTZ, `ZQSD` en AZERTY, sans rien changer.
 
-## 5. Déposer ton travail
+## 5. Déposer ton travail — une seule commande
+
+Tu poses tes fichiers dans le bon dossier, puis :
 
 ```powershell
-git pull                                  # toujours avant de commencer
-# ... tu travailles ...
-git add assets/sons/vehicule/moteur_ralenti.wav
-git commit -m "Son moteur au ralenti"
-git push
+.\livrer.ps1
 ```
 
-**Un fichier `.blend` par asset**, jamais un gros fichier de scène partagé :
-un binaire ne se fusionne pas, et à deux sur le même fichier l'un des deux
-travaux serait purement et simplement jeté.
+C'est tout. Le script fait le reste, dans cet ordre :
+
+1. **Il vérifie ton installation** — Git, Git LFS, ton identité. Si quelque
+   chose manque, il te dit exactement quoi taper au lieu d'échouer.
+2. **Il récupère le travail des autres** avant d'envoyer le tien, pour éviter
+   les conflits.
+3. **Il te montre la liste** de ce qui va partir, et te demande confirmation.
+4. **Il envoie.**
+
+Tu peux lui donner une description :
+
+```powershell
+.\livrer.ps1 "sons moteur et portieres"
+```
+
+Sans description, il en écrit une lui-même (« 4 son(s), 2 modèle(s) 3D »).
+
+Et pour regarder sans rien envoyer :
+
+```powershell
+.\livrer.ps1 -Quoi
+```
+
+### S'il s'arrête
+
+Il ne te laisse jamais dans un état cassé : soit tout est envoyé, soit rien
+ne l'est et ton travail reste intact en local. Le message t'indique la
+marche à suivre. En cas de doute, **envoie une copie d'écran** — le message
+contient tout ce qu'il faut pour comprendre.
+
+### Deux règles à respecter
+
+**Un fichier `.blend` par asset**, jamais un gros fichier de scène partagé.
+Un binaire ne se fusionne pas : à deux sur le même fichier, le travail de
+l'un serait purement et simplement jeté.
+
+**Aucun média de la série** dans le dépôt — image, son, vidéo, police. Ils
+vivent dans `assets-ref/`, que git ignore. Un fichier envoyé une fois reste
+dans l'historique même après suppression.
 
 ## 6. Où mettre quoi
 
