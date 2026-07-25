@@ -20,6 +20,9 @@ aux questions, on fige la direction, on code ensuite.
 | [`docs/00-questions.md`](docs/00-questions.md) | Les questions de cadrage, à remplir |
 | [`docs/01-cadrage.md`](docs/01-cadrage.md) | Décisions verrouillées, choix du moteur, répartition du travail |
 | [`docs/02-methode.md`](docs/02-methode.md) | Comment on code ce jeu au quotidien |
+| [`docs/03-conventions-assets.md`](docs/03-conventions-assets.md) | Formats, budgets de triangles, pivots, nommage |
+| [`docs/04-brief-son.md`](docs/04-brief-son.md) | **Liste exhaustive des sons du prototype** — pour Guillaume |
+| [`docs/JOURNAL.md`](docs/JOURNAL.md) | Une entrée par session, les constats |
 
 ## Décidé
 

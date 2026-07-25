@@ -1,0 +1,10 @@
+Depose les WAV ici, dans le sous-dossier correspondant.
+
+Format : 48 kHz / 16 bits.
+  - MONO pour tout ce qui est positionne dans l espace (moteur, portes, pas,
+    lampadaires, PNJ)
+  - STEREO uniquement pour la musique et les ambiances non positionnees
+
+Livre SEC : pas de reverb, pas de filtre de distance. Godot s en charge.
+
+La liste complete, avec durees et intentions : docs/04-brief-son.md

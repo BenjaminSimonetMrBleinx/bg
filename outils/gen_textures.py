@@ -167,6 +167,58 @@ def facade(base, graine: int):
     return fn
 
 
+def carrosserie(base):
+    """Tolerie peinte : lignes de caisse discretes et bas de caisse sale."""
+
+    def fn(u: float, v: float):
+        n = hache(int(u * 170), int(v * 170))
+        ligne = 0.80 if (v % 0.34) < 0.016 else 1.0
+        salissure = max(0.0, 1.0 - v * 3.2) * 0.26      # projections de route
+        g = (0.93 + n * 0.13) * ligne - salissure
+        return (base[0] * g, base[1] * g, base[2] * g)
+
+    return fn
+
+
+def vitre(u: float, v: float):
+    """Vitrage teinte : sombre en bas, le haut attrape le ciel."""
+    n = hache(int(u * 90), int(v * 90))
+    reflet = 0.30 + v * 0.55
+    g = 17 + n * 9
+    return (g + reflet * 24, g + reflet * 29, g + reflet * 41)
+
+
+def pneu(u: float, v: float):
+    """Gomme sculptee de rainures. u fait le tour, v traverse la bande."""
+    n = hache(int(u * 230), int(v * 230))
+    rainure = 0.66 if (u % 0.11) < 0.042 else 1.0
+    g = (27 + n * 9) * rainure
+    return (g, g, g + 2)
+
+
+def jante(u: float, v: float):
+    """Flanc de roue : enjoliveur clair au centre, gomme sombre au bord."""
+    dx, dy = u - 0.5, v - 0.5
+    d = (dx * dx + dy * dy) ** 0.5
+    n = hache(int(u * 150), int(v * 150))
+    if d > 0.44:
+        return (26 + n * 6, 26 + n * 6, 28 + n * 6)
+    g = 122 + n * 24 - d * 110
+    return (g, g, g + 5)
+
+
+def feu(couleur):
+    """Optique : verre nervure, plus clair au centre."""
+
+    def fn(u: float, v: float):
+        nervure = 0.80 if (u % 0.16) < 0.05 else 1.0
+        centre = 1.0 - abs(v - 0.5) * 0.8
+        g = nervure * centre
+        return (couleur[0] * g, couleur[1] * g, couleur[2] * g)
+
+    return fn
+
+
 def mur(base):
     """Pignon aveugle : crepi seul, pour les cotes et l'arriere des immeubles."""
 
@@ -185,6 +237,14 @@ FACADES = {
     "facade_b": (72, 76, 92),
     "facade_c": (106, 86, 70),
     "facade_d": (64, 70, 84),
+}
+
+# Le beige-or est la couleur de l'Aztek de Walt. Les autres serviront au
+# trafic quand il existera.
+CARROSSERIES = {
+    "voiture_aztek": (154, 138, 108),
+    "voiture_b": (78, 84, 96),
+    "voiture_c": (112, 62, 52),
 }
 
 
@@ -215,6 +275,20 @@ def main() -> None:
         ecrire_png(dossier / f"{nom}.png", t, t, rendre(t, t, facade(couleur, i * 13)))
         ecrire_png(dossier / f"{nom}_mur.png", t, t, rendre(t, t, mur(couleur)))
         faits.append(f"{nom}.png + _mur")
+
+    # --- vehicules ---
+    for nom, couleur in CARROSSERIES.items():
+        ecrire_png(dossier / f"{nom}.png", t, t, rendre(t, t, carrosserie(couleur)))
+        faits.append(f"{nom}.png")
+
+    ecrire_png(dossier / "vitre.png", t // 2, t // 2, rendre(t // 2, t // 2, vitre))
+    ecrire_png(dossier / "pneu.png", t // 2, t // 2, rendre(t // 2, t // 2, pneu))
+    ecrire_png(dossier / "jante.png", t // 2, t // 2, rendre(t // 2, t // 2, jante))
+    ecrire_png(dossier / "feu_avant.png", t // 4, t // 4,
+               rendre(t // 4, t // 4, feu((252, 240, 208))))
+    ecrire_png(dossier / "feu_arriere.png", t // 4, t // 4,
+               rendre(t // 4, t // 4, feu((196, 42, 34))))
+    faits += ["vitre.png", "pneu.png", "jante.png", "feu_avant.png", "feu_arriere.png"]
 
     print(f"{len(faits)} textures ecrites dans {dossier}/")
     for f in faits:
