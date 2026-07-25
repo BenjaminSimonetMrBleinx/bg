@@ -111,35 +111,98 @@ def main() -> None:
     def z(fraction: float) -> float:
         return zmin + fraction * hauteur
 
-    def segment_de(centre) -> str:
-        h = (centre[2] - zmin) / max(1e-6, hauteur)
-        lat = (centre[0] - milieu) / demi
-        cote = "D" if lat > 0 else "G"
+    # --- ou passent les os -----------------------------------------------
+    #
+    # On ne classe plus par plans horizontaux. Chaque segment est un OS —
+    # un simple segment de droite entre deux articulations — et chaque face
+    # rejoint l'os dont elle est la plus proche. C'est le principe de tous
+    # les auto-rigs, et il regle le probleme que les plans ne pouvaient pas
+    # resoudre.
+    #
+    # Le probleme, precisement : sur un modele etroit — celui-ci fait 44 cm
+    # de large pour 1,78 m — le bassin est presque aussi ecarte de l'axe que
+    # les bras qui pendent le long du corps. Aucun seuil lateral ne les
+    # separe. En jeu, des morceaux de hanche partaient avec les mains a
+    # chaque foulee, en eclats.
+    #
+    # La distance a un os, elle, les distingue sans ambiguite : le bassin est
+    # sur l'axe vertical, le bras sur une droite laterale.
 
-        if h >= a.cou:
-            return "Tete"
-        # Tout ce qui est loin de l'axe appartient au bras, quelle que soit
-        # la hauteur — sauf tout en bas, ou ce sont les pieds.
-        #
-        # Une premiere version exigeait aussi h > poignet - 0.06. La main
-        # deborde de cette bande : sa partie basse tombait donc dans la
-        # CUISSE et partait avec elle a chaque foulee. En jeu, des eclats de
-        # peau flottaient autour des hanches, et rien ne le signalait.
-        if abs(lat) > a.bras and h > 0.32:
-            if h >= a.coude:
-                return "Bras" + cote
-            if h >= a.poignet:
-                return "AvantBras" + cote
-            return "Main" + cote
-        if h >= a.hanche + 0.045:
-            return "Torse"
-        if h >= a.hanche - 0.045:
-            return "Bassin"
-        if h >= a.genou:
-            return "Cuisse" + cote
-        if h >= a.cheville:
-            return "Tibia" + cote
-        return "Pied" + cote
+    def lateral_a(z_bas: float, z_haut: float) -> float:
+        """Ecartement moyen de la matiere la plus externe, a cette hauteur.
+
+        Mesure sur la geometrie plutot que suppose : c'est ce qui permet au
+        meme script de traiter un modele large ou etroit.
+        """
+        pris = [abs(v.co.x - milieu) for v in me.vertices
+                if z_bas <= v.co.z <= z_haut]
+        if not pris:
+            return demi * 0.5
+        pris.sort()
+        # Le quart le plus externe : le centre du membre, pas son bord.
+        haut = pris[int(len(pris) * 0.80):]
+        return sum(haut) / max(1, len(haut))
+
+    x_epaule = lateral_a(z(a.epaule) - 0.05 * hauteur, z(a.epaule) + 0.03 * hauteur)
+    x_coude = lateral_a(z(a.coude) - 0.04 * hauteur, z(a.coude) + 0.04 * hauteur)
+    x_poignet = lateral_a(z(a.poignet) - 0.04 * hauteur, z(a.poignet) + 0.04 * hauteur)
+    x_hanche = lateral_a(z(a.hanche) - 0.04 * hauteur, z(a.hanche) + 0.02 * hauteur) * 0.45
+    x_genou = lateral_a(z(a.genou) - 0.04 * hauteur, z(a.genou) + 0.04 * hauteur) * 0.65
+    x_cheville = lateral_a(z(a.cheville), z(a.cheville) + 0.05 * hauteur) * 0.7
+
+    def os(nom, x0, z0, x1, z1, poids=1.0):
+        return (nom, (milieu + x0, z0), (milieu + x1, z1), poids)
+
+    squelette = []
+    for signe, cote in ((-1.0, "G"), (1.0, "D")):
+        squelette += [
+            os("Bras" + cote, signe * x_epaule, z(a.epaule),
+               signe * x_coude, z(a.coude)),
+            os("AvantBras" + cote, signe * x_coude, z(a.coude),
+               signe * x_poignet, z(a.poignet)),
+            # La main revendique MOINS que les autres : elle pend juste a
+            # cote de la hanche, et sans ce frein elle emporte un morceau de
+            # bassin qui part avec elle a chaque foulee.
+            os("Main" + cote, signe * x_poignet, z(a.poignet),
+               signe * x_poignet, z(a.poignet) - 0.05 * hauteur, 1.45),
+            os("Cuisse" + cote, signe * x_hanche, z(a.hanche),
+               signe * x_genou, z(a.genou)),
+            os("Tibia" + cote, signe * x_genou, z(a.genou),
+               signe * x_cheville, z(a.cheville)),
+            os("Pied" + cote, signe * x_cheville, z(a.cheville),
+               signe * x_cheville, zmin),
+        ]
+    squelette += [
+        # Le tronc revendique PLUS : il est sur l axe, donc naturellement
+        # loin de tout, alors qu il porte le plus de matiere.
+        os("Bassin", 0.0, z(a.hanche) - 0.04 * hauteur, 0.0, z(a.hanche) + 0.03 * hauteur, 0.80),
+        os("Torse", 0.0, z(a.hanche) + 0.03 * hauteur, 0.0, z(a.cou), 0.80),
+        os("Tete", 0.0, z(a.cou) + 0.01 * hauteur, 0.0, zmax, 1.10),
+    ]
+
+    def distance_a(p, aa, bb) -> float:
+        """Distance d'un point au segment [aa, bb], dans le plan (x, z)."""
+        ax, az = aa
+        bx, bz = bb
+        dx, dz = bx - ax, bz - az
+        long2 = dx * dx + dz * dz
+        if long2 < 1e-12:
+            t = 0.0
+        else:
+            t = ((p[0] - ax) * dx + (p[2] - az) * dz) / long2
+            t = max(0.0, min(1.0, t))
+        px, pz = ax + t * dx, az + t * dz
+        return ((p[0] - px) ** 2 + (p[2] - pz) ** 2) ** 0.5
+
+    def segment_de(centre) -> str:
+        meilleur = None
+        mini = 1e18
+        for nom, aa, bb, poids in squelette:
+            d = distance_a(centre, aa, bb) * poids
+            if d < mini:
+                mini = d
+                meilleur = nom
+        return meilleur
 
     # --- repartition des faces -------------------------------------------
     groupes: dict[str, list[int]] = {}

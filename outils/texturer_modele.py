@@ -48,6 +48,8 @@ def arguments() -> argparse.Namespace:
                     help="personnage de VISAGES / TENUES dans gen_textures.py")
     ap.add_argument("--taille", type=int, default=256)
     ap.add_argument("--hauteur", type=float, default=1.78)
+    ap.add_argument("--angle-lisse", dest="angle_lisse", type=float, default=48.0,
+                    help="au-dela de cet angle, l arete reste franche")
     return ap.parse_args(argv)
 
 
@@ -145,6 +147,97 @@ class Image:
 COU = 0.855          # fraction de la hauteur ou commence la tete
 
 
+def visage_sculpte(traits):
+    """Peint un visage DIRECTEMENT sur une tete, en coordonnees de tete.
+
+    On n'utilise pas l'atlas de gen_textures.py, et c'est le coeur du sujet.
+    Cet atlas est dessine pour un CUBE : le carre avant represente tout le
+    visage, le bouc y occupe le bas 30 %. Plaque sur un crane reel, ce bas
+    30 % ne couvre pas le menton — il couvre la machoire ET la bouche, d'ou
+    une tache noire au milieu de la figure.
+
+    Ici les reperes sont ceux d'une tete vue de face, du cou (fz = 0) au
+    sommet du crane (fz = 1), et fx s'ecarte de l'axe (0 au nez, 1 a
+    l'oreille) :
+
+        menton    0,15      nez       0,45
+        bouche    0,30      yeux      0,56
+        sourcils  0,64      naissance des cheveux  0,76
+
+    Chaque trait est donc pose ou il est sur un visage, pas ou il tombait
+    sur une boite.
+    """
+    base_peau = traits["peau"]
+    base_poil = traits["poil"]
+    lunettes = traits.get("lunettes", False)
+    bouc = traits.get("bouc", False)
+    moustache = traits.get("moustache", False)
+    coupe = traits.get("cheveux", "courts")
+
+    def rendu(fx, fz, bruit):
+        peau = (base_peau[0] + bruit * 12, base_peau[1] + bruit * 10,
+                base_peau[2] + bruit * 9)
+        poil = (base_poil[0] + bruit * 10, base_poil[1] + bruit * 9,
+                base_poil[2] + bruit * 8)
+        a = abs(fx)
+
+        # Cheveux : couronne sur les cotes et l'arriere, sommet degage.
+        if coupe == "calvitie":
+            if 0.50 < fz < 0.86 and a > 0.62:
+                return poil
+        elif coupe == "longs":
+            if fz > 0.72 or (fz > 0.30 and a > 0.66):
+                return poil
+        else:
+            if fz > 0.74 or (fz > 0.52 and a > 0.70):
+                return poil
+
+        # Le bouc suit la machoire : large au menton, il se resserre en
+        # montant vers les levres. Une zone rectangulaire donnait un carre
+        # noir plaque au milieu de la figure.
+        if bouc and 0.135 < fz < 0.295:
+            largeur = 0.30 - (fz - 0.135) * 0.80
+            if a < largeur:
+                return poil
+        if moustache and 0.27 <= fz < 0.335 and 0.02 < a < 0.165:
+            return poil
+
+        # Sourcils, un peu au-dessus des yeux.
+        if 0.625 < fz < 0.675 and 0.11 < a < 0.38:
+            return poil
+
+        # Yeux : blanc, avec la pupille au centre.
+        if 0.515 < fz < 0.585 and 0.11 < a < 0.35:
+            if abs(a - 0.23) < 0.055 and 0.53 < fz < 0.572:
+                return (34, 36, 42)
+            return (222, 220, 214)
+
+        if lunettes:
+            # Monture : le contour du verre, pas le verre lui-meme.
+            dans = 0.495 < fz < 0.605 and 0.09 < a < 0.375
+            if dans:
+                bord = fz < 0.515 or fz > 0.585 or a < 0.105 or a > 0.355
+                if bord:
+                    return (58, 54, 50)
+            # Pont entre les deux verres, et branches vers les oreilles.
+            if 0.545 < fz < 0.567 and a <= 0.09:
+                return (58, 54, 50)
+            if 0.545 < fz < 0.567 and a > 0.375:
+                return (58, 54, 50)
+
+        # Ombre du nez : une simple bande verticale decalee, aucun relief.
+        if 0.33 < fz < 0.50 and 0.015 < fx < 0.055:
+            return (peau[0] * 0.87, peau[1] * 0.87, peau[2] * 0.87)
+
+        # Creux des joues, pour que la figure ne soit pas un aplat.
+        if 0.22 < fz < 0.44 and 0.40 < a < 0.62:
+            return (peau[0] * 0.94, peau[1] * 0.94, peau[2] * 0.94)
+
+        return peau
+
+    return rendu
+
+
 def region(centre, normale, boite) -> str:
     """A quelle partie du corps appartient cette face ?
 
@@ -187,6 +280,7 @@ def main() -> None:
     traits = gen.VISAGES.get(a.qui, gen.VISAGES["walter"])
     tenue = gen.TENUES.get(a.qui, gen.TENUES["walter"])
     visage = gen.visage(traits)
+    face = visage_sculpte(traits)
     peau = gen.carnation(tenue["peau"])
     haut = gen.haut(tenue["haut"], tenue["capuche"])
     bas = gen.bas(tenue["bas"])
@@ -247,6 +341,44 @@ def main() -> None:
     boite = ((min(xs), max(xs)), (min(ys), max(ys)), (min(zs), max(zs)))
     (xmin, xmax), _, (zmin, zmax) = boite
 
+    # --- la tete recoit son propre depliage, plein cadre -------------------
+    #
+    # C'est LE correctif du visage, et il n'a rien a voir avec le dessin des
+    # traits.
+    #
+    # Le depliage automatique decoupe la tete en dizaines d'ilots minuscules :
+    # sur une image partagee avec tout le corps, chaque triangle du visage
+    # tombe a trois ou quatre pixels. Le debordement d'un pixel — indispensable
+    # ailleurs pour eviter les coutures claires — fait alors baver chaque ilot
+    # sur ses voisins, et la figure se couvre de taches sales.
+    #
+    # On remplace donc les UV de la tete par une projection frontale unique :
+    # l'avant du crane occupe un quart entier de l'image, l'arriere un autre.
+    # Le visage passe de quelques dizaines de pixels a plus de deux cents de
+    # cote, et il n'y a plus aucune couture a l'interieur.
+    uv_layer = me.uv_layers.active.data
+    tete_z0 = zmin + COU * (zmax - zmin)
+    tetes_co = [v.co for v in me.vertices if v.co.z > tete_z0]
+    if tetes_co:
+        tx0 = min(p.x for p in tetes_co)
+        tx1 = max(p.x for p in tetes_co)
+        for poly in me.polygons:
+            if poly.center[2] <= tete_z0:
+                # Le corps est comprime dans la moitie basse de l'image.
+                for i in poly.loop_indices:
+                    uv_layer[i].uv[1] = uv_layer[i].uv[1] * 0.48
+                continue
+            devant = poly.normal[1] < -0.25
+            u0 = 0.02 if devant else 0.52
+            for i in poly.loop_indices:
+                p = me.vertices[me.loops[i].vertex_index].co
+                fx = (p.x - tx0) / max(1e-6, tx1 - tx0)
+                fz = (p.z - tete_z0) / max(1e-6, zmax - tete_z0)
+                if not devant:
+                    fx = 1.0 - fx          # l'arriere est vu en miroir
+                uv_layer[i].uv[0] = u0 + 0.46 * min(1.0, max(0.0, fx))
+                uv_layer[i].uv[1] = 0.51 + 0.47 * min(1.0, max(0.0, fz))
+
     # Reperes de la tete, mesures sur la TETE ENTIERE, depuis le cou.
     #
     # Une premiere version les mesurait au-dessus de 90 % de la hauteur —
@@ -257,8 +389,8 @@ def main() -> None:
     tetes = [v.co for v in me.vertices if v.co.z > tete_bas]
     tete_gauche = min(p.x for p in tetes) if tetes else xmin
     tete_droite = max(p.x for p in tetes) if tetes else xmax
-    tete_avant = min(p.y for p in tetes) if tetes else 0.0
-    tete_arriere = max(p.y for p in tetes) if tetes else 0.0
+    tete_cx = (tete_gauche + tete_droite) / 2.0
+    demi_tete = max(1e-6, (tete_droite - tete_gauche) / 2.0)
 
     # Centre du corps, pour l'enroulement du tissu.
     cx = (xmin + xmax) / 2.0
@@ -285,22 +417,29 @@ def main() -> None:
         # se retrouvait disperse au hasard. En enroulant la texture autour du
         # corps, la boutonniere descend le long du buste et le col fait le
         # tour du cou, comme un vetement.
-        if r == "visage":
-            def couleur_de(p):
-                fx = (p[0] - tete_gauche) / max(1e-6, tete_droite - tete_gauche)
+        if r in ("visage", "crane"):
+            # UNE SEULE fonction pour toute la tete, avant comme arriere.
+            #
+            # Les traits sont poses par leurs propres coordonnees et ne
+            # sortent jamais de la zone du visage ; l'arriere recoit donc
+            # naturellement de la peau et des cheveux, sans qu'on ait a le
+            # traiter a part. Deux fonctions distinctes creaient une couture
+            # verticale visible sur la tempe.
+            devant = r == "visage"
+            def couleur_de(p, _devant=devant):
+                # Centre sur l AXE DU CORPS, pas sur la boite de la tete : le
+                # nez et les oreilles la faussent, et le bouc se retrouvait
+                # decale d un cote de la machoire.
+                fx = (p[0] - cx) / max(1e-6, demi_tete)
                 fz = (p[2] - tete_bas) / max(1e-6, zmax - tete_bas)
-                # Moitie gauche de l'atlas = le visage ; v croit vers le bas.
-                # Borne a [0,15 ; 0,85] : les bords de l atlas portent la
-                # couronne de cheveux, qui plaquee sur une tempe donne une
-                # tache sombre sans rapport avec une chevelure.
-                fx = 0.15 + 0.70 * min(1.0, max(0.0, fx))
-                return visage(0.5 * fx, 1.0 - min(0.999, max(0.0, fz)))
-        elif r == "crane":
-            def couleur_de(p):
-                fz = (p[2] - tete_bas) / max(1e-6, zmax - tete_bas)
-                # Moitie droite de l'atlas : crane et nuque, sans traits.
-                return visage(0.5 + 0.48 * abs((p[0] - cx) / max(1e-6, tete_droite - cx)),
-                              1.0 - min(0.999, max(0.0, fz)))
+                fz = min(1.0, max(0.0, fz))
+                n = (((int(abs(p[0]) * 8111) ^ int(abs(p[2]) * 9377)) % 100)
+                     / 100.0 - 0.5)
+                if not _devant:
+                    # De dos, on ecarte volontairement fx hors de la zone des
+                    # traits : pas d'oeil derriere la tete.
+                    fx = 1.4 if fx >= 0 else -1.4
+                return face(fx, fz, n)
         elif r == "peau":
             def couleur_de(p):
                 return peau(p[0] * 3.1 % 1.0, p[2] * 3.1 % 1.0)
@@ -341,6 +480,26 @@ def main() -> None:
     mat.node_tree.links.new(principal.inputs["Base Color"], tex.outputs["Color"])
     me.materials.clear()
     me.materials.append(mat)
+
+    # OMBRAGE LISSE, et c'est probablement le reglage le plus rentable de tout
+    # ce script.
+    #
+    # En ombrage plat, chaque facette capte la lumiere separement : un crane
+    # de cent trente triangles ressemble a un cristal taille, et aucune
+    # texture n'y change quoi que ce soit. En lissant sous un angle donne, les
+    # normales se moyennent d'une face a l'autre et la tete redevient ronde —
+    # tandis que les aretes franches, comme le col ou le bord d'une semelle,
+    # restent nettes parce qu'elles depassent l'angle.
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.select_all(action="DESELECT")
+    obj.select_set(True)
+    bpy.ops.object.shade_smooth()
+    try:
+        bpy.ops.object.shade_auto_smooth(angle=math.radians(a.angle_lisse))
+    except Exception:
+        # Selon la version de Blender, le lissage par angle est un operateur
+        # ou un modificateur. On ne se laisse pas arreter par la difference.
+        pass
 
     bpy.ops.object.select_all(action="DESELECT")
     obj.select_set(True)
