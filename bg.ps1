@@ -57,6 +57,17 @@ function Exiger($chemin, $nom) {
     if (-not $chemin) { throw "$nom introuvable. Installe-le, ou lance : .\bg.ps1 outils" }
 }
 
+# Sur un depot fraichement clone, Godot n a jamais importe le projet : le
+# registre des classes globales vit dans .godot/, qui est ignore par git.
+# Sans cet import, tout script utilisant un class_name refuse de compiler
+# avec une "Parse error" qui ne dit pas pourquoi.
+function Initialize-Projet {
+    if (Test-Path (Join-Path $Projet '.godot')) { return }
+    if (-not $GodotConsole) { return }
+    Write-Host "  Premier lancement : import du projet par Godot..." -ForegroundColor Gray
+    & $GodotConsole --headless --path $Projet --import 2>&1 | Out-Null
+}
+
 switch ($Commande) {
 
     'outils' {
@@ -68,11 +79,13 @@ switch ($Commande) {
 
     'jouer' {
         Exiger $Godot 'Godot'
+        Initialize-Projet
         & $Godot --path $Projet
     }
 
     'editeur' {
         Exiger $Godot 'Godot'
+        Initialize-Projet
         # -e ouvre l editeur au lieu de lancer le jeu
         & $Godot -e --path $Projet
     }
@@ -100,6 +113,7 @@ switch ($Commande) {
         # Variante console obligatoire : le binaire graphique se detache et
         # PowerShell n attend ni sa fin ni son code de sortie.
         Exiger $GodotConsole 'Godot (console)'
+        Initialize-Projet
         New-Item -ItemType Directory -Force -Path $Tmp | Out-Null
         $sortie = Join-Path $Tmp 'capture.png'
         & $GodotConsole --path $Projet --script 'res://outils/capture.gd' -- --sortie $sortie --frames 150
@@ -108,6 +122,7 @@ switch ($Commande) {
 
     'verif' {
         Exiger $GodotConsole 'Godot (console)'
+        Initialize-Projet
         & $GodotConsole --headless --path $Projet --script 'res://outils/verif.gd'
         exit $LASTEXITCODE
     }
@@ -118,6 +133,7 @@ switch ($Commande) {
         # graphique se detache, PowerShell ne recupere jamais son code de
         # sortie et toutes les suites paraissent echouer.
         Exiger $GodotConsole 'Godot (console)'
+        Initialize-Projet
         $suites = @(
             @{ nom = 'sens de conduite'; script = 'res://outils/test_sens.gd' },
             @{ nom = 'montee et descente'; script = 'res://outils/test_montee.gd' },

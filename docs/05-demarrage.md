@@ -32,8 +32,12 @@ cd $HOME\Documents
 ```
 
 Le projet créera un dossier `bg` à cet endroit. N'importe quel autre dossier
-convient, mais évite OneDrive : la synchronisation permanente entre en
-conflit avec git.
+convient — **les espaces dans le chemin ne posent aucun problème**, c'est
+testé. Évite en revanche OneDrive : la synchronisation permanente entre en
+conflit avec git, et ça se diagnostique très mal.
+
+Attention, le Bureau de Windows 11 est souvent redirigé vers OneDrive. Si
+ton chemin contient `OneDrive`, choisis autre chose.
 
 ### Récupérer le projet
 
