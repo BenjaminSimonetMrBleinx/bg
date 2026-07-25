@@ -294,6 +294,18 @@ func _noircir(alpha: float) -> void:
 	await t.finished
 
 
+## Est-on au volant ? Le HUD s'en sert pour n'afficher le compteur que la ou
+## il veut dire quelque chose. Une methode plutot qu'une lecture directe de
+## l'etat : deux sources de verite finissent toujours par diverger.
+func au_volant() -> bool:
+	return _etat == Etat.AU_VOLANT
+
+
+## Est-on a l'interieur d'une maison ?
+func dedans() -> bool:
+	return _etat == Etat.DEDANS
+
+
 func _afficher(texte: String) -> void:
 	if _invite != null:
 		_invite.text = texte

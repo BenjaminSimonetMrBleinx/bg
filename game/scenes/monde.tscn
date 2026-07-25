@@ -11,7 +11,7 @@
 ; Le vehicule demarre sur la chaussee verticale du couloir 0, qui court le
 ; long de -Z : il est donc deja dans le bon sens.
 
-[gd_scene load_steps=24 format=3 uid="uid://bgmonde0v0001"]
+[gd_scene load_steps=25 format=3 uid="uid://bgmonde0v0001"]
 
 [ext_resource type="Script" path="res://rendu/rendu_ps2.gd" id="1_rendu"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
@@ -33,6 +33,7 @@
 [ext_resource type="PackedScene" path="res://assets/personnages/jesse.glb" id="18_jesse"]
 [ext_resource type="Script" path="res://systemes/equipement.gd" id="19_equipement"]
 [ext_resource type="Script" path="res://systemes/roue.gd" id="20_roue"]
+[ext_resource type="Script" path="res://systemes/hud.gd" id="21_hud"]
 
 [sub_resource type="ViewportTexture" id="tex_ecran"]
 viewport_path = NodePath("Rendu")
@@ -168,6 +169,19 @@ size_flags_vertical = 3
 theme_override_colors/font_color = Color(0.949, 0.941, 0.914, 1)
 theme_override_font_sizes/font_size = 15
 autowrap_mode = 3
+
+[node name="Hud" type="Control" parent="Rendu/Interface"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("21_hud")
+reglages = ExtResource("2_reglages")
+vehicule = NodePath("../../Scene3D/Vehicule")
+equipement = NodePath("../../../Equipement")
+controleur = NodePath("../../../Controleur")
 
 ; La roue des outils. Sous le fondu, pour qu'un passage de porte la recouvre
 ; si elle etait restee ouverte.

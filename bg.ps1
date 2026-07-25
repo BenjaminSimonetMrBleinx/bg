@@ -9,6 +9,7 @@
                             personnages, maisons, objets
     .\bg.ps1 capture        rend une image hors ecran dans .tmp/
     .\bg.ps1 verif          verifie que le projet charge (headless)
+    .\bg.ps1 exporter       fabrique build\BG.exe, jouable sans rien installer
     .\bg.ps1 outils         affiche l etat de la chaine d outils
 
 .NOTES
@@ -18,7 +19,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('jouer', 'editeur', 'generer', 'capture', 'verif', 'test', 'son', 'sons', 'reparer', 'outils')]
+    [ValidateSet('jouer', 'editeur', 'generer', 'capture', 'verif', 'test', 'son', 'sons', 'reparer', 'exporter', 'outils')]
     [string]$Commande = 'jouer',
 
     [int]$Blocs = 2,
@@ -142,6 +143,51 @@ switch ($Commande) {
         Initialize-Projet
         & $GodotConsole --headless --path $Projet --script 'res://outils/verif.gd'
         exit $LASTEXITCODE
+    }
+
+    'exporter' {
+        Exiger $GodotConsole 'Godot (console)'
+        Initialize-Projet
+
+        # Les modeles d export sont un telechargement a part, absent de
+        # l installation de Godot. Sans eux l export echoue avec un message
+        # qui ne dit pas quoi faire, alors on le fait.
+        $version = '4.7.1.stable'
+        $modeles = Join-Path $env:APPDATA "Godot\export_templates\$version"
+        if (-not (Test-Path (Join-Path $modeles 'windows_release_x86_64.exe'))) {
+            Write-Host "`nLes modeles d export manquent (environ 1,2 Go)." -ForegroundColor Yellow
+            Write-Host "Telechargement, une seule fois..." -ForegroundColor Gray
+            $tpz = Join-Path $Tmp 'templates.tpz'
+            $sortieTpl = Join-Path $Tmp 'tpl'
+            New-Item -ItemType Directory -Force -Path $Tmp | Out-Null
+            $url = "https://github.com/godotengine/godot/releases/download/" +
+                   "4.7.1-stable/Godot_v4.7.1-stable_export_templates.tpz"
+            $ancien = $ProgressPreference
+            $ProgressPreference = 'SilentlyContinue'
+            try {
+                Invoke-WebRequest -Uri $url -OutFile $tpz -MaximumRedirection 5
+            } finally { $ProgressPreference = $ancien }
+            Remove-Item -Recurse -Force $sortieTpl -ErrorAction SilentlyContinue
+            Expand-Archive -Path $tpz -DestinationPath $sortieTpl -Force
+            New-Item -ItemType Directory -Force -Path $modeles | Out-Null
+            Copy-Item (Join-Path $sortieTpl 'templates\*') -Destination $modeles -Recurse -Force
+            Remove-Item $tpz -Force -ErrorAction SilentlyContinue
+            Write-Host "Modeles installes." -ForegroundColor Green
+        }
+
+        $dossier = Join-Path $Racine 'build'
+        New-Item -ItemType Directory -Force -Path $dossier | Out-Null
+        Write-Host "`n--- export Windows ---" -ForegroundColor Cyan
+        & $GodotConsole --headless --path $Projet --export-release 'Windows' | Out-Null
+        $exe = Join-Path $dossier 'BG.exe'
+        if (Test-Path $exe) {
+            $mo = [math]::Round((Get-Item $exe).Length / 1MB, 1)
+            Write-Host "`nOK  $exe  ($mo Mo)" -ForegroundColor Green
+            Write-Host "Il se lance seul, sans Godot ni rien d autre." -ForegroundColor Gray
+        } else {
+            Write-Host "`nL export n a rien produit." -ForegroundColor Red
+            exit 1
+        }
     }
 
     'son' {

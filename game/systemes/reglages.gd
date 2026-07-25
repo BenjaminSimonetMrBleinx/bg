@@ -276,3 +276,10 @@ extends Resource
 ## complet. Les jeux de l'epoque ralentissaient sans figer, ce qui garde le
 ## monde vivant derriere sans mettre le joueur en danger.
 @export_range(0.05, 1.0, 0.05) var roue_ralenti: float = 0.25
+
+
+@export_group("Affichage")
+
+## Duree d'affichage du nom d'un outil qu'on vient d'equiper, en secondes.
+## L'objet se voit dans la main : le nom n'a d'interet qu'a cet instant.
+@export_range(0.3, 6.0, 0.1) var hud_annonce: float = 1.6

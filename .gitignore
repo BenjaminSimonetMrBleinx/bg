@@ -2,8 +2,13 @@
 .godot/
 /game/.godot/
 /game/android/
-export_presets.cfg
 *.translation
+
+# export_presets.cfg est VOLONTAIREMENT suivi, contrairement a l'habitude.
+# Godot l'exclut par defaut parce qu'il peut contenir des mots de passe de
+# signature ou des chemins de machine ; le notre ne contient que des reglages
+# de build. Le partager evite que chacun refasse la configuration a la main
+# et produise un executable different.
 
 # Builds — on attache les exécutables aux releases, jamais au dépôt
 /build/

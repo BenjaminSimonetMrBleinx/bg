@@ -211,3 +211,57 @@ revolver apparaît » pour les quatre outils, y compris les mains vides : `visib
 Dix suites.
 
 **Prochain** : V9, HUD, export Windows, et le week-end est bouclé.
+
+---
+
+## V9 — HUD, export Windows, et le jalon est atteint
+
+Un compteur de vitesse en bas à droite, et le nom de l'outil annoncé une seconde et demie
+quand on l'équipe. **Rien d'autre.** La règle que je me suis donnée : n'afficher que ce qui
+change. Un compteur immobile pendant qu'on marche est du bruit, pas de l'information — donc
+il n'apparaît qu'au volant, et le nom de l'outil s'efface puisque l'objet se voit dans la
+main.
+
+Le HUD vit **dans** le SubViewport, donc rendu à 512 × 384 comme le reste. Un texte net
+superposé à une image basse résolution trahirait immédiatement un jeu moderne : les HUD PS2
+partageaient le même tampon que la 3D, et c'est ce qui leur donne ce grain. Chaque chiffre
+est cerné de noir, sinon il passe devant un phare et devient illisible une seconde sur trois.
+
+La vitesse est **lissée**. La valeur brute d'un `VehicleBody3D` oscille d'un ou deux km/h à
+chaque image ; affichée telle quelle, le compteur papillonne.
+
+**Le HUD interroge le contrôleur au lieu de deviner.** Il aurait été plus court de lire
+l'état directement, mais deux sources de vérité finissent toujours par diverger — et celle
+qui compte est celle qui décide.
+
+### L'exécutable
+
+`.\bg.ps1 exporter` produit `build\BG.exe`, 113 Mo, qui se lance seul. Les modèles d'export
+sont un téléchargement à part de 1,2 Go, absent de l'installation de Godot : sans eux
+l'export échoue avec un message qui ne dit pas quoi faire. La commande les installe elle-même
+la première fois.
+
+`export_presets.cfg` est **volontairement suivi par git**, contrairement à l'habitude. Godot
+l'exclut par défaut parce qu'il peut contenir des mots de passe de signature ; le nôtre ne
+contient que des réglages de build, et le partager évite que chacun refasse la configuration
+à la main et produise un exécutable différent.
+
+### Le jalon
+
+> « On conduit une voiture dans quatre blocs d'Albuquerque, de nuit, avec le rendu PS2, et
+> on peut descendre du véhicule. »
+
+Atteint, et dépassé : les deux maisons, leurs habitants, les conversations et la roue des
+outils n'en faisaient pas partie. Dix suites de tests, chacune écrite après un vrai bug.
+
+Ce qui a le plus servi, sur trois jours : **la boucle de capture hors écran**. Pouvoir rendre
+une image et la regarder sans déranger personne a trouvé le seuil perdu à l'export glTF,
+Jesse planté dans son plan de travail, le visage illisible de Skyler, les quatre orientations
+d'objets fausses. Aucune de ces choses ne provoquait d'erreur. Toutes se voyaient.
+
+Ce qui a le plus coûté : **les pannes silencieuses**. Le SubViewport sans écouteur audio, le
+repère glTF fusionné avec un matériau, le cache d'import qui sert l'ancienne version, un test
+qui validait toujours. Aucune ne plantait. C'est pour ça qu'il y a dix suites plutôt que zéro.
+
+**Reste à décider ensemble** : les blocs A, B, C et F de `00-questions.md`, toujours sans
+réponse. Rien de ce qui a été fait n'en dépendait — mais la suite, si.

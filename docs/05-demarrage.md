@@ -153,11 +153,31 @@ C'est exactement ce que fait `installer.ps1`.
 | Touche | Action |
 |---|---|
 | **W A S D** / flèches | Marcher, puis conduire |
-| **F** | Monter dans la voiture, en descendre |
+| **F** | Monter dans la voiture, en descendre — entrer chez quelqu'un, parler, sortir |
 | Espace | Frein à main |
+| **Tab** maintenu, ou clic droit | Roue des outils : viser avec gauche/droite, relâcher pour équiper |
 
 Les touches sont liées par **position physique** : elles se lisent `WASD` en
 QWERTY et QWERTZ, `ZQSD` en AZERTY, sans rien changer.
+
+**F fait toujours la chose la plus proche.** Devant la voiture il fait monter, devant une
+porte il fait entrer, devant quelqu'un il fait parler. Il n'y a rien à retenir de plus.
+
+**Rééquiper l'outil qu'on tient déjà le range.** C'est le seul moyen de revenir aux mains
+vides.
+
+## 4 bis. Fabriquer un exécutable
+
+```powershell
+.\bg.ps1 exporter        # produit build\BG.exe
+```
+
+Le fichier se lance seul, sans Godot ni rien d'autre — c'est celui qu'on envoie à
+quelqu'un qui veut juste essayer. Le premier export télécharge environ 1,2 Go de modèles
+Godot, une seule fois ; les suivants prennent quelques secondes.
+
+`build\` n'entre jamais dans git : un exécutable de 113 Mo commité resterait dans
+l'historique pour toujours.
 
 ## 5. Déposer ton travail — une seule commande
 
