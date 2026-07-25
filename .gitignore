@@ -1,0 +1,32 @@
+# Godot
+.godot/
+/game/.godot/
+/game/android/
+export_presets.cfg
+*.translation
+
+# Builds — on attache les exécutables aux releases, jamais au dépôt
+/build/
+/dist/
+*.exe
+*.pck
+*.zip
+
+# Blender — fichiers de sauvegarde automatique
+*.blend1
+*.blend2
+*.blend3
+*.blend@
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Temporaires du projet — tout ce qui est régénérable
+.tmp/
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
