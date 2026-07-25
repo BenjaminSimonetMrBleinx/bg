@@ -175,7 +175,7 @@ Sans ce filet, la peur de casser fait ralentir — et un vibe coding prudent per
 Des limites explicites, parce qu'un assistant serviable dépasse volontiers le périmètre demandé.
 
 - **Ne pas toucher `reglages.tres`** après sa création. Il appartient à Benjamin.
-- **Ne pas toucher `assets/`.** Ce sont les fichiers de Guillaume.
+- **Ne pas toucher `livraisons/`.** Ce sont les fichiers de Guillaume.
 - **Ne pas inventer une décision de design.** Si une question de game design se pose en cours de
   route, elle remonte — elle ne se tranche pas silencieusement dans du code.
 - **Ne pas refactorer sans demande.** Un refactor non sollicité casse la carte mentale que vous

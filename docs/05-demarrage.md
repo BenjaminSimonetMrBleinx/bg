@@ -131,7 +131,7 @@ Montre ce qui serait installé, sans rien toucher.
 cloné, mais autant comprendre pourquoi il insiste.
 
 Sans LFS, le dépôt se télécharge en apparence complet — sauf que les fichiers
-binaires ne sont pas les vrais. Ouvre `game/assets/textures/route.png` : au
+binaires ne sont pas les vrais. Ouvre `.tmp/textures/route.png` : au
 lieu d'une image, tu trouveras trois lignes de texte commençant par
 `version https://git-lfs.github.com/spec/v1`. C'est un *pointeur*. Blender et
 Godot refuseront de l'ouvrir, et tes envois de fichiers binaires échoueront
@@ -231,9 +231,9 @@ dans l'historique même après suppression.
 
 ```
 game/assets/sons/   tes WAV, par categorie
-assets/personnages/ tes .blend de personnages
-assets/vehicules/   tes .blend de vehicules
-assets/ville/       tes .blend de decor
+livraisons/personnages/ tes .blend de personnages
+livraisons/vehicules/   tes .blend de vehicules
+livraisons/ville/       tes .blend de decor
 assets-ref/         medias de la serie — IGNORE PAR GIT, n y compte pas
 ```
 

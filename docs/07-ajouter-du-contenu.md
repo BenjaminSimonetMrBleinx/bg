@@ -187,11 +187,11 @@ qu'il n'y paraît, et c'est le bon moment pour décider si ça vaut le coup.
 
 ## 5. Livrer un modèle 3D fait à la main
 
-Pose le fichier dans **`assets/modeles/`** — `.obj`, `.fbx`, `.dae`, `.stl` ou `.glb`, peu
+Pose le fichier dans **`livraisons/modeles/`** — `.obj`, `.fbx`, `.dae`, `.stl` ou `.glb`, peu
 importe. Puis :
 
 ```powershell
-blender -b -P outils/importer_modele.py -- --fichier assets/modeles/ton_fichier.obj `
+blender -b -P outils/importer_modele.py -- --fichier livraisons/modeles/ton_fichier.obj `
         --sortie game/assets/personnages/ton_nom.glb --hauteur 1.78
 ```
 
@@ -216,7 +216,7 @@ d'abord :
 
 ```powershell
 # 1. Déplier et peindre
-blender -b -P outils/texturer_modele.py -- --fichier assets/modeles/ton_fichier.obj `
+blender -b -P outils/texturer_modele.py -- --fichier livraisons/modeles/ton_fichier.obj `
         --sortie game/assets/personnages/ton_nom_texture.glb --qui walter --taille 512
 
 # 2. Découper en segments animables

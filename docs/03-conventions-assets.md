@@ -109,14 +109,26 @@ L'éclairage se pense en couverture, pas en géométrie.
 ### Nommage et emplacement
 
 ```
-assets/
-  ville/        modules de decor : immeubles, mobilier urbain
-  vehicules/    caisses et roues
-  personnages/  Walter, Jesse, PNJ
-  props/        objets tenus en main : arme, livre, sachet, chapeau
-  textures/     PNG 128 px
-  sons/         WAV mono pour le 3D, Ogg stereo pour la musique
+livraisons/     ce qu on DEPOSE, pas ce que le jeu lit
+  sons/         WAV mono pour le 3D, stereo pour la musique
+  voix/         prises de dialogue, avant decoupage
+  modeles/      .obj, .fbx, .blend livres a la main
   LICENCES.md   origine et licence de tout asset externe
+```
+
+Un fichier posé dans `livraisons/sons/` ou `livraisons/voix/` est **rangé tout seul** dans
+`game/assets/` au prochain `.\go.ps1`. Personne n'a à retenir où Godot les lit.
+
+Côté jeu, les sons sont classés par mécanisme, pas par auteur :
+
+```
+game/assets/sons/
+  vehicule/     moteur, portieres, klaxon, chocs, pneus
+  pas/          selon la surface
+  maison/       portes et ambiances interieures
+  interface/    roue des outils, objets equipes
+  telephone/    sonnerie
+  ambiance/     nappes exterieures
 ```
 
 Fichiers en minuscules avec des underscores : `imm_commercial_a.blend`,

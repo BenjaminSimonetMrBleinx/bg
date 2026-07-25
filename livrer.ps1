@@ -131,7 +131,7 @@ Puis relance ce script.
 Bien "Tu es identifie comme $nom <$mail>"
 
 # Un clone fait sans LFS laisse des pointeurs a la place des images.
-$temoin = "game/assets/textures/route.png"
+$temoin = "game/assets/ville/ville.glb"
 if (Test-Path $temoin) {
     $taille = (Get-Item $temoin).Length
     if ($taille -lt 1000) {
@@ -172,12 +172,51 @@ Bien "A jour avec GitHub"
 
 # ------------------------------------------------------- 3. ce que tu vas envoyer
 
-# Les sons deposes dans assets/sons sont remis la ou Godot les lit. Autant
+# Le dossier de depot s appelait "assets" avant d etre renomme "livraisons",
+# parce qu il portait exactement le meme nom que celui du jeu. Quelqu un qui
+# depose ses fichiers AVANT de recuperer cette version les pose forcement dans
+# l ancien dossier — et le script qui tourne alors est encore l ancien, donc il
+# ne peut pas le savoir. On rattrape ici, au passage suivant : c est gratuit
+# quand il n y a rien a rattraper, et ca evite un fichier qui dort sans que
+# personne ne comprenne pourquoi il n arrive jamais dans le jeu.
+if (Test-Path "assets") {
+    $restes = @(Get-ChildItem "assets" -Recurse -File -ErrorAction SilentlyContinue)
+    foreach ($f in $restes) {
+        $relatif = $f.FullName.Substring((Resolve-Path "assets").Path.Length).TrimStart('\')
+        $cible = Join-Path "livraisons" $relatif
+        New-Item -ItemType Directory -Force -Path (Split-Path $cible) | Out-Null
+        Move-Item $f.FullName $cible -Force
+        Info "recupere : assets\$relatif -> livraisons\$relatif"
+    }
+    Remove-Item "assets" -Recurse -Force -ErrorAction SilentlyContinue
+    if ($restes.Count -gt 0) {
+        Bien "$($restes.Count) fichier(s) recuperes de l ancien dossier assets\"
+    }
+}
+
+# Meme rattrapage cote jeu : les sons vivaient a plat dans game/assets/sons/,
+# ils sont maintenant classes par mecanisme. Un fichier arrive a la racine n est
+# pas perdu, mais il n est branche sur rien : on le signale au lieu de le
+# deviner, parce que deviner mal reviendrait a le ranger la ou personne ne le
+# cherchera.
+# Le chemin finit par \* : sans joker, -Include sans -Recurse ne renvoie
+# jamais rien, en silence. Et un controle qui ne trouve jamais rien ressemble
+# exactement a un controle qui passe.
+$vrac = @(Get-ChildItem "game/assets/sons/*" -File -Include *.wav,*.ogg `
+          -ErrorAction SilentlyContinue)
+if ($vrac.Count -gt 0) {
+    Souci "$($vrac.Count) son(s) sont a la racine de game\assets\sons\ :"
+    $vrac | ForEach-Object { Info "  $($_.Name)" }
+    Info "Ils doivent aller dans un sous-dossier — vehicule, pas, maison,"
+    Info "interface, telephone ou ambiance. Voir docs/03-conventions-assets.md"
+}
+
+# Les sons deposes dans livraisons/sons sont remis la ou Godot les lit. Autant
 # que le script s en charge plutot que d exiger qu on retienne le chemin.
-if (Test-Path "assets/sons") {
-    $audio = @(Get-ChildItem "assets/sons" -Recurse -File -Include *.wav,*.ogg,*.mp3 -ErrorAction SilentlyContinue)
+if (Test-Path "livraisons/sons") {
+    $audio = @(Get-ChildItem "livraisons/sons" -Recurse -File -Include *.wav,*.ogg,*.mp3 -ErrorAction SilentlyContinue)
     foreach ($f in $audio) {
-        $relatif = $f.FullName.Substring((Resolve-Path "assets/sons").Path.Length).TrimStart('\')
+        $relatif = $f.FullName.Substring((Resolve-Path "livraisons/sons").Path.Length).TrimStart('\')
         $cible = Join-Path "game/assets/sons" $relatif
         New-Item -ItemType Directory -Force -Path (Split-Path $cible) | Out-Null
         Move-Item $f.FullName $cible -Force
@@ -189,7 +228,7 @@ if (Test-Path "assets/sons") {
 # Meme principe pour les voix, mais elles ont besoin d etre converties et
 # RENOMMEES : le jeu les retrouve par une empreinte du texte, que personne ne
 # doit calculer a la main. On depose des numeros, le script fait le reste.
-$depot_voix = @(Get-ChildItem "assets/voix" -File -Include *.wav,*.mp3,*.ogg,*.flac `
+$depot_voix = @(Get-ChildItem "livraisons/voix" -File -Include *.wav,*.mp3,*.ogg,*.flac `
                 -Recurse -ErrorAction SilentlyContinue)
 if ($depot_voix.Count -gt 0) {
     Info "$($depot_voix.Count) enregistrement(s) de voix a integrer..."
@@ -234,13 +273,13 @@ if ($mp3) {
     Info "Le projet attend du WAV 48 kHz 16 bits. Voir docs/04-brief-son.md"
 }
 
-# Chacun sa voie : assets/ et docs/ pour les livraisons, game/ et outils/
+# Chacun sa voie : livraisons/ et docs/ pour ce qu on depose, game/ et outils/
 # pour le code et ce qui en est genere. Rien n est bloque - il arrive tout a
 # fait qu on doive toucher a l autre moitie - mais un binaire ne se fusionne
 # pas : si deux personnes regenerent le meme .glb, l un des deux travaux est
 # perdu au moment de resoudre le conflit. Autant le voir avant d envoyer.
 $hors_voie = @($fichiers | Where-Object {
-    $_.Fichier -notmatch '^(assets|docs)/' -and $_.Fichier -notmatch '^[^/]+$'
+    $_.Fichier -notmatch '^(livraisons|docs)/' -and $_.Fichier -notmatch '^[^/]+$'
 })
 $generes = @($hors_voie | Where-Object {
     $_.Fichier -match '\.(glb|import|uid)$' -or $_.Fichier -match '^game/assets/'

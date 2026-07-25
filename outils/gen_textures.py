@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Genere les textures 128 px du jeu.
 
-    python outils/gen_textures.py [--sortie assets/textures]
+    python outils/gen_textures.py [--sortie .tmp/textures]
 
 Aucune dependance : l'encodeur PNG utilise uniquement la bibliotheque standard.
 C'est volontaire — une dependance de moins a installer sur le poste de
@@ -602,7 +602,7 @@ CARROSSERIES = {
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--sortie", default="game/assets/textures")
+    ap.add_argument("--sortie", default=".tmp/textures")
     ap.add_argument("--taille", type=int, default=128)
     ap.add_argument("--moment", default="nuit", choices=["jour", "nuit"],
                     help="l'etat des vitres est cuit dans la texture")

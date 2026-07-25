@@ -60,7 +60,7 @@ param(
     # repliques a enregistrer. C est ce qu on donne a celui qui prete sa voix.
     [switch]$Script,
 
-    # Pour 'voix' : range les enregistrements deposes dans assets\voix\.
+    # Pour 'voix' : range les enregistrements deposes dans livraisons\voix\.
     [switch]$Integrer,
 
     # Pour 'voix' : decoupe une longue prise en segments parles. C est le cas
@@ -218,14 +218,14 @@ switch ($Commande) {
         Initialize-Projet
         New-Item -ItemType Directory -Force -Path $Tmp | Out-Null
         $sortie = Join-Path $Tmp 'capture.png'
-        & $GodotConsole --path $Projet --script 'res://outils/capture.gd' -- --sortie $sortie --frames 150
+        & $GodotConsole --path $Projet --script 'res://verifs/capture.gd' -- --sortie $sortie --frames 150
         if (Test-Path $sortie) { Write-Host "-> $sortie" -ForegroundColor Green }
     }
 
     'verif' {
         Exiger $GodotConsole 'Godot (console)'
         Initialize-Projet
-        & $GodotConsole --headless --path $Projet --script 'res://outils/verif.gd'
+        & $GodotConsole --headless --path $Projet --script 'res://verifs/verif.gd'
         exit $LASTEXITCODE
     }
 
@@ -316,7 +316,7 @@ switch ($Commande) {
         # sur le fichier, l import, les bus, le peripherique et le volume.
         Exiger $GodotConsole 'Godot (console)'
         Initialize-Projet
-        & $GodotConsole --path $Projet --script 'res://outils/diag_son.gd'
+        & $GodotConsole --path $Projet --script 'res://verifs/diag_son.gd'
         exit $LASTEXITCODE
     }
 
@@ -366,58 +366,58 @@ switch ($Commande) {
         # coute quelques secondes, une suite oubliee coute un bug livre.
         $suites = @(
             @{ cle = 'sens'; nom = 'sens de conduite'
-               script = 'res://outils/test_sens.gd'
+               script = 'res://verifs/test_sens.gd'
                couvre = @('systemes/vehicule', 'gen_voiture', 'scenes/vehicule') }
             @{ cle = 'conduite'; nom = 'tenue de route'
-               script = 'res://outils/test_conduite.gd'
+               script = 'res://verifs/test_conduite.gd'
                couvre = @('systemes/vehicule', 'scenes/vehicule', 'systemes/reglages') }
             @{ cle = 'virage'; nom = 'comportement en virage'
-               script = 'res://outils/test_virage.gd'
+               script = 'res://verifs/test_virage.gd'
                couvre = @('systemes/vehicule', 'scenes/vehicule', 'systemes/reglages') }
             @{ cle = 'montee'; nom = 'montee et descente'
-               script = 'res://outils/test_montee.gd'
+               script = 'res://verifs/test_montee.gd'
                couvre = @('systemes/controleur', 'systemes/vehicule', 'systemes/joueur', 'scenes/joueur') }
             @{ cle = 'marche'; nom = 'orientation de marche'
-               script = 'res://outils/test_marche.gd'
-               couvre = @('systemes/joueur', 'systemes/silhouette', 'gen_personnage', 'scenes/joueur', 'segmenter_modele') }
+               script = 'res://verifs/test_marche.gd'
+               couvre = @('systemes/joueur', 'systemes/silhouette', 'gen_personnage', 'scenes/joueur', 'segmenter_modele', 'assets/personnages') }
             @{ cle = 'camera'; nom = 'boucle camera'
-               script = 'res://outils/test_camera.gd'
+               script = 'res://verifs/test_camera.gd'
                couvre = @('systemes/camera_poursuite', 'systemes/joueur', 'scenes/joueur') }
             @{ cle = 'trottoir'; nom = 'franchissement de bordure'
-               script = 'res://outils/test_trottoir.gd'
+               script = 'res://verifs/test_trottoir.gd'
                couvre = @('systemes/joueur', 'gen_ville', 'systemes/camera_poursuite', 'scenes/joueur') }
             @{ cle = 'audio'; nom = 'audio'
-               script = 'res://outils/test_audio.gd'
+               script = 'res://verifs/test_audio.gd'
                couvre = @('systemes/audio', 'assets/sons', 'default_bus_layout') }
             @{ cle = 'moteur'; nom = 'son du moteur'
-               script = 'res://outils/test_moteur.gd'
+               script = 'res://verifs/test_moteur.gd'
                couvre = @('systemes/moteur_audio', 'systemes/vehicule', 'rendu/rendu_ps2', 'assets/sons') }
             @{ cle = 'maison'; nom = 'entrer dans les maisons'
-               script = 'res://outils/test_maison.gd'
+               script = 'res://verifs/test_maison.gd'
                couvre = @('systemes/maison', 'systemes/controleur', 'gen_maison') }
             @{ cle = 'dialogue'; nom = 'habitants et dialogue'
-               script = 'res://outils/test_dialogue.gd'
+               script = 'res://verifs/test_dialogue.gd'
                couvre = @('systemes/dialogue', 'systemes/pnj', 'systemes/maison', 'donnees/dialogues') }
             @{ cle = 'outils'; nom = 'roue des outils'
-               script = 'res://outils/test_outils.gd'
+               script = 'res://verifs/test_outils.gd'
                couvre = @('systemes/roue', 'systemes/equipement', 'donnees/outils', 'gen_objets', 'scenes/joueur') }
             @{ cle = 'decor'; nom = 'mobilier urbain'
-               script = 'res://outils/test_decor.gd'
+               script = 'res://verifs/test_decor.gd'
                couvre = @('systemes/ville', 'gen_decor', 'gen_ville', 'systemes/maison') }
             @{ cle = 'jour'; nom = 'jour et nuit'
-               script = 'res://outils/test_jour.gd'
+               script = 'res://verifs/test_jour.gd'
                couvre = @('rendu/rendu_ps2', 'systemes/reglages', 'systemes/ville', 'gen_textures', 'donnees/monde') }
             @{ cle = 'murs'; nom = 'camera et murs'
-               script = 'res://outils/test_camera_murs.gd'
+               script = 'res://verifs/test_camera_murs.gd'
                couvre = @('systemes/camera_poursuite', 'systemes/maison') }
             @{ cle = 'voix'; nom = 'voix des dialogues'
-               script = 'res://outils/test_voix.gd'
+               script = 'res://verifs/test_voix.gd'
                couvre = @('systemes/dialogue', 'donnees/dialogues', 'donnees/voix', 'assets/voix', 'gen_voix') }
             @{ cle = 'souris'; nom = 'visee a la souris'
-               script = 'res://outils/test_souris.gd'
+               script = 'res://verifs/test_souris.gd'
                couvre = @('systemes/camera_poursuite', 'systemes/controleur') }
             @{ cle = 'foule'; nom = 'passants'
-               script = 'res://outils/test_foule.gd'
+               script = 'res://verifs/test_foule.gd'
                couvre = @('systemes/foule', 'systemes/pieton', 'systemes/silhouette', 'gen_ville') }
         )
 

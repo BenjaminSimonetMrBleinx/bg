@@ -103,7 +103,7 @@ def arguments() -> argparse.Namespace:
     ap = argparse.ArgumentParser(description="Generateur de ville")
     ap.add_argument("--blocs", type=int, default=2, help="ilots par cote")
     ap.add_argument("--seed", type=int, default=505)
-    ap.add_argument("--textures", default="game/assets/textures")
+    ap.add_argument("--textures", default=".tmp/textures")
     ap.add_argument("--sortie", default="game/assets/ville/ville.glb")
     return ap.parse_args(argv)
 
@@ -128,17 +128,22 @@ def materiau(nom: str, dossier: Path) -> bpy.types.Material:
             bsdf.inputs[champ].default_value = 0.0
 
     png = dossier / f"{nom}.png"
-    if png.exists():
-        img = bpy.data.images.load(str(png), check_existing=True)
-        img.pack()                                  # embarquee dans le .glb
-        tex = arbre.nodes.new("ShaderNodeTexImage")
-        tex.image = img
-        tex.interpolation = "Linear"                # bilineaire : le flou PS2
-        tex.extension = "REPEAT"
-        tex.location = (-420, 220)
-        arbre.links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
-    else:
-        print(f"  ! texture absente : {png}")
+    if not png.exists():
+        # La palette vit dans .tmp/, hors du projet Godot : elle n est qu une
+        # matiere premiere, cuite dans le .glb a l export. Sans elle le modele
+        # sortait gris SANS RIEN DIRE, et on cherchait le probleme dans Blender.
+        raise SystemExit(
+            f"texture absente : {png}\n"
+            f"La palette se refabrique : .\\bg.ps1 generer"
+        )
+    img = bpy.data.images.load(str(png), check_existing=True)
+    img.pack()                                  # embarquee dans le .glb
+    tex = arbre.nodes.new("ShaderNodeTexImage")
+    tex.image = img
+    tex.interpolation = "Linear"                # bilineaire : le flou PS2
+    tex.extension = "REPEAT"
+    tex.location = (-420, 220)
+    arbre.links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
     return mat
 
 

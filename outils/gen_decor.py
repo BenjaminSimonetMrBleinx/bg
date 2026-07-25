@@ -31,7 +31,7 @@ def arguments() -> argparse.Namespace:
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     ap = argparse.ArgumentParser(description="Generateur de decor")
     ap.add_argument("--nom", default="tous")
-    ap.add_argument("--textures", default="game/assets/textures")
+    ap.add_argument("--textures", default=".tmp/textures")
     ap.add_argument("--sortie", default="game/assets/decor")
     return ap.parse_args(argv)
 
@@ -45,13 +45,20 @@ def materiau(nom: str, dossier: Path) -> bpy.types.Material:
     principal.inputs["Metallic"].default_value = 0.0
 
     png = dossier / f"{nom}.png"
-    if png.exists():
-        img = bpy.data.images.load(str(png), check_existing=True)
-        img.alpha_mode = "NONE"
-        tex = arbre.nodes.new("ShaderNodeTexImage")
-        tex.image = img
-        tex.interpolation = "Linear"
-        arbre.links.new(principal.inputs["Base Color"], tex.outputs["Color"])
+    if not png.exists():
+        # La palette vit dans .tmp/, hors du projet Godot : elle n est qu une
+        # matiere premiere, cuite dans le .glb a l export. Sans elle le modele
+        # sortait gris SANS RIEN DIRE, et on cherchait le probleme dans Blender.
+        raise SystemExit(
+            f"texture absente : {png}\n"
+            f"La palette se refabrique : .\\bg.ps1 generer"
+        )
+    img = bpy.data.images.load(str(png), check_existing=True)
+    img.alpha_mode = "NONE"
+    tex = arbre.nodes.new("ShaderNodeTexImage")
+    tex.image = img
+    tex.interpolation = "Linear"
+    arbre.links.new(principal.inputs["Base Color"], tex.outputs["Color"])
     return mat
 
 

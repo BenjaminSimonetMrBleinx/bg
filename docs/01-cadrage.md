@@ -128,7 +128,7 @@ véhicule et le son du premier jalon. Guillaume n'est plus un point de blocage �
 la voiture correctement ensuite, pendant que le jalon roule avec un placeholder légitime.
 
 **Discipline unique à tenir :** noter la licence de chaque asset importé dans
-`assets/LICENCES.md`. CC0 ne demande rien, CC-BY demande une attribution.
+`livraisons/LICENCES.md`. CC0 ne demande rien, CC-BY demande une attribution.
 
 ### Ce que coûte Godot, honnêtement
 
@@ -185,7 +185,7 @@ derrière quelqu'un d'autre : c'est la seule contrainte réelle d'un projet à d
 
 ```bash
 blender --background --python outils/gen_ville.py -- --blocs 4 --seed 505
-   # génère géométrie, UV, matériaux · exporte assets/ville/ville.glb
+   # génère géométrie, UV, matériaux · exporte livraisons/ville/ville.glb
 
 blender --background --python outils/rendu_check.py -- --cam survol
    # sort .tmp/check.png en 640×360, relu et corrigé en boucle

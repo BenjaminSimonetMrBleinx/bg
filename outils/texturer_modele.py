@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Deplie un personnage d'un seul bloc et lui peint une texture.
 
-    blender -b -P outils/texturer_modele.py -- --fichier assets/modeles/walt_sculpte.obj \\
+    blender -b -P outils/texturer_modele.py -- --fichier livraisons/modeles/walt_sculpte.obj \\
             --sortie game/assets/personnages/walt_texture.glb --qui walter
 
 Le probleme, et la facon de le contourner

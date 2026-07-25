@@ -10,18 +10,28 @@ temps.
 
 ## À brancher — du travail déjà livré qui dort
 
-**Les sons de Guillaume ne sont pas tous utilisés.** Trois fichiers sont dans le dépôt et
-n'existent pour aucun mécanisme :
+**Guillaume a livré 28 sons de plus, et aucun n'est branché.** Ils sont rangés par
+mécanisme dans `game/assets/sons/`. La plupart se posent sur du code qui existe déjà :
 
-| Fichier | Ce qu'il attend |
-|---|---|
-| `vehicule/roulement_asphalte.wav` | Un roulement continu dont le volume et la hauteur suivent la vitesse. C'est ce qui donne le poids d'une voiture, bien plus que le moteur seul. |
-| `vehicule/pneus_crissement.wav` | Le frein à main, et le moment où l'arrière décroche. Il faut lire le `skidinfo` des roues arrière. |
-| `vehicule/choc_leger_01.wav` | Une collision. **Rien ne détecte les chocs aujourd'hui** — c'est le seul des trois qui demande un mécanisme neuf. |
+| Dossier | Fichiers | Où ça se branche |
+|---|---|---|
+| `interface/` | `open_menu_item`, `close_menu_item`, `menu_item_hold`, `select_item01..04`, `stp_time` | `roue.gd` — ouverture, crans, validation, fermeture |
+| `interface/` | `item_book`, `item_hat`, `item_meth` | `equipement.gd`, au moment où l'objet arrive en main |
+| `maison/` | `ouvre_porte`, `ferme_porte` | `maison.gd`, sur le seuil |
+| `maison/` | `ambiance_indoors_house` | `audio.gd` a déjà `ambiance(nom)` et les ambiances intérieures |
+| `vehicule/` | `portiere_ouverture`, `portiere_fermeture`, `sit_car` | `controleur.gd`, sur `_monter` et `_descendre` |
+| `vehicule/` | `klaxon` | une action neuve, à ajouter dans `project.godot` |
+| `vehicule/` | `roulement_asphalte` | volume et hauteur suivent la vitesse. C'est ça qui donne le poids d'une voiture, bien plus que le moteur |
+| `vehicule/` | `pneus_crissement` | frein à main et décrochage de l'arrière : lire le `skidinfo` des roues arrière |
+| `pas/` | `steps_beton`, `step_indoors01` | `silhouette.gd`, aux passages de phase du cycle de marche |
+| `telephone/` | `phone_ring` | attend la fonctionnalité téléphone, plus bas |
+
+**Une seule famille demande un mécanisme neuf** : `vehicule/choc_leger_01..04` et
+`choc_fort_01..04`. **Rien ne détecte les collisions aujourd'hui.**
 
 **Vérifier l'alignement des voix de la scène de la cuisine.** Les dix répliques ont été
 affectées séquentiellement, sans que personne n'ait écouté. Si c'est décalé, redécouper avec
-un autre seuil ; les originaux sont archivés dans `assets/voix/originaux/`.
+un autre seuil ; les originaux sont archivés dans `livraisons/voix/originaux/`.
 
 ---
 
@@ -45,7 +55,7 @@ un bandeau : « Vous devez être en voiture pour vous rendre ici ».
 
 ## Le modèle sculpté de Walt
 
-`assets/modeles/walt_sculpte.obj`, livré par Benjamin. 1088 faces, converti en
+`livraisons/modeles/walt_sculpte.obj`, livré par Benjamin. 1088 faces, converti en
 `game/assets/personnages/walt_sculpte.glb`. Il se lit immédiatement comme Walter White, ce
 que notre personnage généré ne fait pas.
 

@@ -1,10 +1,22 @@
-Depose les WAV ici, dans le sous-dossier correspondant.
+Ce dossier est celui que GODOT lit. On n y depose pas a la main.
 
-Format : 48 kHz / 16 bits.
-  - MONO pour tout ce qui est positionne dans l espace (moteur, portes, pas,
-    lampadaires, PNJ)
+Pour livrer un son : pose-le dans livraisons\sons\, puis .\go.ps1
+Il arrive ici tout seul, et son format est verifie au passage.
+
+Le classement est par MECANISME, pas par auteur ni par date :
+
+  vehicule\    moteur, portieres, klaxon, chocs, pneus, roulement
+  pas\         selon la surface
+  maison\      portes et ambiances interieures
+  interface\   roue des outils, objets equipes
+  telephone\   sonnerie
+  ambiance\    nappes exterieures
+  voix\        repliques de dialogue, nommees par empreinte du texte
+
+Format : 48 kHz / 16 bits, PCM.
+  - MONO pour tout ce qui est positionne dans l espace
   - STEREO uniquement pour la musique et les ambiances non positionnees
 
 Livre SEC : pas de reverb, pas de filtre de distance. Godot s en charge.
 
-La liste complete, avec durees et intentions : docs/04-brief-son.md
+La liste complete, avec durees et intentions : docs\04-brief-son.md

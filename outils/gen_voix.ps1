@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Fabrique un fichier audio par replique de dialogues.json.
 
@@ -24,7 +24,7 @@ param(
     [switch]$Voix,
     # Ecrit le script d enregistrement pour un comedien, et sort.
     [switch]$Script,
-    # Integre les fichiers deposes dans assets\voix\, et sort.
+    # Integre les fichiers deposes dans livraisons\voix\, et sort.
     [switch]$Integrer,
     # Decoupe une longue prise en segments parles, et sort.
     [string]$Decouper = '',
@@ -125,7 +125,7 @@ Write-Host "`n$($repliques.Count) replique(s) dans dialogues.json" -ForegroundCo
 # des NUMEROS et enregistre 001.wav, 002.wav... C est ainsi que se fait un
 # vrai enregistrement, et c est la seule convention qu on puisse suivre a
 # l oreille sans se tromper.
-$Depot = Join-Path $Racine 'assets\voix'
+$Depot = Join-Path $Racine 'livraisons\voix'
 $Index = Join-Path $Depot 'index.json'
 
 function Write-ScriptVoix {
@@ -154,7 +154,7 @@ reecrit a chaque fois que les dialogues changent.
 1. Enregistre **un fichier par ligne**, dans l'ordre ou dans le desordre.
 2. Nomme-le avec son **numero** : ``001.wav``, ``002.wav``, ``017.wav``.
    Le reste du nom est libre : ``012_jesse_yo.wav`` marche aussi.
-3. Depose-les dans **``assets\voix\``** a la racine du depot.
+3. Depose-les dans **``livraisons\voix\``** a la racine du depot.
 4. Lance ``.\livrer.ps1`` — ils sont convertis, renommes et ranges tout seuls.
 
 Tu n'as **rien d'autre a faire**. Pas de format impose, pas de dossier a
@@ -290,7 +290,7 @@ function Split-Prise([string]$chemin) {
     Write-Host "-> $sortie" -ForegroundColor Gray
     Write-Host @"
 Ecoute-les, puis renomme chacun avec le numero de sa replique
-(voir docs\08-script-voix.md) et pose-le dans assets\voix\ :
+(voir docs\08-script-voix.md) et pose-le dans livraisons\voix\ :
 
     seg_002.wav  ->  001.wav
     seg_003.wav  ->  002.wav

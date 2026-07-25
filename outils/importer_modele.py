@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Convertit un modele livre (.obj, .fbx, .dae, .stl, .glb) en .glb du projet.
 
-    blender -b -P outils/importer_modele.py -- --fichier "assets/modeles/walt.obj" \\
+    blender -b -P outils/importer_modele.py -- --fichier "livraisons/modeles/walt.obj" \\
             --hauteur 1.78 --sortie game/assets/personnages/walt_sculpte.glb
 
 Ce que fait la conversion, et pourquoi chaque etape est necessaire :
@@ -46,7 +46,7 @@ def arguments() -> argparse.Namespace:
     ap.add_argument("--lacet", type=float, default=0.0,
                     help="rotation autour de la verticale, en degres")
     ap.add_argument("--couleur", default="",
-                    help="texture a appliquer, prise dans game/assets/textures")
+                    help="texture a appliquer, prise dans .tmp/textures")
     return ap.parse_args(argv)
 
 
@@ -149,7 +149,7 @@ def main() -> None:
     bpy.ops.object.transform_apply(location=True)
 
     if a.couleur:
-        png = racine / "game/assets/textures" / f"{a.couleur}.png"
+        png = racine / ".tmp/textures" / f"{a.couleur}.png"
         mat = bpy.data.materials.new(a.couleur)
         mat.use_nodes = True
         principal = mat.node_tree.nodes["Principled BSDF"]

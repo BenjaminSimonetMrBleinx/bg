@@ -10,7 +10,7 @@ utile des quatre : c'est celle qu'on relit dans trois semaines.
 **Voulu** : un squelette Godot qui charge, le rendu PS2 en place, et surtout savoir si
 Claude peut produire une image de Godot tout seul.
 
-**Obtenu** : les deux. `godot --path game --script res://outils/capture.gd` rend une image
+**Obtenu** : les deux. `godot --path game --script res://verifs/capture.gd` rend une image
 512×288 via Vulkan et l'enregistre. La boucle « génère, rends, regarde, corrige » est donc
 fermée côté Godot aussi, pas seulement côté Blender.
 
@@ -625,7 +625,7 @@ Personne ne doit calculer une empreinte à la main. `.\bg.ps1 voix -Script` écr
 `docs/08-script-voix.md` : la liste **numérotée** des répliques, comme un vrai script
 d'enregistrement.
 
-On enregistre `001.wav`, `002.wav`, on dépose dans `assets/voix/`, et `.\livrer.ps1` convertit,
+On enregistre `001.wav`, `002.wav`, on dépose dans `livraisons/voix/`, et `.\livrer.ps1` convertit,
 renomme et range. Le numéro est la première suite de chiffres du nom : `012_jesse_yo.wav`
 marche aussi bien que `12.wav`. Un fichier sans numéro est laissé en place avec un
 avertissement, jamais deviné.
@@ -646,7 +646,7 @@ Seize suites.
 la prise d'origine apres conversion. Ce qui part dans le jeu est ecrase, compresse et ramene a
 22 kHz — c'est une impasse, on ne remonte pas de la. Quelqu'un qui depose sa seule copie
 l'aurait perdue et aurait du refaire la prise. Les originaux sont maintenant archives dans
-`assets/voix/originaux/`, suivis par LFS, et le scan les exclut pour ne pas les reintegrer en
+`livraisons/voix/originaux/`, suivis par LFS, et le scan les exclut pour ne pas les reintegrer en
 boucle a chaque livraison.
 
 ---

@@ -138,17 +138,30 @@ dans un fichier de données :
 
 ## Structure
 
+Une règle, et elle décide de tout : **`game/` ne contient que ce que le jeu charge.**
+Le reste est de la matière première ou de l'outillage.
+
 ```
-docs/        cadrage, méthode, journal
-assets/      dépôt de sources (Blender, sons) avant intégration
-game/        projet Godot
-  assets/    textures, modèles, sons — générés ou livrés
-  donnees/   dialogues et outils, en JSON
-  systemes/  le code du jeu
-  outils/    les suites de tests, exécutées par .\bg.ps1 test
-outils/      générateurs Python et Blender
-build/       l executable — jamais dans git
+game/          le projet Godot
+  assets/      modèles, sons, voix — ce qui part dans l'exécutable
+  donnees/     dialogues et outils, en JSON
+  systemes/    le code du jeu
+  scenes/      les scènes
+  rendu/       le shader PS2
+  verifs/      les suites de tests, jouées par .\bg.ps1 test
+outils/        les générateurs Python et Blender qui fabriquent les assets
+livraisons/    ce que Guillaume dépose, et les sources pas encore intégrées
+docs/          cadrage, méthode, journal, backlog
+.tmp/          tout ce qui se refabrique — jamais dans git
+build/         l'exécutable — jamais dans git
 ```
+
+Deux pièges que ces noms évitent, et qui coûtaient une hésitation à chaque fois :
+
+- `assets/` existait **deux fois**, à la racine et dans `game/`, avec deux rôles opposés.
+  Celui de la racine s'appelle maintenant `livraisons/` : on y **dépose**, on n'y lit pas.
+- `outils/` aussi, à la racine et dans `game/`. Celui de Godot s'appelle `verifs/`, ce
+  qu'il a toujours été.
 
 ## Mise en route sur une machine neuve
 

@@ -8,7 +8,7 @@ reecrit a chaque fois que les dialogues changent.
 1. Enregistre **un fichier par ligne**, dans l'ordre ou dans le desordre.
 2. Nomme-le avec son **numero** : `001.wav`, `002.wav`, `017.wav`.
    Le reste du nom est libre : `012_jesse_yo.wav` marche aussi.
-3. Depose-les dans **`assets\voix\`** a la racine du depot.
+3. Depose-les dans **`livraisons\voix\`** a la racine du depot.
 4. Lance `.\livrer.ps1` — ils sont convertis, renommes et ranges tout seuls.
 
 Tu n'as **rien d'autre a faire**. Pas de format impose, pas de dossier a
