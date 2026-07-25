@@ -139,6 +139,17 @@ Rien n est perdu et rien n a ete envoye. Envoie une copie d ecran de ce
 message a Benjamin, il demelera en deux minutes.
 "@
 }
+# On reclame systematiquement les objets LFS manquants. C'est instantane
+# quand tout est deja la, et ca evite le symptome le plus deroutant du depot :
+# un fichier present mais qui n'est qu'un pointeur texte de 130 octets. Godot
+# ne l'ouvre pas, aucune erreur visible, le son ne sort simplement pas.
+$r_lfspull = Invoke-Git lfs pull
+Select-Utile $r_lfspull.Lignes | ForEach-Object { Info $_ }
+if ($r_lfspull.Code -ne 0) {
+    Souci "Recuperation des fichiers binaires incomplete."
+    Info  "Les images ou les sons risquent de manquer. Reessaie plus tard."
+}
+
 Bien "A jour avec GitHub"
 
 # ------------------------------------------------------- 3. ce que tu vas envoyer

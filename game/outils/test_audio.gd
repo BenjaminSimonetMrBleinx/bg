@@ -7,7 +7,9 @@
 # bus existent, que la nappe tourne, et qu'elle boucle.
 extends SceneTree
 
-const POSE := 60
+# Assez long pour que le fondu d'ouverture soit termine : c'est justement
+# ce qu'on veut controler.
+const POSE := 300
 const BUS := ["Master", "Ambiance", "Effets", "Musique", "Interface"]
 
 var _n := 0
@@ -50,6 +52,11 @@ func _process(_d: float) -> bool:
 			_verifier(lecteur.stream != null, "un flux est assigne")
 			_verifier(lecteur.playing, "la nappe tourne")
 			_verifier(lecteur.bus == "Ambiance", "elle sort sur le bus Ambiance")
+			# Le controle qui compte : la nappe demarre a -60 dB et remonte
+			# par fondu. Si le fondu ne tourne pas, elle "joue" sans qu'on
+			# entende quoi que ce soit — et rien ne le signale.
+			_verifier(lecteur.volume_db > -12.0,
+					"le fondu d'ouverture est monte (%.1f dB)" % lecteur.volume_db)
 			if lecteur.stream is AudioStreamOggVorbis:
 				_verifier((lecteur.stream as AudioStreamOggVorbis).loop,
 						"elle est marquee en boucle")

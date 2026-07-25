@@ -171,15 +171,22 @@ if ((Invoke-Externe git lfs version).Code -ne 0) {
 if (-not $Simuler) {
     (Invoke-Externe git lfs install).Lignes | ForEach-Object { Info $_ }
 
-    # Un clone fait avant l installation de LFS ne contient que des pointeurs
-    # texte a la place des images. Le telechargement les remplace vraiment.
-    $temoin = "game/assets/textures/route.png"
-    if ((Test-Path $temoin) -and (Get-Item $temoin).Length -lt 1000) {
-        Souci "Tes images ne sont que des pointeurs. Telechargement des vrais fichiers..."
-        (Invoke-Externe git lfs pull).Lignes | ForEach-Object { Info $_ }
-    }
-    if ((Test-Path $temoin) -and (Get-Item $temoin).Length -gt 1000) {
-        Bien "Les fichiers binaires sont bien la"
+    # Toujours reclamer les objets LFS, sans condition. Une premiere version
+    # ne le faisait que si une texture temoin etait un pointeur - mais un
+    # fichier arrive APRES cette verification pouvait tres bien rester un
+    # pointeur sans que rien ne le signale. C'est instantane quand tout est
+    # deja la, autant le faire a chaque fois.
+    Info "Recuperation des fichiers binaires..."
+    (Invoke-Externe git lfs pull).Lignes | ForEach-Object { Info $_ }
+
+    $pointeurs = @(Get-ChildItem game/assets -Recurse -File -Include *.png,*.ogg,*.wav,*.glb -ErrorAction SilentlyContinue |
+                   Where-Object { $_.Length -lt 1000 })
+    if ($pointeurs.Count -gt 0) {
+        Souci "$($pointeurs.Count) fichier(s) sont restes des pointeurs :"
+        $pointeurs | Select-Object -First 5 | ForEach-Object { Info "  $($_.Name)" }
+        Info "Signale-le a Benjamin, ces fichiers manqueront dans le jeu."
+    } else {
+        Bien "Les fichiers binaires sont tous la"
     }
 }
 
