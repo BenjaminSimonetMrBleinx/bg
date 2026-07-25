@@ -78,12 +78,52 @@ func _ready() -> void:
 		# donne le joueur a surveiller une fois la scene complete.
 		call_deferred("_presenter_le_joueur")
 
+	# Souris capturee des le lancement : c'est un jeu a la troisieme personne,
+	# le curseur n'y sert a rien. Echap la rend.
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
 	_v.quitter_le_volant()
 	_c.suivre(_j)
 	_c.interieur(false)
 	if _fondu != null:
 		_fondu.color.a = 0.0
 	_afficher("")
+
+
+# La souris est lue ICI, et pas dans la camera.
+#
+# La camera vit dans le SubViewport de rendu, ou Godot ne propage aucune
+# entree : un _input y serait silencieusement mort. Le controleur, lui, est
+# un noeud ordinaire de la scene principale. C'est exactement le piege qui
+# avait rendu la roue des outils inutilisable.
+func _unhandled_input(evenement: InputEvent) -> void:
+	if _c == null or _transition:
+		return
+
+	if evenement is InputEventMouseMotion:
+		# Pendant que la roue est ouverte, la souris ne bouge pas la camera :
+		# on est en train de viser une part, pas de regarder autour.
+		if _roue != null and _roue.ouverte():
+			return
+		if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+			_c.tourner((evenement as InputEventMouseMotion).relative)
+		return
+
+	if evenement is InputEventMouseButton and evenement.pressed:
+		var bouton := (evenement as InputEventMouseButton).button_index
+		if bouton == MOUSE_BUTTON_WHEEL_UP:
+			_c.zoomer(1.0)
+		elif bouton == MOUSE_BUTTON_WHEEL_DOWN:
+			_c.zoomer(-1.0)
+		elif Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+			# Un clic dans la fenetre reprend la main apres un Echap.
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		return
+
+	# Echap rend le curseur, pour pouvoir sortir du jeu ou changer de fenetre.
+	# Sans issue, une souris capturee est un piege.
+	if evenement.is_action_pressed("ui_cancel"):
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 
 func _process(_delta: float) -> void:

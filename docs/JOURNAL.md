@@ -546,3 +546,47 @@ Deux garde-fous, parce qu'une suite oubliée coûte plus cher qu'une suite joué
 les motifs de couverture sont **volontairement larges**, et toucher `monde.tscn`,
 `reglages.tres` ou `project.godot` relance **tout** — ce sont les trois fichiers que chaque
 suite charge.
+
+---
+
+## V14 — La visée à la souris
+
+La caméra était entièrement automatique. Sur PC, un GTA-like se regarde à la souris.
+
+Souris capturée au lancement, **Échap** rend le curseur, un clic le reprend — sans issue,
+une souris capturée est un piège. Molette pour le recul.
+
+**À pied**, la souris pose le cap et le recentrage automatique **se suspend** pendant un
+délai réglable. Sans ce délai, la caméra ramènerait de force dès qu'on lâche la souris, et
+regarder de côté en marchant serait impossible — ce qui est tout l'intérêt.
+
+**Au volant**, elle ne remplace pas le cap : la caméra de conduite est solidaire de la
+caisse, c'est ce qui fait qu'elle accompagne les virages. La visée s'ajoute par-dessus et se
+résorbe d'elle-même. Le comportement testé de la conduite est intact.
+
+**Le tangage fait pivoter la caméra autour du sujet** — elle monte et se rapproche en même
+temps. Se contenter de lever la hauteur donnerait une caméra qui plane sans jamais regarder
+d'en haut.
+
+### Le piège, évité cette fois
+
+La souris est lue par le **contrôleur**, pas par la caméra. La caméra vit dans le
+`SubViewport` de rendu, où Godot ne propage aucune entrée : un `_input` y serait
+silencieusement mort. C'est exactement ce qui avait rendu la roue des outils inutilisable
+pendant deux jours.
+
+Le test envoie donc un **vrai événement** dans la boucle d'entrée du moteur, plutôt que
+d'appeler la méthode de la caméra. C'est la seule façon de vérifier que la chaîne complète
+tient.
+
+**Et il s'est trompé de la même façon que le test de la roue**, ce qui commence à faire une
+famille : `Input.parse_input_event` met l'événement dans la file du moteur, il n'est
+distribué qu'à la trame suivante. Ma première version envoyait quarante mouvements puis
+lisait l'angle dans la même trame, et annonçait une butée à 26° — c'était simplement la
+valeur d'avant, aucun des quarante n'ayant encore été traité. Chaque étape envoie
+maintenant, la suivante mesure.
+
+**À retenir pour tout test d'entrée : envoyer et mesurer ne peuvent pas être dans la même
+trame.**
+
+Quinze suites. Sept jouées pour ce commit.

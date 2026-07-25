@@ -32,6 +32,23 @@ var _cap: float = 0.0
 ## ne laisse pas la place d'un recul de rue.
 var _dedans: bool = false
 
+## Angle vertical, en radians. Commun au vehicule et a la marche.
+var _tangage: float = 0.0
+
+## Decalage de cap applique AU VEHICULE seulement. La camera de conduite est
+## solidaire de la caisse — c'est ce qui fait qu'elle accompagne les virages —
+## donc la visee libre s'ajoute par-dessus et se resorbe, au lieu de
+## remplacer le cap comme a pied.
+var _orbite: float = 0.0
+
+## Temps restant avant que le recentrage automatique reprenne la main.
+## Sans ce delai, la camera ramenerait de force des qu'on lache la souris, et
+## regarder de cote en marchant serait impossible.
+var _manuel: float = 0.0
+
+## Recul, en proportion du nominal. Regle a la molette.
+var _zoom: float = 1.0
+
 
 func _ready() -> void:
 	if reglages == null:
@@ -59,7 +76,15 @@ func suivre(n: Node3D) -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if _pieton:
+	if _manuel > 0.0:
+		_manuel = maxf(0.0, _manuel - delta)
+	elif not _pieton:
+		# Au volant, la camera se remet dans l'axe toute seule. A pied, le cap
+		# reste ou on l'a laisse : c'est le recentrage sur la marche qui s'en
+		# charge, et seulement quand on avance.
+		_orbite = move_toward(_orbite, 0.0, reglages.souris_retour * delta)
+
+	if _pieton and _manuel <= 0.0:
 		_recentrer(delta)
 	var voulue := _ancrage()
 	var vise := _cible.global_position + Vector3.UP * reglages.cible_hauteur
@@ -165,6 +190,32 @@ func _recentrer(delta: float) -> void:
 	_cap = rotate_toward(_cap, voulu, reglages.pieton_recentrage * delta)
 
 
+## Visee libre. Recoit un deplacement de souris en PIXELS.
+##
+## Les evenements ne sont pas lus ici : cette camera vit dans le SubViewport
+## de rendu, et Godot n'y propage aucune entree. C'est le controleur, qui est
+## en dehors, qui les recoit et appelle cette methode. Un _input local ne
+## serait jamais declenche, sans que rien ne le signale.
+func tourner(deplacement: Vector2) -> void:
+	var s := reglages.souris_sensibilite
+	if _pieton:
+		_cap += deplacement.x * s
+	else:
+		_orbite += deplacement.x * s
+
+	var sens := 1.0 if reglages.souris_inversee else -1.0
+	_tangage = clampf(_tangage + deplacement.y * s * sens,
+			deg_to_rad(reglages.tangage_min), deg_to_rad(reglages.tangage_max))
+
+	_manuel = reglages.souris_repos
+
+
+## Rapproche ou eloigne, a la molette.
+func zoomer(crans: float) -> void:
+	_zoom = clampf(_zoom - crans * reglages.zoom_pas,
+			reglages.zoom_min, reglages.zoom_max)
+
+
 ## La camera a-t-elle deja pris sa place ? Le personnage fige son repere de
 ## deplacement sur elle : tant qu'elle n'est pas posee, il figerait une
 ## orientation perimee et partirait dans une direction qui n'a rien a voir
@@ -187,14 +238,27 @@ func recaler() -> void:
 
 
 func _ancrage() -> Vector3:
+	var derriere: Vector3
+	var recul: float
+	var haut: float
+
 	if _pieton:
-		var derriere := Vector3(sin(_cap), 0.0, cos(_cap))
-		var recul := reglages.interieur_recul if _dedans else reglages.pieton_recul
-		var haut := reglages.interieur_hauteur if _dedans else reglages.pieton_hauteur
-		return (_cible.global_position
-				+ derriere * recul
-				+ Vector3.UP * haut)
-	var base := _cible.global_transform.basis
+		derriere = Vector3(sin(_cap), 0.0, cos(_cap))
+		recul = reglages.interieur_recul if _dedans else reglages.pieton_recul
+		haut = reglages.interieur_hauteur if _dedans else reglages.pieton_hauteur
+	else:
+		# La direction vient de la caisse, pas d'un axe du monde : c'est ce qui
+		# fait que la camera accompagne les virages. L'orbite s'ajoute par
+		# dessus et se resorbe.
+		derriere = _cible.global_transform.basis.z.rotated(Vector3.UP, _orbite)
+		recul = reglages.recul
+		haut = reglages.hauteur
+
+	recul *= _zoom
+
+	# Le tangage fait pivoter la camera AUTOUR du sujet : elle monte et se
+	# rapproche en meme temps. Se contenter de lever la hauteur donnerait une
+	# camera qui plane sans jamais regarder d'en haut.
 	return (_cible.global_position
-			+ base.z * reglages.recul
-			+ Vector3.UP * reglages.hauteur)
+			+ derriere * recul * cos(_tangage)
+			+ Vector3.UP * (haut + sin(_tangage) * recul))

@@ -90,6 +90,35 @@ extends Resource
 ## se remarque pas.
 @export_range(0.5, 40.0, 0.5) var camera_retour: float = 7.0
 
+@export_subgroup("Souris")
+
+## Radians de rotation par pixel de souris. C'est LE reglage a bouger en
+## premier si la visee parait molle ou nerveuse.
+@export_range(0.0005, 0.02, 0.0005) var souris_sensibilite: float = 0.0032
+
+## Inverse le haut et le bas.
+@export var souris_inversee: bool = false
+
+## Angle vertical minimal et maximal, en degres. Negatif = on regarde vers le
+## bas. Au-dela de 80 la camera passe au-dessus du sujet et le cadrage part
+## en vrille.
+@export_range(-80.0, 0.0, 1.0) var tangage_min: float = -22.0
+@export_range(0.0, 80.0, 1.0) var tangage_max: float = 62.0
+
+## Temps sans toucher la souris avant que le recentrage automatique reprenne,
+## en secondes. Sans ce delai, la camera ramene de force des qu'on lache la
+## souris et on ne peut jamais regarder de cote en marchant.
+@export_range(0.0, 6.0, 0.1) var souris_repos: float = 1.4
+
+## Vitesse a laquelle la camera du VEHICULE revient dans l'axe apres une
+## visee manuelle, en radians par seconde.
+@export_range(0.2, 12.0, 0.1) var souris_retour: float = 2.2
+
+## Bornes du recul reglable a la molette, en proportion du recul nominal.
+@export_range(0.3, 1.0, 0.05) var zoom_min: float = 0.55
+@export_range(1.0, 3.0, 0.05) var zoom_max: float = 1.8
+@export_range(0.02, 0.5, 0.01) var zoom_pas: float = 0.12
+
 # ------------------------------------------------------------------- rendu
 @export_group("Rendu PS2")
 

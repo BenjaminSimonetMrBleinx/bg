@@ -360,6 +360,9 @@ switch ($Commande) {
             @{ cle = 'murs'; nom = 'camera et murs'
                script = 'res://outils/test_camera_murs.gd'
                couvre = @('systemes/camera_poursuite', 'systemes/maison') }
+            @{ cle = 'souris'; nom = 'visee a la souris'
+               script = 'res://outils/test_souris.gd'
+               couvre = @('systemes/camera_poursuite', 'systemes/controleur') }
             @{ cle = 'foule'; nom = 'passants'
                script = 'res://outils/test_foule.gd'
                couvre = @('systemes/foule', 'systemes/pieton', 'systemes/silhouette', 'gen_ville') }
