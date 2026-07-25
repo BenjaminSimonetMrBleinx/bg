@@ -1,14 +1,22 @@
 ; Walter a pied.
 ;
 ; La capsule de collision fait 1,78 m comme le personnage. Le maillage est
-; une hierarchie de segments rigides animee par joueur.gd — pas de squelette,
-; pas de clip d'animation.
+; une hierarchie de segments rigides animee par silhouette.gd — pas de
+; squelette, pas de clip d'animation.
+;
+; Le maillage est le modele SCULPTE, deplie et decoupe par les outils du
+; projet (voir docs/07-ajouter-du-contenu.md). Il porte les memes noms de
+; segments que le personnage generé, et rien d'autre n'a change : c'etait
+; tout l'interet de faire passer un modele fait main par la meme convention.
+;
+; Le personnage genere reste dans assets/personnages/walter.glb — il sert de
+; repli et de reference, et c'est encore lui qui habille les passants.
 
 [gd_scene load_steps=5 format=3 uid="uid://bgjoueur000001"]
 
 [ext_resource type="Script" path="res://systemes/joueur.gd" id="1_joueur"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
-[ext_resource type="PackedScene" path="res://assets/personnages/walter.glb" id="3_walter"]
+[ext_resource type="PackedScene" path="res://assets/personnages/walt_anime.glb" id="3_walter"]
 
 [sub_resource type="CapsuleShape3D" id="capsule"]
 radius = 0.28

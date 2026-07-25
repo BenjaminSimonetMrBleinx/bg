@@ -761,3 +761,58 @@ Le cadre de dialogue est passé de 90 à 174 pixels : la tirade finale fait 562 
 durées ne collent pas parfaitement aux longueurs de texte, et je ne peux pas écouter. Un
 seul passage en jeu tranche — et si c'est décalé, il suffit de redécouper avec un autre
 seuil, les originaux sont archivés.
+
+---
+
+## V19 — Le Walt sculpté devient le personnage jouable
+
+Benjamin a livré `test Walt.obj` : 1088 faces, une seule pièce, **aucune coordonnée de
+texture, aucun matériau**. Il se lisait immédiatement comme Walter White, ce que notre
+bonhomme en boîtes ne fait pas — mais il ne pouvait ni porter d'image ni marcher.
+
+Trois outils l'ont fait entrer dans le jeu, et ils marchent sur n'importe quel modèle livré.
+
+### Déplier — en prenant le problème à l'envers
+
+Blender sait fabriquer des UV tout seul, mais il place les îlots où il veut : savoir ensuite
+*quel morceau de l'image est la tête* est impossible à deviner. Peindre « le visage sur la
+tête » semblait donc hors de portée d'un script.
+
+**On classe donc chaque face par sa position dans le corps** — hauteur, distance à l'axe,
+orientation — et on peint sa case UV en conséquence. Le dépliage ne sert plus que d'adresse ;
+sa lisibilité n'a aucune importance.
+
+Le visage est projeté depuis l'avant, en piochant dans l'atlas que `gen_textures.py` dessine
+déjà : le modèle sculpté et les personnages générés partagent la même palette, les mêmes
+lunettes, le même bouc.
+
+**Correction en cours de route** : je peignais chaque triangle d'une couleur unique prise en
+son centre. Un œil couvrait une facette entière ou disparaissait entre deux. En interpolant la
+position 3D **par pixel**, le dessin traverse la géométrie sans s'occuper de son découpage.
+
+### Découper — le pivot compte plus que la coupe
+
+Quinze segments, la hiérarchie exacte qu'attend `silhouette.gd`. Le point délicat n'était pas
+la découpe : c'est que **l'origine de chaque segment doit tomber sur son articulation**, sinon
+la cuisse tourne autour du genou et la jambe part en hélice.
+
+Les articulations sont **mesurées sur la géométrie réelle**, pas supposées : un modèle plus
+large ou plus étroit que le nôtre reste correct.
+
+Résultat : il marche avec le même code, sans une ligne de différence. Le chapeau se pose sur
+sa tête, le revolver dans sa main — les points d'ancrage de la roue fonctionnent tels quels.
+
+### Ce que ça coûte, et ce qui reste
+
+- **1088 faces contre 90.** Douze fois plus. Ça reste dans le budget PS2, mais Skyler, Jesse
+  et les passants sont toujours en boîtes à côté de lui.
+- **Les articulations sont franches.** À l'épaule et à la hanche, la matière se sépare quand
+  l'angle est grand. C'était le cas sur PS1 ; à distance de jeu, ça ne se remarque pas.
+- **Le découpage est asymétrique** — 105 faces à une main contre 53 à l'autre. Des seuils
+  rectilignes sur une pose qui ne l'est pas. Réglable par paramètre, invisible au rendu.
+
+**Un trou dans la carte de couverture des tests, trouvé au passage** : modifier
+`scenes/joueur.tscn` ne déclenchait aucune suite. Changer le maillage du personnage — donc
+ses segments, ses ancrages, sa taille — ne testait rien. Cinq suites le couvrent maintenant.
+
+Dix-huit suites.

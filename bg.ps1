@@ -376,16 +376,16 @@ switch ($Commande) {
                couvre = @('systemes/vehicule', 'scenes/vehicule', 'systemes/reglages') }
             @{ cle = 'montee'; nom = 'montee et descente'
                script = 'res://outils/test_montee.gd'
-               couvre = @('systemes/controleur', 'systemes/vehicule', 'systemes/joueur') }
+               couvre = @('systemes/controleur', 'systemes/vehicule', 'systemes/joueur', 'scenes/joueur') }
             @{ cle = 'marche'; nom = 'orientation de marche'
                script = 'res://outils/test_marche.gd'
-               couvre = @('systemes/joueur', 'systemes/silhouette', 'gen_personnage') }
+               couvre = @('systemes/joueur', 'systemes/silhouette', 'gen_personnage', 'scenes/joueur', 'segmenter_modele') }
             @{ cle = 'camera'; nom = 'boucle camera'
                script = 'res://outils/test_camera.gd'
-               couvre = @('systemes/camera_poursuite', 'systemes/joueur') }
+               couvre = @('systemes/camera_poursuite', 'systemes/joueur', 'scenes/joueur') }
             @{ cle = 'trottoir'; nom = 'franchissement de bordure'
                script = 'res://outils/test_trottoir.gd'
-               couvre = @('systemes/joueur', 'gen_ville', 'systemes/camera_poursuite') }
+               couvre = @('systemes/joueur', 'gen_ville', 'systemes/camera_poursuite', 'scenes/joueur') }
             @{ cle = 'audio'; nom = 'audio'
                script = 'res://outils/test_audio.gd'
                couvre = @('systemes/audio', 'assets/sons', 'default_bus_layout') }
@@ -400,7 +400,7 @@ switch ($Commande) {
                couvre = @('systemes/dialogue', 'systemes/pnj', 'systemes/maison', 'donnees/dialogues') }
             @{ cle = 'outils'; nom = 'roue des outils'
                script = 'res://outils/test_outils.gd'
-               couvre = @('systemes/roue', 'systemes/equipement', 'donnees/outils', 'gen_objets') }
+               couvre = @('systemes/roue', 'systemes/equipement', 'donnees/outils', 'gen_objets', 'scenes/joueur') }
             @{ cle = 'decor'; nom = 'mobilier urbain'
                script = 'res://outils/test_decor.gd'
                couvre = @('systemes/ville', 'gen_decor', 'gen_ville', 'systemes/maison') }
