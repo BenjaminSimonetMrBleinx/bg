@@ -36,3 +36,7 @@ assets-ref/
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Redirection POSIX interpretee comme un chemin par Windows : git lfs install
+# y a deja ecrit ses hooks. Rien de ce qui atterrit la n'a de sens.
+/dev/
