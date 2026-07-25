@@ -63,16 +63,46 @@ function Exiger($chemin, $nom) {
 # registre des classes globales vit dans .godot/, qui est ignore par git.
 # Sans cet import, tout script utilisant un class_name refuse de compiler
 # avec une "Parse error" qui ne dit pas pourquoi.
+# Godot garde une copie convertie de chaque fichier 3D, image et son dans
+# .godot\, qui n est PAS suivi par git. Un fichier arrive par git pull sans
+# cette copie ne se charge pas du tout :
+#
+#   ERROR: Cannot open file 'res://.godot/imported/arme.glb-....scn'
+#
+# Le jeu se lance quand meme, sans les maisons ni les objets. Une version
+# anterieure de ce script n important qu au tout premier lancement, un
+# equipier qui recuperait du travail se retrouvait exactement la.
+#
+# Meme chose pour les scripts : les noms declares par class_name vivent dans
+# un cache du meme dossier. Sans lui, ils sont introuvables a l execution.
+#
+# On date donc le dernier import et on le refait des que quoi que ce soit a
+# bouge. Quand rien n a change, on ne paie rien.
 function Initialize-Projet {
-    if (Test-Path (Join-Path $Projet '.godot')) { return }
     if (-not $GodotConsole) { return }
-    Write-Host "  Premier lancement : import du projet par Godot..." -ForegroundColor Gray
+
+    $marque = Join-Path $Projet '.godot\.bg-import'
+    $besoin = $true
+    if (Test-Path $marque) {
+        $date = (Get-Item $marque).LastWriteTime
+        $recent = Get-ChildItem $Projet -Recurse -File -Force -ErrorAction SilentlyContinue |
+                  Where-Object { $_.FullName -notlike "*\.godot\*" } |
+                  Where-Object { $_.LastWriteTime -gt $date } |
+                  Select-Object -First 1
+        $besoin = $null -ne $recent
+    }
+    if (-not $besoin) { return }
+
+    Write-Host "  Import des fichiers nouveaux ou modifies..." -ForegroundColor Gray
     # Godot ecrit ses avertissements sur la sortie d erreur : avec
     # ErrorActionPreference a Stop, le moindre message tuerait le script.
     $ancien = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'
     try { & $GodotConsole --headless --path $Projet --import 2>&1 | Out-Null }
     finally { $ErrorActionPreference = $ancien }
+
+    New-Item -ItemType Directory -Force -Path (Split-Path $marque) | Out-Null
+    Set-Content -Path $marque -Value (Get-Date -Format 'o') -Encoding ASCII
 }
 
 switch ($Commande) {

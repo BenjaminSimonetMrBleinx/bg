@@ -265,3 +265,37 @@ qui validait toujours. Aucune ne plantait. C'est pour ça qu'il y a dix suites p
 
 **Reste à décider ensemble** : les blocs A, B, C et F de `00-questions.md`, toujours sans
 réponse. Rien de ce qui a été fait n'en dépendait — mais la suite, si.
+
+---
+
+## Correctif — récupérer du travail ne rechargeait pas les nouveaux assets
+
+Trouvé en répondant à la question « comment Guillaume récupère la dernière version ». La
+réponse était `.\go.ps1`, et elle était **fausse**.
+
+Godot garde une copie convertie de chaque fichier 3D, image et son dans `.godot\`, qui n'est
+pas suivi par git — et ne peut pas l'être, c'est un cache machine. Un fichier qui arrive par
+`git pull` sans cette copie **ne se charge pas du tout** :
+
+```
+ERROR: Cannot open file 'res://.godot/imported/arme.glb-....scn'
+```
+
+`bg.ps1` n'importait qu'au tout premier lancement, quand `.godot\` était absent. Guillaume,
+qui l'avait déjà, aurait pullé les maisons, les habitants et les objets — et lancé un jeu où
+rien de tout ça n'existe. Le jeu démarre quand même, ce qui est le pire cas : pas de plantage,
+juste un monde amputé.
+
+Même piège pour les scripts : les noms déclarés par `class_name` vivent dans un cache du même
+dossier. Sans lui, `Pnj`, `Dialogue` ou `Roue` sont introuvables à l'exécution.
+
+Vérifié plutôt que supposé : j'ai mis de côté l'entrée de cache de `arme.glb` et relancé la
+suite. Quatre erreurs de chargement, trois tests au rouge. C'est exactement ce qu'il aurait vu.
+
+Corrigé en datant le dernier import et en le refaisant dès que quoi que ce soit a bougé sous
+`game\`. Coût mesuré : **10 s la première fois, 1,3 s quand rien n'a changé.** Ça ne se
+remarque pas, et ça supprime une classe entière de « chez moi ça marche ».
+
+C'est la troisième fois que ce cache nous coûte du temps — les maisons, puis les personnages,
+puis ça. Il est maintenant traité une fois pour toutes, dans la seule commande que tout le
+monde utilise.
