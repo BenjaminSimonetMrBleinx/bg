@@ -34,9 +34,26 @@ function Souci($t) { Write-Host "  $t" -ForegroundColor Yellow }
 
 # Recharge le PATH depuis le registre : sans ca, un outil installe a l instant
 # reste invisible pour la session en cours, et le script croit avoir echoue.
-function Rafraichir-Chemin {
+function Update-Chemin {
     $env:Path = [Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
                 [Environment]::GetEnvironmentVariable("Path", "User")
+}
+
+# git et winget ecrivent leur progression sur la sortie d ERREUR, meme quand
+# tout va bien. Avec ErrorActionPreference a Stop, PowerShell 5.1 en fait une
+# erreur bloquante et le script s arrete sur un succes. On isole donc les
+# appels externes et on ne juge que le code de sortie.
+function Invoke-Externe {
+    param([string]$Programme,
+          [Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
+    $ancien = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $lignes = & $Programme @Arguments 2>&1 | ForEach-Object { "$_" }
+        return [pscustomobject]@{ Code = $LASTEXITCODE; Lignes = $lignes }
+    } finally {
+        $ErrorActionPreference = $ancien
+    }
 }
 
 function Trouve($nom, $motifs) {
@@ -119,48 +136,47 @@ if ($a_installer.Count -eq 0) {
     Souci "Windows demandera peut-etre une confirmation. Reponds oui."
     foreach ($o in $a_installer) {
         Write-Host "`n  Installation de $($o.nom)..." -ForegroundColor Cyan
-        winget install --id $o.paquet --exact --silent `
-            --accept-package-agreements --accept-source-agreements 2>&1 |
-            Select-Object -Last 2 | ForEach-Object { Info $_ }
+        $res = Invoke-Externe winget install --id $o.paquet --exact --silent `
+            --accept-package-agreements --accept-source-agreements
+        $res.Lignes | Select-Object -Last 2 | ForEach-Object { Info $_ }
     }
-    Rafraichir-Chemin
+    Update-Chemin
 }
 
 # ------------------------------------------------------------------ git lfs
 
 Titre "3. Git LFS"
 
-Rafraichir-Chemin
+Update-Chemin
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     Souci "Git vient d etre installe : ferme ce terminal, rouvre-le,"
     Souci "et relance .\installer.ps1 pour terminer."
     exit 0
 }
 
-$lfs = & git lfs version 2>&1
-if ($LASTEXITCODE -ne 0) {
+if ((Invoke-Externe git lfs version).Code -ne 0) {
     if ($Simuler) {
         Info "Git LFS serait installe."
     } else {
         Info "Installation de Git LFS..."
-        winget install --id GitHub.GitLFS --exact --silent `
-            --accept-package-agreements --accept-source-agreements 2>&1 |
-            Select-Object -Last 2 | ForEach-Object { Info $_ }
-        Rafraichir-Chemin
+        $res = Invoke-Externe winget install --id GitHub.GitLFS --exact --silent `
+            --accept-package-agreements --accept-source-agreements
+        $res.Lignes | Select-Object -Last 2 | ForEach-Object { Info $_ }
+        Update-Chemin
     }
 } else {
     Bien "Git LFS est la"
 }
 
 if (-not $Simuler) {
-    & git lfs install 2>&1 | ForEach-Object { Info $_ }
+    (Invoke-Externe git lfs install).Lignes | ForEach-Object { Info $_ }
 
     # Un clone fait avant l installation de LFS ne contient que des pointeurs
     # texte a la place des images. Le telechargement les remplace vraiment.
     $temoin = "game/assets/textures/route.png"
     if ((Test-Path $temoin) -and (Get-Item $temoin).Length -lt 1000) {
         Souci "Tes images ne sont que des pointeurs. Telechargement des vrais fichiers..."
-        & git lfs pull 2>&1 | ForEach-Object { Info $_ }
+        (Invoke-Externe git lfs pull).Lignes | ForEach-Object { Info $_ }
     }
     if ((Test-Path $temoin) -and (Get-Item $temoin).Length -gt 1000) {
         Bien "Les fichiers binaires sont bien la"
@@ -213,7 +229,7 @@ Titre "6. Controle final"
 if ($Simuler) {
     Info "Mode simulation : rien n a ete installe."
 } else {
-    Rafraichir-Chemin
+    Update-Chemin
     & "$PSScriptRoot\bg.ps1" outils
     Write-Host ""
     & "$PSScriptRoot\bg.ps1" verif

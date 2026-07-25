@@ -52,13 +52,37 @@ seul moment déroutant de toute l'installation, et il n'arrive qu'une fois.
 
 ---
 
-## 1. Tout installer — une seule commande
-
-Depuis le dossier du projet :
+## 1. La seule commande à retenir
 
 ```powershell
-.\installer.ps1
+.\go.ps1
 ```
+
+Elle fait tout, dans l'ordre, en sautant ce qui n'a rien à faire :
+
+1. **installe ce qui manque** — Git LFS, Blender, Godot, Python
+2. **récupère le travail des autres**
+3. **envoie le tien**, s'il y en a, après t'avoir montré la liste
+4. **lance le jeu**
+
+C'est la seule à connaître. Les autres scripts existent pour les cas
+particuliers, mais `go.ps1` couvre le quotidien.
+
+```powershell
+.\go.ps1 "sons de portieres"   # avec ta description pour l'envoi
+.\go.ps1 -SansJeu              # tout sauf le lancement
+```
+
+### Ce qui tourne dessous
+
+Si tu veux une étape isolée :
+
+| | |
+|---|---|
+| `.\installer.ps1` | installation seule |
+| `.\livrer.ps1` | mise à jour et envoi seuls |
+| `.\livrer.ps1 -Quoi` | montrer ce qui partirait, sans envoyer |
+| `.\bg.ps1 jouer` | lancer le jeu seul |
 
 Le script détecte ce qui manque, l'installe, et laisse tranquille ce qui est
 déjà là. Il peut être relancé autant de fois que tu veux. Windows demandera

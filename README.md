@@ -65,7 +65,15 @@ projet se lance. Détails dans [docs/05-demarrage.md](docs/05-demarrage.md).
 
 Outils : [Godot 4.7](https://godotengine.org/download) · [Blender 5.2](https://www.blender.org/download/) · [Python 3.12](https://www.python.org/downloads/) · [Git LFS](https://git-lfs.com/)
 
-Pas besoin de retenir les chemins, tout passe par le lanceur :
+**Une seule commande pour le quotidien** — installe ce qui manque, récupère le
+travail des autres, envoie le tien, lance le jeu, en sautant chaque étape
+inutile :
+
+```powershell
+.\go.ps1
+```
+
+Et les étapes isolées, quand on en a besoin :
 
 ```powershell
 .\bg.ps1 outils     # ou en est la chaine d outils

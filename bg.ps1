@@ -65,7 +65,12 @@ function Initialize-Projet {
     if (Test-Path (Join-Path $Projet '.godot')) { return }
     if (-not $GodotConsole) { return }
     Write-Host "  Premier lancement : import du projet par Godot..." -ForegroundColor Gray
-    & $GodotConsole --headless --path $Projet --import 2>&1 | Out-Null
+    # Godot ecrit ses avertissements sur la sortie d erreur : avec
+    # ErrorActionPreference a Stop, le moindre message tuerait le script.
+    $ancien = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try { & $GodotConsole --headless --path $Projet --import 2>&1 | Out-Null }
+    finally { $ErrorActionPreference = $ancien }
 }
 
 switch ($Commande) {
@@ -73,10 +78,10 @@ switch ($Commande) {
     'outils' {
         # Pas d'operateur ?? ici : il n'existe qu'a partir de PowerShell 7,
         # et Windows livre encore la 5.1 par defaut.
-        function Ou-Absent($v) { if ($v) { $v } else { 'ABSENT' } }
-        [pscustomobject]@{ Outil = 'Godot';   Chemin = Ou-Absent $Godot }
-        [pscustomobject]@{ Outil = 'Blender'; Chemin = Ou-Absent $Blender }
-        [pscustomobject]@{ Outil = 'Python';  Chemin = Ou-Absent $Python }
+        function Get-OuAbsent($v) { if ($v) { $v } else { 'ABSENT' } }
+        [pscustomobject]@{ Outil = 'Godot';   Chemin = Get-OuAbsent $Godot }
+        [pscustomobject]@{ Outil = 'Blender'; Chemin = Get-OuAbsent $Blender }
+        [pscustomobject]@{ Outil = 'Python';  Chemin = Get-OuAbsent $Python }
         [pscustomobject]@{ Outil = 'Projet';  Chemin = $Projet }
     }
 
