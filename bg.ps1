@@ -120,7 +120,8 @@ switch ($Commande) {
         Exiger $GodotConsole 'Godot (console)'
         $suites = @(
             @{ nom = 'sens de conduite'; script = 'res://outils/test_sens.gd' },
-            @{ nom = 'montee et descente'; script = 'res://outils/test_montee.gd' }
+            @{ nom = 'montee et descente'; script = 'res://outils/test_montee.gd' },
+            @{ nom = 'orientation de marche'; script = 'res://outils/test_marche.gd' }
         )
         $echecs = 0
         foreach ($s in $suites) {

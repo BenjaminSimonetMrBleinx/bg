@@ -78,11 +78,22 @@ func _direction_voulue() -> Vector3:
 	return (droite * axe.x + avant * -axe.y).normalized()
 
 
+## Angle de lacet pour qu'un noeud regarde dans la direction donnee.
+##
+## L'avant d'un noeud Godot est -Z, d'ou les deux negations. Sans elles on
+## obtient l'angle oppose : le personnage marche a reculons, la camera ancree
+## derriere lui bascule de l'autre cote, ce qui inverse la notion d'avant et
+## le fait pivoter encore. Resultat, il tourne en boucle sans jamais se
+## stabiliser — une rétroaction, pas un simple defaut d'orientation.
+static func lacet_vers(direction: Vector3) -> float:
+	return atan2(-direction.x, -direction.z)
+
+
 func _orienter(voulu: Vector3, delta: float) -> void:
 	if voulu.length_squared() < 0.01:
 		return
-	var angle := atan2(voulu.x, voulu.z)
-	rotation.y = rotate_toward(rotation.y, angle, reglages.marche_rotation * delta)
+	rotation.y = rotate_toward(rotation.y, lacet_vers(voulu),
+			reglages.marche_rotation * delta)
 
 
 func _animer(delta: float) -> void:
