@@ -31,14 +31,13 @@ livrer trois aujourd'hui et le reste plus tard, sans rien casser.
 | 008 | **Skyler** | Il y a du poulet dans le frigo. |
 | 009 | **Walter** | Merci. |
 | 010 | **Skyler** | Et il faut qu'on parle du toit. |
-| 011 | **Jesse** | Yo. T'as pas frappe. |
-| 012 | **Walter** | La porte etait ouverte. |
-| 013 | **Jesse** | Ouais, ben. C'est chez moi, quand meme. |
-| 014 | **Walter** | Il nous faut du materiel. |
-| 015 | **Jesse** | Du materiel genre... combien de materiel ? |
-| 016 | **Walter** | Assez pour ne pas recommencer. |
-| 017 | **Jesse** | Ca sonne cher, ce truc-la. |
-| 018 | **Jesse** | T'as vraiment ete mon prof de chimie ? |
-| 019 | **Walter** | Deux ans. Tu as eu un D. |
-| 020 | **Jesse** | J'etais present, c'est deja pas mal. |
+| 011 | **Walter** | My name is Walter Hartwell White. |
+| 012 | **Walter** | I live at 308 Negra Arroyo Lane, Albuquerque, New Mexico, 87104. |
+| 013 | **Walter** | To all law enforcement entities, this is not an admission of guilt. |
+| 014 | **Walter** | I am speaking to my family now. |
+| 015 | **Walter** | Skyler, you are the love of my life. I hope you know that. |
+| 016 | **Walter** | Walter Junior, you're my big man. |
+| 017 | **Walter** | There are going to be some things. |
+| 018 | **Walter** | Things that you'll come to learn about me in the next few days. I just want you to know that no matter how it may look, I only had you in my heart. |
+| 019 | **Walter** | Good-bye. |
 

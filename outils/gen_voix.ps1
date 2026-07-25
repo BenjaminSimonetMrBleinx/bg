@@ -25,7 +25,21 @@ param(
     # Ecrit le script d enregistrement pour un comedien, et sort.
     [switch]$Script,
     # Integre les fichiers deposes dans assets\voix\, et sort.
-    [switch]$Integrer
+    [switch]$Integrer,
+    # Decoupe une longue prise en segments parles, et sort.
+    [string]$Decouper = '',
+    # Seuil de silence du decoupage, en dB. Plus bas = plus tolerant au bruit.
+    [double]$Seuil = -40.0,
+    # Duree minimale d un silence pour couper, en secondes.
+    [double]$Pause = 0.6,
+    # Affecte les segments decoupes aux repliques, dans l ordre. A n utiliser
+    # qu apres avoir verifie que la prise suit le script sans reprise.
+    [switch]$Assigner,
+    # Numero de la premiere replique concernee : une prise ne couvre pas
+    # forcement le script depuis le debut.
+    [int]$Depuis = 1,
+    # Confronte chaque segment au script, par reconnaissance vocale.
+    [switch]$Reconnaitre
 )
 
 $ErrorActionPreference = 'Stop'
@@ -59,6 +73,7 @@ if (-not $FFmpeg) {
     if ($c) { $FFmpeg = Get-Item $c.Source }
 }
 if (-not $FFmpeg) { throw "ffmpeg introuvable. winget install --id Gyan.FFmpeg -e" }
+$FFprobe = Join-Path (Split-Path $FFmpeg -Parent) 'ffprobe.exe'
 
 $d = Get-Content $Dialogues -Raw -Encoding UTF8 | ConvertFrom-Json
 $p = Get-Content $Profils -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -204,9 +219,187 @@ function Import-Depot {
         $archives = Join-Path $Depot 'originaux'
         New-Item -ItemType Directory -Force -Path $archives | Out-Null
         Move-Item $f.FullName (Join-Path $archives ("{0}_{1}" -f $num, $f.Name)) -Force
+
+        # On note que cette replique a une vraie voix, pour que la synthese
+        # ne repasse jamais dessus.
+        $registre = Join-Path $Depot 'enregistrees.json'
+        $deja = @()
+        if (Test-Path $registre) {
+            $deja = @(Get-Content $registre -Raw -Encoding UTF8 | ConvertFrom-Json)
+        }
+        if ($deja -notcontains $num) { $deja += $num }
+        ($deja | Sort-Object) | ConvertTo-Json -AsArray | Set-Content $registre -Encoding UTF8
+
         $n++
     }
     return $n
+}
+
+# ---------------------------------------------------------- decoupage
+#
+# Une longue prise contenant plusieurs repliques est le cas NORMAL : c est
+# ainsi qu on enregistre, on ne s arrete pas entre chaque phrase. Le
+# decoupage se fait donc apres coup, en cherchant les silences.
+#
+# Rien n est affecte automatiquement a une replique. Le nombre de segments ne
+# correspond presque jamais au nombre de lignes — on se reprend, on tousse,
+# on enchaine deux phrases d une traite. Deviner produirait un doublage ou
+# chacun dit le texte du precedent, et personne ne verrait d ou ca vient.
+function Split-Prise([string]$chemin) {
+    if (-not (Test-Path $chemin)) { throw "introuvable : $chemin" }
+    $sortie = Join-Path $Depot 'decoupe'
+    New-Item -ItemType Directory -Force -Path $sortie | Out-Null
+
+    $duree = [double](& $FFprobe -v error -show_entries format=duration -of csv=p=0 $chemin)
+    $brut = & $FFmpeg -hide_banner -i $chemin -af "silencedetect=noise=$($Seuil)dB:d=$Pause" -f null NUL 2>&1
+
+    # On reconstruit les segments PARLES a partir des silences detectes :
+    # ffmpeg ne rapporte que les trous.
+    $debuts = @(0.0)
+    $fins = @()
+    foreach ($l in $brut) {
+        if ($l -match 'silence_start:\s*([0-9.]+)') { $fins += [double]$Matches[1] }
+        elseif ($l -match 'silence_end:\s*([0-9.]+)') { $debuts += [double]$Matches[1] }
+    }
+    $fins += $duree
+
+    $marge = 0.12          # on garde un souffle avant et apres
+    $mini = 0.35           # en dessous, c'est un clic ou une respiration
+    $n = 0
+    $table = @()
+    for ($i = 0; $i -lt [math]::Min($debuts.Count, $fins.Count); $i++) {
+        $d = [math]::Max(0.0, $debuts[$i] - $marge)
+        $f = [math]::Min($duree, $fins[$i] + $marge)
+        $len = $f - $d
+        if ($len -lt $mini) { continue }
+        $n++
+        $nom = 'seg_{0:d3}.wav' -f $n
+        & $FFmpeg -y -hide_banner -loglevel error -ss $d -to $f -i $chemin `
+            -c:a pcm_s16le (Join-Path $sortie $nom)
+        $table += [pscustomobject]@{ Segment = $nom; Debut = [math]::Round($d, 2); Duree = [math]::Round($len, 2) }
+    }
+
+    Write-Host "`n$n segment(s) parles extraits de $(Split-Path $chemin -Leaf)" -ForegroundColor Green
+    $table | Format-Table -AutoSize | Out-String | Write-Host
+    Write-Host "-> $sortie" -ForegroundColor Gray
+    Write-Host @"
+Ecoute-les, puis renomme chacun avec le numero de sa replique
+(voir docs\08-script-voix.md) et pose-le dans assets\voix\ :
+
+    seg_002.wav  ->  001.wav
+    seg_003.wav  ->  002.wav
+
+Les segments non utilises se jettent. Rien n'est devine : le nombre de
+segments ne correspond presque jamais au nombre de repliques.
+"@ -ForegroundColor Gray
+}
+
+if ($Decouper) { Split-Prise $Decouper; exit 0 }
+
+# ------------------------------------------------------------- reconnaissance
+#
+# Windows sait reconnaitre du francais hors ligne. On ne lui demande pas de
+# transcrire librement — on lui donne les vingt phrases du script comme
+# GRAMMAIRE FERMEE. Reconnaitre parmi vingt possibilites connues est un
+# probleme bien plus facile que transcrire, et le score obtenu dit alors deux
+# choses : quelle replique c'est, et si l'enregistrement est exploitable.
+#
+# Repere mesure sur ce projet : une phrase propre atteint 93 %. En dessous de
+# 40 %, soit ce n'est pas une phrase du script, soit la prise est inutilisable.
+function Test-Segments {
+    $decoupe = Join-Path $Depot 'decoupe'
+    $fichiers = @(Get-ChildItem $decoupe -Filter '*.wav' -ErrorAction SilentlyContinue | Sort-Object Name)
+    if ($fichiers.Count -eq 0) {
+        Write-Host "`nAucun segment. Lance d abord : .\bg.ps1 voix -Decouper <fichier>" -ForegroundColor Yellow
+        return
+    }
+
+    $moteurs = [System.Speech.Recognition.SpeechRecognitionEngine]::InstalledRecognizers()
+    $fr = @($moteurs | Where-Object { $_.Culture.Name -like 'fr*' })
+    if ($fr.Count -eq 0) {
+        Write-Host "`nAucun moteur de reconnaissance francais installe." -ForegroundColor Yellow
+        Write-Host "Parametres > Heure et langue > Francais > Reconnaissance vocale." -ForegroundColor Gray
+        return
+    }
+
+    $utiles = @()
+    $i = 0
+    foreach ($r in $repliques) {
+        $i++
+        if ($r.Texte -match '[a-zA-Z]') {
+            $utiles += [pscustomobject]@{ N = $i; Qui = $r.Qui; Texte = $r.Texte }
+        }
+    }
+
+    $moteur = New-Object System.Speech.Recognition.SpeechRecognitionEngine($fr[0])
+    $ch = New-Object System.Speech.Recognition.Choices
+    $utiles | ForEach-Object { $ch.Add($_.Texte) }
+    $gb = New-Object System.Speech.Recognition.GrammarBuilder
+    $gb.Culture = $fr[0].Culture
+    $gb.Append($ch)
+    $moteur.LoadGrammar((New-Object System.Speech.Recognition.Grammar($gb)))
+    try { $moteur.UpdateRecognizerSetting("CFGConfidenceRejectionThreshold", 0) } catch {}
+
+    $tmp = Join-Path $env:TEMP 'bg_reco.wav'
+    Write-Host "`nMoteur : $($fr[0].Name) ($($fr[0].Culture))" -ForegroundColor Gray
+    Write-Host ""
+
+    foreach ($f in $fichiers) {
+        # Le moteur veut du 16 kHz mono. On normalise au passage : une prise
+        # trop faible n'est pas reconnue, et ce serait un faux negatif.
+        & $FFmpeg -y -hide_banner -loglevel error -i $f.FullName `
+            -af "highpass=f=80,loudnorm=I=-16:TP=-1.5" -ac 1 -ar 16000 -c:a pcm_s16le $tmp
+        $moteur.SetInputToWaveFile($tmp)
+        $res = $moteur.Recognize()
+        if ($null -eq $res) {
+            Write-Host ("  {0,-14}  --   rien de reconnaissable" -f $f.BaseName) -ForegroundColor Yellow
+            continue
+        }
+        $l = $utiles | Where-Object { $_.Texte -eq $res.Text } | Select-Object -First 1
+        $couleur = if ($res.Confidence -ge 0.4) { 'Green' } else { 'Yellow' }
+        Write-Host ("  {0,-14} {1,4:P0}  -> {2:d3}  {3}" -f
+                $f.BaseName, $res.Confidence, $l.N, $res.Text) -ForegroundColor $couleur
+    }
+    Remove-Item $tmp -ErrorAction SilentlyContinue
+    Write-Host "`nEn vert : sur. En jaune : a verifier a l oreille." -ForegroundColor Gray
+}
+
+if ($Reconnaitre) { Test-Segments; exit 0 }
+
+# Affecte les segments aux repliques DANS L ORDRE.
+#
+# A n utiliser qu apres avoir ecoute et confirme que la prise suit le script
+# sans reprise ni oubli. C est le raccourci quand tout s est bien passe ; le
+# renommage a la main reste la voie sure quand ce n est pas le cas.
+if ($Assigner) {
+    $decoupe = Join-Path $Depot 'decoupe'
+    $segments = @(Get-ChildItem $decoupe -Filter 'seg_*.wav' -ErrorAction SilentlyContinue |
+                  Sort-Object Name)
+    if ($segments.Count -eq 0) {
+        Write-Host "`nAucun segment. Lance d abord : .\bg.ps1 voix -Decouper <fichier>" -ForegroundColor Yellow
+        exit 1
+    }
+    # Une prise ne couvre pas forcement tout le script : on peut enregistrer
+    # les repliques 11 a 19 et rien d autre. D ou le point de depart.
+    $reste = $repliques.Count - $Depuis + 1
+    if ($segments.Count -gt $reste) {
+        Write-Host "`n$($segments.Count) segment(s) mais seulement $reste replique(s) a partir de $Depuis." -ForegroundColor Yellow
+        Write-Host "Redecoupe avec un autre seuil, ou renomme a la main." -ForegroundColor Gray
+        exit 1
+    }
+    $n = $Depuis - 1
+    foreach ($s in $segments) {
+        $n++
+        Move-Item $s.FullName (Join-Path $Depot ('{0:d3}.wav' -f $n)) -Force
+    }
+    Remove-Item $decoupe -Recurse -Force -ErrorAction SilentlyContinue
+    # $n est le numero de la DERNIERE replique, pas le nombre de segments :
+    # une premiere version affichait "19 segments affectes de 001 a 019" pour
+    # neuf fichiers poses de 011 a 019.
+    Write-Host ("`n{0} segment(s) affectes aux repliques {1:d3} a {2:d3}." -f
+            $segments.Count, $Depuis, $n) -ForegroundColor Green
+    Write-Host "Verifie en jouant, puis livre : .\go.ps1" -ForegroundColor Gray
+    exit 0
 }
 
 if ($Script) { Write-ScriptVoix; exit 0 }
@@ -225,9 +418,34 @@ if ($Integrer) {
 $synthes = @{}
 $faits = 0
 $sautes = 0
+$proteges = 0
 $temp = Join-Path $env:TEMP "bg_voix.wav"
 
+# Les repliques deja enregistrees pour de vrai.
+#
+# Sans cette liste, -Refaire ecraserait par de la synthese des prises qui ont
+# coute une soiree d enregistrement, et le seul avertissement serait le
+# silence de celui qui les avait faites.
+#
+# La liste est tenue par l INTEGRATION, pas deduite du nom des archives : une
+# prise unique peut couvrir les repliques 11 a 19, et son nom de fichier ne
+# peut en porter qu un. C'est exactement ce qui s'est produit avec la
+# confession de Walter, enregistree d'une traite sous le nom 001.
+$Registre = Join-Path $Depot 'enregistrees.json'
+$enregistrees = @{}
+if (Test-Path $Registre) {
+    foreach ($n in (Get-Content $Registre -Raw -Encoding UTF8 | ConvertFrom-Json)) {
+        $enregistrees["$n"] = $true
+    }
+}
+
+$numero = 0
 foreach ($r in $repliques) {
+    $numero++
+    if ($enregistrees.ContainsKey('{0:d3}' -f $numero)) {
+        $proteges++
+        continue
+    }
     $profil = if ($p.voix.PSObject.Properties.Name -contains $r.Qui) {
         $p.voix.($r.Qui)
     } else {
@@ -277,4 +495,7 @@ Remove-Item $temp -ErrorAction SilentlyContinue
 
 Write-Host ""
 Write-Host "$faits fichier(s) ecrits, $sautes deja a jour" -ForegroundColor Green
+if ($proteges -gt 0) {
+    Write-Host "$proteges replique(s) laissees intactes : elles ont un vrai enregistrement" -ForegroundColor Cyan
+}
 Write-Host "-> $Sortie" -ForegroundColor Gray

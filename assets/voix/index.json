@@ -61,62 +61,56 @@
   },
   {
     "numero": "011",
-    "qui": "Jesse",
-    "texte": "Yo. T'as pas frappe.",
-    "cible": "jesse_f61b764683.wav"
+    "qui": "Walter",
+    "texte": "My name is Walter Hartwell White.",
+    "cible": "walter_79dfb3a6ae.wav"
   },
   {
     "numero": "012",
     "qui": "Walter",
-    "texte": "La porte etait ouverte.",
-    "cible": "walter_3d22da7ab4.wav"
+    "texte": "I live at 308 Negra Arroyo Lane, Albuquerque, New Mexico, 87104.",
+    "cible": "walter_facdf64bca.wav"
   },
   {
     "numero": "013",
-    "qui": "Jesse",
-    "texte": "Ouais, ben. C'est chez moi, quand meme.",
-    "cible": "jesse_30f4153c77.wav"
+    "qui": "Walter",
+    "texte": "To all law enforcement entities, this is not an admission of guilt.",
+    "cible": "walter_3cf01632d9.wav"
   },
   {
     "numero": "014",
     "qui": "Walter",
-    "texte": "Il nous faut du materiel.",
-    "cible": "walter_fc3d93905a.wav"
+    "texte": "I am speaking to my family now.",
+    "cible": "walter_5765e9cfe7.wav"
   },
   {
     "numero": "015",
-    "qui": "Jesse",
-    "texte": "Du materiel genre... combien de materiel ?",
-    "cible": "jesse_5975711179.wav"
+    "qui": "Walter",
+    "texte": "Skyler, you are the love of my life. I hope you know that.",
+    "cible": "walter_845bee9b90.wav"
   },
   {
     "numero": "016",
     "qui": "Walter",
-    "texte": "Assez pour ne pas recommencer.",
-    "cible": "walter_19add4f4e4.wav"
+    "texte": "Walter Junior, you're my big man.",
+    "cible": "walter_8839ae05e8.wav"
   },
   {
     "numero": "017",
-    "qui": "Jesse",
-    "texte": "Ca sonne cher, ce truc-la.",
-    "cible": "jesse_357f918096.wav"
+    "qui": "Walter",
+    "texte": "There are going to be some things.",
+    "cible": "walter_a5033a3c16.wav"
   },
   {
     "numero": "018",
-    "qui": "Jesse",
-    "texte": "T'as vraiment ete mon prof de chimie ?",
-    "cible": "jesse_afbf2f8cf4.wav"
+    "qui": "Walter",
+    "texte": "Things that you'll come to learn about me in the next few days. I just want you to know that no matter how it may look, I only had you in my heart.",
+    "cible": "walter_c1c69ea99d.wav"
   },
   {
     "numero": "019",
     "qui": "Walter",
-    "texte": "Deux ans. Tu as eu un D.",
-    "cible": "walter_9cfb889fc1.wav"
-  },
-  {
-    "numero": "020",
-    "qui": "Jesse",
-    "texte": "J'etais present, c'est deja pas mal.",
-    "cible": "jesse_b765c5a11d.wav"
+    "texte": "Good-bye.",
+    "cible": "walter_9a6bc321c7.wav"
   }
 ]

@@ -34,22 +34,28 @@
 
   "jesse": {
     "nom": "Jesse",
+    "_note": [
+      "La confession du pilote, dite par Walter seul.",
+      "",
+      "Le decoupage suit l'ENREGISTREMENT, pas la ponctuation : chaque ligne",
+      "correspond a un segment separe par un silence dans la prise de",
+      "Guillaume. Recouper une phrase autrement obligerait a redecouper",
+      "l'audio, et le nom de fichier depend du texte.",
+      "",
+      "Duree de chaque segment, mesuree :",
+      "  3.9  9.0  6.8  2.5  4.2  7.3  1.2  9.8  1.1  secondes"
+    ],
     "conversations": [
       [
-        { "qui": "Jesse", "texte": "Yo. T'as pas frappe." },
-        { "qui": "Walter", "texte": "La porte etait ouverte." },
-        { "qui": "Jesse", "texte": "Ouais, ben. C'est chez moi, quand meme." }
-      ],
-      [
-        { "qui": "Walter", "texte": "Il nous faut du materiel." },
-        { "qui": "Jesse", "texte": "Du materiel genre... combien de materiel ?" },
-        { "qui": "Walter", "texte": "Assez pour ne pas recommencer." },
-        { "qui": "Jesse", "texte": "Ca sonne cher, ce truc-la." }
-      ],
-      [
-        { "qui": "Jesse", "texte": "T'as vraiment ete mon prof de chimie ?" },
-        { "qui": "Walter", "texte": "Deux ans. Tu as eu un D." },
-        { "qui": "Jesse", "texte": "J'etais present, c'est deja pas mal." }
+        { "qui": "Walter", "texte": "My name is Walter Hartwell White." },
+        { "qui": "Walter", "texte": "I live at 308 Negra Arroyo Lane, Albuquerque, New Mexico, 87104." },
+        { "qui": "Walter", "texte": "To all law enforcement entities, this is not an admission of guilt." },
+        { "qui": "Walter", "texte": "I am speaking to my family now." },
+        { "qui": "Walter", "texte": "Skyler, you are the love of my life. I hope you know that." },
+        { "qui": "Walter", "texte": "Walter Junior, you're my big man." },
+        { "qui": "Walter", "texte": "There are going to be some things." },
+        { "qui": "Walter", "texte": "Things that you'll come to learn about me in the next few days. I just want you to know that no matter how it may look, I only had you in my heart." },
+        { "qui": "Walter", "texte": "Good-bye." }
       ]
     ]
   }

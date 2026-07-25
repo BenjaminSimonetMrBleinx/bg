@@ -61,7 +61,19 @@ param(
     [switch]$Script,
 
     # Pour 'voix' : range les enregistrements deposes dans assets\voix\.
-    [switch]$Integrer
+    [switch]$Integrer,
+
+    # Pour 'voix' : decoupe une longue prise en segments parles. C est le cas
+    # normal — on n arrete pas le micro entre chaque phrase.
+    [string]$Decouper = '',
+    [double]$Seuil = -40.0,
+    [double]$Pause = 0.6,
+
+    # Pour 'voix' : affecte les segments decoupes aux repliques, dans l ordre,
+    # a partir de -Depuis. Et -Reconnaitre les confronte au script.
+    [switch]$Assigner,
+    [int]$Depuis = 1,
+    [switch]$Reconnaitre
 )
 
 $ErrorActionPreference = 'Stop'
@@ -242,7 +254,9 @@ switch ($Commande) {
         # ligne. Le script est en PowerShell parce que l API vocale est une
         # API .NET — Python devrait passer par un pont pour y acceder.
         & (Join-Path $Racine 'outils\gen_voix.ps1') -Racine $Racine `
-            -Refaire:$Refaire -Voix:$Voix -Script:$Script -Integrer:$Integrer
+            -Refaire:$Refaire -Voix:$Voix -Script:$Script -Integrer:$Integrer `
+            -Decouper $Decouper -Seuil $Seuil -Pause $Pause `
+            -Assigner:$Assigner -Depuis $Depuis -Reconnaitre:$Reconnaitre
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         # Les nouveaux .wav doivent etre importes, sinon le jeu cherche des
         # fichiers que Godot n a jamais convertis et reste muet.

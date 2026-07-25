@@ -648,3 +648,54 @@ la prise d'origine apres conversion. Ce qui part dans le jeu est ecrase, compres
 l'aurait perdue et aurait du refaire la prise. Les originaux sont maintenant archives dans
 `assets/voix/originaux/`, suivis par LFS, et le scan les exclut pour ne pas les reintegrer en
 boucle a chaque livraison.
+
+---
+
+## V16 — La première vraie voix, et le découpage
+
+Guillaume a livré un fichier de **58 secondes** nommé `1.wav`. L'intégration l'a donc affecté
+entièrement à la réplique 001 : en jeu, Skyler disait « Tu rentres tard » et on entendait une
+minute de monologue.
+
+Ce n'était pas une erreur de sa part. **On n'arrête pas le micro entre chaque phrase** — une
+longue prise est le cas normal. C'est le circuit qui manquait une étape.
+
+### Le découpage
+
+`.\bg.ps1 voix -Decouper <fichier>` cherche les silences et extrait les segments parlés.
+Le seuil se règle : `-Pause 0.6` donnait 13 segments, `-Pause 0.3` en donnait 20, `-Pause 0.9`
+en donne **9** — exactement les neuf phrases de la confession du pilote.
+
+Rien n'est affecté automatiquement par défaut. Le nombre de segments ne correspond presque
+jamais au nombre de lignes : on se reprend, on tousse, on enchaîne deux phrases. Deviner
+produirait un doublage où chacun dit le texte du précédent, sans que personne ne voie d'où ça
+vient. `-Assigner -Depuis 11` existe pour le cas où l'on a **vérifié** que la prise suit le
+script — ici, un monologue lu d'une traite, donc l'ordre était garanti.
+
+### Reconnaître ce qu'il y a dans un fichier
+
+Je ne peux pas écouter. Mais Windows a un moteur de reconnaissance français hors ligne, et je
+connais les phrases attendues : les donner comme **grammaire fermée** transforme la
+transcription libre en un choix parmi vingt, ce qui est bien plus facile.
+
+Repère mesuré : une phrase de synthèse propre atteint **93 %**. Les segments de Guillaume
+plafonnaient à **30 %**, avec la même phrase reconnue trois fois — verdict sans appel, ce
+n'était pas le script. Benjamin a confirmé : c'était la confession, en anglais.
+
+Le moteur est resté dans l'outil sous `-Reconnaitre`. Il ne dira pas ce qui est dit hors du
+script, mais il répond à une question qui compte : *cette prise correspond-elle à la réplique
+qu'on croit ?*
+
+### Deux pièges bouchés au passage
+
+**`-Refaire` aurait écrasé les vraies prises par de la synthèse.** Une soirée
+d'enregistrement perdue, et le seul avertissement aurait été le silence de celui qui les
+avait faites. Un registre `enregistrees.json` liste les répliques doublées pour de vrai.
+
+**Ce registre est tenu par l'intégration, pas déduit du nom des archives.** Première version :
+je lisais le numéro dans le nom du fichier archivé. Sauf qu'une prise unique couvre ici les
+répliques 11 à 19, et son nom ne peut en porter qu'un — la 001, précisément celle qu'elle ne
+contenait pas.
+
+**État** : neuf répliques en vraie voix, dix en synthèse, dans la même conversation. Le
+mélange fonctionne, c'est ce qui permet d'avancer par morceaux.
