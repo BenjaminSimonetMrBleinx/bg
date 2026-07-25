@@ -106,6 +106,29 @@ le dépôt.** Sinon elle sera redemandée dans trois semaines.
 `livrer.ps1` s'arrête proprement, n'envoie rien, et le travail reste intact
 en local. Copie d'écran, et ça se démêle en deux minutes.
 
+**Conflit sur un fichier `.import`.** Le seul qui arrive sans que personne
+n'ait rien fait de mal, et il arrivera encore. Quand un nouvel asset entre
+dans le projet, Godot lui attribue un **identifiant tiré au hasard** au
+premier import. Si vous l'importez chacun de votre côté, vous obtenez deux
+identifiants différents pour le même fichier, et git ne peut pas choisir.
+
+C'est arrivé sur `pneus_crissement.wav` : le seul écart entre les deux
+versions était la ligne `uid=`.
+
+**La règle : on garde celui qui est déjà parti sur GitHub.** Des scènes
+peuvent déjà le référencer chez l'autre ; le vôtre, lui, n'est référencé
+nulle part. En pratique :
+
+```powershell
+git checkout --ours <le fichier .import>
+git add <le fichier .import>
+git rebase --continue
+```
+
+**Et pour l'éviter** : `git pull` **avant** d'ouvrir Godot, jamais après.
+Celui qui pull en premier hérite de l'identifiant de l'autre, et il n'y a
+plus rien à départager.
+
 **Désaccord.** Celui dont c'est le territoire tranche. Guillaume sur le son
 et le look, Benjamin sur l'architecture et le périmètre. Sur ce qui n'est
 clairement ni l'un ni l'autre, c'est le périmètre qui prime : est-ce que ça
