@@ -16,7 +16,7 @@
   "outils": [
     {
       "cle": "arme",
-      "nom": "Revolver",
+      "nom": "Gun de ouf",
       "ancrage": "MainD",
       "position": [0.0, -0.03, 0.0],
       "rotation": [0.0, 0.0, 0.0],
