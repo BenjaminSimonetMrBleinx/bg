@@ -56,9 +56,26 @@ var _fin: FinDePartie
 var _cachette: Cachette
 var _ragdoll: Ragdoll
 
-## Ou le joueur reprend quand il recommence. Fige au premier lancement : c'est
-## le seuil de chez Walter, et le scenario veut qu'on reparte de la.
+## LA MAISON OU L'ON COMMENCE LA PARTIE.
+##
+## Le jeu ouvre DANS le salon de Walter, et pas sur le trottoir. C'est ce que
+## demande le scenario : l'homme de Tuco appelle cinq secondes apres qu'on est
+## SORTI de chez soi. En demarrant dehors, la condition etait vraie des la
+## premiere image et le telephone sonnait sur l'ecran de depart — avant meme
+## qu'on ait vu la rue.
+##
+## Vide = on commence dehors, comme avant. C'est ce que font les suites de
+## tests qui mesurent des deplacements en ville.
+@export var commencer_chez: NodePath
+
+## Ou le joueur reprend quand il recommence. Fige au premier lancement.
 var _depart: Transform3D
+
+## Ou l'on ressort apres l'explosion : dehors, pres de la voiture. Ce n'est PAS
+## le point de reprise — celui-la est dans le salon, et y teleporter une
+## voiture la poserait dans le canape.
+var _depart_dehors: Transform3D
+var _voiture_dehors: Vector3
 
 enum Etat { A_PIED, AU_VOLANT, DEDANS }
 
@@ -147,6 +164,11 @@ func _ready() -> void:
 		_fondu.color.a = 0.0
 	_afficher("")
 
+	# Le dehors est retenu AVANT d'entrer : c'est la que l'explosion nous
+	# recrachera, avec la voiture a cote.
+	_depart_dehors = _j.global_transform
+	_voiture_dehors = _v.global_position
+	_commencer_dedans()
 	_depart = _j.global_transform
 	_scenario = get_node_or_null(scenario) as Scenario
 	_tir = get_node_or_null(tir) as Tir
@@ -451,6 +473,25 @@ func _sur_fin_de_dialogue() -> void:
 # demande au controleur. Il sait faire ces gestes ; il ne sait pas quand.
 
 
+# On ouvre la partie dans le salon, sans fondu ni bruit de porte : on n'entre
+# pas, on y etait deja. Tout ce qui suit est le meme etat que celui ou l'on se
+# trouve apres avoir passe une porte, pose directement.
+func _commencer_dedans() -> void:
+	var m := get_node_or_null(commencer_chez) as Maison
+	if m == null:
+		return
+	_etat = Etat.DEDANS
+	_dedans = m
+	_j.global_position = m.entree() + Vector3.UP * 0.1
+	_j.rotation.y = m.cap_entree()
+	_j.velocity = Vector3.ZERO
+	_j.interieur = true
+	_c.interieur(true)
+	_c.recaler()
+	if _audio != null:
+		_audio.ambiance(m.nom_affiche)
+
+
 ## Un bandeau, pour dire quelque chose au joueur.
 func annoncer(texte: String) -> void:
 	_texte_bandeau = texte
@@ -500,11 +541,20 @@ func souffler_l_explosion() -> void:
 		var t := create_tween()
 		t.tween_property(_fondu, "color:a", 1.0, 0.18)
 		await t.finished
-	_j.global_transform = _depart
+	# DEHORS, devant chez lui, avec la voiture a sa place. Le scenario dit
+	# « le joueur se retrouve teleporte a Albuquerque, sa voiture est garee
+	# pres de chez lui » — et le point de reprise, lui, est dans le salon.
+	_etat = Etat.A_PIED
+	_dedans = null
+	_j.interieur = false
+	_c.interieur(false)
+	_j.global_transform = _depart_dehors
 	_j.velocity = Vector3.ZERO
-	_v.global_position = _depart.origin + Vector3(3.0, 0.05, 1.5)
+	_v.global_position = _voiture_dehors
 	_v.linear_velocity = Vector3.ZERO
 	_v.ignorer_les_chocs()
+	if _audio != null:
+		_audio.ambiance("")
 	_c.recaler()
 	await get_tree().physics_frame
 	if _scenario != null:
@@ -530,11 +580,15 @@ func recommencer_la_partie() -> void:
 	_j.process_mode = Node.PROCESS_MODE_INHERIT
 	_j.visible = true
 	_j.set_physics_process(true)
-	_j.global_transform = _depart
-	_j.velocity = Vector3.ZERO
-	_v.global_position = _depart.origin + Vector3(3.0, 0.05, 1.5)
+	_v.global_position = _voiture_dehors
 	_v.linear_velocity = Vector3.ZERO
 	_v.ignorer_les_chocs()
+	# On repart d'ou l'on est parti : dans le salon, avant le coup de fil. La
+	# mission recommence a zero, donc son declencheur aussi — il attend de nous
+	# voir SORTIR, et il faut donc etre rentre.
+	_commencer_dedans()
+	_j.global_transform = _depart
+	_j.velocity = Vector3.ZERO
 	_c.suivre(_j)
 	_c.recaler()
 	_sortie_attendue = null
@@ -715,7 +769,7 @@ func _utiliser(p: Point) -> void:
 		# tendue plutot que regardee.
 		pass
 	if p.emmene_a != Vector3.ZERO:
-		await emmener(p.emmene_a, deg_to_rad(p.cap_degres), p.zone)
+		await emmener(p.emmene_a, deg_to_rad(p.cap_degres), p.zone, p.interieur)
 		return
 	if _scenario != null:
 		_scenario.point_utilise(p)
@@ -724,11 +778,19 @@ func _utiliser(p: Point) -> void:
 ## Emmene le joueur ailleurs, par un fondu. Meme geste qu'une porte de maison,
 ## et c'est bien le meme : entrer dans le camping-car ou dans le QG n'est pas
 ## un autre mecanisme, juste une autre destination.
-func emmener(ou: Vector3, cap: float, zone: String = "") -> void:
+func emmener(ou: Vector3, cap: float, zone: String = "",
+		clos: bool = false) -> void:
 	if _transition:
 		return
 	var depart := _j.global_position
 	await _passer_la_porte(ou, cap, depart)
+	# La camera se rapproche dans un endroit clos, et les pas changent de son.
+	# C'est le meme geste que pour une maison ; il manquait ici, et un couloir
+	# de deux metres quarante avec une camera a quatre metres derriere donne
+	# une image ou l'on ne reconnait plus rien.
+	_j.interieur = clos
+	_c.interieur(clos)
+	_c.recaler()
 	if zone != "" and _scenario != null:
 		_scenario.zone_atteinte(zone)
 

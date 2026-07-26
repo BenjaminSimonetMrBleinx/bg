@@ -50,6 +50,15 @@ signal utilise(point: Point)
 ## Le nom du lieu ou l'on arrive, annonce a la mission.
 @export var zone: String = ""
 
+## Arrive-t-on DANS un endroit clos ?
+##
+## La camera de poursuite se rapproche alors, et les pas sonnent comme a
+## l'interieur. Sans ce reglage, on entre dans un camping-car de deux metres
+## quarante de large avec une camera posee quatre metres derriere : elle passe
+## a travers la paroi, on ne voit plus que du decor retourne, et le personnage
+## parait coince alors qu'il marche normalement.
+@export var interieur: bool = false
+
 ## Disparait-il une fois utilise ? Vrai pour tout ce qui se ramasse.
 @export var une_fois: bool = true
 

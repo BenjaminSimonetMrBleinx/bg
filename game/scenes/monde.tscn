@@ -437,6 +437,7 @@ dialogue = NodePath("../Dialogue")
 roue = NodePath("../Rendu/Interface/Roue")
 telephone = NodePath("../Rendu/Interface/Telephone")
 desert = NodePath("../Rendu/Scene3D/Desert")
+commencer_chez = NodePath("../Rendu/Scene3D/Maisons/Walter")
 passages = [NodePath("../Rendu/Scene3D/VersDesert/Zone"), NodePath("../Rendu/Scene3D/Desert/RetourVille"), NodePath("../Rendu/Scene3D/Mission1/CampingLab/VersTuco"), NodePath("../Rendu/Scene3D/Mission1/QgExterieur/RetourCamping")]
 scenario = NodePath("../Scenario")
 tir = NodePath("../Tir")

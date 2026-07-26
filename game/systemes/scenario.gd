@@ -244,7 +244,7 @@ func dialogue_fini(cle: String) -> bool:
 	# conversation, sinon on la lirait dans le bureau alors qu'elle se joue
 	# sur le trottoir.
 	if cle == "mission_garde" and _controleur != null:
-		_controleur.call("emmener", QG_INTERIEUR, 0.0, "")
+		_controleur.call("emmener", QG_INTERIEUR, 0.0, "", true)
 	return _mission.evenement("dialogue:" + cle)
 
 ## Ou l'on atterrit dans le bureau de Tuco. La seule coordonnee ecrite dans ce

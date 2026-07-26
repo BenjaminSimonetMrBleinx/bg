@@ -28,6 +28,16 @@ var _desert: Node3D
 func _initialize() -> void:
 	var ps := ResourceLoader.load("res://scenes/monde.tscn") as PackedScene
 	_monde = ps.instantiate()
+	# ON DEMARRE DEHORS, comme avant la mission.
+	#
+	# La partie s'ouvre desormais dans le salon de Walter — c'est ce que demande
+	# le scenario, l'appel de Tuco arrivant cinq secondes apres qu'on en sort.
+	# Ce test-ci mesure autre chose et veut le trottoir. On vide le reglage
+	# AVANT d'ajouter la scene a l'arbre : c'est la derniere seconde ou on peut
+	# le faire, le controleur le lit dans son _ready.
+	var c := _monde.find_child("Controleur", true, false)
+	if c != null:
+		c.set("commencer_chez", NodePath())
 	root.add_child(_monde)
 
 

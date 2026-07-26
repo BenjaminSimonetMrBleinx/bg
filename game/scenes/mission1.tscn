@@ -85,6 +85,7 @@ etape = "entrer_camping"
 emmene_a = Vector3(300, 0.4, 1201)
 cap_degres = 180.0
 zone = "camping_interieur"
+interieur = true
 une_fois = false
 portee = 3.2
 
@@ -199,7 +200,7 @@ invite = "Sortir"
 emmene_a = Vector3(876.6, 0.4, -800.6)
 cap_degres = 20.0
 une_fois = false
-portee = 2.0
+portee = 2.5
 
 ; ------------------------------------------------------------- le QG de Tuco
 

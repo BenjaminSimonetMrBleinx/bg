@@ -73,6 +73,7 @@ func _scenario() -> void:
 	_verifier(not equipement.possede("meth"), "sans la meth")
 	_verifier(not equipement.possede("arme"), "et sans le revolver")
 
+	_le_depart()
 	_qui_dit_quoi(mission)
 	_le_deroule(mission)
 	_les_cles(mission, dialogue, equipement)
@@ -85,6 +86,31 @@ func _scenario() -> void:
 	else:
 		printerr("TEST MISSION ECHOUE : %d probleme(s)" % _erreurs.size())
 		quit(1)
+
+
+# LA PARTIE COMMENCE DANS LE SALON DE WALTER.
+#
+# C'est ce que demande le scenario, et ca n'est pas cosmetique : l'homme de
+# Tuco appelle cinq secondes apres qu'on est SORTI de chez soi. En demarrant
+# dehors, la condition « il est sorti » etait vraie des la premiere image et le
+# telephone sonnait avant meme qu'on ait vu la rue.
+func _le_depart() -> void:
+	print("\n--- on commence chez Walter ---")
+	var controleur := _trouver(_monde, "Controleur")
+	var joueur := _trouver(_monde, "Joueur") as Node3D
+	if controleur == null or joueur == null:
+		_erreurs.append("controleur ou joueur introuvable")
+		printerr("  ECHEC controleur ou joueur introuvable")
+		return
+	var dedans: bool = controleur.call("dedans")
+	print("       joueur en %s, dedans = %s"
+			% [joueur.global_position.round(), dedans])
+	_verifier(dedans, "la partie s'ouvre a l'interieur")
+	# L'interieur de la maison de Walter est pose loin du centre-ville, vers
+	# (-574, 583). Si le joueur est reste en ville, c'est que rien ne l'a
+	# deplace et que le drapeau ment.
+	_verifier(joueur.global_position.distance_to(Vector3(-574, 0, 583)) < 12.0,
+			"et il est bien dans le salon, pas seulement declare dedans")
 
 
 # Jesse chez lui doit tenir la conversation de la MISSION a l'etape ou l'on
