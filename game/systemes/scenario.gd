@@ -160,6 +160,27 @@ func traiter(delta: float) -> void:
 		return
 	_gerer_l_appel(delta)
 	_gerer_la_menace(delta)
+	_gerer_l_etat_present()
+
+
+# CERTAINES ETAPES SONT DEJA REMPLIES QUAND ELLES ARRIVENT.
+#
+# « Trouver la voiture de Walt » attend qu'on monte au volant. Mais on y est
+# souvent DEJA : on prend la voiture pour aller chez Jesse, on lui parle par la
+# fenetre ou on redescend une seconde, et l'etape s'ouvre alors qu'on est
+# assis dedans. Plus aucun « monter » n'aura lieu, et l'objectif reste affiche
+# pour toujours.
+#
+# Le scenario le disait des le depart : « si le joueur s'est directement dirige
+# vers sa voiture, ignorer cette etape et la valider ». Un evenement ne se
+# declenche qu'une fois ; un ETAT, on peut le constater a tout moment. On
+# regarde donc l'etat present a chaque image, et pas seulement la transition.
+func _gerer_l_etat_present() -> void:
+	if _controleur == null or _mission.finie():
+		return
+	if str(_mission.etape().get("valide_par", "")) == "volant" \
+			and _controleur.call("au_volant"):
+		_mission.evenement("volant")
 
 
 # L'appel d'ouverture. Il part cinq secondes apres qu'on met le pied dehors,

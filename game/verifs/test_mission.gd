@@ -203,10 +203,26 @@ func _qui_emet_quoi(mission: Mission, dialogue: Dialogue) -> void:
 		if not mission.evenement(str(mission.etape().get("valide_par", ""))):
 			break
 	var controleur := _trouver(_monde, "Controleur")
+	var scenario := _trouver(_monde, "Scenario") as Scenario
 	if controleur != null and mission.a_l_etape("voiture"):
 		controleur.call("_monter")
 		_verifier(not mission.a_l_etape("voiture"),
 				"monter dans la voiture franchit bien l'etape")
+
+	# ET SI ON Y ETAIT DEJA ? C'est le cas courant : on prend la voiture pour
+	# aller chez Jesse, on lui parle, et l'etape s'ouvre alors qu'on est assis
+	# au volant. Plus aucun « monter » n'aura lieu — l'objectif resterait
+	# affiche pour toujours. Signale en jouant, invisible au test precedent.
+	mission.recommencer()
+	while not mission.a_l_etape("voiture") and not mission.finie():
+		if not mission.evenement(str(mission.etape().get("valide_par", ""))):
+			break
+	if scenario != null and controleur != null:
+		_verifier(controleur.call("au_volant"), "on est toujours au volant")
+		scenario.traiter(0.016)
+		_verifier(not mission.a_l_etape("voiture"),
+				"deja au volant, l'etape se franchit d'elle-meme")
+		controleur.call("_descendre")
 	mission.recommencer()
 
 
