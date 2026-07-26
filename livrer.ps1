@@ -146,8 +146,49 @@ Bien "Les fichiers binaires sont bien telecharges"
 
 Titre "2. Recuperation du travail des autres"
 
+# Un depot laisse EN PLEIN CONFLIT ne peut plus rien recuperer.
+#
+# Git repond alors « Pulling is not possible because you have unmerged files »
+# a chaque tentative, indefiniment, et le message ne dit pas comment en sortir.
+# On y arrive apres une fusion interrompue — une fenetre fermee, un ordinateur
+# eteint, un abandon qui n a pas abouti — et plus rien ne marche ensuite.
+#
+# On nettoie donc AVANT de tirer, au lieu de constater apres. C est sans risque
+# pour le travail qui compte : les commits sont intacts, et les fichiers pas
+# encore ajoutes a git — les sons qu on vient de deposer — ne sont pas touches.
+# Seules disparaissent les modifications locales sur des fichiers suivis, qui
+# ici sont toujours des assets regeneres.
+$conflits = @(& git diff --name-only --diff-filter=U 2>$null)
+$rebase_en_cours = (Test-Path (Join-Path $PSScriptRoot '.git\rebase-merge')) -or
+                   (Test-Path (Join-Path $PSScriptRoot '.git\rebase-apply'))
+$fusion_en_cours = Test-Path (Join-Path $PSScriptRoot '.git\MERGE_HEAD')
+
+if ($conflits.Count -gt 0 -or $rebase_en_cours -or $fusion_en_cours) {
+    Souci "Ton depot etait reste au milieu d une fusion interrompue."
+    Info  "Je remets les choses d aplomb. Tes fichiers deposes ne bougent pas."
+    if ($rebase_en_cours) { Invoke-Git rebase --abort | Out-Null }
+    if ($fusion_en_cours) { Invoke-Git merge --abort | Out-Null }
+    Invoke-Git reset --hard HEAD | Out-Null
+    Bien "Depot remis d aplomb"
+}
+
 $r_pull = Invoke-Git pull --rebase --autostash
 Select-Utile $r_pull.Lignes | ForEach-Object { Info $_ }
+if ($r_pull.Code -ne 0) {
+    # Deuxieme chance : on jette les modifications locales sur les fichiers
+    # suivis — ce sont des assets regeneres, refabricables en une commande — et
+    # on retire du chemin les fichiers que git n a plus a suivre. Les vraies
+    # livraisons, elles, ne sont pas encore suivies : elles survivent.
+    Souci "Recuperation bloquee. Deuxieme tentative, sans les fichiers regeneres."
+    Invoke-Git rebase --abort | Out-Null
+    Invoke-Git reset --hard HEAD | Out-Null
+    foreach ($jetable in @('game/donnees/version.json', '.tmp')) {
+        Invoke-Git rm -r --cached -q --ignore-unmatch $jetable | Out-Null
+    }
+    Invoke-Git checkout -- . | Out-Null
+    $r_pull = Invoke-Git pull --rebase --autostash
+    Select-Utile $r_pull.Lignes | ForEach-Object { Info $_ }
+}
 if ($r_pull.Code -ne 0) {
     Invoke-Git rebase --abort | Out-Null
     Stop-Net @"
