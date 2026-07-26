@@ -272,6 +272,25 @@ extends Resource
 ## sonnent quand meme comme une boucle.
 @export_range(0.0, 0.5, 0.01) var pas_variation: float = 0.12
 
+@export_subgroup("Chocs")
+
+## Perte de vitesse SOUDAINE, en m/s sur une image de physique, a partir de
+## laquelle on considere qu'on a tape quelque chose.
+##
+## On mesure la decelaration plutot que d'ecouter les contacts : une voiture
+## touche le sol a chaque image, frotte un trottoir sans arret, et distinguer
+## le vrai choc dans ce flux demanderait de filtrer ce que la vitesse dit
+## directement. Un freinage a la main retire 0,09 m/s par image — mesure — et un mur en
+## prend plusieurs.
+@export_range(0.5, 12.0, 0.1) var choc_seuil: float = 1.2
+
+## Au-dela, c'est de la tole. En dessous, on a frotte.
+@export_range(1.0, 30.0, 0.5) var choc_fort: float = 4.5
+
+## Temps mort apres un choc, en secondes. Un impact dure plusieurs images et
+## en declencherait un par image sans ce repos.
+@export_range(0.05, 2.0, 0.05) var choc_repos: float = 0.35
+
 @export_subgroup("Roulement")
 
 ## Volume du roulement des pneus a pleine vitesse, en decibels.

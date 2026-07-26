@@ -28,12 +28,26 @@ const SEUIL_MARCHE_ARRIERE := 0.8
 ## Emis a chaque changement de rapport apparent, pour le son moteur.
 signal regime_change(regime: float)
 
+## Emis quand la caisse encaisse. La force est la vitesse PERDUE d'un coup, en
+## m/s : elle dit tout de suite si on a frotte un trottoir ou pris un mur.
+signal choc(force: float)
+
 @onready var _avant: Array[VehicleWheel3D] = [$RoueAvantG, $RoueAvantD]
 @onready var _arriere: Array[VehicleWheel3D] = [$RoueArriereG, $RoueArriereD]
 @onready var _phares: Array[SpotLight3D] = [$PhareG, $PhareD]
 
 var _braquage: float = 0.0
 var _regime: float = 0.0
+var _audio: Audio
+
+## Vitesse de l'image precedente, pour mesurer ce qu'un choc en retire.
+var _vitesse_avant: Vector3 = Vector3.ZERO
+var _repos_choc: float = 0.0
+
+## Nombre d'images pendant lesquelles on ignore les chocs. Un passage vers le
+## desert repose la voiture a l'arret : la vitesse tombe de soixante a zero en
+## une image, et sans ce garde on entendrait un mur a chaque teleportation.
+var _sourd: int = 0
 
 
 func _ready() -> void:
@@ -41,7 +55,16 @@ func _ready() -> void:
 		push_error("vehicule : aucune ressource Reglages assignee")
 		set_physics_process(false)
 		return
+	_audio = get_tree().get_first_node_in_group(Audio.GROUPE) as Audio
 	appliquer_reglages()
+
+
+## Ignore les chocs pendant quelques images. A appeler avant de TELEPORTER la
+## voiture : la vitesse tombe alors de soixante a zero en une image, ce qui est
+## exactement la signature d'un mur.
+func ignorer_les_chocs(images: int = 4) -> void:
+	_sourd = images
+	_vitesse_avant = Vector3.ZERO
 
 
 ## Relit reglages.tres. Appelable a chaud : c'est ce qui permet de bouger un
@@ -100,6 +123,58 @@ func _physics_process(delta: float) -> void:
 	if absf(r - _regime) > 0.02:
 		_regime = r
 		regime_change.emit(r)
+
+	_ecouter_les_chocs(delta)
+
+
+# On MESURE la decelaration, on n'ecoute pas les contacts.
+#
+# Une voiture touche le sol a chaque image et frotte un trottoir sans arret :
+# distinguer le vrai choc dans ce flux de contacts demanderait de filtrer sur
+# la force, c'est-a-dire de retrouver ce que la vitesse dit directement. Un
+# freinage appuye retire environ 0,3 m/s par image ; un mur en prend dix.
+#
+# Le detour a un autre merite : ca marche contre n'importe quoi, y compris ce
+# qui n'a pas de corps physique propre — la geometrie de la ville est un seul
+# maillage de collision.
+func _ecouter_les_chocs(delta: float) -> void:
+	_repos_choc = maxf(0.0, _repos_choc - delta)
+
+	# On ne compte QUE la vitesse horizontale perdue.
+	#
+	# Une voiture qui retombe perd d'un coup toute sa vitesse verticale, et
+	# c'est numeriquement indiscernable d'un mur : une chute de soixante
+	# centimetres arrive au sol a plus de trois metres par seconde. La premiere
+	# version faisait donc claquer la tole a chaque fois qu'on reposait la
+	# caisse — au demarrage, apres une bosse, en sortant d'un trottoir.
+	#
+	# La distinction est physique et elle est franche : un atterrissage est
+	# vertical, un choc est horizontal. On jette simplement l'axe Y.
+	var av := Vector2(_vitesse_avant.x, _vitesse_avant.z)
+	var ap := Vector2(linear_velocity.x, linear_velocity.z)
+	var perdue := (av - ap).length()
+	_vitesse_avant = linear_velocity
+
+	if _sourd > 0:
+		_sourd -= 1
+		return
+	if _repos_choc > 0.0 or perdue < reglages.choc_seuil:
+		return
+	# Une voiture a l'arret qu'on pousse ne "tape" pas : on exige d'avoir ROULE
+	# avant. Horizontalement, la aussi.
+	if av.length() < reglages.choc_seuil:
+		return
+
+	_repos_choc = reglages.choc_repos
+	choc.emit(perdue)
+	if _audio == null:
+		return
+	var fort := perdue >= reglages.choc_fort
+	# La hauteur descend avec la violence : un gros choc sonne plus grave, et
+	# ca suffit a etager quatre variantes en une dizaine de nuances.
+	var hauteur := clampf(1.12 - perdue * 0.02, 0.85, 1.12)
+	_audio.bruit_ici("choc_fort" if fort else "choc_leger",
+			global_position, hauteur)
 
 
 # Barre anti-roulis, essieu par essieu.

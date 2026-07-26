@@ -486,6 +486,10 @@ switch ($Commande) {
             @{ cle = 'audio'; nom = 'audio'
                script = 'res://verifs/test_audio.gd'
                couvre = @('systemes/audio', 'assets/sons', 'default_bus_layout') }
+            @{ cle = 'chocs'; nom = 'chocs de la voiture'
+               script = 'res://verifs/test_chocs.gd'
+               couvre = @('systemes/vehicule', 'systemes/audio', 'systemes/controleur',
+                          'donnees/sons', 'assets/sons', 'systemes/reglages') }
             @{ cle = 'temps'; nom = 'cycle jour et nuit'
                script = 'res://verifs/test_temps.gd'
                couvre = @('systemes/temps', 'systemes/reglages', 'systemes/ville',

@@ -270,6 +270,9 @@ func _franchir(p: Passage, au_volant: bool) -> void:
 	if au_volant:
 		# Une masse lancee a soixante qu'on teleporte garde sa vitesse et part
 		# dans le decor a l'arrivee. On la repose a l'arret, dans le bon sens.
+		# Et on la rend sourde un instant : passer de soixante a zero en une
+		# image est exactement la signature d'un mur.
+		_v.ignorer_les_chocs()
 		_v.linear_velocity = Vector3.ZERO
 		_v.angular_velocity = Vector3.ZERO
 		_v.global_position = p.destination
