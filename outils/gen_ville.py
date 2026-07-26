@@ -12,11 +12,11 @@ D'ou viennent les modules est un parametre. Les boites texturees produites ici
 sont des modules par defaut ; les immeubles de Guillaume prendront leur place
 sans que ce fichier change.
 
-                COULOIR = 14 m
+                COULOIR = 17 m
         |<-------------------->|
-        | 3 |      8      | 3  |
-        trot   chaussee   trot        <- entre deux ilots
-                                      PAS = 40 + 14 = 54 m
+        | 3 |       11      | 3 |
+        trot    chaussee    trot      <- entre deux ilots
+                                      PAS = 40 + 17 = 57 m
 """
 
 from __future__ import annotations
@@ -33,6 +33,7 @@ import bmesh
 
 # Toutes les distances sont en metres. Blender est en Z-up ; l'exportateur
 # glTF convertit vers le Y-up de Godot, on ne compense rien a la main.
+
 # Largeur de la chaussee, en metres.
 #
 # Elle etait a 8, ce qui parait genereux — jusqu a ce qu on y gare des
@@ -75,6 +76,10 @@ HAUTEURS = [4.6, 5.8, 7.1, 8.4, 9.7, 11.2]
 # que vivent Walter et Jesse : a vingt metres du point ou commence la partie.
 RESERVES = {(0, 0, "sud")}
 
+# Vers ou regarde un objet pose sur ce cote d'ilot, en radians. La facade sud
+# donne sur la rue au sud, donc on lui tourne le dos pour la regarder.
+CAPS = {"sud": 0.0, "nord": math.pi, "ouest": math.pi / 2, "est": -math.pi / 2}
+
 # Mobilier urbain. Il n'est PAS cuit dans le maillage de la ville : le
 # generateur ne fait qu'ecrire ou le poser, et le jeu instancie. Trois cents
 # poubelles fondues dans le .glb pesent trois cents fois le prix d'une seule.
@@ -97,6 +102,17 @@ PROBA_CLIM = 0.4
 # vide de vehicules ne se lit pas comme une ville, quelle que soit la
 # densite du mobilier.
 ESPACEMENT_VOITURES = 13.0
+
+# Quelles voitures sont garees, et en quelle proportion.
+#
+# Le tirage est pondere parce qu'une rue d'Albuquerque en 2009 n'est pas un
+# echantillonnage equitable du catalogue : on y voit surtout des pick-up et de
+# grosses berlines. L'Alpine est a 1 sur 100 — c'est une voiture qu'on remarque,
+# et on ne remarque que ce qui est rare.
+MODELES_GAREES = [
+    ("pickup", 34), ("berline", 26), ("break", 22), ("aztek", 17),
+    ("alpine", 1),
+]
 PROBA_PLACE_OCCUPEE = 0.55
 
 # Passants. Chacun arpente un segment de trottoir. Pas de foule : dix
@@ -265,15 +281,22 @@ def lampadaire(m: Maillage, x, y, vx, vy) -> None:
 # ---------------------------------------------------------------------- ville
 
 
-def tirer(rng: random.Random) -> str:
-    """Un type de mobilier, selon les poids de MOBILIER."""
-    total = sum(poids for _, poids in MOBILIER)
+def tirer(rng: random.Random, table: list = None) -> str:
+    """Un nom tire au sort dans une table ponderee.
+
+    Sert au mobilier comme aux modeles de voitures : les deux ont besoin d'un
+    tirage NON equitable. Une rue est faite de poubelles et de bornes, pas d'un
+    echantillonnage du catalogue.
+    """
+    if table is None:
+        table = MOBILIER
+    total = sum(poids for _, poids in table)
     seuil = rng.uniform(0.0, total)
-    for nom, poids in MOBILIER:
+    for nom, poids in table:
         seuil -= poids
         if seuil <= 0.0:
             return nom
-    return MOBILIER[0][0]
+    return table[0][0]
 
 
 def mobilier_de_cote(ox: float, oy: float, cote: str,
@@ -334,7 +357,7 @@ def voitures_de_cote(ox: float, oy: float, cote: str,
         if rng.random() < PROBA_PLACE_OCCUPEE:
             x, y = (fixe, pos) if axe == "y" else (pos, fixe)
             objets.append({
-                "type": "voiture_garee",
+                "type": "garee_" + tirer(rng, MODELES_GAREES),
                 "pos": [round(x, 3), 0.0, round(-y, 3)],
                 "angle": round(angle + rng.uniform(-0.03, 0.03), 3),
             })
@@ -411,6 +434,15 @@ def construire(n: int, rng: random.Random, mats: dict) -> dict:
     lampes: list[tuple[float, float, float, float]] = []
     decor: list[dict] = []
     pietons: list[dict] = []
+    # LES ANCRES : les lieux nommes de la ville.
+    #
+    # Le generateur SAIT ou sont les choses — il les construit. Jusqu'ici il
+    # gardait ce savoir pour lui et ne publiait que des listes plates : trente-
+    # deux lampadaires, cent soixante-six decors, quinze trajets. Tout ce qui
+    # devait etre pose a un endroit precis l'etait a des coordonnees recopiees
+    # a la main dans la scene, qui se perimaient au premier changement de
+    # gabarit.
+    lieux: list[dict] = []
 
     # --- chaussees et carrefours -------------------------------------------
     # Corridor k : [k*PAS, k*PAS + COULOIR]. Chaussee au centre : +TROTTOIR.
@@ -488,6 +520,36 @@ def construire(n: int, rng: random.Random, mats: dict) -> dict:
                 # ville, dans le desert, ou personne ne va jamais.
                 if (bx, by, cote) in RESERVES:
                     dalle(m["desert"], cx0, cy0, cx1, cy1, 0.02, TUILE_SOL)
+                    # La parcelle reservee devient une ANCRE : un lieu nomme,
+                    # dont le jeu lit la position au lieu de la recopier.
+                    #
+                    # C'est ce qui manquait. Les maisons et le panneau du
+                    # desert etaient poses a des coordonnees ecrites a la main
+                    # dans la scene ; le jour ou la chaussee est passee de huit
+                    # a onze metres, toute la grille a glisse de trois metres et
+                    # le panneau s'est retrouve au milieu de la route. Deux fois.
+                    # Le BORD : la place de stationnement devant la parcelle,
+                    # sur la chaussee. Le centre de la parcelle ne suffit pas —
+                    # il tombe derriere les maisons, dans la cour. Tout ce
+                    # qu'on veut poser « devant chez Walter » a besoin de ce
+                    # point-la, pas de l'autre.
+                    if cote == "sud":
+                        bord = (ox + BLOC / 2.0, oy - TROTTOIR - 1.15)
+                    elif cote == "nord":
+                        bord = (ox + BLOC / 2.0, oy + BLOC + TROTTOIR + 1.15)
+                    elif cote == "ouest":
+                        bord = (ox - TROTTOIR - 1.15, oy + BLOC / 2.0)
+                    else:
+                        bord = (ox + BLOC + TROTTOIR + 1.15, oy + BLOC / 2.0)
+                    lieux.append({
+                        "nom": "reserve_%d_%d_%s" % (bx, by, cote),
+                        "pos": [round((cx0 + cx1) / 2.0, 3), 0.0,
+                                round(-(cy0 + cy1) / 2.0, 3)],
+                        "bord": [round(bord[0], 3), 0.0, round(-bord[1], 3)],
+                        "cap": round(CAPS[cote], 3),
+                        "longueur": round(
+                            (cx1 - cx0) if axe == "x" else (cy1 - cy0), 3),
+                    })
                     continue
 
                 decor += mobilier_de_cote(ox, oy, cote, rng)
@@ -536,8 +598,36 @@ def construire(n: int, rng: random.Random, mats: dict) -> dict:
     decor += cactus_du_desert(etendue, rng)
 
     faces = sum(maillage.finir() for maillage in m.values())
+    # La SORTIE VERS LE DESERT : au bout de la derniere rue nord-sud, hors de
+    # la ville. Calculee, jamais recopiee — c'est le lieu qui s'est retrouve au
+    # milieu de la chaussee deux fois de suite.
+    axe_rue = TROTTOIR + ROUTE / 2.0            # milieu de la premiere chaussee
+    lieux.append({
+        "nom": "sortie_desert",
+        "pos": [round(axe_rue, 3), 0.0, round(-(etendue - 5.0), 3)],
+        "cap": math.pi,                          # on regarde vers le desert
+        "bord_droit": round(TROTTOIR + ROUTE + TROTTOIR / 2.0, 3),
+    })
+
+    # L'ALPINE. Garee devant les maisons, la ou la partie commence.
+    #
+    # Elle n'est pas dans le tirage des voitures garees : a une chance sur
+    # cent, on peut faire trois villes sans en voir une, et une voiture
+    # remarquable qu'on ne remarque jamais ne sert a rien. Elle a donc son
+    # lieu, comme les maisons.
+    reserve = next((l for l in lieux if l["nom"].startswith("reserve_")), None)
+    if reserve is not None:
+        bx, _, bz = reserve["bord"]
+        lieux.append({
+            "nom": "alpine",
+            # Garee le long du trottoir devant la parcelle, decalee pour ne pas
+            # masquer les portes des deux maisons.
+            "pos": [round(bx - 14.0, 3), 0.0, bz],
+            "cap": round(math.pi / 2, 3),
+        })
+
     return {"etendue": etendue, "lampes": lampes, "decor": decor,
-            "pietons": pietons, "faces": faces}
+            "pietons": pietons, "lieux": lieux, "faces": faces}
 
 
 def main() -> None:
@@ -588,6 +678,12 @@ def main() -> None:
         # par ses trois cents exemplaires, pas trois cents fois ses faces.
         "decor": info["decor"],
         "pietons": info["pietons"],
+        # LES ANCRES. Le generateur publie enfin ce qu'il SAIT de la ville :
+        # ou sont les parcelles reservees, ou est la sortie vers le desert.
+        # Tout ce que le jeu doit poser a un endroit precis se lit ici plutot
+        # que d'etre recopie dans la scene, ou ca se perime au premier
+        # changement de gabarit.
+        "lieux": info["lieux"],
     }, indent=1), encoding="utf-8")
 
     types = {}

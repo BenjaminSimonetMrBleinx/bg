@@ -16,6 +16,25 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.21.0 — Cinq voitures, et une Alpine
+
+> **À essayer : regarde les voitures garées.** Il y en avait un seul modèle décliné en trois
+> couleurs ; il y en a maintenant **cinq silhouettes** — pick-up, berline, break, Aztek, et
+> une Alpine A110 bleue garée devant chez Walter.
+>
+> Le parc est pondéré comme une rue d'Albuquerque en 2009 : surtout des pick-up.
+
+**L'Alpine est un anachronisme assumé.** Alpine n'a rien produit entre 1995 et 2017, donc
+aucune n'est contemporaine de la série. Celle-ci est une A110 des années soixante-dix,
+telle qu'un collectionneur en garderait une — et c'est la seule teinte saturée de tout le
+parc. Dans une rue de beiges et de gris, elle se voit à cent mètres. C'est le but.
+
+**Les lieux nommés.** Le panneau DESERT s'était retrouvé au milieu de la chaussée **deux
+fois**, à chaque fois qu'une rue changeait de largeur. Le générateur publie maintenant des
+lieux nommés — la parcelle des maisons, la sortie vers le désert, la place de l'Alpine — et
+la scène les lit au lieu de recopier des coordonnées. Un lieu nommé se recalcule ; une
+coordonnée écrite à la main se périme.
+
 ## 0.20.0 — Les rues sont enfin praticables
 
 > **À essayer : roule vite en frôlant le trottoir.** Avant, la voiture perdait **62 % de sa

@@ -11,7 +11,7 @@
 ; Le vehicule demarre sur la chaussee verticale du couloir 0, qui court le
 ; long de -Z : il est donc deja dans le bon sens.
 
-[gd_scene load_steps=35 format=3 uid="uid://bgmonde0v0001"]
+[gd_scene load_steps=37 format=3 uid="uid://bgmonde0v0001"]
 
 [ext_resource type="Script" path="res://rendu/rendu_ps2.gd" id="1_rendu"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
@@ -37,6 +37,8 @@
 [ext_resource type="Script" path="res://systemes/desert.gd" id="23_desert"]
 [ext_resource type="Script" path="res://systemes/passage.gd" id="24_passage"]
 [ext_resource type="Script" path="res://systemes/temps.gd" id="29_temps"]
+[ext_resource type="Script" path="res://systemes/ancrage.gd" id="30_ancrage"]
+[ext_resource type="PackedScene" path="res://assets/vehicules/garee_alpine.glb" id="31_alpine"]
 [ext_resource type="PackedScene" path="res://assets/desert/desert.glb" id="25_sol_desert"]
 [ext_resource type="PackedScene" path="res://assets/desert/camping_car.glb" id="26_camping_car"]
 [ext_resource type="PackedScene" path="res://assets/decor/fleche_sol.glb" id="27_fleche"]
@@ -108,8 +110,23 @@ shape = SubResource("passage_forme")
 ; Le panneau DESERT et la fleche au sol, au bout de la route ouest. La fleche
 ; est peinte SUR la chaussee : on la franchit en roulant, on ne la contourne
 ; pas.
+; L Alpine. Anachronique et voulue comme telle : dans une rue de pick-up
+; beiges, la seule teinte saturee du parc. Ancree comme le reste — elle suivra
+; les maisons si la grille bouge encore.
+[node name="Alpine" type="Node3D" parent="Rendu/Scene3D"]
+script = ExtResource("30_ancrage")
+lieu = "alpine"
+
+[node name="Caisse" parent="Rendu/Scene3D/Alpine" instance=ExtResource("31_alpine")]
+
+; Le panneau DESERT et sa fleche. Le noeud ne porte PLUS de coordonnees : il
+; s'ancre sur le lieu nomme que le generateur publie. Deux elargissements de
+; rue ont deja depose ce panneau au milieu de la chaussee ; un lieu nomme se
+; recalcule, une coordonnee ecrite a la main non.
 [node name="VersDesert" type="Node3D" parent="Rendu/Scene3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0, -126)
+script = ExtResource("30_ancrage")
+lieu = "sortie_desert"
+suivre_le_cap = false
 
 [node name="Fleche" parent="Rendu/Scene3D/VersDesert" instance=ExtResource("27_fleche")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4)

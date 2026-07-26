@@ -34,27 +34,141 @@ RAYON_ROUE = 0.34
 LARGEUR_ROUE = 0.24
 COTES_ROUE = 10                 # 10 cotes : rond de loin, facette de pres
 
-CEINTURE = 1.10                 # ligne de separation tolerie / vitrage
+# LES MODELES.
+#
+# Une voiture n'est qu'une suite de sections transversales, de l'arriere vers
+# l'avant : x, demi-largeur, bas de caisse, haut. Changer de silhouette, c'est
+# changer cette table — pas une ligne de code.
+#
+# Toutes ont NEUF sections, et ce n'est pas une coincidence : c'est ce qui
+# permet a un seul constructeur de les traiter toutes, et de designer le
+# pare-brise et la lunette par leur indice.
+#
+# Epoque : la serie se deroule de 2008 a 2010, au Nouveau-Mexique. Le parc
+# roulant y est fait de pick-up, de berlines americaines des annees quatre-
+# vingt-dix et de gros breaks. C'est ce qu'on croise dans la rue, et c'est ce
+# que le generateur produit.
+MODELES = {
+    "aztek": {
+        "quoi": "Le monospace de Walter. Laid, et c'est le sujet.",
+        "empattement": 2.75, "voie": 1.64, "rayon_roue": 0.34,
+        "ceinture": 1.10, "vitre_toit": (0, 4, 5),
+        "couleur": "voiture_aztek",
+        "sections": [
+            (-2.30, 0.76, 0.46, 1.34),
+            (-2.05, 0.90, 0.40, 1.50),
+            (-1.55, 0.95, 0.38, 1.60),
+            (-0.60, 0.95, 0.37, 1.62),
+            ( 0.35, 0.95, 0.37, 1.58),
+            ( 0.95, 0.93, 0.38, 1.38),
+            ( 1.45, 0.90, 0.40, 1.12),
+            ( 2.05, 0.86, 0.44, 1.04),
+            ( 2.32, 0.74, 0.52, 0.96),
+        ],
+    },
 
-# Sections de la caisse, de l'arriere vers l'avant.
-#   x     demi-largeur  bas    haut
-SECTIONS = [
-    (-2.30, 0.76, 0.46, 1.34),
-    (-2.05, 0.90, 0.40, 1.50),
-    (-1.55, 0.95, 0.38, 1.60),
-    (-0.60, 0.95, 0.37, 1.62),
-    ( 0.35, 0.95, 0.37, 1.58),
-    ( 0.95, 0.93, 0.38, 1.38),
-    ( 1.45, 0.90, 0.40, 1.12),
-    ( 2.05, 0.86, 0.44, 1.04),
-    ( 2.32, 0.74, 0.52, 0.96),
-]
+    "pickup": {
+        "quoi": "Le pick-up. Le vehicule le plus banal du Nouveau-Mexique.",
+        "empattement": 3.30, "voie": 1.72, "rayon_roue": 0.38,
+        "ceinture": 1.30, "vitre_toit": (5,),
+        "couleur": "voiture_pickup",
+        "sections": [
+            (-2.72, 0.86, 0.54, 1.24),
+            (-2.42, 0.96, 0.52, 1.28),
+            (-0.92, 0.96, 0.52, 1.30),   # la benne : basse et ouverte
+            (-0.78, 0.99, 0.50, 1.94),   # dos de cabine
+            (-0.08, 0.99, 0.48, 1.97),
+            ( 0.58, 0.97, 0.48, 1.84),   # pare-brise
+            ( 1.08, 0.95, 0.50, 1.32),   # capot
+            ( 2.24, 0.93, 0.52, 1.24),
+            ( 2.58, 0.80, 0.60, 1.16),
+        ],
+    },
+
+    "berline": {
+        "quoi": "La grosse berline americaine des annees quatre-vingt-dix.",
+        "empattement": 2.90, "voie": 1.60, "rayon_roue": 0.33,
+        "ceinture": 1.00, "vitre_toit": (0, 4, 5),
+        "couleur": "voiture_b",
+        "sections": [
+            (-2.46, 0.72, 0.42, 1.02),
+            (-2.16, 0.88, 0.38, 1.16),
+            (-1.60, 0.92, 0.36, 1.42),
+            (-0.76, 0.92, 0.35, 1.46),
+            ( 0.26, 0.92, 0.35, 1.44),
+            ( 0.90, 0.90, 0.36, 1.20),
+            ( 1.60, 0.88, 0.38, 1.04),
+            ( 2.26, 0.84, 0.42, 0.98),
+            ( 2.48, 0.70, 0.50, 0.92),
+        ],
+    },
+
+    "break": {
+        "quoi": "Le break familial haut sur pattes, l'autre banalite locale.",
+        "empattement": 2.80, "voie": 1.66, "rayon_roue": 0.35,
+        "ceinture": 1.16, "vitre_toit": (0, 4, 5),
+        "couleur": "voiture_c",
+        "sections": [
+            (-2.36, 0.80, 0.48, 1.40),
+            (-2.10, 0.94, 0.44, 1.72),
+            (-1.50, 0.98, 0.42, 1.80),
+            (-0.56, 0.98, 0.42, 1.82),
+            ( 0.40, 0.98, 0.42, 1.78),
+            ( 1.00, 0.96, 0.43, 1.50),
+            ( 1.56, 0.92, 0.45, 1.20),
+            ( 2.16, 0.88, 0.48, 1.12),
+            ( 2.40, 0.74, 0.56, 1.04),
+        ],
+    },
+
+    # L'ANACHRONISME ASSUME.
+    #
+    # Alpine n'a rien produit entre 1995 et 2017 : aucune Alpine n'est
+    # contemporaine de la serie. Celle-ci est donc une A110 des annees
+    # soixante-dix, telle qu'un collectionneur en garderait une — ce qui, a
+    # Albuquerque, en fait une voiture qu'on remarque. C'est justement pour ca
+    # qu'elle est la : une ville de pick-up a besoin d'une exception.
+    #
+    # Proportions de l'originale : 3,85 m de long, 1,13 m de haut, tres basse
+    # et tres etroite. C'est la silhouette qui la designe, pas le detail.
+    "alpine": {
+        "quoi": "Une A110 de collection. Anachronique, et voulue comme telle.",
+        "empattement": 2.10, "voie": 1.32, "rayon_roue": 0.28,
+        "ceinture": 0.72, "vitre_toit": (0, 4, 5),
+        "couleur": "voiture_alpine",
+        "sections": [
+            (-1.92, 0.60, 0.30, 0.84),
+            (-1.70, 0.74, 0.26, 0.99),
+            (-1.16, 0.78, 0.25, 1.13),   # la bosse du moteur arriere
+            (-0.56, 0.78, 0.24, 1.12),
+            (-0.10, 0.76, 0.24, 1.10),
+            ( 0.46, 0.72, 0.25, 0.92),   # pare-brise tres incline
+            ( 1.06, 0.68, 0.27, 0.72),   # capot plongeant
+            ( 1.60, 0.62, 0.30, 0.66),
+            ( 1.86, 0.50, 0.36, 0.62),
+        ],
+    },
+}
+
+# Le modele en cours de construction. Pose par main() : les constructeurs
+# lisent ces valeurs plutot que de recevoir dix parametres.
+SECTIONS = MODELES["aztek"]["sections"]
+CEINTURE = MODELES["aztek"]["ceinture"]
+VITRE_TOIT = MODELES["aztek"]["vitre_toit"]
 
 
 def arguments() -> argparse.Namespace:
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     ap = argparse.ArgumentParser(description="Generateur de vehicule")
-    ap.add_argument("--couleur", default="voiture_aztek")
+    ap.add_argument("--modele", default="aztek",
+                    help="silhouette : " + ", ".join(MODELES) + ", ou tous")
+    ap.add_argument("--couleur", default="",
+                    help="remplace la couleur par defaut du modele")
+    # Une voiture GAREE n'a pas besoin de roues pilotees : on fond tout dans un
+    # seul maillage. Cent voitures a l'arret, c'est cent instances d'un fichier
+    # au lieu de cinq cents.
+    ap.add_argument("--garee", action="store_true",
+                    help="produit un seul .glb roues comprises, pour le decor")
     ap.add_argument("--textures", default=".tmp/textures")
     ap.add_argument("--sortie", default="game/assets/vehicules")
     return ap.parse_args(argv)
@@ -156,7 +270,7 @@ def construire_caisse(mats_noms: list) -> Maillage:
         # pare-brise (i = 4 et 5) et hayon arriere (i = 0). Le toit plat entre
         # les deux est de la tolerie — une premiere version vitrait tout et la
         # voiture ressemblait a une serre.
-        vitre_toit = i in (0, 4, 5)
+        vitre_toit = i in VITRE_TOIT
         m.face([(x0, -w0, h0), (x1, -w1, h1), (x1, w1, h1), (x0, w0, h0)],
                [(u0, 0), (u1, 0), (u1, 1), (u0, 1)], 1 if vitre_toit else 0)
         # soubassement
@@ -216,23 +330,24 @@ def construire_roue(mats_noms: list) -> Maillage:
     return m
 
 
-def main() -> None:
-    a = arguments()
-    racine = Path.cwd()
-    textures = Path(a.textures)
-    if not textures.is_absolute():
-        textures = racine / textures
-    sortie = Path(a.sortie)
-    if not sortie.is_absolute():
-        sortie = racine / sortie
-    sortie.mkdir(parents=True, exist_ok=True)
+def batir(nom: str, couleur: str, garee: bool, textures: Path, sortie: Path) -> str:
+    """Construit un modele et l'exporte. Renvoie une ligne de compte rendu."""
+    global SECTIONS, CEINTURE, VITRE_TOIT, EMPATTEMENT, VOIE, RAYON_ROUE
+
+    fiche = MODELES[nom]
+    SECTIONS = fiche["sections"]
+    CEINTURE = fiche["ceinture"]
+    VITRE_TOIT = fiche["vitre_toit"]
+    EMPATTEMENT = fiche["empattement"]
+    VOIE = fiche["voie"]
+    RAYON_ROUE = fiche["rayon_roue"]
+    teinte = couleur or fiche["couleur"]
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
-
     mats = {n: materiau(n, textures) for n in
-            [a.couleur, "vitre", "feu_avant", "feu_arriere", "pneu", "jante"]}
+            [teinte, "vitre", "feu_avant", "feu_arriere", "pneu", "jante"]}
 
-    caisse = construire_caisse([mats[a.couleur], mats["vitre"],
+    caisse = construire_caisse([mats[teinte], mats["vitre"],
                                 mats["feu_avant"], mats["feu_arriere"]])
     f_caisse = caisse.finir()
     roue = construire_roue([mats["pneu"], mats["jante"]])
@@ -247,25 +362,73 @@ def main() -> None:
     for obj in (caisse.obj, roue.obj):
         obj.rotation_euler = (0.0, 0.0, math.radians(90.0))
 
-    # Un objet par fichier : Godot recoit une scene propre pour chacun.
-    for obj, nom in ((caisse.obj, "caisse"), (roue.obj, "roue")):
+    if garee:
+        # Les quatre roues sont POSEES et fondues dans la caisse. Une voiture
+        # a l'arret n'a pas de roues a piloter, et un seul objet coute un seul
+        # appel de rendu au lieu de cinq.
+        demi_e = EMPATTEMENT / 2.0
+        demi_v = VOIE / 2.0
+        exemplaires = []
+        for dz in (-demi_e, demi_e):
+            for dx in (-demi_v, demi_v):
+                copie = roue.obj.copy()
+                copie.data = roue.obj.data.copy()
+                # Apres rotation, la caisse regarde -Z : l'empattement est sur
+                # Z et la voie sur X.
+                # Blender est en Z-UP : la hauteur est z, pas y. Une premiere
+                # version posait les roues a (x, rayon, z) et les faisait
+                # flotter au niveau des vitres, couchees sur le flanc.
+                #
+                # La caisse ayant subi une rotation de 90 degres autour de Z,
+                # sa longueur est desormais sur Y et sa largeur sur X.
+                copie.location = (dx, dz, RAYON_ROUE)
+                bpy.context.collection.objects.link(copie)
+                exemplaires.append(copie)
+        bpy.data.objects.remove(roue.obj, do_unlink=True)
+
+        for o in bpy.data.objects:
+            o.select_set(o in exemplaires or o is caisse.obj)
+        bpy.context.view_layer.objects.active = caisse.obj
+        bpy.ops.object.join()
+
+        fichier = sortie / f"garee_{nom}.glb"
+        bpy.ops.export_scene.gltf(
+            filepath=str(fichier), export_format="GLB", use_selection=True,
+            export_apply=True, export_yup=True,
+            export_cameras=False, export_lights=False)
+        return "garee_%-9s %4d faces   %s" % (nom, f_caisse + f_roue * 4, teinte)
+
+    for obj, base in ((caisse.obj, "caisse"), (roue.obj, "roue")):
         for o in bpy.data.objects:
             o.select_set(o is obj)
         bpy.context.view_layer.objects.active = obj
         bpy.ops.export_scene.gltf(
-            filepath=str(sortie / f"{nom}.glb"),
-            export_format="GLB",
-            use_selection=True,
-            export_apply=True,
-            export_yup=True,
-            export_cameras=False,
-            export_lights=False,
-        )
+            filepath=str(sortie / f"{base}.glb"),
+            export_format="GLB", use_selection=True, export_apply=True,
+            export_yup=True, export_cameras=False, export_lights=False)
+    return ("caisse %-11s %4d faces   %s   empattement %.2f m"
+            % (nom, f_caisse, teinte, EMPATTEMENT))
 
-    print("")
-    print(f"caisse     {f_caisse} faces   couleur {a.couleur}")
-    print(f"roue       {f_roue} faces   rayon {RAYON_ROUE} m")
-    print(f"empattement {EMPATTEMENT} m, voie {VOIE} m")
+
+def main() -> None:
+    a = arguments()
+    racine = Path.cwd()
+    textures = Path(a.textures)
+    if not textures.is_absolute():
+        textures = racine / textures
+    sortie = Path(a.sortie)
+    if not sortie.is_absolute():
+        sortie = racine / sortie
+    sortie.mkdir(parents=True, exist_ok=True)
+
+    noms = list(MODELES) if a.modele == "tous" else [a.modele]
+    for nom in noms:
+        if nom not in MODELES:
+            raise SystemExit("modele inconnu : %s. Connus : %s"
+                             % (nom, ", ".join(MODELES)))
+
+    for nom in noms:
+        print(batir(nom, a.couleur, a.garee, textures, sortie))
     print(f"sortie     {sortie}")
 
 

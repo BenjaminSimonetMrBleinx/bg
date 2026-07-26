@@ -716,9 +716,14 @@ FACADES = {
 # Le beige-or est la couleur de l'Aztek de Walt. Les autres serviront au
 # trafic quand il existera.
 CARROSSERIES = {
-    "voiture_aztek": (154, 138, 108),
-    "voiture_b": (78, 84, 96),
-    "voiture_c": (112, 62, 52),
+    "voiture_aztek": (154, 138, 108),      # le beige-sable de l'Aztek
+    "voiture_b": (78, 84, 96),             # gris bleute, berline
+    "voiture_c": (112, 62, 52),            # rouge brique fatigue, break
+    "voiture_pickup": (58, 72, 62),        # vert sombre, pick-up
+    # Le bleu Alpine. C'est la couleur qui identifie la voiture bien avant sa
+    # forme, et la seule teinte saturee de tout le parc — dans une rue de
+    # beiges et de gris, elle se voit a cent metres. C'est le but.
+    "voiture_alpine": (28, 62, 138),
 }
 
 

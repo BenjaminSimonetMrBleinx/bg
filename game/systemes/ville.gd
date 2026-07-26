@@ -19,18 +19,24 @@ var etendue: float = 0.0
 
 const DECOR := "res://assets/decor/%s.glb"
 
-## Elements de decor qui ne sont pas des .glb du dossier decor. La voiture
-## garee est une scene composee : une caisse et quatre roues, comme le
-## vehicule jouable mais sans physique.
-const SCENES := {
-	"voiture_garee": "res://scenes/voiture_garee.tscn",
-}
+## Les voitures garees vivent avec les vehicules, pas avec le mobilier. Elles
+## sont produites par gen_voiture.py en un seul maillage roues comprises : une
+## voiture a l'arret n'a pas de roues a piloter, et un objet coute un appel de
+## rendu la ou cinq en couteraient cinq.
+const VEHICULES := "res://assets/vehicules/%s.glb"
 
 ## Le mobilier n'a pas besoin de collision : ce sont des objets bas, et une
 ## poubelle qui arrete une voiture est plus penible qu'une poubelle qu'on
 ## traverse. Ceux-la seuls sont solides, parce qu'on ne pardonne pas de
 ## passer au travers.
+## Ce qui arrete une voiture. Le reste se traverse : une poubelle qui bloque
+## une caisse est plus penible qu'une poubelle qu'on traverse.
+##
+## Les voitures garees en font partie, evidemment — mais par leur PREFIXE, pas
+## par leur nom : il y a cinq modeles, et il y en aura d'autres.
 const SOLIDES := ["benne", "banc", "cactus", "panneau"]
+
+const SOLIDES_PREFIXES := ["garee_"]
 
 
 ## Les materiaux de facade qui portent un masque de fenetres allumees. On les
@@ -197,7 +203,7 @@ func _poser_decor() -> void:
 	for entree in liste:
 		var type := str(entree.get("type", ""))
 		if not modeles.has(type):
-			var chemin: String = SCENES.get(type, DECOR % type)
+			var chemin: String = (VEHICULES % type) if type.begins_with("garee_") else (DECOR % type)
 			modeles[type] = (ResourceLoader.load(chemin) as PackedScene
 					if ResourceLoader.exists(chemin) else null)
 		if modeles[type] == null:

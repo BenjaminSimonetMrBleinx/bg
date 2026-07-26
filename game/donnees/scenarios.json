@@ -79,6 +79,22 @@
    ]
   },
 
+  "voitures": {
+   "quoi": "Le parc automobile gare : pick-up, berlines, breaks, et l Alpine.",
+   "fin": 60,
+   "etapes": [
+    { "image": 30, "camera": [46, 9, -3], "vise": [28, 0.8, -13] }
+   ]
+  },
+
+  "alpine": {
+   "quoi": "L Alpine de pres. Anachronique et voulue comme telle.",
+   "fin": 60,
+   "etapes": [
+    { "image": 30, "camera": [27, 2.4, -9], "vise": [23, 0.6, -12.9] }
+   ]
+  },
+
   "depart": {
    "quoi": "Le point de depart, tel qu'on le decouvre en lancant le jeu.",
    "fin": 150,
