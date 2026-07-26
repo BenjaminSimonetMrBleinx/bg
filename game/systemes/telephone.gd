@@ -25,6 +25,17 @@ signal raccroche
 @export var reglages: Reglages
 
 var _audio: Audio
+
+## Le systeme audio, retrouve A LA DEMANDE et garde ensuite.
+##
+## Pas dans _ready() : le noeud Audio est declare plus bas dans la scene, donc
+## il n'est pas encore dans son groupe quand celui-ci s'initialise. Le chercher
+## trop tot donnait null, definitivement, et le silence qui suit ressemble a un
+## mecanisme pas encore branche.
+func _son() -> Audio:
+	if _audio == null:
+		_audio = Audio.courant(self)
+	return _audio
 var _etat: int = Etat.RANGE
 var _contacts: Array = []
 var _entrees: Array = []          # les lignes du menu principal
@@ -35,7 +46,6 @@ var _appele: String = ""
 
 
 func _ready() -> void:
-	_audio = get_tree().get_first_node_in_group(Audio.GROUPE) as Audio
 	visible = false
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_charger()
@@ -84,8 +94,8 @@ func sortir() -> void:
 	_etat = Etat.MENU
 	_selection = 0
 	visible = true
-	if _audio != null:
-		_audio.bruit("roue_ouvre")
+	if _son() != null:
+		_son().bruit("roue_ouvre")
 
 
 func ranger() -> void:
@@ -93,8 +103,8 @@ func ranger() -> void:
 		return
 	_etat = Etat.RANGE
 	_appele = ""
-	if _audio != null:
-		_audio.bruit("roue_ferme")
+	if _son() != null:
+		_son().bruit("roue_ferme")
 	raccroche.emit()
 
 
@@ -136,16 +146,16 @@ func _naviguer() -> void:
 		bouge = -1
 	if bouge != 0:
 		_selection = (_selection + bouge + liste.size()) % liste.size()
-		if _audio != null:
-			_audio.bruit("roue_cran")
+		if _son() != null:
+			_son().bruit("roue_cran")
 
 	if Input.is_action_just_pressed("interagir"):
 		_valider()
 
 
 func _valider() -> void:
-	if _audio != null:
-		_audio.bruit("roue_cran")
+	if _son() != null:
+		_son().bruit("roue_cran")
 	if _etat == Etat.MENU:
 		_etat = Etat.CONTACTS
 		_selection = 0
@@ -155,8 +165,8 @@ func _valider() -> void:
 	_appele = str(fiche.get("cle", ""))
 	_etat = Etat.SONNE
 	_attente = reglages.telephone_sonnerie
-	if _audio != null:
-		_audio.bruit("sonnerie")
+	if _son() != null:
+		_son().bruit("sonnerie")
 
 
 func _draw() -> void:

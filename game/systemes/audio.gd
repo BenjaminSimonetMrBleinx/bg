@@ -157,6 +157,26 @@ func ambiance(nom: String = "") -> void:
 	_fondu.tween_property(_ambiance, "volume_db", 0.0, 0.6)
 
 
+## Retrouve le systeme audio depuis n'importe quel noeud de la scene.
+##
+## A APPELER A LA DEMANDE, JAMAIS DANS _ready().
+##
+## Godot appelle _ready() dans l'ordre de l'arbre, et le noeud Audio est
+## declare apres le vehicule, le joueur, la roue et le telephone. Aucun d'eux
+## n'existe encore dans le groupe au moment ou ils s'initialisent : tous
+## recuperaient null, le gardaient, et restaient muets pour toute la partie.
+##
+## Rien ne le signalait. Chaque appel testait poliment `if _audio != null`, et
+## un jeu silencieux ressemble a un jeu dont le son n'est pas encore branche.
+## Le defaut a survecu a une suite de tests entiere consacree au son — elle
+## interrogeait le groupe depuis la racine, ou il est bien la, au lieu de
+## demander au vehicule s'il l'avait trouve.
+static func courant(depuis: Node) -> Audio:
+	if depuis == null or not depuis.is_inside_tree():
+		return null
+	return depuis.get_tree().get_first_node_in_group(GROUPE) as Audio
+
+
 ## Bruitage ponctuel non positionne : interface, dialogue. Le lecteur se
 ## supprime tout seul, on n'a pas a le gerer.
 func jouer(flux: AudioStream, bus: String = BUS_INTERFACE,

@@ -34,6 +34,17 @@ var interieur: bool = false
 var _cam: Camera3D
 var _audio: Audio
 
+## Le systeme audio, retrouve A LA DEMANDE et garde ensuite.
+##
+## Pas dans _ready() : le noeud Audio est declare plus bas dans la scene, donc
+## il n'est pas encore dans son groupe quand celui-ci s'initialise. Le chercher
+## trop tot donnait null, definitivement, et le silence qui suit ressemble a un
+## mecanisme pas encore branche.
+func _son() -> Audio:
+	if _audio == null:
+		_audio = Audio.courant(self)
+	return _audio
+
 ## La marche procedurale, partagee avec les pietons de la rue.
 var _silhouette: Silhouette
 var _rayon: float = 0.28
@@ -77,10 +88,10 @@ func pose() -> String:
 # La hauteur varie d'un pas a l'autre. Sans elle, deux fichiers seulement — et
 # on n'en a que deux — sonnent comme une boucle au bout de quelques metres.
 func _poser_le_pied() -> void:
-	if _audio == null:
+	if _son() == null:
 		return
 	var v := reglages.pas_variation
-	_audio.bruit_ici("pas_interieur" if interieur else "pas_exterieur",
+	_son().bruit_ici("pas_interieur" if interieur else "pas_exterieur",
 			global_position, 1.0 + randf_range(-v, v))
 
 
@@ -90,7 +101,6 @@ func _ready() -> void:
 		set_physics_process(false)
 		return
 	_cam = get_node_or_null(camera) as Camera3D
-	_audio = get_tree().get_first_node_in_group(Audio.GROUPE) as Audio
 	_silhouette = Silhouette.new(reglages)
 	_silhouette.recenser(self)
 	# Seul le joueur ecoute ses pas. Les quinze passants de la rue emettent le

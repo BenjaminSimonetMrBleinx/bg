@@ -40,6 +40,17 @@ var _braquage: float = 0.0
 var _regime: float = 0.0
 var _audio: Audio
 
+## Le systeme audio, retrouve A LA DEMANDE et garde ensuite.
+##
+## Pas dans _ready() : le noeud Audio est declare plus bas dans la scene, donc
+## il n'est pas encore dans son groupe quand celui-ci s'initialise. Le chercher
+## trop tot donnait null, definitivement, et le silence qui suit ressemble a un
+## mecanisme pas encore branche.
+func _son() -> Audio:
+	if _audio == null:
+		_audio = Audio.courant(self)
+	return _audio
+
 ## Vitesse de l'image precedente, pour mesurer ce qu'un choc en retire.
 var _vitesse_avant: Vector3 = Vector3.ZERO
 var _repos_choc: float = 0.0
@@ -55,7 +66,6 @@ func _ready() -> void:
 		push_error("vehicule : aucune ressource Reglages assignee")
 		set_physics_process(false)
 		return
-	_audio = get_tree().get_first_node_in_group(Audio.GROUPE) as Audio
 	appliquer_reglages()
 
 
@@ -167,13 +177,13 @@ func _ecouter_les_chocs(delta: float) -> void:
 
 	_repos_choc = reglages.choc_repos
 	choc.emit(perdue)
-	if _audio == null:
+	if _son() == null:
 		return
 	var fort := perdue >= reglages.choc_fort
 	# La hauteur descend avec la violence : un gros choc sonne plus grave, et
 	# ca suffit a etager quatre variantes en une dizaine de nuances.
 	var hauteur := clampf(1.12 - perdue * 0.02, 0.85, 1.12)
-	_audio.bruit_ici("choc_fort" if fort else "choc_leger",
+	_son().bruit_ici("choc_fort" if fort else "choc_leger",
 			global_position, hauteur)
 
 

@@ -18,6 +18,17 @@ signal choisi(index: int)
 
 var _eq: Equipement
 var _audio: Audio
+
+## Le systeme audio, retrouve A LA DEMANDE et garde ensuite.
+##
+## Pas dans _ready() : le noeud Audio est declare plus bas dans la scene, donc
+## il n'est pas encore dans son groupe quand celui-ci s'initialise. Le chercher
+## trop tot donnait null, definitivement, et le silence qui suit ressemble a un
+## mecanisme pas encore branche.
+func _son() -> Audio:
+	if _audio == null:
+		_audio = Audio.courant(self)
+	return _audio
 var _ouverte: bool = false
 var _selection: int = 0
 var _ouverture: float = 0.0        # 0 fermee, 1 ouverte — pour l'animation
@@ -25,7 +36,6 @@ var _ouverture: float = 0.0        # 0 fermee, 1 ouverte — pour l'animation
 
 func _ready() -> void:
 	_eq = get_node_or_null(equipement) as Equipement
-	_audio = get_tree().get_first_node_in_group(Audio.GROUPE) as Audio
 	visible = false
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_process(true)
@@ -66,8 +76,8 @@ func fermer(valider: bool) -> void:
 # ce qui est exactement l'effet recherche — c'est le monde qui ralentit, pas
 # le geste.
 func _sonner(nom: String) -> void:
-	if _audio != null:
-		_audio.bruit(nom)
+	if _son() != null:
+		_son().bruit(nom)
 
 
 func _process(delta: float) -> void:

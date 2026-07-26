@@ -64,6 +64,18 @@ func _scenario() -> void:
 	_verifier(audio != null and audio.connait("choc_leger"), "'choc_leger'")
 	_verifier(audio != null and audio.connait("choc_fort"), "'choc_fort'")
 
+	# Le VEHICULE doit pouvoir l'atteindre, et c'est une autre question.
+	#
+	# Ce test interrogeait le groupe depuis la racine et s'en contentait. Il
+	# passait au vert pendant que la voiture, elle, ne trouvait rien : le noeud
+	# Audio est declare apres elle dans la scene, donc il n'etait pas encore
+	# dans son groupe au moment de son _ready(). Elle gardait null pour toute la
+	# partie, et un mur ne faisait aucun bruit.
+	#
+	# On compte donc les LECTEURS crees, pas la disponibilite theorique du son.
+	_verifier(_vehicule.call("_son") != null,
+			"et le vehicule sait ou le trouver")
+
 	_controleur.call("_monter")
 	await _attendre(6)
 
@@ -103,9 +115,23 @@ func _scenario() -> void:
 	# d'un coup ne compte pas pour un choc — la garde exige d'avoir DEJA roule,
 	# et la vitesse precedente est nulle.
 	_vehicule.linear_velocity = Vector3(12.0, 0.0, 0.0)
-	await _attendre(90)
+	# On echantillonne PENDANT la course, pas apres : un lecteur se supprime des
+	# qu'il a fini, et compter a la fin ne trouve rien. C'est exactement le
+	# genre de zero qu'on interprete comme « le son ne marche pas ».
+	var vus := 0
+	for i in 90:
+		await physics_frame
+		if audio != null:
+			var n := 0
+			for e in audio.get_children():
+				if e is AudioStreamPlayer3D:
+					n += 1
+			vus = maxi(vus, n)
 
-	_verifier(not _chocs.is_empty(), "le mur a ete entendu (%d choc(s))" % _chocs.size())
+	_verifier(not _chocs.is_empty(), "le mur a ete signale (%d choc(s))" % _chocs.size())
+
+	# Signale ne suffit pas : il faut que ca SORTE.
+	_verifier(vus > 0, "et un lecteur positionne a joue le son (%d vu(s))" % vus)
 	if not _chocs.is_empty():
 		var pire := 0.0
 		for c in _chocs:

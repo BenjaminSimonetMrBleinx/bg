@@ -28,9 +28,19 @@ var _actif: int = RIEN
 var _porteur: Node3D
 var _audio: Audio
 
+## Le systeme audio, retrouve A LA DEMANDE et garde ensuite.
+##
+## Pas dans _ready() : le noeud Audio est declare plus bas dans la scene, donc
+## il n'est pas encore dans son groupe quand celui-ci s'initialise. Le chercher
+## trop tot donnait null, definitivement, et le silence qui suit ressemble a un
+## mecanisme pas encore branche.
+func _son() -> Audio:
+	if _audio == null:
+		_audio = Audio.courant(self)
+	return _audio
+
 
 func _ready() -> void:
-	_audio = get_tree().get_first_node_in_group(Audio.GROUPE) as Audio
 	_porteur = get_node_or_null(porteur) as Node3D
 	if _porteur == null:
 		push_error("equipement : porteur introuvable (%s)" % porteur)
@@ -130,8 +140,8 @@ func equiper(i: int) -> void:
 # pas. On verifie donc AVANT d'appeler, sinon chaque equipement d'arme
 # imprimerait un avertissement pour un comportement voulu.
 func _sonner(i: int) -> void:
-	if _audio == null or i == RIEN or i >= _fiches.size():
+	if _son() == null or i == RIEN or i >= _fiches.size():
 		return
 	var nom := "objet_%s" % str(_fiches[i].get("cle", ""))
-	if _audio.connait(nom):
-		_audio.bruit(nom)
+	if _son().connait(nom):
+		_son().bruit(nom)

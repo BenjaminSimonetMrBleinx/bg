@@ -66,7 +66,23 @@
   "sonnerie": ["telephone/phone_ring.wav"],
 
 
-  "pas_exterieur": ["pas/steps_beton.wav"],
+  "pas_exterieur": [
+   "pas/pas_beton_01.wav",
+   "pas/pas_beton_02.wav",
+   "pas/pas_beton_03.wav",
+   "pas/pas_beton_04.wav",
+   "pas/pas_beton_05.wav",
+   "pas/pas_beton_06.wav",
+   "pas/pas_beton_07.wav",
+   "pas/pas_beton_08.wav",
+   "pas/pas_beton_09.wav",
+   "pas/pas_beton_10.wav",
+   "pas/pas_beton_11.wav",
+   "pas/pas_beton_12.wav",
+   "pas/pas_beton_13.wav",
+   "pas/pas_beton_14.wav",
+   "pas/pas_beton_15.wav"
+  ],
   "pas_interieur": ["pas/step_indoors01.wav"]
  },
 
@@ -75,6 +91,21 @@
   "Walter": "maison/ambiance_indoors_house.wav",
   "Jesse": "maison/ambiance_indoors_house.wav"
  },
+
+ "_series": [
+  "Des fichiers restent dans assets/sons/ sans etre cites ci-dessus, et c'est",
+  "voulu : ce sont les ENREGISTREMENTS D'ORIGINE, dont les morceaux servent.",
+  "",
+  "pas/steps_beton.wav  — six secondes de marche, decoupees en quinze pas :",
+  "  python outils/decouper_son.py game/assets/sons/pas/steps_beton.wav --nom pas_beton",
+  "",
+  "On enregistre une serie parce que c'est ce qu'on fait naturellement devant",
+  "un micro, et parce qu'une serie sonne juste la ou six prises separees",
+  "sonnent comme six prises separees. Le jeu, lui, a besoin d'un pas par pas.",
+  "",
+  "L'original reste : c'est le master, et un decoupage se refait avec d'autres",
+  "reglages le jour ou celui-ci ne convient plus."
+ ],
 
  "_non_branches": [
   "Il ne reste que deux fichiers muets, et pour la meme raison : ce sont des",
