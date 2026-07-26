@@ -73,6 +73,7 @@ func _scenario() -> void:
 	_verifier(not equipement.possede("meth"), "sans la meth")
 	_verifier(not equipement.possede("arme"), "et sans le revolver")
 
+	_qui_dit_quoi(mission)
 	_le_deroule(mission)
 	_les_cles(mission, dialogue, equipement)
 	_la_cachette(mission, bourse)
@@ -84,6 +85,33 @@ func _scenario() -> void:
 	else:
 		printerr("TEST MISSION ECHOUE : %d probleme(s)" % _erreurs.size())
 		quit(1)
+
+
+# Jesse chez lui doit tenir la conversation de la MISSION a l'etape ou l'on
+# vient lui parler de la commande, et sa causette habituelle le reste du temps.
+#
+# C'est exactement ce qui a rate au premier essai en jeu : on recevait l'appel,
+# on courait chez lui, et il repondait « Yo » comme si de rien n'etait. La
+# mission ne pouvait plus avancer, et rien n'indiquait pourquoi — l'habitant
+# porte une cle unique, il disait donc toujours la meme chose.
+func _qui_dit_quoi(mission: Mission) -> void:
+	print("\n--- Jesse dit ce que la mission attend ---")
+	var scenario := _trouver(_monde, "Scenario") as Scenario
+	if scenario == null:
+		_erreurs.append("scenario introuvable")
+		printerr("  ECHEC scenario introuvable")
+		return
+	mission.recommencer()
+	_verifier(scenario.dialogue_pour("jesse") == "jesse",
+			"avant l'appel, il tient sa conversation ordinaire")
+	mission.evenement("dialogue:mission_tuco_appel")
+	_verifier(mission.a_l_etape("parler_jesse"), "l'appel mene chez Jesse")
+	_verifier(scenario.dialogue_pour("jesse") == "mission_jesse_maison",
+			"et la, il parle de la commande")
+	mission.evenement("dialogue:mission_jesse_maison")
+	_verifier(scenario.dialogue_pour("jesse") == "jesse",
+			"une fois l'etape passee, il redevient lui-meme")
+	mission.recommencer()
 
 
 # On joue la mission en annoncant, etape apres etape, l'evenement qu'elle

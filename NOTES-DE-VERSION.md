@@ -16,6 +16,16 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.27.3 — Jesse répond enfin de la commande
+
+> **Bug bloquant, corrigé.** Après l''appel de l''homme de Tuco, aller parler à
+> Jesse chez lui ne lançait pas la conversation de la mission : il disait « Yo »
+> comme d''habitude, et **l''étape ne pouvait plus être franchie**.
+
+Un habitant portait une clé unique, il tenait donc toujours la même
+conversation. C''est maintenant la mission qui décide de ce que quelqu''un a à
+dire à un moment donné — et qui le rend à sa causette ordinaire l''étape passée.
+
 ## 0.27.2 — Les vrais sons de Guillaume
 
 > **À essayer : tire, et surtout va au bout de la scène chez Tuco.** Les coups

@@ -202,6 +202,32 @@ func _gerer_la_menace(delta: float) -> void:
 # ---------------------------------------------------------------- reactions
 
 
+## QUI DIT QUOI, ET QUAND.
+##
+## Un habitant porte une cle unique — Jesse chez lui, c'est « jesse » — et il
+## raconte donc toujours la meme chose. Pendant une mission, ce n'est pas ce
+## qu'on veut : a l'etape ou l'on doit lui parler de la commande, c'est la
+## conversation de la MISSION qu'il doit tenir, pas sa causette habituelle.
+##
+## La table vit ici et pas sur le personnage : c'est le scenario qui sait a
+## quel moment quelqu'un a autre chose a dire. Le PNJ, lui, n'a pas a connaitre
+## la mission en cours.
+const REMPLACEMENTS := {
+	"jesse": [["parler_jesse", "mission_jesse_maison"]],
+}
+
+
+## La conversation a jouer pour ce personnage, maintenant. Renvoie la cle
+## d'origine s'il n'y a rien de special.
+func dialogue_pour(cle: String) -> String:
+	if _mission == null or not REMPLACEMENTS.has(cle):
+		return cle
+	for regle in REMPLACEMENTS[cle]:
+		if _mission.a_l_etape(str(regle[0])):
+			return str(regle[1])
+	return cle
+
+
 ## Une conversation vient de se terminer. Renvoie vrai si elle a fait avancer
 ## la mission — le controleur n'a alors rien d'autre a faire.
 func dialogue_fini(cle: String) -> bool:

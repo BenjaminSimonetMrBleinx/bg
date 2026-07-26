@@ -593,7 +593,12 @@ func _dans_la_maison() -> void:
 func _parler(p: Pnj) -> void:
 	if _dialogue == null:
 		return
-	if _dialogue.demarrer(p.cle):
+	# La mission peut avoir mieux a faire dire a ce personnage que sa
+	# conversation habituelle. C'est elle qui tranche, pas lui.
+	var cle := p.cle
+	if _scenario != null:
+		cle = _scenario.dialogue_pour(cle)
+	if _dialogue.demarrer(cle):
 		# Immobilise sans suspendre la physique : il finit son pas au lieu de
 		# se figer une jambe en l'air.
 		_j.bloque = true
