@@ -87,6 +87,20 @@ extends Resource
 @export_range(0.0, 1.0, 0.05) var anti_roulis: float = 0.55
 
 # ------------------------------------------------------------------ camera
+@export_group("Circulation")
+
+## Vitesse de croisiere des voitures qui circulent, en m/s. 9 m/s font une
+## trentaine de km/h : c'est lent, et c'est voulu. Une circulation rapide dans
+## une ville de quatre ilots ne laisse pas le temps de la voir, et transforme
+## chaque carrefour en piege.
+@export_range(2.0, 25.0, 0.5) var trafic_vitesse: float = 9.0
+
+## A quelle distance une voiture s'arrete derriere ce qui barre la route.
+@export_range(2.0, 25.0, 0.5) var trafic_garde: float = 7.0
+
+## Vitesse des passants sur le graphe, en multiplicateur de la marche.
+@export_range(0.3, 1.6, 0.05) var passant_allure: float = 0.8
+
 @export_group("Camera")
 
 ## Distance de la camera derriere le vehicule.

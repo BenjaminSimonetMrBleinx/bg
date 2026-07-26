@@ -11,7 +11,7 @@
 ; Le vehicule demarre sur la chaussee verticale du couloir 0, qui court le
 ; long de -Z : il est donc deja dans le bon sens.
 
-[gd_scene load_steps=37 format=3 uid="uid://bgmonde0v0001"]
+[gd_scene load_steps=38 format=3 uid="uid://bgmonde0v0001"]
 
 [ext_resource type="Script" path="res://rendu/rendu_ps2.gd" id="1_rendu"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
@@ -38,6 +38,7 @@
 [ext_resource type="Script" path="res://systemes/passage.gd" id="24_passage"]
 [ext_resource type="Script" path="res://systemes/temps.gd" id="29_temps"]
 [ext_resource type="Script" path="res://systemes/ancrage.gd" id="30_ancrage"]
+[ext_resource type="Script" path="res://systemes/trafic.gd" id="32_trafic"]
 [ext_resource type="PackedScene" path="res://assets/vehicules/garee_alpine.glb" id="31_alpine"]
 [ext_resource type="PackedScene" path="res://assets/desert/desert.glb" id="25_sol_desert"]
 [ext_resource type="PackedScene" path="res://assets/desert/camping_car.glb" id="26_camping_car"]
@@ -144,6 +145,13 @@ exige_vehicule = true
 
 [node name="Forme" type="CollisionShape3D" parent="Rendu/Scene3D/VersDesert/Zone"]
 shape = SubResource("passage_forme")
+; La circulation. Les voitures suivent le graphe des rues publie par le
+; generateur — sur graphe, jamais en physique : la simulation avec changement
+; de voie est l endroit precis ou les projets a deux meurent.
+[node name="Trafic" type="Node3D" parent="Rendu/Scene3D"]
+script = ExtResource("32_trafic")
+reglages = ExtResource("2_reglages")
+
 ; Les passants. Leurs trajets viennent du generateur de ville, comme les
 ; lampadaires : une ville regeneree repeuple ses trottoirs toute seule.
 [node name="Foule" type="Node3D" parent="Rendu/Scene3D"]

@@ -95,6 +95,14 @@
    ]
   },
 
+  "circulation": {
+   "quoi": "La rue vue de haut : les voitures qui roulent, chacune sur sa voie.",
+   "fin": 220,
+   "etapes": [
+    { "image": 40, "camera": [11, 5.5, -22], "vise": [8, 0.8, -75] }
+   ]
+  },
+
   "depart": {
    "quoi": "Le point de depart, tel qu'on le decouvre en lancant le jeu.",
    "fin": 150,

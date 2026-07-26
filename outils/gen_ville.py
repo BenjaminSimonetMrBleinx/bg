@@ -400,6 +400,59 @@ def pietons_de_cote(ox: float, oy: float, cote: str,
     return trajets
 
 
+def graphe_des_rues(n: int) -> dict:
+    """Le reseau routier : des carrefours, et des troncons entre eux.
+
+    POURQUOI UN GRAPHE, ET PAS DES SEGMENTS.
+
+    Les passants faisaient jusqu'ici un aller-retour sur un bout de trottoir
+    fixe, pour toujours. Ca tient trente secondes : au-dela, on voit que le
+    meme homme refait les memes vingt-cinq metres, ne tourne jamais un coin et
+    n'entre nulle part.
+
+    Et surtout ce n'est pas transposable aux voitures. Une voiture qui fait
+    demi-tour au bout d'un troncon et repart en marche arriere est absurde ;
+    elle doit tourner aux carrefours. Il faut donc un reseau, pas des segments.
+
+    Le graphe est le meme pour les deux, a une largeur pres : les carrefours
+    sont aux memes endroits, seule la voie change. Les pietons prennent le
+    milieu du trottoir, les voitures leur file de droite.
+
+    Les indices vont de 0 a n inclus dans les deux directions : (i, j) est le
+    carrefour de la i-eme rue nord-sud et de la j-eme rue est-ouest.
+    """
+    axe = TROTTOIR + ROUTE / 2.0
+    noeuds: list[list[float]] = []
+    index: dict[tuple[int, int], int] = {}
+    for i in range(n + 1):
+        for j in range(n + 1):
+            index[(i, j)] = len(noeuds)
+            noeuds.append([round(i * PAS + axe, 3), 0.0,
+                           round(-(j * PAS + axe), 3)])
+
+    aretes: list[list[int]] = []
+    for i in range(n + 1):
+        for j in range(n + 1):
+            if i < n:
+                aretes.append([index[(i, j)], index[(i + 1, j)]])
+            if j < n:
+                aretes.append([index[(i, j)], index[(i, j + 1)]])
+
+    return {
+        "noeuds": noeuds,
+        "aretes": aretes,
+        # De combien un vehicule se decale a DROITE de l'axe du troncon.
+        #
+        # C'est ce qui donne la circulation a droite sans doubler le graphe :
+        # deux voitures en sens inverse sur la meme arete se croisent au lieu
+        # de se percuter. Un quart de chaussee, soit le milieu de sa voie.
+        "demi_voie": round(ROUTE / 4.0, 3),
+        # Le milieu du trottoir, pour les pietons : entre les lampadaires cote
+        # bordure et le mobilier cote facade.
+        "ecart_trottoir": round(ROUTE / 2.0 + TROTTOIR / 2.0, 3),
+    }
+
+
 def cactus_du_desert(etendue: float, rng: random.Random,
                      combien: int = 70) -> list[dict]:
     """Seme des cactus autour de la ville.
@@ -627,7 +680,8 @@ def construire(n: int, rng: random.Random, mats: dict) -> dict:
         })
 
     return {"etendue": etendue, "lampes": lampes, "decor": decor,
-            "pietons": pietons, "lieux": lieux, "faces": faces}
+            "pietons": pietons, "lieux": lieux, "graphe": graphe_des_rues(n),
+            "faces": faces}
 
 
 def main() -> None:
@@ -684,6 +738,10 @@ def main() -> None:
         # que d'etre recopie dans la scene, ou ca se perime au premier
         # changement de gabarit.
         "lieux": info["lieux"],
+        # LE GRAPHE DES RUES : carrefours et troncons. Les voitures et les
+        # passants y circulent au lieu de faire des allers-retours sur un
+        # segment fixe. Voir graphe_des_rues().
+        "graphe": info["graphe"],
     }, indent=1), encoding="utf-8")
 
     types = {}

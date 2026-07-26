@@ -37,6 +37,19 @@ func _ready() -> void:
 	if routes.is_empty():
 		return
 
+	# Le graphe des rues, s'il existe. Les passants le suivent au lieu de faire
+	# un aller-retour sur leur segment : ils tournent aux carrefours et ne
+	# repassent plus au meme endroit. Voir l'en-tete de pieton.gd.
+	var graphe: Dictionary = data.get("graphe", {})
+	var noeuds: Array = graphe.get("noeuds", [])
+	var aretes: Array = graphe.get("aretes", [])
+	var voisins := {}
+	for i in noeuds.size():
+		voisins[i] = []
+	for a in aretes:
+		voisins[int(a[0])].append(int(a[1]))
+		voisins[int(a[1])].append(int(a[0]))
+
 	var modeles := {}
 	var poses := 0
 	for route in routes:
@@ -55,7 +68,7 @@ func _ready() -> void:
 	print("foule : %d passant(s), %d modeles" % [poses, modeles.size()])
 
 
-func _poser(modele: PackedScene, route: Dictionary, index: int) -> void:
+func _poser(modele: PackedScene, route: Dictionary, index: int) -> Pieton:
 	var p := Pieton.new()
 	p.name = "Passant_%02d" % index
 	p.reglages = reglages
@@ -78,6 +91,7 @@ func _poser(modele: PackedScene, route: Dictionary, index: int) -> void:
 	p.add_child(modele.instantiate())
 	add_child(p)
 	p.global_position = p.depart
+	return p
 
 
 static func _vec(v: Variant) -> Vector3:

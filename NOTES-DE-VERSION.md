@@ -16,6 +16,23 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.22.0 — La ville bouge
+
+> **À essayer : reste sur un trottoir et regarde la rue.** Il y a maintenant des voitures
+> qui **roulent** — dix, chacune sur sa file de droite, qui tournent aux carrefours et
+> s'arrêtent derrière ce qui les bloque. Mets-toi devant l'une d'elles, elle te pousse.
+>
+> **Et suis un passant.** Avant, il refaisait les mêmes vingt-cinq mètres à l'infini. Il
+> tourne maintenant aux coins de rue et ne repasse plus au même endroit.
+
+Le générateur publie un **graphe** de la ville — carrefours et tronçons — et tout le monde
+y circule : les voitures sur la chaussée, les piétons au milieu du trottoir. Une ville
+regénérée avec une autre graine fait circuler ses voitures toute seule.
+
+Rien de tout ça n'est simulé en physique : les voitures suivent une ligne et s'arrêtent si
+quelque chose la barre. C'est volontaire — une circulation avec changement de voie est
+l'endroit précis où les projets à deux s'enlisent.
+
 ## 0.21.0 — Cinq voitures, et une Alpine
 
 > **À essayer : regarde les voitures garées.** Il y en avait un seul modèle décliné en trois

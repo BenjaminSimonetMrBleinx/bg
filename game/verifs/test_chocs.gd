@@ -59,6 +59,16 @@ func _scenario() -> void:
 		return
 	_vehicule.choc.connect(func(f: float) -> void: _chocs.append(f))
 
+	# On VIDE la circulation. Depuis qu'elle existe, une voiture du trafic
+	# venait percuter la notre pendant le freinage et le test comptait un choc
+	# parfaitement reel — mais qui n'etait pas celui qu'il mesurait.
+	#
+	# Un test doit isoler ce qu'il observe. Celui-ci parle de la detection de
+	# choc, pas de la cohabitation avec le trafic : celle-la a sa propre suite.
+	var trafic := _trouver(_monde, "Trafic")
+	if trafic != null:
+		trafic.free()
+
 	print("\n--- la banque connait les deux familles ---")
 	var audio := root.get_tree().get_first_node_in_group(Audio.GROUPE) as Audio
 	_verifier(audio != null and audio.connait("choc_leger"), "'choc_leger'")
