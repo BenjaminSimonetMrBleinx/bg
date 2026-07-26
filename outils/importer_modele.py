@@ -34,6 +34,7 @@ import sys
 from pathlib import Path
 
 import bpy
+from mathutils import Matrix
 
 
 def arguments() -> argparse.Namespace:
@@ -127,8 +128,19 @@ def main() -> None:
         bpy.ops.object.transform_apply(rotation=True)
 
     if a.lacet:
-        obj.rotation_euler[2] = math.radians(a.lacet)
-        bpy.ops.object.transform_apply(rotation=True)
+        # transform_apply AGIT SUR LA SELECTION, et rien d'autre.
+        #
+        # L'appel etait la depuis le debut et n'a jamais rien fait : aucun
+        # objet n'etait selectionne ni actif a ce moment, l'operateur repartait
+        # sans toucher a quoi que ce soit et sans se plaindre. Le lacet demande
+        # etait donc silencieusement ignore — la Pontiac est arrivee en travers
+        # de la route, et deux tentatives de « la retourner » n'ont rien change
+        # puisque ni l'une ni l'autre n'etait appliquee.
+        #
+        # Mesurable, et desormais mesure : la sortie annonce les cotes finaux
+        # dans le repere de GODOT, ou une voiture doit etre longue sur Z.
+        obj.data.transform(Matrix.Rotation(math.radians(a.lacet), 4, "Z"))
+        obj.data.update()
 
     mini, maxi = boite([obj])
     hauteur = maxi[2] - mini[2]
