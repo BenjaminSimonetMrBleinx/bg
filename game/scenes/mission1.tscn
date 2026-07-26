@@ -13,7 +13,7 @@
 ; Le camping-car EXTERIEUR n'est pas ici : il existe deja dans le desert, pose
 ; par desert.gd a (877, -804). On lui ajoute seulement Jesse et sa porte.
 
-[gd_scene load_steps=13 format=3 uid="uid://bgmission1t001"]
+[gd_scene load_steps=32 format=3 uid="uid://bgmission1t001"]
 
 [ext_resource type="Script" path="res://systemes/pnj.gd" id="1_pnj"]
 [ext_resource type="Script" path="res://systemes/point.gd" id="2_point"]
@@ -26,6 +26,8 @@
 [ext_resource type="PackedScene" path="res://assets/personnages/passant_b.glb" id="9_passant_b"]
 [ext_resource type="PackedScene" path="res://assets/personnages/passant_c.glb" id="10_passant_c"]
 [ext_resource type="PackedScene" path="res://assets/personnages/tuco.glb" id="11_tuco"]
+[ext_resource type="PackedScene" path="res://assets/decor/fleche_sol.glb" id="12_fleche"]
+[ext_resource type="PackedScene" path="res://assets/decor/panneau_desert.glb" id="13_panneau"]
 
 [sub_resource type="BoxShape3D" id="zone_qg"]
 size = Vector3(14, 4, 14)
@@ -37,14 +39,39 @@ size = Vector3(14, 4, 14)
 ; Blender a chaque retouche. Trois boites par piece tiennent la meme fonction,
 ; ne se perdent jamais, et coutent infiniment moins cher a la physique qu'un
 ; maillage de trois cents faces.
+; Les cotes suivent CC_L, CC_P et CC_H dans outils/gen_lieux.py. Le camping-car
+; a ete elargi a 3,40 m — la camera sortait par la paroi et le mobilier ne
+; pouvait pas etre solide sans fermer le couloir. Ces boites doivent bouger
+; avec lui : une collision restee a l'ancienne largeur laisse un mur invisible
+; au milieu de la piece.
 [sub_resource type="BoxShape3D" id="dalle_cc"]
-size = Vector3(2.45, 0.2, 7.6)
+size = Vector3(3.4, 0.2, 8.2)
 
 [sub_resource type="BoxShape3D" id="mur_cc_long"]
-size = Vector3(0.2, 2.2, 7.6)
+size = Vector3(0.2, 2.3, 8.2)
 
 [sub_resource type="BoxShape3D" id="mur_cc_bout"]
-size = Vector3(2.45, 2.2, 0.2)
+size = Vector3(3.4, 2.3, 0.2)
+
+; LE MOBILIER DU LABO EST SOLIDE.
+;
+; On traversait les paillasses, l'atelier et les sieges : la piece etait un
+; couloir vide habille d'images. Elle est maintenant assez large pour que tout
+; soit franc de collision et qu'il reste 2,15 m de passage au milieu.
+[sub_resource type="BoxShape3D" id="paillasse_g"]
+size = Vector3(0.62, 0.94, 6.3)
+
+[sub_resource type="BoxShape3D" id="paillasse_d"]
+size = Vector3(0.55, 0.94, 1.9)
+
+[sub_resource type="BoxShape3D" id="atelier_cc"]
+size = Vector3(0.58, 1.06, 1.6)
+
+[sub_resource type="BoxShape3D" id="siege_cc"]
+size = Vector3(0.6, 1.26, 0.64)
+
+[sub_resource type="BoxShape3D" id="tableau_bord"]
+size = Vector3(3.3, 0.48, 0.54)
 
 [sub_resource type="BoxShape3D" id="dalle_qg"]
 size = Vector3(80, 0.2, 80)
@@ -60,6 +87,28 @@ size = Vector3(0.2, 3, 8.2)
 
 [sub_resource type="BoxShape3D" id="mur_bureau_bout"]
 size = Vector3(6.4, 3, 0.2)
+
+; LE MOBILIER DU BUREAU EST SOLIDE.
+;
+; On traversait le bureau de Tuco, ce qui ruinait la scene : la piece est
+; construite autour de cette table — Tuco derriere, le joueur devant — et une
+; table qu'on franchit supprime la seule distance qui compte.
+;
+; Les cotes sont lus sur gen_lieux.py, pas estimes. Le generateur construit en
+; convention Blender (avant vers -Y) et exporte en +Y up, ce qui INVERSE Z :
+; un meuble pose entre y = 1,7 et 2,9 dans le script se retrouve entre
+; z = -2,9 et -1,7 dans Godot.
+[sub_resource type="BoxShape3D" id="bureau_tuco"]
+size = Vector3(3, 0.8, 1.2)
+
+[sub_resource type="BoxShape3D" id="fauteuil_tuco"]
+size = Vector3(0.9, 1.24, 0.7)
+
+[sub_resource type="BoxShape3D" id="caisse_haute"]
+size = Vector3(0.9, 0.75, 0.9)
+
+[sub_resource type="BoxShape3D" id="caisse_basse"]
+size = Vector3(0.7, 0.55, 0.7)
 
 [node name="Mission1" type="Node3D"]
 
@@ -77,11 +126,20 @@ script = ExtResource("1_pnj")
 cle = "mission_jesse_camping"
 geometrie = ExtResource("7_jesse")
 
+; SUR LE FLANC, PAS SUR LE CAPOT.
+;
+; Le camping-car etait une boite generee de sept metres ; c'est maintenant le
+; modele livre par Guillaume, plus long de deux metres et oriente autrement.
+; L'ancien point d'entree, pose a 3,40 m vers +Z, se retrouvait devant le
+; PARE-BRISE : on entrait par le nez du vehicule.
+;
+; Verifie a l'image, et c'est le seul moyen de le verifier :
+;   .\bg.ps1 capture -Scenario camping_car_porte
 [node name="PorteCampingCar" type="Node3D" parent="CampingLab"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.4, 0, 3.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.0, 0, 1.0)
 script = ExtResource("2_point")
 invite = "Entrer dans le camping-car"
-etape = "entrer_camping"
+etape_minimale = "entrer_camping"
 emmene_a = Vector3(300, 0.4, 1201)
 cap_degres = 180.0
 zone = "camping_interieur"
@@ -89,10 +147,35 @@ interieur = true
 une_fois = false
 portee = 3.2
 
-; La sortie vers le QG de Tuco. Elle refuse tant qu'on n'a pas la marchandise,
-; et elle le DIT — un decor qui ne repond pas passe pour casse.
-[node name="VersTuco" type="Area3D" parent="CampingLab"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 1, 14)
+; -------------------------------------------------- la route qui mene chez Tuco
+;
+; C'EST UNE AUTRE ROUTE, ET ELLE EST LOIN.
+;
+; Elle etait posee a vingt-cinq metres du camping-car : en remontant en voiture
+; apres la cuisine, on roulait dessus sans l'avoir cherchee et l'on se
+; retrouvait devant chez Tuco sans avoir eu le sentiment d'y aller. Un voyage
+; qu'on n'a pas conduit n'est pas un voyage.
+;
+; Elle est maintenant a cent quatre-vingt-dix metres au sud du point d'arrivee,
+; plus bas sur la meme piste — voir PISTE dans outils/gen_desert.py : la bande
+; d'asphalte court du nord au sud sur toute la longueur du terrain, il suffit
+; de la descendre. Un panneau et une fleche peinte la signalent, exactement
+; comme la sortie de la ville.
+;
+; Coordonnees du MONDE : le desert est a (900, -900) et le terrain fait 460 m
+; de cote, donc z = -940 est largement dedans.
+[node name="RouteTuco" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 900, 0, -940)
+
+[node name="Fleche" parent="RouteTuco" instance=ExtResource("12_fleche")]
+
+[node name="Panneau" parent="RouteTuco" instance=ExtResource("13_panneau")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0, 7)
+
+; Elle refuse tant qu'on n'a pas la marchandise, et elle le DIT — un decor qui
+; ne repond pas passe pour casse.
+[node name="VersTuco" type="Area3D" parent="RouteTuco"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 collision_layer = 0
 collision_mask = 7
 script = ExtResource("3_passage")
@@ -104,7 +187,7 @@ zone = "qg"
 etape_minimale = "aller_tuco"
 refus_etape = "Vous ne pouvez pas vous rendre chez Tuco sans sa marchandise"
 
-[node name="Forme" type="CollisionShape3D" parent="CampingLab/VersTuco"]
+[node name="Forme" type="CollisionShape3D" parent="RouteTuco/VersTuco"]
 shape = SubResource("zone_qg")
 
 ; ---------------------------------------------------- l'interieur du camping-car
@@ -135,33 +218,60 @@ omni_attenuation = 1.4
 [node name="Sol" type="StaticBody3D" parent="CampingCarInterieur"]
 
 [node name="FormeSol" type="CollisionShape3D" parent="CampingCarInterieur/Sol"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 3.8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 4.1)
 shape = SubResource("dalle_cc")
 
 [node name="MurGauche" type="CollisionShape3D" parent="CampingCarInterieur/Sol"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.32, 1.1, 3.8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, 1.15, 4.1)
 shape = SubResource("mur_cc_long")
 
 [node name="MurDroit" type="CollisionShape3D" parent="CampingCarInterieur/Sol"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.32, 1.1, 3.8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8, 1.15, 4.1)
 shape = SubResource("mur_cc_long")
 
 [node name="Fond" type="CollisionShape3D" parent="CampingCarInterieur/Sol"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, -0.1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, -0.1)
 shape = SubResource("mur_cc_bout")
 
 [node name="Avant" type="CollisionShape3D" parent="CampingCarInterieur/Sol"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 7.7)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, 8.3)
 shape = SubResource("mur_cc_bout")
 
+[node name="PaillasseGauche" type="CollisionShape3D" parent="CampingCarInterieur/Sol"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.39, 0.47, 3.75)
+shape = SubResource("paillasse_g")
+
+[node name="PaillasseDroite" type="CollisionShape3D" parent="CampingCarInterieur/Sol"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.425, 0.47, 5.85)
+shape = SubResource("paillasse_d")
+
+[node name="Atelier" type="CollisionShape3D" parent="CampingCarInterieur/Sol"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.37, 0.53, 3.8)
+shape = SubResource("atelier_cc")
+
+[node name="SiegeConducteur" type="CollisionShape3D" parent="CampingCarInterieur/Sol"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.72, 0.63, 7.58)
+shape = SubResource("siege_cc")
+
+[node name="SiegePassager" type="CollisionShape3D" parent="CampingCarInterieur/Sol"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.72, 0.63, 7.58)
+shape = SubResource("siege_cc")
+
+[node name="TableauDeBord" type="CollisionShape3D" parent="CampingCarInterieur/Sol"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.86, 7.91)
+shape = SubResource("tableau_bord")
+
+; Il travaille au fond, DOS A L'AVANT du camping-car, donc face a l'entree par
+; laquelle on arrive. La rotation posee ici est celle du noeud ; le modele, lui,
+; est remis d'aplomb par pnj.gd — voir son en-tete.
 [node name="JesseDedans" type="Node3D" parent="CampingCarInterieur"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.85, 0, 6.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 0, 6.1)
 script = ExtResource("1_pnj")
 cle = "mission_jesse_occupe"
 geometrie = ExtResource("7_jesse")
 
 [node name="Atelier" type="Node3D" parent="CampingCarInterieur"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, 1, 3.8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.85, 1, 3.8)
 script = ExtResource("2_point")
 invite = "Cuisiner"
 evenement = "objet:botte"
@@ -169,23 +279,26 @@ donne = "botte"
 etape = "cuisiner"
 portee = 1.9
 
+; Dans la planche de bord, cote passager. On l'atteint depuis l'allee, DERRIERE
+; les sieges : ils sont solides desormais, et la portee doit donc couvrir la
+; profondeur d'un siege.
 [node name="BoiteAGants" type="Node3D" parent="CampingCarInterieur"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.62, 0.9, 6.55)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.72, 0.85, 8.15)
 script = ExtResource("2_point")
 invite = "Fouiller la boite a gants"
 donne = "arme"
-portee = 1.4
+portee = 2.0
 
 [node name="Volant" type="Node3D" parent="CampingCarInterieur"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.62, 0.9, 6.65)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.72, 0.98, 7.6)
 script = ExtResource("2_point")
 invite = "Conduire"
 refus = "Vous ne pouvez pas conduire le camping-car pour l'instant"
 une_fois = false
-portee = 1.3
+portee = 1.8
 
 [node name="Marchandise" type="Node3D" parent="CampingCarInterieur"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.9, 1, 5.9)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.05, 1, 5.6)
 script = ExtResource("2_point")
 invite = "Recuperer la marchandise"
 evenement = "objet:meth"
@@ -194,10 +307,10 @@ etape = "prendre_meth"
 portee = 1.9
 
 [node name="Sortie" type="Node3D" parent="CampingCarInterieur"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.0, 0, 0.6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 0, 0.6)
 script = ExtResource("2_point")
 invite = "Sortir"
-emmene_a = Vector3(876.6, 0.4, -800.6)
+emmene_a = Vector3(875, 0.4, -803)
 cap_degres = 20.0
 une_fois = false
 portee = 2.5
@@ -219,8 +332,9 @@ shape = SubResource("dalle_qg")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.6, 5.4)
 shape = SubResource("mur_qg_facade")
 
+; Il garde la porte, donc il regarde la rue — c'est-a-dire +Z, d'ou l'on arrive.
 [node name="Garde" type="Node3D" parent="QgExterieur"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.6, 0, 6.2)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 1.6, 0, 6.2)
 script = ExtResource("1_pnj")
 cle = "garde"
 geometrie = ExtResource("8_passant_a")
@@ -237,8 +351,10 @@ portee = 2.4
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 22)
 collision_layer = 0
 collision_mask = 7
+; On revient sur la route par laquelle on est venu, et TOURNE VERS LA VILLE :
+; reposer le joueur face au sud le renverrait chez Tuco au premier appui.
 script = ExtResource("3_passage")
-destination = Vector3(903, 0.4, -790)
+destination = Vector3(900, 0.4, -925)
 cap_degres = 180.0
 exige_vehicule = true
 
@@ -293,6 +409,22 @@ shape = SubResource("mur_bureau_bout")
 [node name="MurEntree" type="CollisionShape3D" parent="QgInterieur/SolBureau"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -4.2)
 shape = SubResource("mur_bureau_bout")
+
+[node name="Bureau" type="CollisionShape3D" parent="QgInterieur/SolBureau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, -2.3)
+shape = SubResource("bureau_tuco")
+
+[node name="Fauteuil" type="CollisionShape3D" parent="QgInterieur/SolBureau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.62, -3.4)
+shape = SubResource("fauteuil_tuco")
+
+[node name="CaisseHaute" type="CollisionShape3D" parent="QgInterieur/SolBureau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.55, 0.375, 3.35)
+shape = SubResource("caisse_haute")
+
+[node name="CaisseBasse" type="CollisionShape3D" parent="QgInterieur/SolBureau"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.65, 0.275, 2.45)
+shape = SubResource("caisse_basse")
 
 [node name="Tuco" type="Node3D" parent="QgInterieur"]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -3.55)

@@ -137,9 +137,22 @@ class Maillage:
 # a l'interieur, 2,0 m sous plafond. C'est ETROIT — et c'est le sujet : on veut
 # que le joueur sente le tube dans lequel ces deux-la travaillent.
 
-CC_L = 2.45          # largeur interieure
-CC_P = 7.60          # profondeur, cabine comprise
-CC_H = 2.00
+# ON A ELARGI, ET C'EST UN CHOIX CONTRE LE REALISME.
+#
+# Un Bounder fait 2,45 m de large a l'interieur. A cette largeur, la camera de
+# poursuite — meme en mode interieur, a 2,10 m de recul — sortait par la paroi
+# et l'on voyait le dos du decor : le camping-car paraissait ouvert sur le
+# desert, et le joueur ne se reconnaissait plus dans l'image. Le mobilier
+# n'avait pour la meme raison aucune collision, sans quoi le couloir restant
+# ne se traversait plus.
+#
+# Un metre de plus regle les deux d'un coup : la camera tient dedans, et il
+# reste de quoi marcher meme avec des meubles solides. C'est la meme licence
+# que prennent tous les interieurs jouables — une piece de jeu est plus grande
+# que la piece qu'elle represente, sinon on s'y cogne.
+CC_L = 3.40          # largeur interieure
+CC_P = 8.20          # profondeur, cabine comprise
+CC_H = 2.30
 
 
 def campingcar_interieur(mats) -> int:
@@ -234,23 +247,90 @@ def campingcar_interieur(mats) -> int:
     a.cylindre(hx - 0.34, -3.5, 1.06, 1.44, 0.05, 6)
     total += a.finir()
 
-    # Le poste de conduite, a l'avant. On ne conduit pas, mais il doit etre la :
-    # c'est un camping-car, et l'etape ou l'on essaie d'en prendre le volant est
-    # prevue par le scenario.
+    # LE POSTE DE CONDUITE.
+    #
+    # C'etait quatre boites : deux sieges suggeres et un disque pour le volant.
+    # De l'interieur, on ne reconnaissait pas l'avant d'un vehicule — juste le
+    # bout du couloir. Or c'est la que se trouvent la boite a gants et l'etape
+    # ou l'on essaie de prendre le volant : il faut que le joueur SACHE qu'il
+    # est arrive dans une cabine.
+    #
+    # Ce qui fait lire une cabine, dans cet ordre : le pare-brise (une bande
+    # claire en travers, tout en haut), la planche de bord (une masse continue
+    # sous le pare-brise), puis le volant. Les sieges viennent apres — ils sont
+    # deja plus lisibles qu'un tableau de bord absent.
+    av = -CC_P                       # le nez du vehicule
+    conducteur = -0.72               # a gauche, comme aux Etats-Unis
+
     c = Maillage("Cabine", mats["cuir_sombre"])
-    for sx in (-0.62, 0.62):
-        c.boite(sx - 0.26, -CC_P + 0.25, 0.0, sx + 0.26, -CC_P + 0.75, 0.46)
-        c.boite(sx - 0.26, -CC_P + 0.62, 0.46, sx + 0.26, -CC_P + 0.75, 1.06)
+    for sx in (conducteur, -conducteur):
+        # L'assise, le dossier incline en deux morceaux, et l'appui-tete.
+        c.boite(sx - 0.30, av + 0.30, 0.28, sx + 0.30, av + 0.92, 0.48)
+        c.boite(sx - 0.30, av + 0.78, 0.48, sx + 0.30, av + 0.94, 1.02)
+        c.boite(sx - 0.20, av + 0.80, 1.02, sx + 0.20, av + 0.94, 1.26)
+        # Le pied, pour que le siege ne flotte pas au-dessus du plancher.
+        c.boite(sx - 0.14, av + 0.46, 0.0, sx + 0.14, av + 0.74, 0.28)
     total += c.finir()
 
+    # La planche de bord : une masse continue d'un flanc a l'autre, avec une
+    # casquette qui avance au-dessus. C'est elle qui separe la cabine du
+    # pare-brise, et sans elle les deux se confondent.
+    hx_c = CC_L / 2
+    tb = Maillage("TableauDeBord", mats["metal_sombre"])
+    tb.boite(-hx_c + 0.05, av + 0.02, 0.62, hx_c - 0.05, av + 0.40, 1.06)
+    tb.boite(-hx_c + 0.05, av + 0.38, 0.98, hx_c - 0.05, av + 0.56, 1.10)
+    # La console centrale et le levier de vitesses.
+    tb.boite(-0.18, av + 0.30, 0.0, 0.18, av + 0.80, 0.40)
+    tb.cylindre(0.0, av + 0.72, 0.40, 0.78, 0.035, 6)
+    total += tb.finir()
+
+    # LE PARE-BRISE, en haut et incline. Une seule face large : c'est la seule
+    # chose claire du fond du couloir, donc c'est elle qui dit « l'avant est
+    # par la » des la porte.
+    pb = Maillage("PareBrise", mats["vitre"])
+    pb.face([(-hx_c + 0.06, av + 0.02, 1.10), (hx_c - 0.06, av + 0.02, 1.10),
+             (hx_c - 0.06, av + 0.30, 1.92), (-hx_c + 0.06, av + 0.30, 1.92)],
+            [(0, 0), (2.4, 0), (2.4, 1.0), (0, 1.0)])
+    # Les deux vitres laterales de cabine, en biais vers l'arriere.
+    for sx in (-1.0, 1.0):
+        pb.mur((sx * (hx_c - 0.03), av + 0.30), (sx * (hx_c - 0.03), av + 1.10),
+               1.10, 1.80, retourne=sx < 0)
+    total += pb.finir()
+
+    # LE VOLANT, incline sur sa colonne. Une jante en huit segments plutot
+    # qu'un disque plein, trois branches, et un moyeu : a cette resolution
+    # c'est la silhouette ajouree qui se lit comme un volant, pas le disque.
     vol = Maillage("Volant", mats["metal_sombre"])
-    vol.cylindre(-0.62, -CC_P + 0.95, 0.86, 0.90, 0.17, 8)
-    vol.boite(-0.70, -CC_P + 0.86, 0.60, -0.54, -CC_P + 1.02, 0.86)
+    vy, vz, r = av + 0.62, 0.98, 0.20
+    cotes = 8
+    for i in range(cotes):
+        a0 = math.tau * i / cotes
+        a1 = math.tau * (i + 1) / cotes
+        vol.boite(conducteur + math.cos(a0) * r - 0.025,
+                  vy + math.sin(a0) * r * 0.35 - 0.025,
+                  vz + math.sin(a0) * r - 0.025,
+                  conducteur + math.cos(a1) * r + 0.025,
+                  vy + math.sin(a1) * r * 0.35 + 0.025,
+                  vz + math.sin(a1) * r + 0.025)
+    for a in (math.pi * 0.5, math.pi * 1.17, math.pi * 1.83):
+        vol.boite(conducteur + min(0.0, math.cos(a) * r) - 0.02,
+                  vy + min(0.0, math.sin(a) * r * 0.35) - 0.02,
+                  vz + min(0.0, math.sin(a) * r) - 0.02,
+                  conducteur + max(0.0, math.cos(a) * r) + 0.02,
+                  vy + max(0.0, math.sin(a) * r * 0.35) + 0.02,
+                  vz + max(0.0, math.sin(a) * r) + 0.02)
+    vol.boite(conducteur - 0.05, vy - 0.05, vz - 0.05,
+              conducteur + 0.05, vy + 0.05, vz + 0.05)
+    # La colonne, du moyeu vers la planche de bord.
+    vol.boite(conducteur - 0.035, vy + 0.02, 0.70,
+              conducteur + 0.035, vy + 0.22, vz)
     total += vol.finir()
 
-    # La boite a gants, ou dort le revolver.
+    # La boite a gants, ou dort le revolver. Cote passager, encastree dans la
+    # planche de bord et bien visible : c'est un point d'interaction.
     bg = Maillage("BoiteGants", mats["bache"])
-    bg.boite(0.30, -CC_P + 0.86, 0.72, 0.94, -CC_P + 1.04, 1.04)
+    bg.boite(-conducteur - 0.32, av + 0.00, 0.66,
+             -conducteur + 0.32, av + 0.06, 0.98)
     total += bg.finir()
 
     return total
@@ -386,7 +466,7 @@ LIEUX = {
     "campingcar_interieur": (campingcar_interieur, [
         "camping_car", "lino", "store", "paillasse", "verre_labo",
         "liquide_ambre", "liquide_vert", "bidon_rouge", "bidon_bleu",
-        "inox", "cuir_sombre", "metal_sombre", "bache"]),
+        "inox", "cuir_sombre", "metal_sombre", "bache", "vitre"]),
     "qg_exterieur": (qg_exterieur, [
         "asphalte", "crepi", "graffiti", "planche_barricade", "vitre",
         "metal_sombre", "beton"]),

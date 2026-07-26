@@ -21,6 +21,14 @@ extends Resource
 ## Force de freinage. Trop bas, la voiture flotte ; trop haut, elle bloque net.
 @export_range(0.0, 200.0, 1.0) var force_frein: float = 45.0
 
+## Poussee en MARCHE ARRIERE, en proportion de l'acceleration avant.
+##
+## Elle etait ecrite en dur dans vehicule.gd, a 0,45 : la voiture reculait a
+## moins de la moitie de sa reprise, et manoeuvrer devant une maison prenait
+## plus de temps que le trajet. Un nombre qui decide d'une sensation vit ici,
+## c'est la regle du fichier — celui-la y avait echappe.
+@export_range(0.1, 1.0, 0.05) var marche_arriere_poussee: float = 0.8
+
 ## Angle de braquage maximal, en degres.
 @export_range(5.0, 60.0, 0.5) var braquage_max_deg: float = 32.0
 
@@ -85,6 +93,16 @@ extends Resource
 ## Rigidite anti-roulis, en proportion. 0 = les deux roues d'un essieu sont
 ## independantes et la caisse penche librement ; 1 = elles sont solidaires.
 @export_range(0.0, 1.0, 0.05) var anti_roulis: float = 0.55
+
+## Puissance de la barre anti-roulis, en couple par kilo de caisse.
+##
+## Elle etait ecrite en dur dans vehicule.gd, a 12. Le curseur ci-dessus etant
+## deja a son maximum, il n'y avait plus AUCUN moyen d'empecher la caisse de se
+## coucher — et c'est ce qui a bloque la premiere tentative d'assouplir la
+## conduite : une voiture plus vive entre plus vite en courbe, penche a
+## dix-neuf degres, et racle du flanc, ce qui la freine net. Deux reglages qui
+## se battent, dont un invisible.
+@export_range(2.0, 60.0, 0.5) var anti_roulis_force: float = 12.0
 
 # ------------------------------------------------------------------ camera
 @export_group("Allures")

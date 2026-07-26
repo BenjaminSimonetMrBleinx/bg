@@ -95,6 +95,20 @@ func _scenario() -> void:
 	var cc := _desert.get_node_or_null("CampingCar")
 	_verifier(cc != null, "le camping-car est pose dans la zone")
 
+	# LA MISSION DOIT ETRE ARRIVEE A L'ETAPE DU DESERT.
+	#
+	# Le passage est desormais ferme tant qu'on n'a pas parle a Jesse : on
+	# pouvait auparavant filer au camping-car des la premiere minute et y
+	# trouver un Jesse reprochant un retard a une mission pas encore commencee.
+	# Ce test-ci ne mesure pas ce verrou, il mesure le voyage — on avance donc
+	# la mission jusqu'a l'etape qui ouvre la route, par les memes evenements
+	# que le jeu.
+	var m := Mission.courante(_monde)
+	if m != null:
+		m.evenement("dialogue:mission_tuco_appel")
+		m.evenement("dialogue:mission_jesse_maison")
+		print("       mission a l'etape '%s'" % m.cle_etape())
+
 	print("\n--- a pied, on est refuse ---")
 	var zone := _trouver(_monde, "VersDesert").get_node("Zone") as Passage
 	_joueur.global_position = zone.global_position + Vector3.DOWN * 0.6
@@ -124,12 +138,21 @@ func _scenario() -> void:
 			"la voiture est arrivee au desert (%d images)" % garde)
 	print("       voiture en %s" % _vehicule.global_position)
 
-	# Elle doit etre POSEE, pas lancee. Le fondu masque le saut ; ce qui se voit
-	# ensuite, c'est une voiture qui part toute seule.
+	# Elle arrive AU PAS, et c'est un changement voulu.
+	#
+	# Elle etait reposee a l'arret : on roulait a soixante, l'ecran noircissait,
+	# et l'on se retrouvait immobile au milieu d'une piste. Un fondu doit se
+	# traverser, pas s'endurer. Elle garde donc un peu d'elan — voir
+	# ELAN_A_L_ARRIVEE dans systemes/controleur.gd.
+	#
+	# Ce qui reste interdit, c'est de garder la vitesse D'AVANT : une masse
+	# lancee a soixante qu'on teleporte part dans le decor a l'arrivee, une
+	# seconde apres le fondu, quand plus personne ne regarde le lien de cause a
+	# effet. La borne haute est donc ce qui compte ici.
 	await _attendre(4)
-	_verifier(_vehicule.linear_velocity.length() < 6.0,
-			"elle est arrivee a l'arret (%.1f m/s)"
-					% _vehicule.linear_velocity.length())
+	var elan := _vehicule.linear_velocity.length()
+	_verifier(elan < 12.0,
+			"elle arrive au pas et non lancee (%.1f m/s)" % elan)
 	_verifier(_vehicule.global_position.y > -2.0,
 			"elle n'est pas passee sous le terrain (y = %.2f)"
 					% _vehicule.global_position.y)

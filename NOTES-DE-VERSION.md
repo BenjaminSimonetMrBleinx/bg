@@ -16,6 +16,66 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.28.0 — La mission 1 en entier, et le camping-car de Guillaume
+
+> **La mission se joue maintenant du début à la fin en plein jour.** Elle se
+> jouait de nuit, ce qui n'était pas voulu.
+
+**Le camping-car est celui de Guillaume.** Le vrai modèle remplace la boîte
+qu'on avait générée. On ne se coince plus dessus en marchant ou en sautant
+contre : sa collision est une caisse simple, et il n'y a donc plus de creux où
+rester bloqué. **On entre par le flanc**, plus par le pare-brise.
+
+**À l'intérieur**, il est plus large d'un mètre. La caméra ne sort plus par la
+paroi, la cabine est reconnaissable — pare-brise, planche de bord, volant,
+sièges — et **les meubles sont solides** : on ne traverse plus les paillasses ni
+l'atelier. Une fois sorti, **on peut re-rentrer** : la porte restait fermée pour
+toujours.
+
+**Un menu pause**, sur Échap : Reprendre, Options, Recommencer la mission,
+Quitter. Les options règlent les volumes, un par un, et la vitesse du cycle
+jour/nuit.
+
+**Une nouvelle route mène chez Tuco**, loin au sud de la piste du désert, avec
+son panneau et sa flèche. On y allait auparavant sans le vouloir : la sortie
+était posée à vingt-cinq mètres du camping-car.
+
+### Ce qui gênait vraiment, et qui est réparé
+
+- **Jesse et Tuco tournaient le dos** à qui leur parlait. Tous les personnages
+  animés étaient à l'envers.
+- **La boîte à gants donnait un chapeau.** Elle donne le revolver, et Walter
+  part désormais **les mains vides** au lieu de commencer coiffé du Porkpie.
+- **Après le camping-car, Jesse redisait « allons cuisiner ».** Et il restait
+  chez lui pendant qu'il nous attendait dans le désert.
+- **On pouvait filer au désert dès la première minute**, avant même de savoir
+  pourquoi. La route est fermée jusqu'à la conversation chez Jesse.
+- **On pouvait naviguer dans le téléphone pendant l'appel de mission**, et
+  raccrocher au nez de celui qui lance la mission.
+- **L'objectif s'affichait quatre secondes**, en petit, par-dessus le décor. Il
+  a maintenant sa place en haut à gauche et **reste une minute**. Le texte ne
+  déborde plus de l'écran du téléphone.
+- **« Il vous faut la voiture » s'affichait dans le salon de Jesse**, avant
+  d'avoir passé la porte.
+- **L'argent de Tuco arrive quand il dit « compte-les si tu veux »**, et le
+  garde vient fouiller Walter au moment où Tuco l'ordonne — plus vingt
+  répliques trop tôt.
+- **L'explosion coupait la parole à Walter.** La réplique va jusqu'au bout, puis
+  le blanc se retire sur dix secondes.
+- **On traversait le bureau de Tuco.** Et on arrivait collé au mur d'entrée : on
+  arrive maintenant au centre de la pièce, face à lui.
+- **Dans la cachette, Walter avançait à chaque tranche de mille dollars**, et on
+  ne pouvait pas refermer sans déposer. Échap referme.
+- **On arrivait à l'arrêt** après chaque fondu de route. La voiture garde un peu
+  d'élan.
+- **La marche arrière** est nettement plus vive.
+
+> **Pas encore fait, et c'est volontaire :** la voiture n'accélère pas plus fort
+> au démarrage. Mesuré : au-delà du réglage actuel, la caisse penche assez en
+> virage pour racler du flanc, ce qui la freine net. Le réglage qui manquait
+> pour corriger ça existe maintenant (`anti_roulis_force`), mais le châssis se
+> règle au volant, pas en aveugle.
+
 ## 0.27.3 — Jesse répond enfin de la commande
 
 > **Bug bloquant, corrigé.** Après l''appel de l''homme de Tuco, aller parler à

@@ -51,13 +51,38 @@ var abattu: bool = false
 
 func _ready() -> void:
 	_cap_repos = rotation.y
+	_origine = position
 	add_to_group(GROUPE)
 	if geometrie == null:
 		push_error("pnj %s : aucune geometrie" % cle)
 		return
 	var corps := geometrie.instantiate()
-	add_child(corps)
-	_respirer(corps)
+	# LE CORPS EST SUSPENDU A UN PIVOT, ET PAS ACCROCHE DIRECTEMENT.
+	#
+	# Les modeles rigges livres regardent vers +Z, c'est-a-dire face a la
+	# camera. importer_perso.py les retourne bien a l'import, mais leurs
+	# animations portent un canal sur le noeud racine qui ECRASE cette rotation
+	# des la premiere image jouee — c'est deja documente dans scenes/joueur.tscn,
+	# ou Walter est retourne par un noeud parent pour cette raison exacte.
+	#
+	# Les PNJ n'avaient pas ce noeud. Tous ceux qui portent des animations —
+	# Jesse, Tuco — tournaient donc le dos a qui leur parlait, et les
+	# compensations posees a la main dans les scenes ne faisaient que deplacer
+	# le probleme. On applique ici la meme parade qu'au joueur, une fois pour
+	# toutes.
+	#
+	# LE CRITERE EST LA PRESENCE D'UN LECTEUR D'ANIMATION, pas le nom du
+	# fichier : c'est exactement la cause. Un modele sans animation garde la
+	# rotation posee a l'import et ne doit surtout pas etre retourne une
+	# seconde fois — c'est le cas de Skyler et des passants.
+	var pivot := Node3D.new()
+	pivot.name = "Corps"
+	add_child(pivot)
+	pivot.add_child(corps)
+	var lecteur := corps.find_child("AnimationPlayer", true, false) as AnimationPlayer
+	if lecteur != null:
+		pivot.rotation.y = PI
+	_respirer(lecteur)
 
 
 # Un personnage a squelette JOUE SA POSE DE REPOS.
@@ -69,8 +94,7 @@ func _ready() -> void:
 #
 # On ne pilote rien d'autre : un PNJ de cette mission ne se deplace pas. Le
 # jour ou il le faudra, c'est Demarche qui prendra la suite.
-func _respirer(corps: Node) -> void:
-	var lecteur := corps.find_child("AnimationPlayer", true, false) as AnimationPlayer
+func _respirer(lecteur: AnimationPlayer) -> void:
 	if lecteur == null:
 		return
 	for candidat in [pose, Demarche.IMMOBILE, Demarche.CYCLE]:
@@ -107,7 +131,51 @@ func observer(n: Node3D) -> void:
 	set_process(n != null)
 
 
+## Va se poster la, puis reste. Le garde s'en sert pour venir fouiller Walter
+## au moment ou Tuco l'ordonne, et repartir ensuite.
+##
+## Un deplacement en ligne droite, sans evitement : la piece fait six metres
+## sur huit et le trajet est ecrit dans la scene. Un chemin calcule couterait
+## une infrastructure entiere pour trois metres de parquet.
+func aller_vers(ou: Vector3) -> void:
+	_but = ou
+	_marche = true
+	set_process(true)
+
+
+## Combien de metres par seconde quand il se deplace. Un pas decide, pas une
+## course : il vient chercher quelque chose sur quelqu'un, il ne fuit pas.
+const ALLURE := 1.9
+
+var _but: Vector3 = Vector3.ZERO
+var _marche: bool = false
+
+## Sa place, retenue au chargement. Un personnage qu'on deplace doit pouvoir
+## revenir : sinon recommencer la partie laisse le garde plante au milieu du
+## bureau, la ou la scene precedente l'avait envoye.
+var _origine: Vector3 = Vector3.ZERO
+
+
+## Il retourne a sa place.
+func rentrer() -> void:
+	if get_parent() is Node3D:
+		aller_vers((get_parent() as Node3D).to_global(_origine))
+	else:
+		aller_vers(_origine)
+
+
+## Il y est remis d'un coup, sans marcher. Pour recommencer une partie : voir
+## quelqu'un traverser la piece au lancement n'a aucun sens.
+func replacer() -> void:
+	_marche = false
+	position = _origine
+	rotation.y = _cap_repos
+
+
 func _process(delta: float) -> void:
+	if _marche:
+		_avancer(delta)
+		return
 	if _cible == null:
 		return
 	var vers := _cible.global_position - global_position
@@ -118,3 +186,18 @@ func _process(delta: float) -> void:
 	if vers.length() < attention and vers.length() > 0.05:
 		voulu = atan2(-vers.x, -vers.z)      # l'avant d'un noeud Godot est -Z
 	rotation.y = rotate_toward(rotation.y, voulu, rotation_vitesse * delta)
+
+
+# Un pas vers le but, et on regarde ou l'on va. Arrive, il reprend sa vie
+# normale — c'est-a-dire qu'il se remet a suivre le joueur du regard.
+func _avancer(delta: float) -> void:
+	var vers := _but - global_position
+	vers.y = 0.0
+	if vers.length() <= 0.15:
+		_marche = false
+		_cap_repos = rotation.y
+		return
+	var pas := minf(ALLURE * delta, vers.length())
+	global_position += vers.normalized() * pas
+	rotation.y = rotate_toward(rotation.y, atan2(-vers.x, -vers.z),
+			rotation_vitesse * delta)

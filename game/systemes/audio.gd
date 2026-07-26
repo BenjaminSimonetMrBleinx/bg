@@ -330,6 +330,27 @@ func connait(nom: String) -> bool:
 	return _banque.has(nom)
 
 
+## Combien de temps dure ce son, en secondes. Zero s'il n'existe pas.
+##
+## C'est ce qu'il fallait a la scene finale. « This is not meth » etait suivi
+## d'une attente de 1,15 s ecrite a la main, puis de l'explosion : la replique
+## etait donc coupee en plein milieu par la deflagration, et toute la scene
+## repose justement sur le fait que Walt ANNONCE ce qu'il tient avant de le
+## lancer. Un delai devine se desynchronise au premier reenregistrement ; la
+## duree reelle, non.
+##
+## La plus longue des variantes, quand il y en a plusieurs : on attend que ce
+## qui a ete joue soit fini, et on ne sait pas laquelle est sortie.
+func duree(nom: String) -> float:
+	if not _banque.has(nom):
+		return 0.0
+	var maxi := 0.0
+	for flux in (_banque[nom] as Array):
+		if flux is AudioStream:
+			maxi = maxf(maxi, (flux as AudioStream).get_length())
+	return maxi
+
+
 func _tirer(nom: String) -> AudioStream:
 	if not _banque.has(nom):
 		if not _inconnus.has(nom):

@@ -31,6 +31,17 @@ signal utilise(point: Point)
 ## interroger la mission lui-meme, et la moitie oublierait.
 @export var etape: String = ""
 
+## Le point existe A PARTIR de cette etape, et ne disparait plus ensuite.
+##
+## C'est ce qu'il fallait a la porte du camping-car. Elle portait `etape`, donc
+## elle n'existait QUE pendant l'etape « entrer dans le camping-car » : une fois
+## dedans l'etape changeait, et ressortir laissait le joueur devant un
+## camping-car qu'il ne pouvait plus ouvrir. Une porte qui ne s'ouvre qu'une
+## fois n'est pas une porte.
+##
+## Les deux champs se cumulent quand ils sont poses tous les deux.
+@export var etape_minimale: String = ""
+
 ## Un refus affiche au lieu d'agir. Le volant du camping-car s'en sert : il
 ## faut pouvoir appuyer et s'entendre dire non, sinon on croit a un bug.
 @export var refus: String = ""
@@ -95,6 +106,12 @@ func offert(joueur: Node3D, mission: Mission) -> bool:
 		return false
 	if etape != "" and (mission == null or not mission.a_l_etape(etape)):
 		return false
+	if etape_minimale != "":
+		if mission == null:
+			return false
+		if not mission.a_l_etape(etape_minimale) \
+				and not mission.passee(etape_minimale):
+			return false
 	return true
 
 

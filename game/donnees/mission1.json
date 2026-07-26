@@ -35,11 +35,15 @@
  "depart": {
   "argent_min": 100,
   "argent_max": 200,
-  "objets": ["livre", "chapeau"],
+  "objets": [],
   "_note_objets": [
-   "L'inventaire du DEBUT. Ni meth ni revolver : la premiere se vend a Tuco",
-   "et le second se trouve dans le camping-car. Les avoir des le lancement",
-   "retirait tout enjeu aux deux."
+   "L'inventaire du DEBUT : VIDE. Walter part de chez lui les mains dans les",
+   "poches, et tout ce qu'il aura, il ira le chercher.",
+   "",
+   "Il commencait avec le livre et le chapeau. Ce n'etait pas un choix : les",
+   "deux etaient la parce qu'ils existaient. Le porkpie surtout — c'est le",
+   "chapeau d'Heisenberg, et l'avoir sur la tete des la premiere image donne",
+   "la fin du personnage avant son debut."
   ]
  },
 
@@ -47,6 +51,7 @@
   {
    "cle": "appel",
    "objectif": "Sortir de chez soi",
+   "tuto": "Vos missions en cours se consultent dans votre telephone (T)",
    "valide_par": "dialogue:mission_tuco_appel"
   },
   {

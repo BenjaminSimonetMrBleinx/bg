@@ -92,6 +92,16 @@ func _process(_delta: float) -> void:
 
 	if Input.is_action_just_pressed("interagir"):
 		_valider()
+	# ON PEUT REPARTIR SANS RIEN CACHER.
+	#
+	# La seule sortie etait de valider, donc de deposer. Un joueur qui ouvre la
+	# latte pour voir ce que c'est se retrouvait oblige de s'en servir, et
+	# l'ecran ressemblait a un piege plutot qu'a un choix. Deux touches ferment :
+	# celle qui annule partout ailleurs, et celle du telephone, qui est la
+	# touche de « je range ce que j'ai en main ».
+	elif Input.is_action_just_pressed("ui_cancel") \
+			or Input.is_action_just_pressed("telephone"):
+		fermer()
 	queue_redraw()
 
 
@@ -126,7 +136,7 @@ func _draw() -> void:
 	_ecrire(police, "Il vous restera %s" % Bourse.ecrire(restant),
 			coin + Vector2(l / 2.0, 66.0), 10,
 			Color(0.60, 0.82, 0.44) if bon else Color(0.85, 0.45, 0.35))
-	_ecrire(police, "W / S   regler          F   valider",
+	_ecrire(police, "W / S   regler     F   valider     Echap   fermer",
 			coin + Vector2(l / 2.0, 84.0), 9, Color(0.62, 0.60, 0.56))
 
 

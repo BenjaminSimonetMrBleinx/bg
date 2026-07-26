@@ -137,11 +137,46 @@ func sortir() -> void:
 		_son().bruit("roue_ouvre")
 
 
+## LE TELEPHONE SONNE, ET ON DECROCHE. Rien d'autre.
+##
+## Un appel recu passait par sortir(), donc par le MENU : pendant que l'homme
+## de Tuco parlait, le joueur pouvait remonter dans le repertoire, appeler
+## quelqu'un d'autre, ou raccrocher au nez de celui qui lance la mission. Ce
+## n'est pas un telephone qu'on consulte, c'est un telephone qui sonne — on le
+## subit, et la seule chose a faire est de lire.
+##
+## L'etat EN_LIGNE est deja ignore par _naviguer(). Il suffisait d'y entrer
+## directement au lieu de passer par le menu.
+func decrocher(qui: String) -> void:
+	if _etat != Etat.RANGE:
+		return
+	_etat = Etat.EN_LIGNE
+	_impose = true
+	_appelant = qui
+	_selection = 0
+	visible = true
+	if _son() != null:
+		_son().bruit("roue_ouvre")
+
+
+## Est-ce un appel qu'on subit ? Le controleur s'en sert pour ne pas laisser
+## la touche T raccrocher au milieu d'une conversation de mission.
+func impose() -> bool:
+	return _impose
+
+var _impose: bool = false
+
+## Le nom affiche sur l'ecran pendant un appel recu. Il ne vient pas du
+## repertoire : celui qui appelle Walter n'y est pas, et c'est tout le sujet.
+var _appelant: String = ""
+
+
 func ranger() -> void:
 	if _etat == Etat.RANGE:
 		return
 	_etat = Etat.RANGE
 	_appele = ""
+	_impose = false
 	if _son() != null:
 		_son().bruit("roue_ferme")
 	raccroche.emit()
@@ -319,17 +354,50 @@ func _ecran_de_mission(police: Font, ecran: Rect2, x: float, y: float,
 	# Les deux dernieres etapes faites, puis l'etape en cours. L'ecran fait
 	# quatre lignes : tout afficher demanderait de le faire defiler, et il n'y
 	# a pas de quoi lire quinze objectifs sur un telephone de 2008.
+	var dispo := ecran.end.x - 5.0 - x
 	var faites := _mission.faites()
 	var ligne := y + 14.0
-	for i in range(maxi(0, faites.size() - 2), faites.size()):
-		draw_string(police, Vector2(x, ligne), "x " + str(faites[i]),
-				HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(encre, 0.55))
+	# Une seule etape faite au lieu de deux : l'objectif COURANT tient
+	# desormais sur deux ou trois lignes, et c'est lui qu'on vient lire.
+	for i in range(maxi(0, faites.size() - 1), faites.size()):
+		for morceau in _couper(police, "x " + str(faites[i]), 9, dispo):
+			draw_string(police, Vector2(x, ligne), morceau,
+					HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(encre, 0.55))
+			ligne += 10.0
+	for morceau in _couper(police, "> " + _mission.objectif(), 10, dispo):
+		draw_string(police, Vector2(x, ligne), morceau,
+				HORIZONTAL_ALIGNMENT_LEFT, -1, 10, encre)
 		ligne += 11.0
-	draw_string(police, Vector2(x, ligne), "> " + _mission.objectif(),
-			HORIZONTAL_ALIGNMENT_LEFT, -1, 10, encre)
+
+
+# Coupe un texte en lignes qui tiennent dans la largeur donnee.
+#
+# L'ecran du combine fait cinquante pixels de large. « Rejoindre le labo dans le
+# desert » y occupait cent soixante pixels : le texte sortait du telephone et
+# continuait par-dessus le decor, ce qui donnait un objectif illisible dessine
+# sur une rue. Godot sait faire du retour a la ligne dans un Label, mais cet
+# ecran est DESSINE — c'est ce qui lui donne son grain — et draw_string ne
+# coupe rien tout seul.
+static func _couper(police: Font, texte: String, taille: int,
+		largeur: float) -> Array:
+	var lignes: Array = []
+	var courante := ""
+	for mot in texte.split(" ", false):
+		var essai := mot if courante == "" else courante + " " + mot
+		if police.get_string_size(essai, HORIZONTAL_ALIGNMENT_LEFT, -1,
+				taille).x <= largeur or courante == "":
+			courante = essai
+			continue
+		lignes.append(courante)
+		courante = mot
+	if courante != "":
+		lignes.append(courante)
+	return lignes
 
 
 func _nom_de(cle: String) -> String:
+	if _impose:
+		return _appelant
 	for c in _contacts:
 		if str((c as Dictionary).get("cle", "")) == cle:
 			return str((c as Dictionary).get("nom", cle.capitalize()))

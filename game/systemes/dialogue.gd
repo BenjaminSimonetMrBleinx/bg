@@ -18,6 +18,19 @@ const BUS_VOIX := "Interface"
 
 signal termine
 
+## Emis quand la replique affichee porte un champ 'effet'.
+##
+## CE QUI SE PASSE DOIT SE PASSER SUR LA PHRASE QUI LE DIT. L'argent de Tuco
+## arrivait a la FIN de la conversation, donc vingt repliques apres « compte-les
+## si tu veux » — et la fouille du garde, de meme, avait deja eu lieu quand il
+## annoncait la trouver. Une scene ou l'action et le texte ne coincident pas se
+## lit comme deux scenes.
+##
+## Le dialogue ne sait pas ce qu'un effet veut dire, et c'est voulu : il porte
+## un nom, le scenario decide. Ajouter un moment cle a une conversation est
+## donc un mot de plus dans dialogues.json.
+signal effet(nom: String)
+
 @export var cadre: NodePath
 @export var etiquette_nom: NodePath
 @export var etiquette_texte: NodePath
@@ -132,6 +145,9 @@ func _montrer() -> void:
 	if _texte != null:
 		_texte.text = str(r.get("texte", ""))
 	_dire(str(r.get("qui", "")), str(r.get("texte", "")))
+	var e := str(r.get("effet", ""))
+	if e != "":
+		effet.emit(e)
 
 
 # Joue l'enregistrement de cette replique, s'il existe.

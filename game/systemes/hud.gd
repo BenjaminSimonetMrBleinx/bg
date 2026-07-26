@@ -79,13 +79,34 @@ func _brancher_la_mission() -> void:
 		_affiche = float(_bourse.montant())
 	if _mission != null:
 		_mission.etape_changee.connect(_sur_etape)
+		# La PREMIERE etape n'emet aucun changement : on y est deja. Son
+		# objectif ne s'affichait donc jamais, et la partie s'ouvrait sans dire
+		# ce qu'on attend du joueur.
+		_sur_etape(_mission.index())
+
+
+## COMBIEN DE TEMPS L'OBJECTIF RESTE A L'ECRAN, en secondes.
+##
+## Il tenait quatre secondes, en petit, par-dessus le decor. Sur un ecran de
+## 512 pixels ou l'on est en train de traverser une rue, quatre secondes ne
+## suffisent pas a lire une phrase et a decider quoi en faire — l'information
+## passait avant d'avoir servi.
+##
+## Une minute, c'est ce que le ticket demande, et c'est aussi la duree pendant
+## laquelle un objectif est encore une NOUVELLE. Apres, il vit dans le
+## telephone : c'est la qu'on va le relire.
+const OBJECTIF_DUREE := 60.0
+
+## Sur combien de temps il s'efface, a la fin. Assez long pour qu'on voie qu'il
+## part, assez court pour ne pas trainer.
+const OBJECTIF_FONDU := 2.5
 
 
 func _sur_etape(_index: int) -> void:
 	if _mission == null:
 		return
 	_texte_objectif = _mission.objectif()
-	_objectif = 0.0 if _texte_objectif == "" else 4.0
+	_objectif = 0.0 if _texte_objectif == "" else OBJECTIF_DUREE
 
 
 func _sur_blessure(_restant: float) -> void:
@@ -218,15 +239,33 @@ func _sante() -> void:
 			false, 1.0)
 
 
-# L'objectif, annonce quelques secondes a chaque changement d'etape. Ensuite il
-# vit dans le telephone : c'est la qu'on va le relire, et ca evite d'avoir un
-# texte colle en haut de l'ecran toute la partie.
+# L'OBJECTIF COURANT, en haut a gauche, sous l'argent.
+#
+# Il etait pose au milieu du bas de l'ecran, en texte nu, quatre secondes. Trois
+# choses n'allaient pas et se cumulaient : le bas de l'ecran est deja occupe par
+# l'invite et le cadre de dialogue, un texte sans fond se perd sur un decor
+# clair, et quatre secondes ne se lisent pas.
+#
+# Il a maintenant sa place a lui, une bande sombre derriere, et il reste une
+# minute — voir OBJECTIF_DUREE. Le petit chevron devant reprend celui du
+# telephone : c'est le meme objet a deux endroits, et il doit se reconnaitre.
 func _objectif_courant(police: Font) -> void:
-	if _objectif <= 0.0:
+	if _objectif <= 0.0 or _texte_objectif == "":
 		return
-	var a := clampf(_objectif / 1.2, 0.0, 1.0)
-	_ecrire(police, _texte_objectif, Vector2(size.x / 2.0, size.y - 84.0), 14,
-			Color(0.949, 0.925, 0.867, a), true)
+	var a := clampf(_objectif / OBJECTIF_FONDU, 0.0, 1.0)
+	var texte := "> " + _texte_objectif
+	var largeur := police.get_string_size(texte, HORIZONTAL_ALIGNMENT_LEFT,
+			-1, 13).x
+	# Sous la bande de refus, qui occupe la largeur entiere de 26 a 48 : les
+	# deux peuvent parler en meme temps, et l'un ne doit pas manger l'autre.
+	var coin := Vector2(6.0, 52.0)
+	draw_rect(Rect2(coin, Vector2(largeur + 12.0, 19.0)),
+			Color(0.043, 0.055, 0.086, 0.66 * a))
+	# Un filet ambre sur le bord gauche. C'est ce qui distingue l'objectif du
+	# bandeau de refus, qui est de la meme famille de gris et vit juste au-dessus.
+	draw_rect(Rect2(coin, Vector2(2.0, 19.0)), Color(0.949, 0.776, 0.42, 0.85 * a))
+	_ecrire(police, texte, coin + Vector2(8.0, 13.0), 13,
+			Color(0.949, 0.925, 0.867, a), false)
 
 
 # Le reticule, et le voile rouge des blessures.

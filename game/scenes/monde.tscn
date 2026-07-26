@@ -11,7 +11,7 @@
 ; Le vehicule demarre sur la chaussee verticale du couloir 0, qui court le
 ; long de -Z : il est donc deja dans le bon sens.
 
-[gd_scene load_steps=38 format=3 uid="uid://bgmonde0v0001"]
+[gd_scene load_steps=39 format=3 uid="uid://bgmonde0v0001"]
 
 [ext_resource type="Script" path="res://rendu/rendu_ps2.gd" id="1_rendu"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
@@ -55,6 +55,7 @@
 [ext_resource type="PackedScene" path="res://scenes/mission1.tscn" id="40_mission1"]
 [ext_resource type="Texture2D" path="res://assets/images/argent.png" id="41_argent"]
 [ext_resource type="Script" path="res://systemes/foule.gd" id="22_foule"]
+[ext_resource type="Script" path="res://systemes/pause.gd" id="42_pause"]
 
 [sub_resource type="ViewportTexture" id="tex_ecran"]
 viewport_path = NodePath("Rendu")
@@ -153,6 +154,12 @@ cap_degres = 180.0
 exige_vehicule = true
 refus = "Il vous faut une voiture pour quitter la ville"
 zone = "camping"
+; Le desert n'existe qu'une fois qu'on sait pourquoi on y va. On pouvait
+; auparavant filer au camping-car des la premiere minute, y trouver un Jesse
+; qui reprochait un retard a une mission pas encore commencee, et revenir sans
+; comprendre ce qu'on venait de voir.
+etape_minimale = "voiture"
+refus_etape = "Rien ne vous attend dans le desert pour l'instant"
 
 [node name="Forme" type="CollisionShape3D" parent="Rendu/Scene3D/VersDesert/Zone"]
 shape = SubResource("passage_forme")
@@ -355,6 +362,18 @@ mouse_filter = 2
 script = ExtResource("38_cachette")
 reglages = ExtResource("2_reglages")
 
+; Le menu pause. Il suspend l'arbre entier, donc il doit rester vivant quand
+; tout est fige — son script s'en charge (PROCESS_MODE_ALWAYS).
+[node name="Pause" type="Control" parent="Rendu/Interface"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("42_pause")
+reglages = ExtResource("2_reglages")
+
 ; L'ecran de fin est DERRIERE le fondu dans l'arbre, donc dessine par-dessus :
 ; le voile de mort doit couvrir le jeu, y compris un fondu de porte en cours.
 [node name="FinDePartie" type="Control" parent="Rendu/Interface"]
@@ -422,6 +441,7 @@ script = ExtResource("35_scenario")
 mission = NodePath("../Mission")
 joueur = NodePath("../Rendu/Scene3D/Joueur")
 controleur = NodePath("../Controleur")
+garde_fouilleur = NodePath("../Rendu/Scene3D/Mission1/QgInterieur/Homme2")
 
 [node name="Controleur" type="Node" parent="."]
 script = ExtResource("8_controleur")
@@ -438,11 +458,12 @@ roue = NodePath("../Rendu/Interface/Roue")
 telephone = NodePath("../Rendu/Interface/Telephone")
 desert = NodePath("../Rendu/Scene3D/Desert")
 commencer_chez = NodePath("../Rendu/Scene3D/Maisons/Walter")
-passages = [NodePath("../Rendu/Scene3D/VersDesert/Zone"), NodePath("../Rendu/Scene3D/Desert/RetourVille"), NodePath("../Rendu/Scene3D/Mission1/CampingLab/VersTuco"), NodePath("../Rendu/Scene3D/Mission1/QgExterieur/RetourCamping")]
+passages = [NodePath("../Rendu/Scene3D/VersDesert/Zone"), NodePath("../Rendu/Scene3D/Desert/RetourVille"), NodePath("../Rendu/Scene3D/Mission1/RouteTuco/VersTuco"), NodePath("../Rendu/Scene3D/Mission1/QgExterieur/RetourCamping")]
 scenario = NodePath("../Scenario")
 tir = NodePath("../Tir")
 fin_de_partie = NodePath("../Rendu/Interface/FinDePartie")
 cachette = NodePath("../Rendu/Interface/Cachette")
+pause = NodePath("../Rendu/Interface/Pause")
 ecran = NodePath("../Affichage/Ecran")
 
 [node name="Affichage" type="CanvasLayer" parent="."]

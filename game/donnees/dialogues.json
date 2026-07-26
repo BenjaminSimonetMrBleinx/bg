@@ -170,6 +170,23 @@
     ]
   },
 
+  "mission_jesse_livre": {
+    "nom": "Jesse",
+    "sans_voix": true,
+    "_note": [
+      "Jesse DEHORS, une fois la marchandise en poche. Sans cette fiche il",
+      "continuait de dire « allons cuisiner » alors que la cuisine etait faite,",
+      "et le joueur croyait avoir rate une etape."
+    ],
+    "conversations": [
+      [
+        { "qui": "Jesse",  "texte": "Qu'est-ce que vous attendez ? Il va pas patienter." },
+        { "qui": "Walter", "texte": "J'y vais." },
+        { "qui": "Jesse",  "texte": "Moi je reste ici. Tuco et moi, ca fait deux." }
+      ]
+    ]
+  },
+
   "mission_jesse_botte": {
     "nom": "Jesse",
     "sans_voix": true,
@@ -230,7 +247,8 @@
         { "qui": "Tuco",   "texte": "Le voila ! Le chimiste ! Approche, approche." },
         { "qui": "Walter", "texte": "Vous vouliez votre commande." },
         { "qui": "Tuco",   "texte": "Ha ! Direct au business. J'aime ca." },
-        { "qui": "Tuco",   "texte": "Trois cent mille. Compte-les si tu veux." },
+        { "qui": "Tuco",   "texte": "Trois cent mille. Compte-les si tu veux.",
+        "effet": "argent" },
         { "qui": "Walter", "texte": "Ce ne sera pas necessaire." },
         { "qui": "Tuco",   "texte": "..." },
         { "qui": "Tuco",   "texte": "Attends. Attends, attends, attends." },
@@ -242,7 +260,7 @@
         { "qui": "Tuco",   "texte": "Vous entendez ca, les gars ?" },
         { "qui": "Tuco",   "texte": "Dis-moi, le chimiste. Il t'en reste sur toi ?" },
         { "qui": "Walter", "texte": "... Non." },
-        { "qui": "Tuco",   "texte": "Fouille-le." },
+        { "qui": "Tuco",   "texte": "Fouille-le.", "effet": "fouille" },
         { "qui": "Garde",  "texte": "Patron. Il avait ca." },
         { "qui": "Tuco",   "texte": "Tu m'avais cache ca ?" },
         { "qui": "Tuco",   "texte": "TU VOULAIS M'ARNAQUER ?" }

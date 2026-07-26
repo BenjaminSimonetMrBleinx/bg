@@ -247,7 +247,7 @@ func _anti_roulis() -> void:
 	var avant := -global_transform.basis.z
 	var vitesse_roulis := angular_velocity.dot(avant)
 
-	var k := reglages.anti_roulis * mass * 12.0
+	var k := reglages.anti_roulis * mass * reglages.anti_roulis_force
 	apply_torque(avant * (-roulis * k - vitesse_roulis * k * 0.35))
 
 
@@ -291,7 +291,8 @@ func _propulser(gaz: float, kmh: float) -> void:
 			engine_force = 0.0
 			brake = -gaz * reglages.force_frein
 		else:
-			engine_force = SENS_POUSSEE * gaz * reglages.acceleration * 0.45
+			engine_force = SENS_POUSSEE * gaz * reglages.acceleration \
+					* reglages.marche_arriere_poussee
 			brake = 0.0
 	else:
 		engine_force = 0.0

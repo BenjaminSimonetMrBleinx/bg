@@ -233,6 +233,15 @@
    ]
   },
 
+  "camping_car_porte": {
+   "quoi": "Le camping-car vu de haut, avec Walter pose sur le point d'entree. Le modele est livre par Guillaume et son orientation vient d'un lacet impose a l'import : cette vue est le seul moyen de verifier que la porte du modele tombe bien la ou le jeu propose d'entrer.",
+   "fin": 70,
+   "etapes": [
+    { "image": 20, "placer": "Joueur", "pos": [875.0, 0.4, -803.0] },
+    { "image": 30, "camera": [877, 14, -804], "vise": [877, 0, -803.5] }
+   ]
+  },
+
   "maison_walter": {
    "quoi": "Le salon de Walter et son habitante.",
    "fin": 120,

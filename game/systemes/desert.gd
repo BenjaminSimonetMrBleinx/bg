@@ -53,7 +53,7 @@ func _ready() -> void:
 		cc.position = CAMPING_CAR
 		cc.rotation.y = deg_to_rad(CAP_CAMPING_CAR)
 		add_child(cc)
-		_ajouter_collisions(cc)
+		_encaisser(cc)
 	else:
 		push_warning("desert : pas de camping-car")
 
@@ -81,6 +81,60 @@ func _ajouter_collisions(noeud: Node) -> void:
 			mi.create_trimesh_collision()
 	for enfant in noeud.get_children():
 		_ajouter_collisions(enfant)
+
+
+# LE CAMPING-CAR EST UNE CAISSE, PAS UN MAILLAGE.
+#
+# Il avait la meme collision que le terrain : une trimesh calquee sur la
+# geometrie. Sur un sol c'est ce qu'il faut ; sur un vehicule dont la carrosserie
+# a des creux — le passage de roue, le renfoncement de la porte, la jupe sous la
+# cellule — la capsule du joueur se glisse dedans, se retrouve coincee entre
+# deux faces, et il ne reste plus qu'a recharger. Sauter contre le flanc suffit
+# a s'y loger.
+#
+# Une seule boite calquee sur l'encombrement supprime la cause : il n'y a plus
+# de creux ou entrer. On perd la forme exacte, ce qui ne se voit pas — personne
+# ne longe un camping-car en frottant la tole pour verifier son galbe.
+#
+# L'encombrement est MESURE sur la geometrie, pas ecrit ici : le modele est
+# regenere par outils/gen_desert.py, et des cotes recopiees a la main
+# divergeraient au premier changement.
+func _encaisser(noeud: Node3D) -> void:
+	var boite := AABB()
+	var premier := true
+	for mi in _maillages(noeud):
+		if mi.mesh == null:
+			continue
+		# Dans le repere du camping-car, pas dans celui du maillage : un modele
+		# assemble de plusieurs morceaux decales donnerait sinon une boite
+		# centree sur le mauvais element.
+		var locale := noeud.global_transform.affine_inverse() \
+				* mi.global_transform
+		var part := locale * mi.mesh.get_aabb()
+		boite = part if premier else boite.merge(part)
+		premier = false
+	if premier:
+		push_warning("desert : camping-car sans maillage, aucune collision")
+		return
+
+	var corps := StaticBody3D.new()
+	corps.name = "Coque"
+	var forme := CollisionShape3D.new()
+	var caisse := BoxShape3D.new()
+	caisse.size = boite.size
+	forme.shape = caisse
+	forme.position = boite.get_center()
+	corps.add_child(forme)
+	noeud.add_child(corps)
+
+
+func _maillages(n: Node) -> Array[MeshInstance3D]:
+	var trouves: Array[MeshInstance3D] = []
+	if n is MeshInstance3D:
+		trouves.append(n as MeshInstance3D)
+	for e in n.get_children():
+		trouves.append_array(_maillages(e))
+	return trouves
 
 
 func _poser(type: String, ou: Vector3, angle: float) -> void:

@@ -50,10 +50,15 @@ extends Node
 @export var cachette: NodePath
 @export var ecran: NodePath
 
+## Le menu pause. Facultatif : sans lui, Echap ne fait rien de plus que rendre
+## la souris, ce qui est le comportement d'avant.
+@export var pause: NodePath
+
 var _scenario: Scenario
 var _tir: Tir
 var _fin: FinDePartie
 var _cachette: Cachette
+var _pause: Pause
 var _ragdoll: Ragdoll
 
 ## LA MAISON OU L'ON COMMENCE LA PARTIE.
@@ -76,6 +81,20 @@ var _depart: Transform3D
 ## voiture la poserait dans le canape.
 var _depart_dehors: Transform3D
 var _voiture_dehors: Vector3
+
+## Duree du blanc qui se retire apres l'explosion, en secondes.
+const SOUFFLE_RETOUR := 10.0
+
+## VITESSE CONSERVEE EN ARRIVANT DANS UNE NOUVELLE ZONE, en m/s.
+##
+## On teleportait la voiture a l'arret. On roule a soixante, l'ecran noircit, et
+## l'on se retrouve immobile au milieu d'une piste : le voyage s'arrete au lieu
+## de continuer, et il faut relancer une masse d'une tonne et demie a chaque
+## passage. Un fondu doit se traverser, pas s'endurer.
+##
+## Six metres par seconde font une vingtaine de km/h — de quoi rouler au sortir
+## du noir sans partir dans le decor sur une trajectoire qu'on n'a pas choisie.
+const ELAN_A_L_ARRIVEE := 6.0
 
 enum Etat { A_PIED, AU_VOLANT, DEDANS }
 
@@ -104,6 +123,11 @@ var _texte_bandeau: String = ""
 
 ## La maison dans laquelle on se trouve. Nulle des qu'on est dehors.
 var _dedans: Maison = null
+
+## Vrai tant que c'est l'ecran de cachette qui immobilise le joueur. Sans ce
+## drapeau on le relacherait aussi quand quelqu'un d'autre l'a bloque — un
+## dialogue, la roue — et il se remettrait a marcher en pleine conversation.
+var _bloque_par_la_cachette: bool = false
 
 ## Vrai pendant le fondu. Tant qu'il dure, plus aucune commande ne passe :
 ## sans ce verrou, un appui repete sur F pendant le noir enchaine deux
@@ -174,6 +198,9 @@ func _ready() -> void:
 	_tir = get_node_or_null(tir) as Tir
 	_fin = get_node_or_null(fin_de_partie) as FinDePartie
 	_cachette = get_node_or_null(cachette) as Cachette
+	_pause = get_node_or_null(pause) as Pause
+	if _pause != null:
+		_pause.recommencer_demande.connect(_sur_recommencer_demande)
 	if _tir != null:
 		var eq := get_node_or_null(NodePath("../Equipement")) as Equipement
 		_tir.brancher(_c, _j, eq)
@@ -221,10 +248,10 @@ func _unhandled_input(evenement: InputEvent) -> void:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		return
 
-	# Echap rend le curseur, pour pouvoir sortir du jeu ou changer de fenetre.
-	# Sans issue, une souris capturee est un piege.
-	if evenement.is_action_pressed("ui_cancel"):
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	# Echap n'est plus traite ici : il ouvre le MENU PAUSE, qui rend le curseur
+	# lui-meme. Il se lisait auparavant a deux endroits — ici pour liberer la
+	# souris, et dans l'ecran de cachette pour le refermer — et un troisieme
+	# lecteur aurait fini par en manger un autre. Voir _gerer_la_pause.
 
 
 func _process(delta: float) -> void:
@@ -234,13 +261,30 @@ func _process(delta: float) -> void:
 	# qu'on regarde son personnage par terre.
 	if _fin != null and _fin.actif():
 		return
+	if _gerer_la_pause():
+		return
 	if _transition:
 		return
 	if _scenario != null:
 		_scenario.traiter(delta)
 	if _cachette != null and _cachette.ouverte():
 		_afficher("")
+		# LE JOUEUR NE MARCHE PAS PENDANT QU'IL COMPTE.
+		#
+		# L'ecran de cachette regle la somme avec les memes touches que
+		# l'avance et le recul. Le controleur s'arretait bien la, mais le
+		# personnage lit ses commandes lui-meme, dans sa propre physique :
+		# chaque tranche de mille dollars faisait donc un pas en avant, et l'on
+		# finissait le reglage dans le mur du salon.
+		_j.bloque = true
+		_bloque_par_la_cachette = true
 		return
+	# Refermee, il reprend la main. Ici et pas dans la cachette : c'est le
+	# controleur qui possede l'etat du joueur, et deux endroits qui le posent
+	# finissent par se contredire.
+	if _bloque_par_la_cachette:
+		_bloque_par_la_cachette = false
+		_j.bloque = false
 	if _gerer_les_passages():
 		return
 	if _gerer_le_telephone():
@@ -266,6 +310,30 @@ func _process(delta: float) -> void:
 
 		_:
 			_a_pied()
+
+
+# LE MENU PAUSE, sur Echap.
+#
+# Il ne s'ouvre pas par-dessus n'importe quoi : pendant un fondu de porte on
+# est a moitie teleporte, et pendant l'ecran de cachette Echap sert deja a
+# refermer. Dans les deux cas, un menu de plus par-dessus donnerait deux
+# interfaces qui se disputent la meme touche.
+#
+# Une fois ouvert, il suspend l'arbre et se pilote tout seul : il tourne en
+# PROCESS_MODE_ALWAYS, alors que ce controleur, lui, est suspendu comme le
+# reste. C'est ce qui rend le menu sur : rien du jeu ne peut plus repondre.
+func _gerer_la_pause() -> bool:
+	if _pause == null:
+		return false
+	if _pause.ouverte():
+		return true
+	if _transition or (_cachette != null and _cachette.ouverte()):
+		return false
+	if Input.is_action_just_pressed("ui_cancel"):
+		_pause.ouvrir()
+		_afficher("")
+		return true
+	return false
 
 
 # Renvoie vrai si la roue a pris la main : elle capte alors gauche et droite,
@@ -364,6 +432,10 @@ func _franchir(p: Passage, au_volant: bool) -> void:
 		_v.angular_velocity = Vector3.ZERO
 		_v.global_position = p.destination
 		_v.rotation = Vector3(0.0, p.cap(), 0.0)
+		# Et on la relance doucement dans le sens ou elle regarde. L'avant d'un
+		# noeud Godot est -Z ; la reposer a zero faisait sortir le joueur du
+		# fondu a l'arret, moteur eteint, au milieu de nulle part.
+		_v.linear_velocity = -_v.global_transform.basis.z * ELAN_A_L_ARRIVEE
 	else:
 		_j.global_position = p.destination
 		_j.velocity = Vector3.ZERO
@@ -415,7 +487,12 @@ func _gerer_le_telephone() -> bool:
 		_afficher("")
 		# Pendant que ca sonne, la touche ne raccroche pas : on vient de la
 		# presser pour appeler, et elle serait relue dans la meme seconde.
-		if not _telephone.occupe() and Input.is_action_just_pressed("telephone"):
+		#
+		# Et pendant un appel RECU, elle ne raccroche jamais : l'homme de Tuco
+		# est en train de lancer la mission, et raccrocher au milieu laissait le
+		# joueur avec une mission dont il n'a pas entendu la consigne.
+		if not _telephone.occupe() and not _telephone.impose() \
+				and Input.is_action_just_pressed("telephone"):
 			if _dialogue != null and _dialogue.actif():
 				_dialogue.couper()
 			_telephone.ranger()
@@ -424,7 +501,8 @@ func _gerer_le_telephone() -> bool:
 			return true
 		# En ligne, la touche d'interaction fait avancer la conversation.
 		if _dialogue != null and _dialogue.actif():
-			_afficher("F   Suite        T   Raccrocher")
+			_afficher("F   Suite" if _telephone.impose()
+					else "F   Suite        T   Raccrocher")
 			if Input.is_action_just_pressed("interagir"):
 				_dialogue.avancer()
 		return true
@@ -511,7 +589,10 @@ func recevoir_un_appel(cle: String) -> void:
 		return
 	if _telephone.sorti() or _dialogue.actif():
 		return
-	_telephone.sortir()
+	# On DECROCHE, on n'ouvre pas le menu. Le combine s'ouvrait sur le
+	# repertoire pendant qu'on nous parlait, et le joueur pouvait naviguer,
+	# rappeler quelqu'un, ou raccrocher au milieu de la consigne de mission.
+	_telephone.decrocher(_dialogue.nom_de(cle))
 	_j.poser("telephoner")
 	_j.bloque = true
 	_dialogue.demarrer(cle)
@@ -560,11 +641,29 @@ func souffler_l_explosion() -> void:
 	if _scenario != null:
 		_scenario.zone_atteinte("albuquerque")
 	if _fondu != null:
+		# DIX SECONDES DE BLANC QUI SE RETIRE, et pas une seconde et demie.
+		#
+		# C'est ce que demande le scenario, et c'est aussi ce que la scene
+		# exige : on vient de faire sauter le bureau d'un chef de cartel, on se
+		# reveille devant chez soi, et il faut le temps de comprendre ou l'on
+		# est. Un fondu court enchaine sur la rue comme sur un changement de
+		# menu.
 		var t2 := create_tween()
-		t2.tween_property(_fondu, "color:a", 0.0, 1.6)
+		t2.tween_property(_fondu, "color:a", 0.0, SOUFFLE_RETOUR)
 		await t2.finished
 		_fondu.color = Color(0.0, 0.0, 0.0, 0.0)
 	_transition = false
+
+
+# « Recommencer la mission » depuis le menu pause. C'est exactement ce que
+# fait l'ecran de Game Over, et on emprunte donc le meme chemin : le scenario
+# remet la mission, l'argent, l'inventaire et les points d'interaction a zero,
+# puis nous rappelle pour replacer le joueur.
+func _sur_recommencer_demande() -> void:
+	if _scenario != null:
+		_scenario.recommencer()
+	else:
+		recommencer_la_partie()
 
 
 ## Tout remettre en place apres un Game Over.
@@ -612,8 +711,12 @@ func _dans_la_maison() -> void:
 			_dialogue.avancer()
 		return
 
+	# L'habitant peut avoir quitte les lieux — Jesse part rejoindre le
+	# camping-car des la fin de sa conversation. Il est alors range plutot que
+	# detruit, et c'est sa cle videe qui dit qu'il n'y a plus personne a qui
+	# parler ; sans ce garde, on discutait avec une piece vide.
 	var p := _dedans.habitant()
-	if p != null:
+	if p != null and p.visible and p.cle != "":
 		var d_p := _j.global_position.distance_to(p.global_position)
 		if d_p <= reglages.portee_dialogue:
 			_afficher("F   Parler a %s" % _nom_de(p))

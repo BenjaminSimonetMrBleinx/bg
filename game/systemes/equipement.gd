@@ -40,6 +40,18 @@ var _audio: Audio
 ## marcher sans mission.
 var _possedes: Array[int] = []
 
+## UNE MISSION A-T-ELLE POSE L'INVENTAIRE ?
+##
+## Sans ce drapeau, « je n'ai rien » et « personne ne m'a rien dit » etaient le
+## meme etat : la liste vide. Tant que la mission commencait avec deux objets
+## la confusion ne se voyait pas, mais le jour ou elle demarre les mains vides —
+## ce qui est desormais le cas — Walter recevait le CATALOGUE ENTIER, revolver
+## et marchandise compris, c'est-a-dire exactement ce que la mission consiste a
+## aller chercher.
+##
+## Le bac a sable, lui, ne pose rien du tout et garde ses jouets.
+var _impose: bool = false
+
 ## Le systeme audio, retrouve A LA DEMANDE et garde ensuite.
 ##
 ## Pas dans _ready() : le noeud Audio est declare plus bas dans la scene, donc
@@ -168,7 +180,7 @@ static func _vecteur(v: Variant) -> Vector3:
 
 
 func _fiche_de(rang: int) -> int:
-	if _possedes.is_empty():
+	if not _impose:
 		return rang
 	if rang < 0 or rang >= _possedes.size():
 		return RIEN
@@ -176,7 +188,7 @@ func _fiche_de(rang: int) -> int:
 
 
 func _rang_de(fiche: int) -> int:
-	if _possedes.is_empty():
+	if not _impose:
 		return fiche
 	return _possedes.find(fiche)
 
@@ -192,6 +204,7 @@ func _indice_de_cle(cle: String) -> int:
 ## le comportement du bac a sable : sans mission chargee, on veut ses jouets.
 func definir_inventaire(cles: Array) -> void:
 	_possedes.clear()
+	_impose = true
 	for c in cles:
 		var i := _indice_de_cle(str(c))
 		if i == RIEN:
@@ -203,7 +216,7 @@ func definir_inventaire(cles: Array) -> void:
 
 func possede(cle: String) -> bool:
 	var i := _indice_de_cle(cle)
-	return i != RIEN and (_possedes.is_empty() or _possedes.has(i))
+	return i != RIEN and (not _impose or _possedes.has(i))
 
 
 ## Ramasser quelque chose. Renvoie faux si on l'avait deja — l'appelant s'en
@@ -230,7 +243,22 @@ func retirer(cle: String) -> bool:
 
 
 func nombre() -> int:
-	return _possedes.size() if not _possedes.is_empty() else _fiches.size()
+	return _possedes.size() if _impose else _fiches.size()
+
+
+## Le nom affichable d'un objet, DEPUIS SA CLE.
+##
+## nom_de() prend un rang dans la roue, et le rang d'un objet qu'on vient de
+## ramasser n'est pas le dernier : _possedes est trie sur l'ordre de
+## outils.json, pour que la roue garde la meme disposition d'une partie a
+## l'autre. Le scenario annoncait donc « nombre() - 1 » a chaque ramassage, et
+## comme le chapeau est le dernier de la liste, tout ce qu'on ramassait
+## s'annoncait « Porkpie » — y compris le revolver de la boite a gants.
+func nom_pour_cle(cle: String) -> String:
+	var i := _indice_de_cle(cle)
+	if i == RIEN:
+		return cle.capitalize()
+	return str(_fiches[i].get("nom", cle))
 
 
 func nom_de(rang: int) -> String:
