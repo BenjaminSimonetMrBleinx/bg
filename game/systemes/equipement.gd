@@ -19,6 +19,20 @@ const RIEN := -1
 
 signal change(index: int)
 
+## Emis quand on demande a mettre ou a enlever un objet qui SE PORTE.
+##
+## Le port ne bascule pas tout de suite : il bascule au milieu du geste, quand
+## la main est au crane. Ce signal est ce qui permet au controleur de lancer
+## l'animation sans que ce fichier sache qu'un joueur existe.
+signal port_demande(cle: String, mettre: bool)
+
+## Combien de temps la main met a arriver sur la tete, en secondes.
+##
+## C'est le milieu du clip « Coiffer », pas un nombre choisi : le chapeau doit
+## apparaitre quand la main y est. Trop tot, il se materialise sous la main ;
+## trop tard, la main redescend et le chapeau arrive tout seul.
+const DELAI_DU_PORT := 0.45
+
 ## Le personnage qui porte les objets. Ses segments sont retrouves par nom.
 @export var porteur: NodePath
 
@@ -51,6 +65,14 @@ var _possedes: Array[int] = []
 ##
 ## Le bac a sable, lui, ne pose rien du tout et garde ses jouets.
 var _impose: bool = false
+
+## LES OBJETS QU'ON PORTE, par indice de fiche.
+##
+## Un chapeau n'est pas un objet qu'on tient : on le met, et il reste sur la
+## tete pendant qu'on tient autre chose. Le confondre avec le reste de la roue
+## donnait un Walter qui devait choisir entre son revolver et son chapeau, et
+## qui perdait le second en degainant.
+var _portes: Dictionary = {}
 
 ## Le systeme audio, retrouve A LA DEMANDE et garde ensuite.
 ##
@@ -100,10 +122,13 @@ func _accrocher() -> void:
 			continue
 
 		var n := (ResourceLoader.load(chemin) as PackedScene).instantiate() as Node3D
-		n.position = _vecteur(fiche.get("position", [0, 0, 0]))
+		var k := _noeuds.size()
+		_ancres[k] = ancre
+		_decalages[k] = _vecteur(fiche.get("position", [0, 0, 0]))
+		_aplombs[k] = _vecteur(fiche.get("aplomb", [0, 0, 0]))
+		_echelles[k] = float(fiche.get("echelle", 1.0))
 		var r := _vecteur(fiche.get("rotation", [0, 0, 0]))
 		n.rotation = Vector3(deg_to_rad(r.x), deg_to_rad(r.y), deg_to_rad(r.z))
-		n.scale = Vector3.ONE * float(fiche.get("echelle", 1.0))
 		n.visible = false
 		ancre.add_child(n)
 		_noeuds.append(n)
@@ -204,6 +229,7 @@ func _indice_de_cle(cle: String) -> int:
 ## le comportement du bac a sable : sans mission chargee, on veut ses jouets.
 func definir_inventaire(cles: Array) -> void:
 	_possedes.clear()
+	_portes.clear()
 	_impose = true
 	for c in cles:
 		var i := _indice_de_cle(str(c))
@@ -238,6 +264,8 @@ func retirer(cle: String) -> bool:
 		return false
 	if _actif == i:
 		equiper(RIEN)
+	_portes.erase(i)
+	_montrer()
 	_possedes.erase(i)
 	return true
 
@@ -280,19 +308,149 @@ func actif() -> int:
 	return _rang_de(_actif) if _actif != RIEN else RIEN
 
 
+## Cet objet se PORTE-t-il, au lieu de se tenir ? Vient de outils.json : le
+## code ne connait aucun chapeau en particulier.
+func _se_porte(i: int) -> bool:
+	return i >= 0 and i < _fiches.size() and bool(_fiches[i].get("porte", false))
+
+
+## Lu par les tests : cette fiche decrit-elle un objet qui se porte ? La
+## question se pose sur un RANG de roue, comme tout le reste de l'interface.
+func est_porte_par_nature(rang: int) -> bool:
+	return _se_porte(_fiche_de(rang))
+
+
+## Le porte-t-on en ce moment ?
+func porte(cle: String) -> bool:
+	var i := _indice_de_cle(cle)
+	return i != RIEN and bool(_portes.get(i, false))
+
+
 ## Equipe l'objet d'indice i, ou RIEN pour ranger. Reequiper celui qu'on a
 ## deja en main le range : c'est le comportement attendu d'une roue, et ca
 ## evite d'avoir une part « rien » qui n'aurait servi qu'a ca.
+##
+## Un objet qui se PORTE ne suit pas cette regle : il ne va pas en main, il se
+## met ou s'enleve, et il ne touche pas a ce qu'on tenait.
 func equiper(rang: int) -> void:
 	var i := _fiche_de(rang) if rang != RIEN else RIEN
+	if i != RIEN and _se_porte(i):
+		_demander_le_port(i)
+		return
 	if i == _actif:
 		i = RIEN
-	for k in _noeuds.size():
-		if _noeuds[k] != null:
-			_noeuds[k].visible = (k == i)
 	_actif = i
+	_montrer()
 	_sonner(i)
 	change.emit(actif())
+
+
+## Equipe ou porte un objet DESIGNE PAR SA CLE.
+##
+## Le rang dans la roue depend de ce qu'on possede a cet instant ; la cle, non.
+## C'est ce qui permet a un scenario de capture ou a une mission de demander un
+## objet precis sans compter les parts.
+func equiper_cle(cle: String) -> void:
+	var i := _indice_de_cle(cle)
+	if i == RIEN:
+		push_warning("equipement : '%s' n'est pas dans outils.json" % cle)
+		return
+	var rang := _rang_de(i)
+	if rang == RIEN:
+		# Sans ce refus explicite, equiper(RIEN) rangeait tout et l'on croyait
+		# a un objet qui ne s'affiche pas, alors qu'on ne le possede pas.
+		push_warning("equipement : '%s' n'est pas dans l'inventaire" % cle)
+		return
+	equiper(rang)
+
+
+## L'ECHELLE DE L'OS, et le bug qu'elle a cache pendant tout ce temps.
+##
+## Une attache d'os herite de l'echelle du squelette. Sur ce rig elle vaut
+## 0,011 — les os y sont longs de deux mille unites — et tout ce qu'on accroche
+## dessus est donc rendu a un centieme de sa taille. Le revolver mesurait deux
+## millimetres, le livre un millimetre et demi, le chapeau autant. Ils etaient
+## charges, accroches, declares visibles, et invisibles a l'ecran : c'est le
+## « objet equipe pas visible en main » du retour precedent, et c'est la meme
+## cause que le chapeau qui ne se posait pas.
+##
+## Rien ne prevenait, parce que rien n'etait faux : le noeud etait bien la, au
+## bon endroit, a la bonne echelle DANS SON REPERE.
+##
+## On rattrape donc les trois choses d'un coup, au premier affichage :
+##
+##   echelle    divisee par celle de l'ancrage, pour que 1.0 veuille dire « la
+##              taille du modele »
+##   position   un decalage en METRES, dans les axes de l'os, donc il suit
+##              l'os quand il tourne
+##   aplomb     un decalage en METRES a la verticale du MONDE, fige une fois
+##              pour toutes. C'est ce qu'il faut pour poser quelque chose SUR
+##              quelqu'un sans dependre de l'orientation de l'os
+##
+## Au premier affichage et pas a la construction : le calcul a besoin d'un
+## squelette pose, ce qu'il n'est pas encore quand la scene se monte.
+var _ancres: Dictionary = {}
+var _decalages: Dictionary = {}
+var _aplombs: Dictionary = {}
+var _echelles: Dictionary = {}
+var _cales: Dictionary = {}
+
+
+func _caler(k: int) -> void:
+	if _cales.has(k):
+		return
+	var ancre := _ancres.get(k) as Node3D
+	if ancre == null or not ancre.is_inside_tree():
+		return
+	var base := ancre.global_transform.basis
+	var facteur: float = maxf(1e-6, base.get_scale().y)
+	_noeuds[k].scale = Vector3.ONE * (float(_echelles[k]) / facteur)
+	_noeuds[k].position = (_decalages[k] as Vector3) / facteur \
+			+ base.inverse() * (_aplombs[k] as Vector3)
+	_cales[k] = true
+
+
+## Etat complet, imprime. Appele depuis un scenario de capture ou une console :
+## une image qui ne montre pas le chapeau ne dit pas s'il n'est pas porte, pas
+## charge, ou pose a un metre du crane. Les trois se ressemblent, et cherchent
+## dans trois directions differentes.
+func journal() -> void:
+	print("EQUIPEMENT : actif=%d  impose=%s" % [_actif, _impose])
+	for k in _fiches.size():
+		var n := _noeuds[k] if k < _noeuds.size() else null
+		print("   %-9s possede=%s porte=%s noeud=%s visible=%s y=%s"
+				% [str(_fiches[k].get("cle", "?")),
+				   "oui" if (not _impose or _possedes.has(k)) else "non",
+				   "oui" if bool(_portes.get(k, false)) else "non",
+				   "oui" if n != null else "MANQUANT",
+				   "oui" if (n != null and n.is_visible_in_tree()) else "non",
+				   "%.2f" % n.global_position.y if n != null else "-"])
+
+
+func _montrer() -> void:
+	for k in _noeuds.size():
+		if _noeuds[k] == null:
+			continue
+		var vu: bool = (k == _actif) or bool(_portes.get(k, false))
+		if vu:
+			_caler(k)
+		_noeuds[k].visible = vu
+
+
+# Le port bascule APRES le delai du geste, pas a l'instant du choix. Sans ce
+# decalage, le chapeau apparaissait sur la tete pendant que la main partait le
+# chercher — ce qui donne moins l'impression de se coiffer que d'assister a un
+# tour de magie rate.
+func _demander_le_port(i: int) -> void:
+	var cle := str(_fiches[i].get("cle", ""))
+	var mettre := not bool(_portes.get(i, false))
+	port_demande.emit(cle, mettre)
+	var minuteur := get_tree().create_timer(DELAI_DU_PORT)
+	minuteur.timeout.connect(func() -> void:
+		_portes[i] = mettre
+		_montrer()
+		_sonner(i)
+		change.emit(actif()))
 
 
 # Le nom du son se DEDUIT de la cle de l'objet : « livre » -> « objet_livre ».

@@ -5,9 +5,19 @@
     "  cle       identifiant interne, sert aussi de nom de fichier .glb",
     "  nom       ce qui s'affiche dans la roue",
     "  ancrage   segment du corps : MainD, MainG, ou Tete",
-    "  position  decalage en metres dans le repere de ce segment",
+    "  position  decalage dans le repere du segment. ATTENTION : sur un os,",
+    "            l'unite n'est PAS le metre — l'attache herite de l'echelle du",
+    "            squelette, 0,011 sur ce rig. Pour un decalage en metres, voir",
+    "            'aplomb'",
+    "  aplomb    decalage en METRES, a la verticale du monde, converti une fois",
+    "            dans le repere de l'os. C'est ce qu'il faut pour poser quelque",
+    "            chose SUR quelqu'un : ca marche quelle que soit l'echelle et",
+    "            quelle que soit l'orientation de l'os",
     "  rotation  en DEGRES, ordre X puis Y puis Z",
     "  echelle   1.0 = taille modelisee",
+    "  porte     vrai = on le MET au lieu de le tenir. Le choisir dans la roue",
+    "            le met ou l'enleve, avec l'animation qui va avec, et il reste",
+    "            en place pendant qu'on tient autre chose",
     "",
     "Tout est modifiable a chaud : relancer le jeu suffit, rien a regenerer.",
     "Ajouter une entree ajoute automatiquement une part a la roue."
@@ -50,9 +60,11 @@
       "cle": "chapeau",
       "nom": "Porkpie",
       "ancrage": "Tete",
-      "position": [0.0, 0.24, 0.0],
+      "position": [0.0, 0.0, 0.0],
+      "aplomb": [0.0, 0.215, 0.0],
       "rotation": [0.0, 0.0, 0.0],
-      "echelle": 1.0
+      "echelle": 1.0,
+      "porte": true
     }
   ]
 }

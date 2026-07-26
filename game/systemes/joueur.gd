@@ -168,6 +168,22 @@ func relacher_la_pose() -> void:
 		_silhouette.relacher()
 
 
+## Joue un geste — se coiffer, lire. Renvoie sa duree en secondes, ou zero si
+## le personnage ne sait pas le faire : l'appelant ne doit pas bloquer le
+## joueur pour une animation qui ne jouera pas.
+func geste(nom: String) -> float:
+	return _demarche.geste(nom) if _demarche != null else 0.0
+
+
+func geste_en_cours() -> String:
+	return _demarche.geste_en_cours() if _demarche != null else ""
+
+
+func annuler_le_geste() -> void:
+	if _demarche != null:
+		_demarche.annuler_le_geste()
+
+
 ## La pose en cours, pour les tests. Le poids d'un fondu n'est visible nulle
 ## part ailleurs, et une pose qui ne se declenche pas ressemble exactement a
 ## une pose qui n'existe pas.
@@ -223,6 +239,18 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		velocity.y -= _gravite * delta
+
+	# UN GESTE S'ANNULE EN BOUGEANT.
+	#
+	# La verification est ici, avant tout le reste, et surtout AVANT `bloque` :
+	# pendant un geste le joueur est bloque, donc plus aucune commande de
+	# deplacement n'est lue, et une lecture de quatre secondes et demie serait
+	# ininterruptible. On regarde donc l'intention, pas le mouvement.
+	if _demarche != null and _demarche.geste_en_cours() != "":
+		for touche in ["gaz", "frein", "gauche", "droite", "saut", "accroupir"]:
+			if Input.is_action_pressed(touche):
+				_demarche.annuler_le_geste()
+				break
 
 	# Gauche et droite PIVOTENT, elles ne deplacent pas. Avant et arriere
 	# deplacent selon l'orientation du personnage, jamais selon la camera.

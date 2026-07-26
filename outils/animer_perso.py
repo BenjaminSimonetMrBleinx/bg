@@ -434,7 +434,7 @@ def distance_au_segment(p: Vector, a: Vector, b: Vector) -> float:
     return (p - (a + ab * t)).length
 
 
-def traverse(arm, tronc: tuple, tete: tuple) -> tuple[float, float]:
+def traverse(arm, tronc: tuple, tete: tuple, cote: str = "Left") -> tuple[float, float]:
     """De combien le bras gauche RENTRE dans le buste et dans le crane.
 
     En metres, et jamais negatif : zero veut dire qu'il passe a cote.
@@ -452,9 +452,9 @@ def traverse(arm, tronc: tuple, tete: tuple) -> tuple[float, float]:
     """
     tronc_bas, tronc_haut, r_tronc = tronc
     centre_tete, r_tete = tete
-    epaule = place(arm, "LeftArm")
-    coude = place(arm, "LeftForeArm")
-    poignet = place(arm, "LeftHand")
+    epaule = place(arm, cote + "Arm")
+    coude = place(arm, cote + "ForeArm")
+    poignet = place(arm, cote + "Hand")
     dans_tronc = 0.0
     dans_tete = 0.0
     for a, b, jusqu in ((epaule, coude, 1.0), (coude, poignet, 0.75)):
@@ -466,101 +466,100 @@ def traverse(arm, tronc: tuple, tete: tuple) -> tuple[float, float]:
     return max(0.0, dans_tronc), max(0.0, dans_tete)
 
 
+def volumes_du_corps(arm) -> tuple:
+    """Le buste et le crane, en volumes, MESURES sur la pose courante.
+
+    Le rayon du buste n'est pas un nombre choisi : c'est la distance de l'axe du
+    tronc a l'articulation de l'epaule, un peu rentree. Sur n'importe quel
+    humanoide, l'epaule est posee sur le bord de la cage thoracique.
+    """
+    bas = place(arm, "Head")
+    haut = place(arm, "head_end")
+    tronc_bas = place(arm, "Hips")
+    r_tronc = distance_au_segment(place(arm, "LeftArm"), tronc_bas, bas) * 0.80
+    return ((tronc_bas, bas, r_tronc),
+            (bas + (haut - bas) * 0.5, (haut - bas).length * 0.48), bas, haut)
+
+
+def viser_avec_la_main(arm, depart: dict, cote: str, cible: Vector,
+                       poignet: Vector, tronc: tuple, tete: tuple,
+                       quoi: str, coude_bas: float = 1.5) -> dict:
+    """Cherche la pose du bras `cote` qui amene ses DOIGTS sur `cible`.
+
+    Le meme solveur sert aux lunettes, au chapeau et au livre, et c'est
+    volontaire : les trois gestes ont exactement le meme piege. Poser des
+    angles a la main sur un rig qu'on n'a pas fabrique ne marche pas —
+    l'orientation des os lui appartient — et un cout qui ne regarde que le
+    point d'arrivee laisse le bras passer par ou il veut, c'est-a-dire par le
+    torse.
+
+    On paie donc trois choses : ou arrivent les doigts et le poignet, ce que le
+    bras TRAVERSE en chemin, et le coude qui monte au-dessus de l'epaule.
+
+    `coude_bas` dose ce dernier terme, et il se dose vraiment : on remonte ses
+    lunettes coude en bas, mais on ne met PAS un chapeau coude en bas. Avec le
+    meme reglage pour les deux, la main s'arretait a dix centimetres du crane
+    plutot que de lever le coude — le solveur avait raison, la consigne etait
+    fausse.
+    """
+    plie, sens = axe_de_flexion(arm, depart, cote + "ForeArm", cote + "Hand",
+                                cote + "Arm")
+    axes = [TANGAGE, ROULIS, LACET]
+    reglages = [(cote + "Arm", axes[0], 120.0), (cote + "Arm", axes[1], 120.0),
+                (cote + "Arm", axes[2], 120.0), (cote + "ForeArm", plie, 140.0),
+                (cote + "Shoulder", axes[0], 18.0),
+                (cote + "Shoulder", axes[2], 18.0),
+                (cote + "Hand", axes[0], 34.0), (cote + "Hand", axes[1], 34.0),
+                (cote + "Hand", axes[2], 34.0)]
+
+    def cout(_valeurs) -> float:
+        dans_tronc, dans_tete = traverse(arm, tronc, tete, cote)
+        coude_haut = max(0.0, place(arm, cote + "ForeArm").z
+                         - place(arm, cote + "Arm").z)
+        return ((bout(arm, cote + "Hand", MAIN) - cible).length
+                + 0.7 * (place(arm, cote + "Hand") - poignet).length
+                + 4.0 * (dans_tronc + dans_tete)
+                + coude_bas * coude_haut)
+
+    departs = [[lever, 0.0, 0.0, pli * sens, 0.0, 0.0, 0.0, 0.0, 0.0]
+               for pli in (35.0, 75.0, 110.0) for lever in (0.0, -50.0)]
+    pose = resoudre(arm, depart, reglages, cout, departs)
+    poser_pose(arm, pose)
+    ecart = (bout(arm, cote + "Hand", MAIN) - cible).length
+    dans_tronc, dans_tete = traverse(arm, tronc, tete, cote)
+    print("  %-10s doigts a %.1f cm de la cible, buste %.1f cm, crane %.1f cm, "
+          "coude %.1f cm sous l epaule"
+          % (quoi, ecart * 100.0, dans_tronc * 100.0, dans_tete * 100.0,
+             (place(arm, cote + "Arm").z - place(arm, cote + "ForeArm").z) * 100.0))
+    if ecart > 0.06:
+        print("  ATTENTION  %s manque sa cible de %.1f cm" % (quoi, ecart * 100))
+    if dans_tronc > 0.02 or dans_tete > 0.02:
+        print("  ATTENTION  %s fait traverser le bras" % quoi)
+    return pose
+
+
 def resoudre_les_lunettes(arm, depart: dict) -> dict:
     """Trouve la pose du bras gauche qui amene la main aux lunettes.
-
-    Poser des angles a la main sur un rig qu'on n'a pas fabrique ne marche pas :
-    l'orientation des os est propre au rig, et une valeur qui semble juste
-    envoie le poignet dans l'epaule. On cherche donc les angles, et on VERIFIE
-    en centimetres ou la main a atterri.
-
-    Descente par coordonnees : six angles, un a la fois, pas de plus en plus
-    fin. C'est lent a lire et court a ecrire, et le probleme est trop petit
-    pour meriter mieux.
 
     La main GAUCHE, parce que la droite tient le revolver et le porkpie —
     remonter ses lunettes avec un calibre est une autre scene.
     """
     poser_pose(arm, depart)
+    tronc, tete, bas, haut = volumes_du_corps(arm)
     # OU SONT LES LUNETTES. On ne le demande pas au nom des os : « headfront »
     # laissait croire au visage et designait le sommet du crane, ce qui donnait
     # un personnage qui se gratte la tete. On mesure la tete et on se place aux
     # deux tiers de sa hauteur, un peu en avant — c'est la ou sont les yeux sur
     # n'importe quel humain.
-    bas = place(arm, "Head")
-    haut = place(arm, "head_end")
     cible = bas + (haut - bas) * 0.46 + AVANT * 0.085 + GAUCHE * 0.025
     # Le poignet, lui, doit rester BAS : c'est ce qui fait la difference entre
     # remonter ses lunettes et faire un signe. On demande donc deux choses a la
-    # fois — les doigts au montures, le poignet une main plus bas.
+    # fois — les doigts aux montures, le poignet une main plus bas.
     poignet = cible - HAUT * 0.115 + AVANT * 0.02
     print("  tete       de %.2f m a %.2f m, lunettes visees a %.2f m"
           % (bas.z, haut.z, cible.z))
-    plie, sens = axe_de_flexion(arm, depart, "LeftForeArm", "LeftHand",
-                                "LeftArm")
-
-    # LE BUSTE ET LE CRANE, en volumes, MESURES sur le rig au repos.
-    #
-    # Le rayon du buste n'est pas un nombre choisi : c'est la distance de l'axe
-    # du tronc a l'articulation de l'epaule, un peu rentree. Sur n'importe quel
-    # humanoide, l'epaule est posee sur le bord de la cage thoracique.
-    tronc_bas = place(arm, "Hips")
-    tronc_haut = bas
-    r_tronc = distance_au_segment(place(arm, "LeftArm"), tronc_bas, tronc_haut) * 0.80
-    centre_tete = bas + (haut - bas) * 0.5
-    r_tete = (haut - bas).length * 0.48
-    tronc = (tronc_bas, tronc_haut, r_tronc)
-    tete = (centre_tete, r_tete)
-    print("  volumes    buste rayon %.1f cm, crane rayon %.1f cm"
-          % (r_tronc * 100.0, r_tete * 100.0))
-
-    # QUATRE inconnues, pas neuf : trois pour viser avec le bras, une pour
-    # plier le coude. Laisser les neuf libres trouve toujours une solution qui
-    # touche la cible, et c'est le probleme — elle passe par un poignet retourne
-    # et une epaule a l'envers. Un modele a moins de liberte se trompe moins.
-    #
-    # Le poignet est desormais borne a 34 degres au lieu de 70 : au-dela on ne
-    # remonte plus ses lunettes, on se casse la main.
-    axes = [TANGAGE, ROULIS, LACET]
-    reglages = [("LeftArm", axes[0], 120.0), ("LeftArm", axes[1], 120.0),
-                ("LeftArm", axes[2], 120.0), ("LeftForeArm", plie, 140.0),
-                ("LeftShoulder", axes[0], 18.0), ("LeftShoulder", axes[2], 18.0),
-                ("LeftHand", axes[0], 34.0), ("LeftHand", axes[1], 34.0),
-                ("LeftHand", axes[2], 34.0)]
-
-    # LE COUT. Trois termes, et les deux derniers sont nouveaux :
-    #
-    #   - ou arrivent les doigts, et ou arrive le poignet ;
-    #   - ce que le bras traverse en chemin, paye QUATRE fois le prix d'un
-    #     ecart de visee. Un centimetre de bras dans le torse se voit
-    #     infiniment plus qu'un centimetre de doigts a cote des montures ;
-    #   - le coude qui monte au-dessus de l'epaule. Rien ne l'interdisait, et
-    #     c'est le « pli bizarre » : on remonte ses lunettes coude BAS, le
-    #     coude en l'air est un salut.
-    def ecart_de(_valeurs) -> float:
-        dans_tronc, dans_tete = traverse(arm, tronc, tete)
-        coude_haut = max(0.0, place(arm, "LeftForeArm").z - place(arm, "LeftArm").z)
-        return ((bout(arm, "LeftHand", MAIN) - cible).length
-                + 0.7 * (place(arm, "LeftHand") - poignet).length
-                + 4.0 * (dans_tronc + dans_tete)
-                + 1.5 * coude_haut)
-
-    departs = [[lever, 0.0, 0.0, pli * sens, 0.0, 0.0, 0.0, 0.0, 0.0]
-               for pli in (35.0, 75.0, 110.0) for lever in (0.0, -50.0)]
-    pose = resoudre(arm, depart, reglages, ecart_de, departs)
-    poser_pose(arm, pose)
-    ecart = (bout(arm, "LeftHand", MAIN) - cible).length
-    dans_tronc, dans_tete = traverse(arm, tronc, tete)
-    print("  lunettes   doigts a %.1f cm des montures, poignet a %.1f cm "
-          "sous eux" % (ecart * 100.0,
-                        (cible.z - place(arm, "LeftHand").z) * 100.0))
-    print("  passage    buste %.1f cm, crane %.1f cm, coude %.1f cm sous l epaule"
-          % (dans_tronc * 100.0, dans_tete * 100.0,
-             (place(arm, "LeftArm").z - place(arm, "LeftForeArm").z) * 100.0))
-    if ecart > 0.05:
-        print("  ATTENTION  le geste manque la tete de %.1f cm" % (ecart * 100))
-    if dans_tronc > 0.02 or dans_tete > 0.02:
-        print("  ATTENTION  le bras traverse encore")
+    pose = viser_avec_la_main(arm, depart, "Left", cible, poignet, tronc, tete,
+                              "lunettes")
     # La tete accompagne un peu : on baisse le menton quand on remonte ses
     # lunettes, on ne reste pas plante droit pendant que la main monte.
     tourner(arm, pose, "Head", TANGAGE, -3.0)
@@ -878,6 +877,116 @@ def clip_assis(arm, debout: dict, duree_s: float = 5.0):
     return action
 
 
+def clip_coiffer(arm, debout: dict, duree_s: float = 1.1):
+    """Mettre ou enlever le chapeau. La main droite monte au sommet du crane.
+
+    UN SEUL clip pour les deux sens, et ce n'est pas de l'economie : le geste
+    EST le meme. On monte la main au crane, on la redescend ; ce qui change,
+    c'est si le chapeau apparait ou disparait au passage — et ca, c'est au jeu
+    de le decider, a mi-parcours.
+
+    Il ne boucle pas. C'est un geste, il a une fin.
+    """
+    # DETACHER L'ACTION AVANT DE MESURER. Le clip precedent est encore assigne,
+    # et il sera reevalue au prochain rafraichissement : sans cette ligne, on
+    # mesure le crane de Walter ASSIS — 1,24 m au lieu de 1,85 — et le chapeau
+    # se pose a hauteur de poitrine. Le piege est deja documente deux fois plus
+    # haut dans ce fichier ; il ne previent toujours pas.
+    if arm.animation_data is not None:
+        arm.animation_data.action = None
+    poser_pose(arm, debout)
+    tronc, tete, bas, haut = volumes_du_corps(arm)
+    # LE SOMMET DU CRANE, mesure : c'est la que se pose un porkpie. Un peu en
+    # avant, parce qu'on saisit un chapeau par le bord, pas par le dessus.
+    cible = haut + AVANT * 0.055
+    poignet = cible - HAUT * 0.10 + AVANT * 0.04
+    print("  crane      sommet a %.2f m, chapeau saisi a %.2f m"
+          % (haut.z, cible.z))
+    saisie = viser_avec_la_main(arm, debout, "Right", cible, poignet, tronc,
+                                tete, "chapeau", coude_bas=0.15)
+
+    action = action_neuve("Coiffer")
+    if arm.animation_data is None:
+        arm.animation_data_create()
+    arm.animation_data.action = action
+    total = int(duree_s * IPS)
+    for i in range(total + 1):
+        t = i / float(total)
+        # Montee, tenue courte, descente. La tenue est ce qui rend le geste
+        # lisible : sans elle on voit une main passer, pas quelqu'un qui se
+        # coiffe.
+        if t < 0.38:
+            poids = adoucir(t / 0.38)
+        elif t < 0.58:
+            poids = 1.0
+        else:
+            poids = 1.0 - adoucir((t - 0.58) / 0.42)
+        pose = melange({k: v.copy() for k, v in debout.items()}, saisie, poids)
+        # Le menton descend un peu quand la main monte : on ne se coiffe pas
+        # tete droite.
+        tourner(arm, pose, "Head", TANGAGE, -4.0 * poids)
+        appliquer(arm, pose)
+        cle(arm, action, i)
+    return action
+
+
+def clip_lire(arm, debout: dict, duree_s: float = 4.6):
+    """Lire le livre tenu en main droite. Quatre secondes et demie.
+
+    Les DEUX mains montent : une seule main qui tient un livre a hauteur des
+    yeux pendant cinq secondes est une pose de serveur. La gauche vient sous
+    l'ouvrage, et tourne une page a mi-parcours — c'est le seul detail qui
+    empeche la pose de se lire comme une image fixe.
+    """
+    if arm.animation_data is not None:
+        arm.animation_data.action = None
+    poser_pose(arm, debout)
+    tronc, tete, bas, haut = volumes_du_corps(arm)
+    # A HAUTEUR DE LECTURE : sous les yeux, a une longueur d'avant-bras devant
+    # le buste. On mesure les yeux comme pour les lunettes, et on descend d'une
+    # tete : personne ne lit un livre a hauteur de visage.
+    yeux = bas + (haut - bas) * 0.46
+    ouvrage = yeux - HAUT * 0.30 + AVANT * 0.28
+    droite = ouvrage - GAUCHE * 0.10
+    gauche = ouvrage + GAUCHE * 0.10
+    print("  lecture    yeux a %.2f m, livre tenu a %.2f m, %.0f cm devant"
+          % (yeux.z, ouvrage.z, (ouvrage - place(arm, "Spine02")).dot(AVANT) * 100.0))
+    tenue = viser_avec_la_main(arm, debout, "Right", droite,
+                               droite - HAUT * 0.06, tronc, tete, "livre D")
+    tenue = viser_avec_la_main(arm, tenue, "Left", gauche,
+                               gauche - HAUT * 0.06, tronc, tete, "livre G")
+    # Le regard tombe sur la page, et les epaules se referment legerement.
+    tourner(arm, tenue, "Head", TANGAGE, -16.0)
+    tourner(arm, tenue, "neck", TANGAGE, -8.0)
+    tourner(arm, tenue, "Spine02", TANGAGE, -4.0)
+
+    action = action_neuve("Lire")
+    arm.animation_data.action = action
+    total = int(duree_s * IPS)
+    # La page se tourne au milieu : la main gauche s'ecarte et revient.
+    page0, page1 = 0.52, 0.68
+    for i in range(total + 1):
+        t = i / float(total)
+        if t < 0.16:
+            poids = adoucir(t / 0.16)
+        elif t < 0.86:
+            poids = 1.0
+        else:
+            poids = 1.0 - adoucir((t - 0.86) / 0.14)
+        pose = melange({k: v.copy() for k, v in debout.items()}, tenue, poids)
+        souffle = math.sin(t * duree_s / 4.0 * math.tau)
+        tourner(arm, pose, "Spine01", TANGAGE, 0.9 * souffle * poids)
+        # Le regard balaie la ligne. Petit, et c'est ce qui fait qu'on lit.
+        tourner(arm, pose, "Head", LACET, 3.4 * math.sin(t * 3.1 * math.tau) * poids)
+        if page0 <= t <= page1:
+            tourne = math.sin((t - page0) / (page1 - page0) * math.pi)
+            tourner(arm, pose, "LeftForeArm", GAUCHE, 22.0 * tourne * poids)
+            tourner(arm, pose, "LeftHand", TANGAGE, 18.0 * tourne * poids)
+        appliquer(arm, pose, 0.004 * souffle)
+        cle(arm, action, i)
+    return action
+
+
 def clip_saut(arm, debout: dict, duree_s: float = 0.8):
     """En l'air. Jambes repliees a la montee, tendues a la retombee.
 
@@ -1125,7 +1234,8 @@ def main() -> None:
     nouvelles = (clip_repos(arm, source), clip_marche(arm, source),
                  clip_accroupi(arm, debout),
                  clip_marche_accroupie(arm, source, debout),
-                 clip_saut(arm, debout), clip_assis(arm, debout))
+                 clip_saut(arm, debout), clip_assis(arm, debout),
+                 clip_coiffer(arm, debout), clip_lire(arm, debout))
     print("")
     # On RELIT ce qu'on vient d'ecrire. Construire une pose et l'inserer en cle
     # sont deux operations distinctes, et rien ne garantit que la seconde ait
@@ -1168,7 +1278,8 @@ def main() -> None:
     # Les actions creees ici ne sont attachees a rien : sans piste NLA, elles
     # ne sortent pas du fichier et on cherche pourquoi le jeu ne les voit pas.
     arm.animation_data.action = None
-    for nom in ("Repos", "Marche", "Accroupi", "AccroupiMarche", "Saut", "Assis"):
+    for nom in ("Repos", "Marche", "Accroupi", "AccroupiMarche", "Saut",
+                "Assis", "Coiffer", "Lire"):
         ranger(arm, bpy.data.actions[nom])
 
     bpy.ops.object.select_all(action="SELECT")

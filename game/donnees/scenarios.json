@@ -143,6 +143,44 @@
    ]
   },
 
+  "walt_chapeau": {
+   "quoi": "Le porkpie sur la tete, apres le geste. On le donne, on le choisit dans la roue, la main monte au crane et le chapeau apparait a mi-parcours. L'image est prise APRES le delai : on doit voir le chapeau pose, pas la main en route. Le don attend l'image 90 : la mission POSE l'inventaire a son demarrage, et tout ce qu'on donne avant est efface.",
+   "fin": 320,
+   "etapes": [
+    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
+    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
+    { "image": 240, "appeler": "Equipement", "methode": "donner", "argument": "chapeau" },
+    { "image": 245, "appeler": "Equipement", "methode": "equiper_cle", "argument": "chapeau" },
+    { "image": 250, "camera": [22.6, 1.85, -13.3], "vise": [23.5, 1.62, -12] },
+    { "image": 315, "appeler": "Equipement", "methode": "journal" }
+   ]
+  },
+
+  "walt_coiffer": {
+   "quoi": "Le geste lui-meme, saisi PENDANT : la main droite au sommet du crane, coude leve. Si le bras traverse la tete ou si le coude reste colle au corps, ca se voit ici et nulle part ailleurs.",
+   "fin": 118,
+   "etapes": [
+    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
+    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
+    { "image": 90, "appeler": "Equipement", "methode": "donner", "argument": "chapeau" },
+    { "image": 95, "appeler": "Equipement", "methode": "equiper_cle", "argument": "chapeau" },
+    { "image": 100, "camera": [22.2, 1.9, -13.4], "vise": [23.5, 1.6, -12] }
+   ]
+  },
+
+  "walt_lecture": {
+   "quoi": "Walter lit. Les deux mains montent devant le buste, le livre est dans la main droite, le menton descend. L'image est calee au milieu du clip de quatre secondes et demie.",
+   "fin": 190,
+   "etapes": [
+    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
+    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
+    { "image": 90, "appeler": "Equipement", "methode": "donner", "argument": "livre" },
+    { "image": 95, "appeler": "Equipement", "methode": "equiper_cle", "argument": "livre" },
+    { "image": 120, "appeler": "Joueur", "methode": "geste", "argument": "lire" },
+    { "image": 125, "camera": [22.3, 1.72, -13.5], "vise": [23.5, 1.42, -12] }
+   ]
+  },
+
   "walt_accroupi": {
    "quoi": "Walter accroupi, touche Ctrl gauche tenue. Sa tete doit descendre a 1,17 m et ses pieds rester au sol.",
    "fin": 110,

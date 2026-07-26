@@ -57,6 +57,18 @@ const ALLURES := {
 ## constante mais ou il ne se passe rien.
 const AU_TEMPS := ["repos", "accroupi", "saut"]
 
+## LES GESTES : des clips qui ne bouclent pas et qui ont une fin.
+##
+## Une allure est un etat — on marche tant qu'on avance. Un geste est un
+## evenement : il commence, il dure, il se termine tout seul, et pendant ce
+## temps il prend la main sur l'allure. Se coiffer en marchant marcherait,
+## mais lire un livre en trottinant non, et la difference ne se decrit pas
+## avec le vocabulaire des allures.
+const GESTES := {
+	"coiffer": "Coiffer",
+	"lire": "Lire",
+}
+
 var _reglages: Reglages
 var _lecteur: AnimationPlayer
 var _nom: String = ""
@@ -79,6 +91,11 @@ var foulee: float = 1.15
 
 ## Vrai tant que l'allure en cours tourne a l'horloge.
 var _au_temps: bool = false
+
+## Le geste en cours, son temps restant, et l'allure a laquelle revenir.
+var _geste: String = ""
+var _reste: float = 0.0
+var _apres: String = ""
 
 ## Vitesse a laquelle le cycle se fige quand on s'arrete, POUR UN PERSONNAGE
 ## SANS CLIP DE REPOS. Une animation coupee net laisse le personnage une jambe
@@ -143,6 +160,13 @@ func connait(nom: String) -> bool:
 ## Changer de clip REMET LA PHASE A SA PLACE et pas a zero : passer du trot a
 ## la course au milieu d'une foulee ne doit pas replanter le pied.
 func allure(nom: String) -> bool:
+	# Un geste en cours garde la main. On retient quand meme l'allure demandee :
+	# a la fin du geste, on doit reprendre celle du moment, pas celle d'il y a
+	# cinq secondes.
+	if _geste != "":
+		_apres = nom
+		return true
+
 	var clip := ""
 	for candidat in ALLURES.get(nom, []):
 		if _disponibles.has(candidat):
@@ -185,6 +209,13 @@ func avancer(vitesse_au_sol: float, delta: float) -> void:
 	if _lecteur == null:
 		return
 
+	if _geste != "":
+		# Le moteur joue le geste tout seul, a l'horloge. On ne fait que compter.
+		_reste -= delta
+		if _reste <= 0.0:
+			_terminer_le_geste()
+		return
+
 	if _au_temps:
 		# Le moteur joue tout seul. On garde la phase a jour pour que reprendre
 		# la marche ne reparte pas d'une image arbitraire, et on n'emet aucun
@@ -212,6 +243,62 @@ func avancer(vitesse_au_sol: float, delta: float) -> void:
 	if _depuis_le_pas >= demi:
 		_depuis_le_pas = fmod(_depuis_le_pas, demi)
 		pas.emit()
+
+
+## Lance un geste. Renvoie sa DUREE en secondes, ou zero si le modele ne le
+## connait pas — l'appelant sait alors qu'il ne s'est rien passe, au lieu de
+## bloquer le joueur pendant une animation qui ne joue pas.
+func geste(nom: String) -> float:
+	if _lecteur == null:
+		return 0.0
+	var clip := str(GESTES.get(nom, ""))
+	if clip == "" or not _disponibles.has(clip):
+		if not _manquantes.has(nom):
+			_manquantes[nom] = true
+			push_warning("demarche : pas de clip '%s' pour le geste '%s'"
+					% [clip, nom])
+		return 0.0
+	if _geste == nom:
+		return _reste
+
+	# _apres se remplit tout seul : le joueur appelle allure() a chaque image et
+	# celle-ci se contente de la retenir tant qu'un geste tourne. On repart donc
+	# de l'allure du moment ou le geste finit, pas de celle d'avant.
+	_apres = ""
+	_geste = nom
+	_nom = clip
+	var anim := _lecteur.get_animation(clip)
+	anim.loop_mode = Animation.LOOP_NONE
+	_duree = maxf(0.01, anim.length)
+	_reste = _duree
+	_au_temps = true
+	# Un fondu court : un geste qui claque depuis la marche se lit comme un
+	# changement de personnage.
+	_lecteur.play(clip, 0.15)
+	return _duree
+
+
+## Le geste en cours, ou "" — lu par le controleur pour savoir s'il doit encore
+## bloquer le joueur, et par les tests.
+func geste_en_cours() -> String:
+	return _geste
+
+
+## Interrompt le geste. C'est ce qui rend la lecture annulable : on bouge, on
+## arrete de lire.
+func annuler_le_geste() -> void:
+	if _geste != "":
+		_terminer_le_geste()
+
+
+func _terminer_le_geste() -> void:
+	_geste = ""
+	_reste = 0.0
+	# On force la reprise en effacant le clip courant : allure() court-circuite
+	# quand le clip demande est deja en place, et il l'est justement encore.
+	var reprendre := _apres if _apres != "" else "repos"
+	_nom = ""
+	allure(reprendre)
 
 
 ## L'animation en cours, pour les tests. Un personnage immobile ressemble

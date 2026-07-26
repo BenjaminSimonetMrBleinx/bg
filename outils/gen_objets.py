@@ -190,12 +190,21 @@ def chapeau(mats) -> int:
     return total
 
 
+# CE QUE CE GENERATEUR FABRIQUE, et rien de plus.
+#
+# Le chapeau n'y est PLUS : Guillaume en a livre un, et il est importe depuis
+# livraisons/. Le laisser dans cette table ferait ecraser un modele livre par
+# douze faces de substitution au premier « generer » venu — c'est exactement ce
+# qui est arrive au Jesse livre, remplace par son ancienne version sans que rien
+# ne le signale.
+#
+# La fonction chapeau() reste, elle : elle documente la silhouette et sert de
+# repli si le modele livre disparait.
 OBJETS = {
     "arme": (arme, ["metal", "metal_sombre"]),
     "meth": (meth, ["cristal", "cristal_clair"]),
     "botte": (botte, ["cristal_blanc", "cristal_blanc_vif"]),
     "livre": (livre, ["couverture", "pages"]),
-    "chapeau": (chapeau, ["feutre", "feutre_sombre"]),
 }
 
 

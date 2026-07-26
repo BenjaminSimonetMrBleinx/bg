@@ -107,6 +107,7 @@ var _fondu: ColorRect
 var _audio: Audio
 var _dialogue: Dialogue
 var _roue: Roue
+var _equipement: Equipement
 var _telephone: Telephone
 var _passages: Array[Passage] = []
 var _desert: Node3D
@@ -128,6 +129,11 @@ var _dedans: Maison = null
 ## drapeau on le relacherait aussi quand quelqu'un d'autre l'a bloque — un
 ## dialogue, la roue — et il se remettrait a marcher en pleine conversation.
 var _bloque_par_la_cachette: bool = false
+
+## Vrai tant que c'est un GESTE qui immobilise le joueur. Meme raison que
+## ci-dessus : sans ce drapeau, on rendrait la main a quelqu'un que le dialogue
+## ou la roue venait de bloquer.
+var _geste_en_cours: bool = false
 
 ## Vrai pendant le fondu. Tant qu'il dure, plus aucune commande ne passe :
 ## sans ce verrou, un appui repete sur F pendant le noir enchaine deux
@@ -151,6 +157,11 @@ func _ready() -> void:
 	_audio = get_node_or_null(audio) as Audio
 	_dialogue = get_node_or_null(dialogue) as Dialogue
 	_roue = get_node_or_null(roue) as Roue
+	# L'equipement etait retrouve trois fois, a trois endroits, par le meme
+	# chemin ecrit a la main. Une fois suffit.
+	_equipement = get_node_or_null(NodePath("../Equipement")) as Equipement
+	if _equipement != null:
+		_equipement.port_demande.connect(_sur_port_demande)
 	_telephone = get_node_or_null(telephone) as Telephone
 	if _dialogue != null:
 		_dialogue.termine.connect(_sur_fin_de_dialogue)
@@ -202,15 +213,14 @@ func _ready() -> void:
 	if _pause != null:
 		_pause.recommencer_demande.connect(_sur_recommencer_demande)
 	if _tir != null:
-		var eq := get_node_or_null(NodePath("../Equipement")) as Equipement
-		_tir.brancher(_c, _j, eq)
+		_tir.brancher(_c, _j, _equipement)
 	if _fin != null:
 		var affichage := get_node_or_null(ecran) as CanvasItem
 		if affichage != null:
 			_fin.brancher_l_ecran(affichage)
 	if _scenario != null:
 		_scenario.brancher(_dialogue, _telephone, _tir, _fin, _cachette,
-				get_node_or_null(NodePath("../Equipement")) as Equipement)
+				_equipement)
 	# Le ragdoll se construit MAINTENANT, pas a la mort : fabriquer douze corps
 	# physiques a l'image precise ou le jeu doit etre le plus lisible se voit.
 	var r := Ragdoll.new()
@@ -300,6 +310,8 @@ func _process(delta: float) -> void:
 		return
 	if _gerer_la_roue():
 		return
+	if _gerer_le_geste():
+		return
 
 	match _etat:
 		Etat.AU_VOLANT:
@@ -348,6 +360,37 @@ func _gerer_la_pause() -> bool:
 		_afficher("")
 		return true
 	return false
+
+
+# UN GESTE EN COURS — se coiffer, lire. Il capte tout le temps qu'il dure.
+#
+# C'est ici que le joueur est RELACHE, et nulle part ailleurs : le geste peut
+# se terminer de deux facons, tout seul ou parce qu'on a bouge, et deux
+# endroits qui rendent la main finissent toujours par se contredire. Le
+# personnage annule ; le controleur constate et debloque.
+func _gerer_le_geste() -> bool:
+	if _geste_en_cours:
+		if _j.geste_en_cours() != "":
+			_afficher("")
+			return true
+		_geste_en_cours = false
+		_j.bloque = false
+	elif _j.geste_en_cours() != "":
+		_geste_en_cours = true
+		return true
+	return false
+
+
+# Mettre et enlever jouent LE MEME clip. Le geste est le meme : la main monte
+# au crane et redescend. Ce qui differe, c'est ce qui se passe a mi-parcours,
+# et l'equipement s'en charge tout seul.
+func _sur_port_demande(_cle: String, _mettre: bool) -> void:
+	if _j.geste("coiffer") <= 0.0:
+		return
+	_j.bloque = true
+	if _audio != null and _audio.connait("objet_chapeau"):
+		_audio.bruit("objet_chapeau")
+	_afficher("")
 
 
 # Renvoie vrai si la roue a pris la main : elle capte alors gauche et droite,
@@ -861,9 +904,36 @@ func _a_pied() -> void:
 		return
 
 	var proche := d_v <= portee_v
-	_afficher("F   Monter" if proche else "")
-	if proche and Input.is_action_just_pressed("interagir"):
-		_monter()
+	if proche:
+		_afficher("F   Monter")
+		if Input.is_action_just_pressed("interagir"):
+			_monter()
+		return
+
+	# LIRE, en dernier recours.
+	#
+	# Le livre passe apres tout le reste, et c'est le bon ordre : on tient le
+	# livre en permanence une fois ramasse, et il ne doit jamais voler la touche
+	# a une porte, a une conversation ou a une voiture. Quand plus rien d'autre
+	# n'est a portee, F lit.
+	if _equipement != null and _equipement.cle_equipee() == "livre":
+		_afficher("F   Lire")
+		if Input.is_action_just_pressed("interagir"):
+			_lire()
+		return
+	_afficher("")
+
+
+# Lire le livre. Le joueur est bloque le temps du geste ; bouger l'annule, et
+# c'est le personnage qui s'en charge — lui seul lit encore les commandes
+# pendant qu'il est bloque.
+func _lire() -> void:
+	var duree := _j.geste("lire")
+	if duree <= 0.0:
+		return
+	_j.bloque = true
+	if _audio != null and _audio.connait("objet_livre"):
+		_audio.bruit("objet_livre")
 
 
 # Le point d'interaction le plus proche parmi ceux qui sont offerts. Ils se

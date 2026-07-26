@@ -20,6 +20,20 @@ var _erreurs: Array[String] = []
 var _etape := 0
 var _depart := 0
 
+## Le rang du chapeau dans la roue, et le plafond de trames qu'on s'accorde
+## pour attendre qu'il se pose.
+var _chapeau := -1
+var _attendre := 0
+const ATTENTE := 4000
+
+
+func _rang_du_chapeau() -> int:
+	var n: int = _eq.call("nombre")
+	for i in n:
+		if str(_eq.call("nom_de", i)) == "Porkpie":
+			return i
+	return -1
+
 
 func _initialize() -> void:
 	var ps := ResourceLoader.load("res://scenes/monde.tscn") as PackedScene
@@ -72,6 +86,13 @@ func _process(_d: float) -> bool:
 
 	for i in n:
 		var nom: String = _eq.call("nom_de", i)
+		# LES OBJETS QU'ON PORTE NE PASSENT PAS PAR LA. Ils ne vont pas en main
+		# et n'apparaissent qu'au milieu du geste, une demi-seconde plus tard :
+		# les mesurer ici trouvait l'objet PRECEDENT toujours visible et
+		# concluait « le Porkpie apparait » alors qu'on regardait le livre.
+		if _eq.call("est_porte_par_nature", i):
+			print("       %d  %-18s -> se porte, teste plus bas" % [i, nom])
+			continue
 		_eq.call("equiper", i)
 		# On retrouve l'objet visible, quel que soit l'endroit ou il est
 		# accroche : c'est justement ce que le fichier de donnees decide.
@@ -161,6 +182,74 @@ func _suite() -> bool:
 			# genre : tout le jeu devient mou et rien n'indique pourquoi.
 			_verifier(is_equal_approx(Engine.time_scale, 1.0),
 					"et le temps repart a la vitesse normale")
+			print("--- le chapeau se porte ---")
+			_chapeau = _rang_du_chapeau()
+			if _chapeau < 0:
+				_verifier(false, "le chapeau est dans la roue")
+				_etape = 9
+				return false
+			_eq.call("equiper", _chapeau)
+			# IL N'EST PAS ENCORE SUR LA TETE, et c'est le comportement voulu :
+			# la main doit d'abord y arriver.
+			_verifier(not _est_visible("chapeau", _j),
+					"il n'apparait pas avant que la main y soit")
+			_attendre = ATTENTE
+			_etape = 4
+			return false
+		4:
+			# On attend que le port bascule, avec un PLAFOND de trames.
+			#
+			# Pas un nombre de trames fixe : le minuteur compte des secondes et
+			# le mode sans fenetre tourne aussi vite qu'il peut, donc le nombre
+			# de trames dans une demi-seconde depend de la machine. Attendre une
+			# condition marche partout ; attendre un compteur marche sur la
+			# mienne.
+			_attendre -= 1
+			if _attendre > 0 and not _eq.call("porte", "chapeau"):
+				return false
+			_verifier(_eq.call("porte", "chapeau"), "il finit sur la tete")
+			_verifier(_est_visible("chapeau", _j), "et il se voit")
+			# OU EST-IL, EN METRES.
+			#
+			# « Visible dans l'arbre » ne veut pas dire « sur la tete » : un
+			# objet accroche a un os dont l'axe local n'est pas celui qu'on
+			# croit part a un metre de la, et l'arbre le declare visible tout
+			# du long. La premiere capture montrait un Walter tete nue avec ce
+			# meme test au vert.
+			var noeud := _noeud("chapeau", _j) as Node3D
+			var crane := _hauteur_du_crane()
+			var attache := _noeud("Attache_Head", _j) as Node3D
+			if attache != null:
+				var b := attache.global_transform.basis
+				print("       l'os Tete : haut local -> %s, echelle %s"
+						% [(b * Vector3.UP).normalized(), b.get_scale()])
+			if noeud != null and crane > 0.0:
+				var h: float = noeud.global_position.y
+				print("       chapeau a %.2f m, sommet du crane a %.2f m, "
+						% [h, crane] + "ecart lateral %.2f m"
+						% noeud.global_position.distance_to(
+								Vector3(_j.global_position.x, h,
+										_j.global_position.z)))
+				_verifier(absf(h - crane) < 0.12,
+						"il est POSE sur le crane (%.2f m contre %.2f m)"
+						% [h, crane])
+			# ON LE REPREND EN MAIN : un chapeau porte ne doit pas empecher de
+			# tenir autre chose. C'est toute la difference avec le reste de la
+			# roue, et c'est ce qui se cassait quand les deux etats n'en
+			# faisaient qu'un.
+			_eq.call("equiper", 0)
+			_verifier(_est_visible("chapeau", _j),
+					"et il y reste quand on equipe autre chose")
+			_eq.call("equiper", _chapeau)
+			_attendre = ATTENTE
+			_etape = 5
+			return false
+		5:
+			_attendre -= 1
+			if _attendre > 0 and _eq.call("porte", "chapeau"):
+				return false
+			_verifier(not _eq.call("porte", "chapeau"),
+					"on l'enleve en le rechoisissant")
 
 	print("")
 	if _erreurs.is_empty():
@@ -179,6 +268,44 @@ func _suite() -> bool:
 # version de ce test annoncait donc « le revolver apparait » pour les quatre
 # outils, y compris quand on avait les mains vides.
 const RACINES := ["arme", "meth", "botte", "livre", "chapeau"]
+
+
+# Cet objet-ci est-il visible ? _visible_sous rend le PREMIER trouve, ce qui
+# suffit tant qu'un seul objet peut etre affiche a la fois. Le chapeau casse
+# cette hypothese : il se porte pendant qu'on tient autre chose, et la question
+# n'est plus « lequel voit-on » mais « voit-on celui-la ».
+func _est_visible(nom: String, n: Node) -> bool:
+	for e in n.get_children():
+		if e is Node3D and str(e.name) == nom and (e as Node3D).is_visible_in_tree():
+			return true
+		if _est_visible(nom, e):
+			return true
+	return false
+
+
+# Le noeud lui-meme, pour pouvoir le MESURER et pas seulement le compter.
+func _noeud(nom: String, n: Node) -> Node:
+	for e in n.get_children():
+		if str(e.name) == nom:
+			return e
+		var t := _noeud(nom, e)
+		if t != null:
+			return t
+	return null
+
+
+# Le sommet du crane, en metres, lu sur le squelette. C'est la seule reference
+# qui vaille : la taille du personnage vient du modele, pas d'une constante.
+func _hauteur_du_crane() -> float:
+	var s := _trouver(_j, "Skeleton3D") as Skeleton3D
+	if s == null:
+		return 0.0
+	var os := s.find_bone("head_end")
+	if os < 0:
+		os = s.find_bone("Head")
+	if os < 0:
+		return 0.0
+	return (s.global_transform * s.get_bone_global_pose(os)).origin.y
 
 
 func _visible_sous(n: Node) -> String:
