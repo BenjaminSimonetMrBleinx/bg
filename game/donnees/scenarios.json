@@ -119,6 +119,22 @@
    ]
   },
 
+  "walt_repos": {
+   "quoi": "Walter debout, sans commande. Doit se tenir RELACHE : bras le long du corps, jambes sous lui. Une image de course figee se voit tout de suite.",
+   "fin": 90,
+   "etapes": [
+    { "image": 30, "camera": [22.2, 1.35, -10.6], "vise": [23.5, 1.15, -12] }
+   ]
+  },
+
+  "walt_lunettes": {
+   "quoi": "Le geste du repos : la main GAUCHE monte aux lunettes. Le geste occupe un cinquieme du cycle de huit secondes, donc l'image est calee dessus — la deplacer de vingt images ne montre plus rien.",
+   "fin": 372,
+   "etapes": [
+    { "image": 30, "camera": [22.75, 1.72, -12.95], "vise": [23.45, 1.6, -12.08] }
+   ]
+  },
+
   "depart": {
    "quoi": "Le point de depart, tel qu'on le decouvre en lancant le jeu.",
    "fin": 150,

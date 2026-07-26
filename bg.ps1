@@ -480,7 +480,8 @@ switch ($Commande) {
 
                couvre = @('systemes/joueur', 'systemes/demarche', 'systemes/reglages',
 
-                          'scenes/joueur', 'assets/personnages', 'importer_perso') }
+                          'scenes/joueur', 'assets/personnages', 'importer_perso',
+                          'animer_perso') }
 
             @{ cle = 'marche'; nom = 'orientation de marche'
                script = 'res://verifs/test_marche.gd'

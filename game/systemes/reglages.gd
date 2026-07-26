@@ -97,11 +97,26 @@ extends Resource
 ##
 ## Chaque allure a sa vitesse ET sa foulee. La foulee accorde les jambes au
 ## deplacement : trop courte, il pedale ; trop longue, il glisse.
+##
+## LES FOULEES NE SE REGLENT PAS A L'OEIL. Elles se lisent dans l'animation
+## elle-meme — l'ecart maximal entre les deux pieds donne la longueur d'un pas,
+## et un cycle en contient deux. `blender -b -P outils/animer_perso.py --
+## --mesurer` les affiche. Reglees a la main, elles etaient 35 % trop courtes
+## et le personnage pedalait ; c'est ce qui faisait la marche « robotique ».
 @export_range(0.5, 6.0, 0.1) var trot_vitesse: float = 3.6
-@export_range(0.6, 3.0, 0.05) var trot_foulee: float = 1.85
+@export_range(0.6, 3.0, 0.05) var trot_foulee: float = 2.52
 
 @export_range(1.0, 12.0, 0.1) var course_vitesse: float = 6.4
-@export_range(0.8, 4.0, 0.05) var course_foulee: float = 2.55
+@export_range(0.8, 4.0, 0.05) var course_foulee: float = 2.52
+
+## La marche a l'interieur. Foulee mesuree sur le clip livre : 1,76 m.
+@export_range(0.3, 3.0, 0.05) var marche_foulee: float = 1.76
+
+## En dessous de cette vitesse, et manette au neutre, le personnage passe au
+## REPOS : il respire, se tient d'aplomb, et remonte ses lunettes de temps en
+## temps. Trop haut, il se met a respirer alors qu'il avance encore ; trop bas,
+## il reste fige une seconde avant de reprendre vie.
+@export_range(0.05, 2.0, 0.05) var repos_seuil: float = 0.35
 
 @export_group("Circulation")
 

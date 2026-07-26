@@ -38,6 +38,15 @@ func _process(_d: float) -> bool:
 	return false
 
 
+## L'allure et l'animation relevees PENDANT le deplacement, pas apres.
+##
+## Elles sont lues au milieu de la seconde de mesure : depuis que l'arret
+## bascule au repos, les relire une fois la touche relachee ne renvoie plus
+## l'allure qu'on croit mesurer.
+var _allure_vue := ""
+var _anim_vue := ""
+
+
 # Combien de metres en une seconde, dans la situation demandee.
 func _parcourir(sprint: bool, dedans: bool) -> float:
 	_joueur.interieur = dedans
@@ -56,6 +65,9 @@ func _parcourir(sprint: bool, dedans: bool) -> float:
 	Input.action_press("gaz")
 	for i in 60:
 		await physics_frame
+		if i == 40:
+			_allure_vue = _joueur.allure()
+			_anim_vue = _joueur.animation()
 	Input.action_release("gaz")
 	if sprint:
 		Input.action_release("sprint")
@@ -79,40 +91,42 @@ func _scenario() -> void:
 	print("\n--- dehors, sans rien : il trottine ---")
 	var d_trot := await _parcourir(false, false)
 	print("       %.2f m en 1 s, allure '%s', animation '%s'"
-			% [d_trot, _joueur.allure(), _joueur.animation()])
-	_verifier(_joueur.allure() == "trot", "l'allure par defaut est le trot")
-	_verifier(_joueur.animation() != "", "une animation tourne")
+			% [d_trot, _allure_vue, _anim_vue])
+	_verifier(_allure_vue == "trot", "l'allure par defaut est le trot")
+	_verifier(_anim_vue != "", "une animation tourne")
 
 	print("\n--- Maj enfoncee : il court ---")
 	var d_course := await _parcourir(true, false)
 	print("       %.2f m en 1 s, allure '%s', animation '%s'"
-			% [d_course, _joueur.allure(), _joueur.animation()])
-	_verifier(_joueur.allure() == "course", "Maj passe a la course")
+			% [d_course, _allure_vue, _anim_vue])
+	_verifier(_allure_vue == "course", "Maj passe a la course")
 	_verifier(d_course > d_trot * 1.25,
 			"il va nettement plus vite (%.2f m contre %.2f)" % [d_course, d_trot])
 
 	print("\n--- a l'interieur : il marche ---")
 	var d_marche := await _parcourir(false, true)
 	print("       %.2f m en 1 s, allure '%s', animation '%s'"
-			% [d_marche, _joueur.allure(), _joueur.animation()])
-	_verifier(_joueur.allure() == "marche", "dedans, il marche")
+			% [d_marche, _allure_vue, _anim_vue])
+	_verifier(_allure_vue == "marche", "dedans, il marche")
 	_verifier(d_marche < d_trot * 0.9,
 			"et plus lentement (%.2f m contre %.2f)" % [d_marche, d_trot])
 	# La marche doit jouer un AUTRE clip que la course. C'est le seul des trois
 	# controles qui verifie que l'animation suit l'allure et pas seulement la
 	# vitesse — sans lui, trois vitesses sur un seul clip passeraient au vert.
-	_verifier(_joueur.animation() == Demarche.CYCLE,
-			"et sur le clip de marche ('%s')" % _joueur.animation())
+	_verifier(_anim_vue != Demarche.COURSE,
+			"et pas sur le clip de course ('%s')" % _anim_vue)
 
 	# Maj a l'interieur ne doit RIEN faire : courir dans un salon de sept
 	# metres n'a pas de sens, et le laisser faire donne un personnage qui
 	# traverse la piece en deux images.
 	print("\n--- Maj a l'interieur ne change rien ---")
 	var d_dedans_sprint := await _parcourir(true, true)
-	_verifier(_joueur.allure() == "marche", "on marche toujours")
+	_verifier(_allure_vue == "marche", "on marche toujours")
 	_verifier(absf(d_dedans_sprint - d_marche) < 0.4,
 			"et a la meme vitesse (%.2f contre %.2f)"
 					% [d_dedans_sprint, d_marche])
+
+	await _le_repos()
 
 	print("")
 	if _erreurs.is_empty():
@@ -121,6 +135,86 @@ func _scenario() -> void:
 	else:
 		printerr("TEST ALLURES ECHOUE : %d probleme(s)" % _erreurs.size())
 		quit(1)
+
+
+# Debout, il doit RESPIRER.
+#
+# C'est le seul controle du fichier qui ne regarde pas une vitesse, et c'est
+# celui qui manquait : un personnage fige sur une image de course et un
+# personnage au repos sont tous les deux parfaitement immobiles du point de vue
+# du moteur. La seule difference se lit dans le SQUELETTE, qui doit continuer a
+# bouger alors que le corps ne se deplace plus.
+func _le_repos() -> void:
+	print("\n--- immobile : il se repose, et il respire ---")
+	_joueur.interieur = false
+	Input.action_release("gaz")
+	for i in 45:
+		await physics_frame
+
+	print("       allure '%s', animation '%s'"
+			% [_joueur.allure(), _joueur.animation()])
+	_verifier(_joueur.allure() == "repos", "a l'arret, il passe au repos")
+	_verifier(_joueur.animation() == Demarche.IMMOBILE,
+			"sur le clip '%s'" % Demarche.IMMOBILE)
+
+	var os := _joueur.find_child("Skeleton3D", true, false) as Skeleton3D
+	if os == null:
+		printerr("  ECHEC pas de squelette")
+		_erreurs.append("squelette")
+		return
+	var tete := os.find_bone("Head")
+	_verifier(tete >= 0, "l'os de la tete se trouve")
+	if tete < 0:
+		return
+
+	# La mesure se fait EN METRES, et relativement au joueur.
+	#
+	# get_bone_global_pose() rend des coordonnees dans le repere du squelette,
+	# qui porte l'echelle du modele importe : une premiere version annoncait
+	# 672 mm de respiration pour 16 mm reels, et ce nombre invraisemblable est
+	# la seule raison pour laquelle l'erreur a ete vue.
+	var repere := _joueur.global_transform.affine_inverse()
+	var mini := Vector3.INF
+	var maxi := -Vector3.INF
+	for i in 120:
+		await physics_frame
+		var p := repere * (os.global_transform * os.get_bone_global_pose(tete).origin)
+		mini = mini.min(p)
+		maxi = maxi.max(p)
+	var amplitude := (maxi - mini).length() * 1000.0
+	print("       la tete se deplace de %.1f mm en 2 s" % amplitude)
+	_verifier(amplitude > 0.5, "le personnage n'est pas fige (%.1f mm)" % amplitude)
+	# Et il ne doit pas gigoter non plus : le repos est discret, sinon on
+	# regarde quelqu'un qui a froid et pas quelqu'un qui attend.
+	_verifier(amplitude < 60.0, "et il ne gigote pas (%.1f mm)" % amplitude)
+
+	# LE GESTE DOIT ARRIVER. Une fois par cycle, il remonte ses lunettes : la
+	# main gauche passe alors AU-DESSUS de l'epaule, ce qu'elle ne fait jamais
+	# autrement. On suit dix secondes, soit un cycle complet et de la marge.
+	#
+	# Ce controle existe parce que le geste etait present dans le fichier,
+	# mesure a sept centimetres devant le visage, et INVISIBLE en jeu. Une
+	# animation qui existe et une animation qui se joue sont deux choses.
+	var main := os.find_bone("LeftHand")
+	var epaule := os.find_bone("LeftShoulder")
+	if main < 0 or epaule < 0:
+		_erreurs.append("os du bras introuvables")
+		printerr("  ECHEC os du bras introuvables")
+		return
+	var plus_haut := -1000.0
+	var a_la_seconde := 0.0
+	for i in 620:
+		await physics_frame
+		var h := os.get_bone_global_pose(main).origin.y \
+				- os.get_bone_global_pose(epaule).origin.y
+		if h > plus_haut:
+			plus_haut = h
+			a_la_seconde = i / 60.0
+	var echelle := os.global_transform.basis.get_scale().y
+	print("       la main gauche monte jusqu'a %.1f cm au-dessus de l'epaule, "
+			% (plus_haut * echelle * 100.0) + "a la %.1f e seconde" % a_la_seconde)
+	_verifier(plus_haut > 0.0,
+			"il remonte ses lunettes une fois par cycle")
 
 
 func _trouver(n: Node, nom: String) -> Node:

@@ -184,13 +184,26 @@ func _physics_process(delta: float) -> void:
 	if interieur:
 		nom_allure = "marche"
 		allure = reglages.marche_vitesse
-		enjambee = reglages.foulee
+		enjambee = reglages.marche_foulee
 	elif avance > 0.0 and Input.is_action_pressed("sprint"):
 		# Seulement vers l'AVANT : personne ne sprinte a reculons, et une
 		# marche arriere rapide se lit comme un bug.
 		nom_allure = "course"
 		allure = reglages.course_vitesse
 		enjambee = reglages.course_foulee
+
+	# Debout, il se REPOSE — il respire, il se tient d'aplomb, et de temps en
+	# temps il remonte ses lunettes. Sans cette allure, un personnage qui ne
+	# bouge pas reste plante sur une image de son cycle de marche : jambes
+	# ecartees, bras en l'air, exactement comme s'il courait sur pause.
+	#
+	# La condition porte sur la COMMANDE autant que sur la vitesse : sinon on
+	# repasse au repos a chaque changement de direction, quand la vitesse
+	# traverse zero.
+	var au_sol_avant := Vector2(velocity.x, velocity.z).length()
+	if absf(avance) < 0.01 and au_sol_avant < reglages.repos_seuil \
+			and _demarche != null and _demarche.connait("repos"):
+		nom_allure = "repos"
 
 	_allure = nom_allure
 	if _demarche != null:

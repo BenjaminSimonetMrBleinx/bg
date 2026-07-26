@@ -16,6 +16,33 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.25.0 — Walter respire
+
+> **À essayer : lâche les commandes et regarde-le.** Il ne se fige plus sur une
+> image de course. Il se tient debout, bras le long du corps, **il respire**, il
+> reporte son poids d'un pied sur l'autre — et **toutes les huit secondes il
+> remonte ses lunettes**.
+>
+> **Puis entre dans une maison et marche.** La démarche intérieure était raide ;
+> le buste tourne maintenant à l'inverse du bassin, la tête suit avec un temps de
+> retard, et les deux pas ne sont plus identiques.
+
+**Pourquoi la marche était robotique, et ce n'était pas l'animation.** La longueur
+de foulée était réglée à l'œil : 1,15 m, alors que le clip livré en fait **1,76**.
+L'animation était donc jouée 50 % trop vite pour la vitesse réelle — il pédalait.
+Les trois foulées sont maintenant **mesurées dans le fichier** au lieu d'être
+devinées : `blender -b -P outils/animer_perso.py -- --mesurer` les affiche.
+
+**Les deux animations manquantes sont fabriquées, pas achetées.** Le pack ne
+contenait que « Walking » et « Running ». Le repos dérive de la **moyenne du cycle
+de marche** — moyenner un cycle symétrique annule le balancement et laisse la
+posture de celui qui a riggé le personnage — et la marche relâchée est la marche
+livrée plus une couche de mouvement. Rien n'est inventé par-dessus le travail de
+Guillaume.
+
+**Toujours en attente côté assets** : une vraie animation de trot. Le trot et la
+course partagent encore le clip de course à deux vitesses.
+
 ## 0.24.0 — Trois allures
 
 > **À essayer : marche, cours, entre dans une maison.**

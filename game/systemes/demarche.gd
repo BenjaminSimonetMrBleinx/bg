@@ -26,19 +26,29 @@ signal pas()
 ## changent, le personnage reste immobile et le dit.
 const CYCLE := "Walking"
 const COURSE := "Running"
+const IMMOBILE := "Repos"
 
-## Les trois allures du personnage, et le clip que chacune joue.
+## Les allures du personnage, et les clips que chacune accepte, DU MEILLEUR AU
+## MOINS BON. Le premier present dans le modele gagne.
 ##
-## Elles ne sont que DEUX a l'ecran, et il faut le dire : le modele livre porte
-## « Walking » et « Running », pas de trot. Le trottinement partage donc le clip
-## de course, joue moins vite — ce qui se tient, un cycle de course ralenti se
-## lit comme un petit trot — mais une vraie animation de trot les separerait
-## nettement. C'est la seule chose qui manque cote assets.
+## Cette liste de repli est ce qui permet a un meme code d'animer Walter, qui a
+## recu ses clips fabriques, et un figurant qui n'a que ce que son pack
+## contenait. Un personnage sans « Repos » retombe sur l'ancien comportement
+## sans que rien ne soit a declarer.
 const ALLURES := {
-	"marche": CYCLE,
-	"trot": COURSE,
-	"course": COURSE,
+	"repos": ["Repos"],
+	"marche": ["Marche", "Walking"],
+	"trot": ["Trot", "Running"],
+	"course": ["Course", "Running"],
 }
+
+## Les allures qui avancent AVEC L'HORLOGE et non avec la distance.
+##
+## Tout le reste du fichier existe pour empecher le temps de piloter la marche.
+## Le repos est l'exception, et c'est logique : on respire en secondes, pas en
+## metres. Un personnage immobile dont l'animation serait calee sur la distance
+## ne respirerait jamais.
+const AU_TEMPS := ["repos"]
 
 var _reglages: Reglages
 var _lecteur: AnimationPlayer
@@ -60,9 +70,13 @@ var _manquantes: Dictionary = {}
 ## personnage qui pedale, trop longue un personnage qui glisse.
 var foulee: float = 1.15
 
-## Vitesse a laquelle le cycle se fige quand on s'arrete. Une animation coupee
-## net laisse le personnage une jambe en l'air.
-const REPOS := 6.0
+## Vrai tant que l'allure en cours tourne a l'horloge.
+var _au_temps: bool = false
+
+## Vitesse a laquelle le cycle se fige quand on s'arrete, POUR UN PERSONNAGE
+## SANS CLIP DE REPOS. Une animation coupee net laisse le personnage une jambe
+## en l'air ; celui-ci revient a l'image zero de son cycle de marche.
+const RETOUR := 6.0
 
 
 func _init(reglages: Reglages) -> void:
@@ -76,29 +90,44 @@ func recenser(racine: Node) -> bool:
 	_lecteur = racine.find_child("AnimationPlayer", true, false) as AnimationPlayer
 	if _lecteur == null:
 		return false
-	for candidat in [CYCLE, COURSE]:
-		if _lecteur.has_animation(candidat):
+	_disponibles = _lecteur.get_animation_list()
+	if _disponibles.is_empty():
+		push_warning("demarche : aucune animation dans %s" % racine.name)
+		return false
+
+	# On demarre au REPOS quand le modele en a un. C'est l'etat dans lequel on
+	# voit le personnage en premier, et le plus longtemps : le laisser
+	# apparaitre fige sur une image de course, jambes ecartees, est ce qu'on
+	# remarque avant tout le reste.
+	for candidat in [IMMOBILE, CYCLE, COURSE]:
+		if _disponibles.has(candidat):
 			_nom = candidat
 			break
 	if _nom == "":
-		var toutes := _lecteur.get_animation_list()
-		if toutes.is_empty():
-			push_warning("demarche : aucune animation dans %s" % racine.name)
-			return false
-		_nom = toutes[0]
-		push_warning("demarche : ni '%s' ni '%s', on prend '%s'"
-				% [CYCLE, COURSE, _nom])
+		_nom = _disponibles[0]
+		push_warning("demarche : ni '%s' ni '%s' ni '%s', on prend '%s'"
+				% [IMMOBILE, CYCLE, COURSE, _nom])
 
 	var anim := _lecteur.get_animation(_nom)
 	_duree = maxf(0.01, anim.length)
 	anim.loop_mode = Animation.LOOP_LINEAR
+	_au_temps = (_nom == IMMOBILE)
 	# On JOUE puis on met en pause : sans lecture prealable, seek() ne pose
 	# rien et le personnage reste en pose de repos, parfaitement immobile
 	# pendant qu'il traverse la rue.
 	_lecteur.play(_nom)
-	_lecteur.pause()
-	_disponibles = _lecteur.get_animation_list()
+	if not _au_temps:
+		_lecteur.pause()
 	return true
+
+
+## Ce modele sait-il tenir cette allure ? Lu par les tests, et par les
+## personnages qui doivent s'adapter a ce que leur pack contenait.
+func connait(nom: String) -> bool:
+	for candidat in ALLURES.get(nom, []):
+		if _disponibles.has(candidat):
+			return true
+	return false
 
 
 ## Change d'allure. Renvoie faux si le clip demande n'existe pas — le
@@ -107,22 +136,37 @@ func recenser(racine: Node) -> bool:
 ## Changer de clip REMET LA PHASE A SA PLACE et pas a zero : passer du trot a
 ## la course au milieu d'une foulee ne doit pas replanter le pied.
 func allure(nom: String) -> bool:
-	var clip := str(ALLURES.get(nom, ""))
-	if clip == "" or clip == _nom:
-		return clip != ""
-	if not _disponibles.has(clip):
-		if not _manquantes.has(clip):
-			_manquantes[clip] = true
-			push_warning("demarche : pas d'animation '%s' pour l'allure '%s'. "
-					% [clip, nom] + "Disponibles : %s" % ", ".join(_disponibles))
+	var clip := ""
+	for candidat in ALLURES.get(nom, []):
+		if _disponibles.has(candidat):
+			clip = candidat
+			break
+	if clip == "":
+		if not _manquantes.has(nom):
+			_manquantes[nom] = true
+			push_warning("demarche : aucun clip pour l'allure '%s' parmi %s. "
+					% [nom, ALLURES.get(nom, [])]
+					+ "Disponibles : %s" % ", ".join(_disponibles))
 		return false
+	if clip == _nom:
+		return true
+
 	_nom = clip
 	var anim := _lecteur.get_animation(_nom)
 	_duree = maxf(0.01, anim.length)
 	anim.loop_mode = Animation.LOOP_LINEAR
-	_lecteur.play(_nom)
-	_lecteur.seek(_phase * _duree, true)
-	_lecteur.pause()
+	_au_temps = AU_TEMPS.has(nom)
+	if _au_temps:
+		# Le seul endroit ou le moteur joue l'animation lui-meme, et le seul ou
+		# l'on demande un fondu : arriver au repos depuis une foulee doit
+		# glisser, pas claquer. Le fondu ne peut se derouler que sur une
+		# animation qui TOURNE — c'est pour ca qu'on ne met pas en pause ici, et
+		# qu'on ne demande aucun fondu dans l'autre sens.
+		_lecteur.play(_nom, 0.25)
+	else:
+		_lecteur.play(_nom)
+		_lecteur.seek(_phase * _duree, true)
+		_lecteur.pause()
 	return true
 
 
@@ -134,10 +178,17 @@ func avancer(vitesse_au_sol: float, delta: float) -> void:
 	if _lecteur == null:
 		return
 
+	if _au_temps:
+		# Le moteur joue tout seul. On garde la phase a jour pour que reprendre
+		# la marche ne reparte pas d'une image arbitraire, et on n'emet aucun
+		# pas : personne ne fait de bruit de semelle en respirant.
+		_phase = fposmod(_lecteur.current_animation_position / _duree, 1.0)
+		return
+
 	if absf(vitesse_au_sol) < 0.15:
-		# Retour a la pose de depart, sans a-coup : on ramene la phase vers
-		# zero au lieu de couper l'animation.
-		_phase = lerpf(_phase, 0.0, clampf(REPOS * delta, 0.0, 1.0))
+		# Personnage sans clip de repos : retour a la pose de depart, sans
+		# a-coup. On ramene la phase vers zero au lieu de couper l'animation.
+		_phase = lerpf(_phase, 0.0, clampf(RETOUR * delta, 0.0, 1.0))
 		_lecteur.seek(_phase * _duree, true)
 		_depuis_le_pas = maxf(_depuis_le_pas, foulee * 0.35)
 		return

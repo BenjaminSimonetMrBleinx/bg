@@ -21,7 +21,7 @@ Ce qui existe aujourd'hui :
 |---|---|
 | **Ville** | 2 × 2 îlots générés, routes, trottoirs franchissables, 32 lampadaires, brouillard de nuit |
 | **Conduite** | `VehicleBody3D` réglé au curseur, caméra de poursuite, phares, moteur à trois couches sonores |
-| **À pied** | Walter jouable, marche procédurale calée sur la distance parcourue — aucun clip d'animation |
+| **À pied** | Walter jouable et riggé — repos, marche, trot, course, tous calés sur la **distance parcourue** et pas sur l'horloge |
 | **Maisons** | Walter et Jesse, extérieur en ville et intérieur séparé, entrée par la porte avec fondu |
 | **Habitants** | Skyler et Jesse, qui se tournent vers le joueur et parlent |
 | **Dialogue** | Piloté par `game/donnees/dialogues.json`, conversations tournantes |
@@ -134,6 +134,7 @@ dans un fichier de données :
 | `game/systemes/reglages.tres` | ~80 curseurs : conduite, caméra, rendu PS2, audio, marche, portes, roue |
 | `game/donnees/dialogues.json` | Tout le texte parlé |
 | `game/donnees/outils.json` | Les objets tenus, leur ancrage et leur orientation |
+| `outils/animer_perso.py` | Les clips que les modèles livrés n'ont pas : repos, marche relâchée. **Et il MESURE les foulées** — ne pas les régler à l'œil |
 | `outils/gen_textures.py` | `VISAGES` et `TENUES` — l'apparence des personnages |
 | `outils/gen_maison.py` | `MAISONS` — pièces, meubles, place de l'habitant |
 | `outils/gen_ville.py` | `RESERVES` — les parcelles laissées libres pour les bâtiments faits main |
