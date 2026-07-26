@@ -235,6 +235,11 @@ func _gerer_la_menace(delta: float) -> void:
 ## la mission en cours.
 const REMPLACEMENTS := {
 	"jesse": [["parler_jesse", "mission_jesse_maison"]],
+	# Jesse dans le camping-car. Il cuisine, donc il envoie promener — jusqu'a
+	# ce que la botte secrete soit sortie de l'atelier. La aussi son noeud
+	# porte une cle unique : sans cette ligne il repond « je suis concentre »
+	# pour l'eternite, et l'etape suivante ne peut plus etre franchie.
+	"mission_jesse_occupe": [["jesse_pret", "mission_jesse_pret"]],
 }
 
 

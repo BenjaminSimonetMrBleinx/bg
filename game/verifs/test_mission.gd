@@ -172,13 +172,42 @@ func _qui_emet_quoi(mission: Mission, dialogue: Dialogue) -> void:
 	# annonce lui-meme.
 	zones.append_array(["maison_walter", "maison_jesse", "albuquerque"])
 
+	# QUI SAIT DIRE QUOI. Une conversation peut exister dans les donnees et
+	# n'etre a la portee de personne : le PNJ porte une cle unique, et si elle
+	# ne correspond pas, il recite autre chose indefiniment.
+	#
+	# Deux fois de suite ca a bloque la mission — Jesse chez lui qui disait
+	# « Yo », Jesse au camping-car qui repetait « je suis concentre ». Verifier
+	# que la fiche EXISTE ne suffisait pas ; il faut verifier qu'un habitant du
+	# monde peut la sortir.
+	var dicibles: Array[String] = []
+	for n in root.get_tree().get_nodes_in_group(Pnj.GROUPE):
+		var p := n as Pnj
+		if p.cle != "":
+			dicibles.append(p.cle)
+	for n in root.get_tree().get_nodes_in_group("point"):
+		var pt := n as Point
+		if pt.dialogue != "":
+			dicibles.append(pt.dialogue)
+	var scenario0 := _trouver(_monde, "Scenario") as Scenario
+	if scenario0 != null:
+		for source in Scenario.REMPLACEMENTS:
+			for regle in Scenario.REMPLACEMENTS[source]:
+				dicibles.append(str(regle[1]))
+	# L'appel d'ouverture ne vient d'aucun personnage : le jeu compose.
+	dicibles.append("mission_tuco_appel")
+
 	var orphelins: Array[String] = []
 	for e in mission.etapes():
 		var attendu := str((e as Dictionary).get("valide_par", ""))
 		var cle := str((e as Dictionary).get("cle", ""))
 		var trouve := false
 		if attendu.begins_with("dialogue:"):
-			trouve = dialogue.connait(attendu.substr(9))
+			var conv := attendu.substr(9)
+			trouve = dialogue.connait(conv) and dicibles.has(conv)
+			if dialogue.connait(conv) and not dicibles.has(conv):
+				printerr("  ECHEC '%s' existe mais PERSONNE ne peut la dire"
+						% conv)
 		elif attendu.begins_with("zone:"):
 			trouve = zones.has(attendu.substr(5))
 		elif attendu.begins_with("objet:") or attendu.begins_with("action:"):
