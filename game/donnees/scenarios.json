@@ -244,7 +244,7 @@
   },
 
   "voiture_joueur": {
-   "quoi": "La voiture de Walter vue de trois quarts avant. Le modele est livre et son orientation vient d'un lacet impose a l'import : cette vue est le seul moyen de verifier qu'elle roule dans le bon sens. La voiture est posee cap zero, donc son nez doit pointer vers -Z, c'est-a-dire vers le fond de l'image.",
+   "quoi": "La voiture de Walter vue de trois quarts avant. La voiture est posee cap zero, donc son nez pointe vers -Z, et la camera est placee en -Z par rapport a elle : c'est donc la CALANDRE qui doit faire face a l'objectif. Si on voit le hayon, le modele est retourne. La formulation precedente disait l'inverse et a fait conclure trois fois de suite que l'orientation etait bonne alors qu'elle ne l'etait pas.",
    "fin": 70,
    "etapes": [
     { "image": 20, "placer": "Vehicule", "pos": [880, 0.6, -760], "cap": 0 },

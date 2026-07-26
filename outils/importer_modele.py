@@ -67,6 +67,10 @@ def charger(chemin: Path) -> None:
         raise SystemExit("format non gere : %s" % suffixe)
 
 
+def suffixe_de(chemin: Path) -> str:
+    return chemin.suffix.lower()
+
+
 def boite(objets) -> tuple:
     """Boite englobante en coordonnees monde."""
     mini = [1e9, 1e9, 1e9]
@@ -111,7 +115,14 @@ def main() -> None:
 
     # Blender est en Z-up : la hauteur est Z. Un modele exporte depuis un
     # logiciel Y-up arrive couche, ce que la taille revele tout de suite.
-    couche = taille[1] > taille[2] * 1.4
+    #
+    # MAIS l heuristique « plus long en Y qu en Z » ne vaut que pour les
+    # formats qui ne transportent PAS leur axe vertical : .obj et .stl. Le
+    # glTF, lui, declare Y-up et l importateur de Blender a deja redresse le
+    # modele. Y appliquer la regle couche une voiture — qui est legitimement
+    # plus longue que haute — sur le nez. C est ce qui est arrive a l Aztek.
+    sans_axe = suffixe_de(fichier) in (".obj", ".stl")
+    couche = sans_axe and taille[1] > taille[2] * 1.4
     if couche:
         print("          l objet est plus long en Y qu en Z : il arrive couche,")
         print("          on le redresse d un quart de tour.")
@@ -201,6 +212,12 @@ def main() -> None:
         export_cameras=False,
         export_lights=False,
     )
+    # Les cotes finaux dans le repere de GODOT, seule mesure qui permette de
+    # trancher sans regarder une image : l export +Y up echange Y et Z. Une
+    # voiture doit etre longue sur Z, un personnage haut sur Y.
+    mini, maxi = boite([obj])
+    print("godot     X %.2f  Y %.2f  Z %.2f" % (
+        maxi[0] - mini[0], maxi[2] - mini[2], maxi[1] - mini[1]))
     print("sortie    %s" % sortie)
 
 
