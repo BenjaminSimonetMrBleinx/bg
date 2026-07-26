@@ -75,6 +75,7 @@ func _scenario() -> void:
 
 	_le_depart()
 	_qui_dit_quoi(mission)
+	_qui_emet_quoi(mission, dialogue)
 	_le_deroule(mission)
 	_les_cles(mission, dialogue, equipement)
 	_la_cachette(mission, bourse)
@@ -137,6 +138,75 @@ func _qui_dit_quoi(mission: Mission) -> void:
 	mission.evenement("dialogue:mission_jesse_maison")
 	_verifier(scenario.dialogue_pour("jesse") == "jesse",
 			"une fois l'etape passee, il redevient lui-meme")
+	mission.recommencer()
+
+
+# CHAQUE EVENEMENT ATTENDU DOIT AVOIR UN EMETTEUR.
+#
+# C'est le controle qui manquait, et son absence a coute une mission morte a sa
+# troisieme etape : personne n'annoncait « volant ». L'objectif « trouver la
+# voiture de Walt » ne pouvait donc jamais etre franchi, et tout ce qui suit —
+# le desert, Jesse, le camping-car — restait hors d'atteinte. Le jeu tournait
+# parfaitement.
+#
+# Le deroule ci-dessous ne voyait rien : il annonce les evenements DIRECTEMENT
+# a la machine. Il prouve que la chaine des etapes est coherente, pas que le
+# monde sait la faire avancer. Ici on cherche, pour chaque evenement, l'objet
+# du jeu capable de l'emettre.
+func _qui_emet_quoi(mission: Mission, dialogue: Dialogue) -> void:
+	print("\n--- chaque etape a quelqu'un pour la franchir ---")
+	var zones: Array[String] = []
+	var actions: Array[String] = []
+	for n in root.get_tree().get_nodes_in_group("point"):
+		var p := n as Point
+		if p.zone != "":
+			zones.append(p.zone)
+		if p.evenement != "":
+			actions.append(p.evenement)
+	for n in root.get_tree().get_nodes_in_group("passage"):
+		var z: String = n.get("zone")
+		if z != "":
+			zones.append(z)
+	# Deux zones ne viennent ni d'un point ni d'un passage : entrer dans une
+	# maison, et le retour en ville apres l'explosion. Le controleur les
+	# annonce lui-meme.
+	zones.append_array(["maison_walter", "maison_jesse", "albuquerque"])
+
+	var orphelins: Array[String] = []
+	for e in mission.etapes():
+		var attendu := str((e as Dictionary).get("valide_par", ""))
+		var cle := str((e as Dictionary).get("cle", ""))
+		var trouve := false
+		if attendu.begins_with("dialogue:"):
+			trouve = dialogue.connait(attendu.substr(9))
+		elif attendu.begins_with("zone:"):
+			trouve = zones.has(attendu.substr(5))
+		elif attendu.begins_with("objet:") or attendu.begins_with("action:"):
+			trouve = actions.has(attendu)
+		else:
+			# Les evenements nus — « volant », « argent_cache ». On ne peut pas
+			# les trouver dans la scene : ils sont emis par du code. On les
+			# eprouve donc pour de vrai, plus bas.
+			trouve = attendu in ["volant", "argent_cache"]
+		if not trouve:
+			orphelins.append("%s attend '%s'" % [cle, attendu])
+	for o in orphelins:
+		printerr("  ECHEC " + o + " — personne ne l'emet")
+		_erreurs.append(o)
+	_verifier(orphelins.is_empty(),
+			"les %d etapes ont un emetteur" % mission.etapes().size())
+
+	# « volant » EPROUVE POUR DE VRAI : on monte dans la voiture et on regarde
+	# si la mission avance. C'est le seul controle qui aurait attrape le bug.
+	mission.recommencer()
+	while not mission.a_l_etape("voiture") and not mission.finie():
+		if not mission.evenement(str(mission.etape().get("valide_par", ""))):
+			break
+	var controleur := _trouver(_monde, "Controleur")
+	if controleur != null and mission.a_l_etape("voiture"):
+		controleur.call("_monter")
+		_verifier(not mission.a_l_etape("voiture"),
+				"monter dans la voiture franchit bien l'etape")
 	mission.recommencer()
 
 

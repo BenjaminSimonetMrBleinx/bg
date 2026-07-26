@@ -275,6 +275,13 @@ func zone_atteinte(nom: String) -> void:
 		_mission.evenement("zone:" + nom)
 
 
+## Un evenement de jeu, sans categorie. Pour ceux qui n'ont ni zone, ni objet,
+## ni conversation — monter dans la voiture, par exemple.
+func signaler(nom: String) -> void:
+	if _mission != null:
+		_mission.evenement(nom)
+
+
 ## Peut-on ouvrir la cachette maintenant ? Et avec quel argent.
 func ouvrir_la_cachette() -> void:
 	if _cachette == null or _bourse == null or _mission == null:

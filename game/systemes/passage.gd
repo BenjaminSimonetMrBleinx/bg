@@ -40,6 +40,16 @@ extends Area3D
 @export var refus_etape: String = ""
 
 
+## Tous les passages se declarent ici. Le controleur, lui, recoit sa liste par
+## l'inspecteur ; le groupe sert a les INVENTORIER — notamment pour verifier
+## que chaque zone attendue par la mission a bien quelqu'un pour l'annoncer.
+const GROUPE := "passage"
+
+
+func _ready() -> void:
+	add_to_group(GROUPE)
+
+
 func cap() -> float:
 	return deg_to_rad(cap_degres)
 

@@ -816,6 +816,12 @@ func _monter() -> void:
 	_v.prendre_le_volant()
 	_c.suivre(_v)
 	_geste_portiere(true)
+	# La mission attend ce moment : « trouver la voiture de Walt ». Personne ne
+	# l'annoncait, donc l'etape n'etait JAMAIS franchie — et tout ce qui suit,
+	# le desert, Jesse, le camping-car, restait hors d'atteinte. Le jeu tournait
+	# parfaitement et la mission etait morte a sa troisieme etape.
+	if _scenario != null:
+		_scenario.signaler("volant")
 
 
 func _descendre() -> void:
