@@ -45,8 +45,15 @@ func _son() -> Audio:
 		_audio = Audio.courant(self)
 	return _audio
 
-## La marche procedurale, partagee avec les pietons de la rue.
+## La marche. DEUX implementations, et le personnage decide laquelle :
+##
+##   - Demarche  pour un modele a squelette, qui porte sa propre animation
+##   - Silhouette pour un maillage segmente, anime par du code
+##
+## Les deux exposent avancer(vitesse, delta) et emettent 'pas'. Walter est
+## passe au squelette ; les passants suivront quand leurs modeles arriveront.
 var _silhouette: Silhouette
+var _demarche: Demarche
 var _rayon: float = 0.28
 var _gravite: float = ProjectSettings.get_setting("physics/3d/default_gravity", 14.0)
 
@@ -65,6 +72,10 @@ func raison_refus() -> String:
 ## s'accroupir. Elle se melange par-dessus la marche : les segments qu'elle ne
 ## nomme pas continuent leur cycle, donc on peut marcher en telephonant.
 func poser(nom: String) -> void:
+	# Les poses de donnees/poses.json font tourner des SEGMENTS nommes. Un
+	# personnage a squelette n'en a pas : ses gestes viendront de vraies
+	# animations, pas de rotations posees a la main. On ne fait donc rien
+	# plutot que de faire semblant.
 	if _silhouette != null:
 		_silhouette.poser(nom)
 
@@ -101,12 +112,17 @@ func _ready() -> void:
 		set_physics_process(false)
 		return
 	_cam = get_node_or_null(camera) as Camera3D
-	_silhouette = Silhouette.new(reglages)
-	_silhouette.recenser(self)
-	# Seul le joueur ecoute ses pas. Les quinze passants de la rue emettent le
-	# meme signal, et le brancher pour tout le monde remplirait la rue d'une
-	# grele de pas sans qu'on sache d'ou elle vient.
-	_silhouette.pas.connect(_poser_le_pied)
+	# On essaie le squelette d'abord. S'il n'y en a pas, on retombe sur la
+	# silhouette procedurale sans que personne n'ait a le declarer.
+	var d := Demarche.new(reglages)
+	if d.recenser(self):
+		_demarche = d
+		_demarche.pas.connect(_poser_le_pied)
+		print("JOUEUR : squelette, animation '%s'" % d.animation())
+	else:
+		_silhouette = Silhouette.new(reglages)
+		_silhouette.recenser(self)
+		_silhouette.pas.connect(_poser_le_pied)
 
 	# Le franchissement doit degager le rayon de la capsule AU-DELA de
 	# l'arete, sinon on retombe dedans. On le lit plutot que de le supposer.
@@ -155,7 +171,11 @@ func _physics_process(delta: float) -> void:
 	# Vitesse SIGNEE : la silhouette inverse le cycle de marche quand on
 	# recule, sinon il marche a l'endroit en se deplacant a l'envers.
 	var au_sol := Vector2(velocity.x, velocity.z).length()
-	_silhouette.avancer(au_sol * signf(avance) if absf(avance) > 0.01 else au_sol, delta)
+	var signee: float = au_sol * signf(avance) if absf(avance) > 0.01 else au_sol
+	if _demarche != null:
+		_demarche.avancer(signee, delta)
+	else:
+		_silhouette.avancer(signee, delta)
 
 
 # Franchissement des bordures de trottoir.

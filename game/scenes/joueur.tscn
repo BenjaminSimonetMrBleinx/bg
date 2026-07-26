@@ -1,22 +1,22 @@
 ; Walter a pied.
 ;
-; La capsule de collision fait 1,78 m comme le personnage. Le maillage est
-; une hierarchie de segments rigides animee par silhouette.gd — pas de
-; squelette, pas de clip d'animation.
+; La capsule de collision fait 1,78 m comme le personnage.
+;; Le maillage est le modele RIGGE livre par Guillaume : un vrai squelette de
+; vingt-quatre os, avec ses animations de marche et de course. Il remplace le
+; modele segmente que le projet animait par du code.
 ;
-; Le maillage est le modele SCULPTE, deplie et decoupe par les outils du
-; projet (voir docs/07-ajouter-du-contenu.md). Il porte les memes noms de
-; segments que le personnage generé, et rien d'autre n'a change : c'etait
-; tout l'interet de faire passer un modele fait main par la meme convention.
+; La normalisation est faite par outils/importer_perso.py, qui met le
+; personnage a 1,78 m, pose ses pieds a zero et le retourne — il arrivait face
+; camera, donc marchait a reculons.
 ;
-; Le personnage genere reste dans assets/personnages/walter.glb — il sert de
-; repli et de reference, et c'est encore lui qui habille les passants.
+; Le modele genere reste dans assets/personnages/walter.glb : il habille encore
+; les passants, en attendant que leurs propres modeles rigges arrivent.
 
 [gd_scene load_steps=5 format=3 uid="uid://bgjoueur000001"]
 
 [ext_resource type="Script" path="res://systemes/joueur.gd" id="1_joueur"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
-[ext_resource type="PackedScene" path="res://assets/personnages/walt_anime.glb" id="3_walter"]
+[ext_resource type="PackedScene" path="res://assets/personnages/walt.glb" id="3_walter"]
 
 [sub_resource type="CapsuleShape3D" id="capsule"]
 radius = 0.28
@@ -31,4 +31,15 @@ reglages = ExtResource("2_reglages")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.89, 0)
 shape = SubResource("capsule")
 
-[node name="Walter" parent="." instance=ExtResource("3_walter")]
+; Le corps, RETOURNE d'un demi-tour.
+;
+; Le modele livre regarde vers +Z, c'est-a-dire face a la camera : il marchait
+; donc a reculons. Le retourner a l'import ne suffit PAS — mesure faite : la
+; rotation part bien dans le .glb, mais l'animation porte un canal sur le
+; noeud racine et l'ecrase des la premiere image jouee.
+;
+; On le retourne donc ici, dans un noeud parent qu'aucune animation ne touche.
+[node name="Corps" type="Node3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
+
+[node name="Walter" parent="Corps" instance=ExtResource("3_walter")]

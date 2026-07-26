@@ -103,6 +103,22 @@
    ]
   },
 
+  "walt_face": {
+   "quoi": "Walter vu de FACE. Doit montrer son visage : il regarde -Z.",
+   "fin": 70,
+   "etapes": [
+    { "image": 30, "camera": [23.5, 1.5, -15.5], "vise": [23.5, 1.4, -12] }
+   ]
+  },
+
+  "walt_dos": {
+   "quoi": "Walter vu de DOS, comme la camera de jeu le voit.",
+   "fin": 70,
+   "etapes": [
+    { "image": 30, "camera": [23.5, 1.5, -8.5], "vise": [23.5, 1.4, -12] }
+   ]
+  },
+
   "depart": {
    "quoi": "Le point de depart, tel qu'on le decouvre en lancant le jeu.",
    "fin": 150,

@@ -89,12 +89,56 @@ func _accrocher() -> void:
 			[_noeuds.size() - manquants, _fiches.size()])
 
 
+## Ou accrocher, quand le personnage a un SQUELETTE au lieu de segments.
+##
+## Les deux corps coexistent : Walter est rigge, les passants sont encore des
+## hierarchies de segments nommes. Plutot que d'imposer un vocabulaire au rig
+## livre — ce qui obligerait Guillaume a renommer ses os a chaque fois — on
+## traduit ici. Les noms de droite sont ceux de tout rig humanoide.
+const OS_DU_RIG := {
+	"MainD": "RightHand",
+	"MainG": "LeftHand",
+	"Tete": "Head",
+	"Torse": "Spine02",
+	"Bassin": "Hips",
+}
+
+
+# Sur un squelette, un objet ne s'accroche pas a un noeud : il faut un
+# BoneAttachment3D, qui suit l'os image par image. Un Node3D pose a cote ne
+# bougerait pas d'un pouce pendant que le bras, lui, bouge.
 func _segment(nom: String) -> Node3D:
+	var squelette := _porteur.find_child("Skeleton3D", true, false) as Skeleton3D
+	if squelette != null:
+		var os := str(OS_DU_RIG.get(nom, nom))
+		if squelette.find_bone(os) < 0:
+			push_error("equipement : os '%s' absent du squelette (pour '%s'). "
+					% [os, nom] + "Os disponibles : %s"
+					% ", ".join(_noms_des_os(squelette)))
+			return null
+		# Un attache par os, reutilise : quatre objets sur la meme main ne
+		# demandent pas quatre attaches.
+		var existant := squelette.get_node_or_null(NodePath("Attache_" + os))
+		if existant != null:
+			return existant as Node3D
+		var attache := BoneAttachment3D.new()
+		attache.name = "Attache_" + os
+		attache.bone_name = os
+		squelette.add_child(attache)
+		return attache
+
 	var n := _porteur.find_child(nom, true, false)
 	if n is Node3D:
 		return n as Node3D
-	push_error("equipement : segment '%s' absent du personnage" % nom)
+	push_error("equipement : ni squelette, ni segment '%s' sur le personnage" % nom)
 	return null
+
+
+static func _noms_des_os(s: Skeleton3D) -> Array:
+	var noms := []
+	for i in s.get_bone_count():
+		noms.append(s.get_bone_name(i))
+	return noms
 
 
 static func _vecteur(v: Variant) -> Vector3:

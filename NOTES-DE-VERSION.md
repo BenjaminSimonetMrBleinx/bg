@@ -16,6 +16,22 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.23.0 — Le vrai Walter
+
+> **À essayer : marche, cours, regarde-le.** C'est le modèle rigué de Guillaume — un
+> squelette de 24 os et sa vraie animation de marche, à la place du pantin de dix segments
+> animé par du code. Le chapeau et le revolver s'accrochent à sa main et à sa tête comme
+> avant.
+
+Il fait 1,78 m, ses pieds touchent le sol, et **il regarde dans le bon sens** — il arrivait
+face caméra, donc marchait à reculons.
+
+La cadence du pas reste calée sur la **distance parcourue**, pas sur l'horloge : c'est ce
+qui empêche les pieds de patiner, à n'importe quelle vitesse. On ne joue pas l'animation,
+on lui demande l'image qui correspond aux mètres franchis.
+
+Les passants gardent l'ancien corps pour l'instant — leurs modèles rigués arrivent.
+
 ## 0.22.0 — La ville bouge
 
 > **À essayer : reste sur un trottoir et regarde la rue.** Il y a maintenant des voitures

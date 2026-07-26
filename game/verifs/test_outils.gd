@@ -73,9 +73,23 @@ func _process(_d: float) -> bool:
 		_verifier(vu != "", "%s apparait sur le personnage" % nom)
 
 	print("--- ancrages ---")
-	for segment in ["MainD", "Tete"]:
-		_verifier(_trouver(_j, segment) != null,
-				"le segment '%s' existe sur le personnage" % segment)
+	# Le personnage a maintenant un SQUELETTE, plus une hierarchie de segments
+	# nommes. Le point d'accrochage n'est donc plus un noeud « MainD » mais un
+	# os « RightHand », et equipement.gd traduit entre les deux.
+	#
+	# Ce controle exigeait les segments et refusait donc exactement le progres
+	# qu'on venait de faire. Il verifie desormais que l'ancrage EXISTE, quel que
+	# soit le corps — un objet accroche a un point qui n'existe pas ne se voit
+	# nulle part, et rien d'autre ne le signale.
+	var squelette := _trouver(_j, "Skeleton3D") as Skeleton3D
+	for point in ["MainD", "Tete"]:
+		if squelette != null:
+			var os := str(Equipement.OS_DU_RIG.get(point, point))
+			_verifier(squelette.find_bone(os) >= 0,
+					"l'os '%s' existe pour l'ancrage '%s'" % [os, point])
+		else:
+			_verifier(_trouver(_j, point) != null,
+					"le segment '%s' existe sur le personnage" % point)
 
 	print("--- comportement de la roue ---")
 	_eq.call("equiper", 0)

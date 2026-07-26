@@ -63,16 +63,36 @@ func _init() -> void:
 		erreurs.append("joueur.tscn : echec de chargement")
 	else:
 		var j := pj.instantiate()
+		# DEUX corps possibles, et le personnage peut porter l'un ou l'autre :
+		#
+		#   - un SQUELETTE, avec ses propres animations. C'est ce que Walter a
+		#     depuis que Guillaume l'a rigge.
+		#   - une hierarchie de SEGMENTS nommes, animee par du code. C'est ce
+		#     qu'ont encore les passants.
+		#
+		# Ce controle exigeait les segments, et refusait donc exactement le
+		# progres qu'on venait de faire. Il verifie maintenant qu'il y a un
+		# corps animable, quel qu'il soit.
+		var os := j.find_child("Skeleton3D", true, false) as Skeleton3D
 		var manquants: Array[String] = []
 		for nom in Silhouette.SEGMENTS:
 			if j.find_child(nom, true, false) == null:
 				manquants.append(nom)
-		if manquants.is_empty():
+
+		if os != null and os.get_bone_count() > 0:
+			var lecteur := j.find_child("AnimationPlayer", true, false) as AnimationPlayer
+			var anims := lecteur.get_animation_list() if lecteur != null else PackedStringArray()
+			print("  ok  personnage       squelette de %d os, %d animation(s)"
+					% [os.get_bone_count(), anims.size()])
+			if anims.is_empty():
+				erreurs.append("personnage : squelette sans animation. Le "
+						+ "modele est-il bien le fichier ANIME ?")
+		elif manquants.is_empty():
 			print("  ok  personnage       %d segments" % Silhouette.SEGMENTS.size())
 		else:
-			erreurs.append("personnage : segment(s) absent(s) — %s. Le maillage "
-					% ", ".join(manquants)
-					+ "ne s'est pas charge. Repare l'import : .\\bg.ps1 reparer")
+			erreurs.append("personnage : ni squelette, ni segments (%d absents). "
+					% manquants.size()
+					+ "Le maillage ne s'est pas charge. Essaie : .\\bg.ps1 reparer")
 		j.free()
 
 	# TOUS les scripts doivent compiler.
