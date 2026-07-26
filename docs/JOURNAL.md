@@ -866,3 +866,59 @@ forcément là-bas.*
 **Ce qu'on emporte** : le dépôt a une règle unique — `game/` ne contient que ce que le jeu
 charge. Le son passe par une banque en données. Et trois garde-fous existent parce que les
 trois pannes correspondantes étaient invisibles depuis la machine qui les créait.
+---
+
+## 26 juillet 2026 — Walter respire, saute, s'accroupit, et fait sa première livraison
+
+Quatre versions dans la journée : **0.25.0** à **0.27.1**. Le jeu est passé d'un bac à sable
+à quelque chose qui a un début et une fin.
+
+**Ce qui a été construit** : les animations que les modèles livrés n'avaient pas (repos avec
+respiration et geste des lunettes, marche relâchée, accroupi, saut), le saut et
+l'accroupissement, le choc violent au-delà de 50 mph, et **la première mission** — quinze
+étapes, quatre décors, argent, barre de vie, tir, ragdoll, écran de fin.
+
+### Ce que la journée a appris, et qui vaut au-delà d'elle
+
+**Une mesure fausse ne prévient jamais.** Trois fois dans la journée, un nombre calculé
+proprement décrivait autre chose que ce qu'on croyait :
+
+- la foulée était réglée **à l'œil** à 1,15 m quand le clip en fait 1,76 — l'animation
+  tournait 50 % trop vite, et c'est *ça* qui rendait la marche « robotique ». Elle se lit
+  maintenant dans le fichier
+- `get_bone_global_pose()` rend des unités de squelette, pas des mètres : la respiration
+  s'annonçait à **672 mm** pour 16 mm réels. Seule l'invraisemblance du chiffre l'a trahie
+- la boîte englobante d'un maillage décrit la géométrie **avant** déformation par
+  l'armature. Deux modèles de 1,75 m s'annonçaient à 2,70 puis ressortaient à 3,10 après
+  une mise à l'échelle censée les ramener à 1,75
+
+Le remède est le même à chaque fois : **mesurer sur les os**, dans un repère qu'on maîtrise.
+
+**Exister et se jouer sont deux choses.** Le geste des lunettes était dans le fichier,
+mesuré à sept centimètres du visage, et invisible en jeu. Entre la pose construite et
+l'animation vue, il y a une insertion de clés, un mélange et une interpolation — chacun peut
+avaler le geste. On relit donc systématiquement ce qu'on vient d'écrire.
+
+**Une régression peut être muette sur sa cause.** Les corps du ragdoll, créés au chargement
+et laissés en collision, poussaient le joueur à travers le sol du salon jusqu'à −75 m.
+Quatre suites sont devenues rouges d'un coup et **aucune ne parlait de ragdoll**.
+
+**Un solveur vaut mieux qu'un angle écrit à la main.** L'orientation des os appartient au rig
+et ne se devine pas. On cherche donc : l'axe de flexion du coude parmi les six possibles, les
+angles qui amènent les doigts aux lunettes, les flexions qui gardent les pieds au sol pendant
+que le bassin descend de quarante centimètres. Avec plusieurs points de départ — une descente
+par coordonnées s'arrête dans le premier creux venu.
+
+**Le repère de Blender n'est pas celui de Godot**, et l'export `+Y up` envoie la profondeur
+`-Y` sur `+Z`. Tout le contenu du camping-car s'est retrouvé derrière sa paroi arrière : la
+pièce paraissait vide depuis l'intérieur.
+
+### Le suivi
+
+Le ticketing est passé sur **GitHub Issues** — formulaires à champs obligatoires, étiquettes,
+appli mobile. `livraisons/TICKETS.csv` reste, mais **régénéré** par `outils/tickets.ps1` :
+une seule source, pas de divergence possible.
+
+`livraisons/` est rangé par type. Deux pièges y décidaient du rangement : `sons/` est un sas
+que `livrer.ps1` vide vers le jeu à chaque envoi, et `voix/originaux/` est le seul dossier
+que l'intégration ignore.
