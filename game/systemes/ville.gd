@@ -37,6 +37,10 @@ const SOLIDES := ["benne", "banc", "cactus", "panneau"]
 ## garde pour pouvoir monter et descendre leur emission a l'heure voulue.
 var _fenetres: Array[BaseMaterial3D] = []
 
+## Le porte-lampadaires. Masque en bloc de jour : un noeud invisible n'est pas
+## rendu, donc trente-deux sources eteintes ne coutent rien.
+var _lampes: Node3D = null
+
 
 func _ready() -> void:
 	_poser_geometrie()
@@ -120,13 +124,16 @@ func _poser_lampes() -> void:
 	parent.name = "Lampes"
 	add_child(parent)
 
-	# De jour, on ne cree meme pas les lumieres. Les eteindre reviendrait a
-	# payer trente-deux OmniLight3D qui n'eclairent rien : sur PS2 comme
-	# aujourd'hui, une source coute meme quand son energie est nulle.
-	if Reglages.est_jour():
-		print("ville : il fait jour, aucun lampadaire allume")
-		return
-
+	# Les lumieres sont TOUJOURS creees, et masquees de jour.
+	#
+	# Une version anterieure ne les creait pas du tout quand il faisait jour, et
+	# c'etait justifie : une source coute meme a energie nulle. Mais avec une
+	# heure qui avance, il faudrait alors les fabriquer au crepuscule — trente-
+	# deux OmniLight3D d'un coup, en pleine partie, a l'image precise ou le
+	# joueur regarde le ciel changer.
+	#
+	# Un noeud invisible n'est pas rendu du tout : masquer coute ce que couterait
+	# ne pas exister, et l'allumage devient continu.
 	for entree in data.get("lampes", []):
 		var p: Array = entree["pos"]
 		var v: Array = entree.get("vers", [0.0, 0.0, 0.0])
@@ -148,7 +155,23 @@ func _poser_lampes() -> void:
 		lumiere.distance_fade_length = reglages.brouillard_fin * 0.3
 		parent.add_child(lumiere)
 
+	_lampes = parent
+	allumer_lampes(Reglages.nuit_part())
 	print("ville : %d lampadaires, etendue %.0f m" % [parent.get_child_count(), etendue])
+
+
+## Allume les lampadaires, de 0 (plein jour, eteints et masques) a 1 (nuit).
+##
+## Ils s'allument PLUS TOT que la nuit n'arrive : un reverbere s'allume au
+## crepuscule, pas quand il fait noir. D'ou la part multipliee avant d'etre
+## bornee — a un tiers de nuit, ils donnent deja tout.
+func allumer_lampes(part: float) -> void:
+	if _lampes == null or reglages == null:
+		return
+	var f := clampf(part * 3.0, 0.0, 1.0)
+	_lampes.visible = f > 0.01
+	for l in _lampes.get_children():
+		(l as OmniLight3D).light_energy = reglages.lampe_energie * f
 
 
 # Le mobilier vient du meme fichier que les lampes. Chaque type n'est charge

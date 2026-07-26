@@ -87,7 +87,7 @@ func _configurer_environnement() -> void:
 	env.fog_depth_begin = reglages.brume_debut()
 	env.fog_depth_end = reglages.brume_fin()
 	env.fog_depth_curve = 1.0
-	env.fog_sky_affect = reglages.jour_brume_ciel if Reglages.est_jour() else 1.0
+	env.fog_sky_affect = reglages.brume_ciel()
 
 	_configurer_soleil()
 
@@ -98,28 +98,44 @@ func _configurer_environnement() -> void:
 	env.sdfgi_enabled = false
 
 
-# De nuit, il n'y a aucune source directionnelle : tout vient des lampadaires
-# et des phares. De jour, il en faut une, sinon la ville reste un aplat
-# ambiant sans une seule ombre et tout parait plat.
+# Le soleil se leve et se couche.
+#
+# Il EXISTE a toute heure maintenant, alors qu'une version anterieure le
+# supprimait la nuit. La difference compte : un noeud detruit puis recree a
+# chaque bascule ne peut pas s'animer, et l'aube n'aurait ete qu'un
+# interrupteur.
+#
+# De nuit il reste, energie nulle et sous l'horizon, ce qui ne coute presque
+# rien pour une seule source directionnelle — et tout vient alors des
+# lampadaires, des phares et des fenetres allumees.
 func _configurer_soleil() -> void:
 	var scene := scene_3d()
 	var soleil := scene.get_node_or_null("Soleil") as DirectionalLight3D
-
-	if not Reglages.est_jour():
-		if soleil != null:
-			soleil.queue_free()
-		return
-
 	if soleil == null:
 		soleil = DirectionalLight3D.new()
 		soleil.name = "Soleil"
 		scene.add_child(soleil)
 
-	soleil.light_color = reglages.soleil_couleur
-	soleil.light_energy = reglages.soleil_energie
-	soleil.shadow_enabled = reglages.soleil_ombres
-	soleil.rotation_degrees = Vector3(
-		-reglages.soleil_hauteur, reglages.soleil_azimut, 0.0)
+	var nuit := Reglages.nuit_part()
+	var jour := 1.0 - nuit
+
+	# La hauteur suit une arche : rasante au lever et au coucher, haute a midi.
+	# On la calcule sur la meme part de jour que le reste, plutot que sur
+	# l'heure : les deux resteront d'accord si on change la duree de l'aube.
+	var hauteur := lerpf(-8.0, reglages.soleil_hauteur, jour)
+	# Il tourne dans le ciel au fil de la journee, sinon les ombres pointent
+	# toute la journee dans la meme direction et midi ressemble a huit heures.
+	var azimut: float = reglages.soleil_azimut + (Reglages.heure - 13.0) * 12.0
+
+	soleil.rotation_degrees = Vector3(-hauteur, azimut, 0.0)
+	soleil.light_energy = reglages.soleil_energie * jour
+	# Rasant, il rougit. C'est ce qui fait lire une heure plutot qu'une autre.
+	soleil.light_color = reglages.soleil_couleur.lerp(
+			Color(1.0, 0.58, 0.34), clampf(nuit * 1.4, 0.0, 1.0))
+	# Une lumiere d'energie nulle projette quand meme ses ombres : on les coupe,
+	# et on economise la carte d'ombres pendant toute la nuit.
+	soleil.shadow_enabled = reglages.soleil_ombres and jour > 0.05
+	soleil.visible = jour > 0.01
 
 
 ## La camera active du monde. Les autres systemes passent par ici plutot que

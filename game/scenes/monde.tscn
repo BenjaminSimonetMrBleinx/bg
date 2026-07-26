@@ -11,7 +11,7 @@
 ; Le vehicule demarre sur la chaussee verticale du couloir 0, qui court le
 ; long de -Z : il est donc deja dans le bon sens.
 
-[gd_scene load_steps=34 format=3 uid="uid://bgmonde0v0001"]
+[gd_scene load_steps=35 format=3 uid="uid://bgmonde0v0001"]
 
 [ext_resource type="Script" path="res://rendu/rendu_ps2.gd" id="1_rendu"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
@@ -36,6 +36,7 @@
 [ext_resource type="Script" path="res://systemes/telephone.gd" id="21_telephone"]
 [ext_resource type="Script" path="res://systemes/desert.gd" id="23_desert"]
 [ext_resource type="Script" path="res://systemes/passage.gd" id="24_passage"]
+[ext_resource type="Script" path="res://systemes/temps.gd" id="29_temps"]
 [ext_resource type="PackedScene" path="res://assets/desert/desert.glb" id="25_sol_desert"]
 [ext_resource type="PackedScene" path="res://assets/desert/camping_car.glb" id="26_camping_car"]
 [ext_resource type="PackedScene" path="res://assets/decor/fleche_sol.glb" id="27_fleche"]
@@ -310,6 +311,15 @@ script = ExtResource("16_dialogue")
 cadre = NodePath("../Rendu/Interface/CadreDialogue")
 etiquette_nom = NodePath("../Rendu/Interface/CadreDialogue/Marge/Colonne/Qui")
 etiquette_texte = NodePath("../Rendu/Interface/CadreDialogue/Marge/Colonne/Texte")
+
+; L horloge du monde. Un seul noeud avance l heure et previent les autres :
+; sans ce point unique, le ciel et les lampadaires divergeraient d une image.
+; Figee par defaut — voir temps_vitesse dans reglages.tres.
+[node name="Temps" type="Node" parent="."]
+script = ExtResource("29_temps")
+reglages = ExtResource("2_reglages")
+rendu = NodePath("..")
+ville = NodePath("../Rendu/Scene3D/Ville")
 
 [node name="Controleur" type="Node" parent="."]
 script = ExtResource("8_controleur")

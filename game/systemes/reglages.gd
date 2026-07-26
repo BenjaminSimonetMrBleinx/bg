@@ -425,11 +425,21 @@ extends Resource
 @export_range(0.05, 1.0, 0.05) var roue_ralenti: float = 0.25
 
 
+@export_group("Temps")
+
+## Combien d'heures de jeu passent par seconde reelle. A zero, l'heure est
+## figee — c'est le reglage par defaut, parce qu'un cycle qui tourne pendant
+## qu'on regle un autre curseur rend tout reglage impossible a juger.
+##
+## 0.05 fait une journee complete en huit minutes, ce qui est le rythme d'un
+## GTA de l'epoque.
+@export_range(0.0, 1.0, 0.005) var temps_vitesse: float = 0.0
+
 @export_group("Jour")
 
-## Ces valeurs ne servent QUE si donnees/monde.json dit "jour". Le moment
-## n'est pas un curseur : l'etat des vitres est cuit dans les textures, et
-## il se change par .\bg.ps1 generer -Moment jour.
+## Les couleurs du plein jour. Elles ne remplacent plus celles de nuit : le
+## jeu MELANGE les deux selon l'heure, et l'aube comme le crepuscule sont des
+## positions intermediaires. Voir Reglages.nuit_part().
 
 @export var jour_ciel: Color = Color(0.404, 0.573, 0.788)
 
@@ -475,45 +485,101 @@ extends Resource
 
 const MONDE := "res://donnees/monde.json"
 
-## Lu une fois, puis garde : la question est posee par cinq systemes a chaque
-## demarrage, et le fichier ne bouge pas en cours de partie.
-static var _moment := ""
+## L'heure du monde, de 0 a 24. C'est desormais LA source du jour et de la
+## nuit, et tout le reste en decoule.
+##
+## Elle est statique parce que la question « fait-il jour » est posee par cinq
+## systemes qui n'ont aucune raison de se connaitre. Un booleen recopie dans
+## chacun finirait par en contredire un autre — un ciel de midi sur des
+## fenetres allumees, sans savoir lequel a tort.
+static var heure: float = -1.0
+
+## Combien de temps met l'aube, en heures. En dessous d'une demi-heure la
+## bascule se voit comme un interrupteur ; au-dela de deux, on ne sait plus
+## quelle heure il est.
+const TRANSITION := 1.2
+
+## Le jour dure de la fin de l'aube au debut du crepuscule.
+const AUBE := 6.5
+const CREPUSCULE := 19.5
 
 
-## Fait-il jour ? La reponse vient de donnees/monde.json, ecrit par le
-## generateur de textures — parce que l'etat des vitres y est CUIT. Un
-## booleen a part dans ce fichier-ci pourrait le contredire, et on aurait un
-## ciel de midi sur des fenetres allumees sans savoir lequel a tort.
+## Lit l'heure de depart dans donnees/monde.json, une seule fois.
+##
+## Le fichier ne porte plus qu'une intention — "jour" ou "nuit" — parce que
+## c'est ce que la ligne de commande sait dire. Elle devient une heure ronde,
+## et le jeu prend le relais a partir de la.
+static func _heure_initiale() -> float:
+	var moment := "nuit"
+	if FileAccess.file_exists(MONDE):
+		var lu: Variant = JSON.parse_string(
+				FileAccess.get_file_as_string(MONDE))
+		if typeof(lu) == TYPE_DICTIONARY:
+			var d := lu as Dictionary
+			# Une heure explicite l'emporte : c'est ce qui permettra un jour de
+			# reprendre une partie a l'heure ou on l'a quittee.
+			if d.has("heure"):
+				return clampf(float(d["heure"]), 0.0, 24.0)
+			moment = str(d.get("moment", "nuit"))
+		else:
+			push_error("reglages : %s illisible, on reste de nuit" % MONDE)
+	return 13.0 if moment == "jour" else 22.0
+
+
+## Quelle part de nuit : 0 en plein jour, 1 en pleine nuit, et tout entre les
+## deux a l'aube et au crepuscule.
+##
+## C'est la seule fonction que les autres systemes devraient consulter. Le
+## booleen est_jour() reste pour ce qui ne peut pas nuancer — allumer ou non
+## les phares — mais il en derive, il ne le contredit jamais.
+static func nuit_part() -> float:
+	if heure < 0.0:
+		heure = _heure_initiale()
+	if heure >= AUBE + TRANSITION and heure <= CREPUSCULE:
+		return 0.0
+	if heure <= AUBE or heure >= CREPUSCULE + TRANSITION:
+		return 1.0
+	if heure < AUBE + TRANSITION:
+		return 1.0 - (heure - AUBE) / TRANSITION          # l'aube
+	return (heure - CREPUSCULE) / TRANSITION              # le crepuscule
+
+
+## Fait-il jour ? Derive de l'heure, jamais pose a part.
 static func est_jour() -> bool:
-	if _moment == "":
-		_moment = "nuit"
-		if FileAccess.file_exists(MONDE):
-			var lu: Variant = JSON.parse_string(
-					FileAccess.get_file_as_string(MONDE))
-			if typeof(lu) == TYPE_DICTIONARY:
-				_moment = str((lu as Dictionary).get("moment", "nuit"))
-			else:
-				push_error("reglages : %s illisible, on reste de nuit" % MONDE)
-	return _moment == "jour"
+	return nuit_part() < 0.5
 
 
-## Couleur du ciel du moment.
+# Les accesseurs melangent les deux jeux de valeurs au lieu d'en choisir un.
+#
+# C'est tout ce qu'il a fallu changer pour rendre le cycle continu : la
+# structure separait deja proprement « les couleurs de jour » et « celles de
+# nuit », et il ne manquait qu'un curseur entre les deux.
+func _melange(de_nuit: Color, de_jour: Color) -> Color:
+	return de_jour.lerp(de_nuit, nuit_part())
+
+
 func ciel() -> Color:
-	return jour_ciel if est_jour() else ciel_couleur
+	return _melange(ciel_couleur, jour_ciel)
 
 
-## Couleur de la brume ou du brouillard du moment.
 func brume() -> Color:
-	return jour_brouillard if est_jour() else brouillard_couleur
+	return _melange(brouillard_couleur, jour_brouillard)
 
 
 func lumiere_ambiante() -> float:
-	return jour_ambiante if est_jour() else ambiante
+	return lerpf(jour_ambiante, ambiante, nuit_part())
 
 
 func brume_debut() -> float:
-	return jour_brouillard_debut if est_jour() else brouillard_debut
+	return lerpf(jour_brouillard_debut, brouillard_debut, nuit_part())
 
 
 func brume_fin() -> float:
-	return jour_brouillard_fin if est_jour() else brouillard_fin
+	return lerpf(jour_brouillard_fin, brouillard_fin, nuit_part())
+
+
+## Combien le brouillard mange le ciel. De nuit il le recouvre entierement —
+## le ciel EST le brouillard ; de jour il faut le laisser respirer, sinon on
+## obtient un aplat gris pale au lieu du bleu d'Albuquerque.
+func brume_ciel() -> float:
+	return lerpf(jour_brume_ciel, 1.0, nuit_part())

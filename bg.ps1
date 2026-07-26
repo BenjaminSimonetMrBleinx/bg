@@ -486,6 +486,10 @@ switch ($Commande) {
             @{ cle = 'audio'; nom = 'audio'
                script = 'res://verifs/test_audio.gd'
                couvre = @('systemes/audio', 'assets/sons', 'default_bus_layout') }
+            @{ cle = 'temps'; nom = 'cycle jour et nuit'
+               script = 'res://verifs/test_temps.gd'
+               couvre = @('systemes/temps', 'systemes/reglages', 'systemes/ville',
+                          'rendu/rendu_ps2', 'gen_textures', 'gen_ville', 'donnees/monde') }
             @{ cle = 'desert'; nom = 'aller au desert'
                script = 'res://verifs/test_desert.gd'
                couvre = @('systemes/desert', 'systemes/passage', 'systemes/controleur',

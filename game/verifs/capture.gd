@@ -137,10 +137,12 @@ func _jouer_les_etapes() -> void:
 		if etape.has("appeler"):
 			var n := _trouver(_monde, str(etape["appeler"]))
 			var m := str(etape.get("methode", ""))
-			if n != null and n.has_method(m):
-				n.call(m)
-			else:
+			if n == null or not n.has_method(m):
 				printerr("capture : %s.%s() introuvable" % [etape["appeler"], m])
+			elif etape.has("argument"):
+				n.call(m, etape["argument"])
+			else:
+				n.call(m)
 
 		if etape.has("touche"):
 			# Pressee ET relachee dans la meme image : is_action_just_pressed

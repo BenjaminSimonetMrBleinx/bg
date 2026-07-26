@@ -28,7 +28,7 @@
   "se declenche — et une action :",
   "",
   "  placer     noeud, pos [x,y,z], et cap en degres (facultatif)",
-  "  appeler    noeud, methode           appelle une methode publique",
+  "  appeler    noeud, methode, argument (facultatif) — une methode publique",
   "  touche     action                   presse et relache une action d'entree",
   "  appui      action                   presse et maintient",
   "  relache    action",
@@ -39,7 +39,34 @@
  ],
 
  "scenarios": {
-
+  "h06_aube": {
+   "quoi": "L'aube : le soleil rase, les lampadaires pas encore eteints.",
+   "fin": 90,
+   "etapes": [
+    { "image": 20, "appeler": "Temps", "methode": "regler", "argument": 6.8 }
+   ]
+  },
+  "h13_midi": {
+   "quoi": "Midi. Ombres courtes, brume de chaleur au loin.",
+   "fin": 90,
+   "etapes": [
+    { "image": 20, "appeler": "Temps", "methode": "regler", "argument": 13 }
+   ]
+  },
+  "h19_crepuscule": {
+   "quoi": "Le crepuscule : soleil rouge, fenetres qui commencent a s'allumer.",
+   "fin": 90,
+   "etapes": [
+    { "image": 20, "appeler": "Temps", "methode": "regler", "argument": 19.9 }
+   ]
+  },
+  "h22_nuit": {
+   "quoi": "Nuit noire. Lampadaires, phares et fenetres.",
+   "fin": 90,
+   "etapes": [
+    { "image": 20, "appeler": "Temps", "methode": "regler", "argument": 22 }
+   ]
+  },
   "depart": {
    "quoi": "Le point de depart, tel qu'on le decouvre en lancant le jeu.",
    "fin": 150,

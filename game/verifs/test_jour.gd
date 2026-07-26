@@ -62,16 +62,28 @@ func _process(_d: float) -> bool:
 	print("       phares visibles     : %s" % ("oui" if phare != null and phare.visible else "non"))
 	print("       lumiere de porche   : %s" % ("oui" if porche != null else "non"))
 
+	# Ce que ce test verifie a CHANGE avec le cycle continu, et l'ancienne
+	# formulation etait devenue fausse.
+	#
+	# Les lampadaires n'existaient pas du tout de jour — une source coute meme
+	# eteinte, alors on ne les creait pas. Avec une heure qui avance, il
+	# faudrait les fabriquer au crepuscule : trente-deux d'un coup, en pleine
+	# partie, a l'image ou le joueur regarde le ciel changer. Ils existent donc
+	# toujours, et sont MASQUES de jour — un noeud invisible n'est pas rendu.
+	#
+	# Meme chose pour le soleil : detruit la nuit auparavant, il reste
+	# maintenant, energie nulle. Un noeud qu'on detruit et recree ne peut pas
+	# s'animer, et l'aube n'aurait ete qu'un interrupteur.
+	var eclairent: bool = lampes != null and (lampes as Node3D).visible
 	if jour:
-		# Chaque source coute meme quand elle n'eclaire rien : de jour on ne
-		# les cree pas du tout, plutot que de les eteindre.
-		_verifier(n_lampes == 0, "aucun lampadaire de jour")
-		_verifier(soleil != null, "il y a un soleil")
+		_verifier(not eclairent, "les lampadaires sont eteints de jour")
+		_verifier(soleil != null and soleil.visible, "le soleil est la")
 		_verifier(phare != null and not phare.visible, "les phares sont eteints")
 		_verifier(porche == null, "pas de lumiere de porche de jour")
 	else:
-		_verifier(n_lampes > 0, "les lampadaires sont allumes")
-		_verifier(soleil == null, "aucun soleil la nuit")
+		_verifier(n_lampes > 0 and eclairent, "les lampadaires sont allumes")
+		_verifier(soleil == null or not soleil.visible,
+				"le soleil ne donne plus la nuit")
 		_verifier(porche != null, "la porte est eclairee")
 
 	# Le brouillard ne doit jamais avaler tout le ciel de jour : a 1, on

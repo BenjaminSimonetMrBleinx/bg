@@ -11,6 +11,29 @@ bouger dès que le jeu a changé.
 
 ---
 
+## 0.16.0
+
+**Le cycle du jour et de la nuit.** Une heure continue, de 0 à 24, qui pilote ensemble le
+ciel, la brume, le soleil, les lampadaires et les fenêtres allumées. L'aube et le
+crépuscule sont des positions intermédiaires, pas des cas particuliers.
+
+Le verrou était que **l'état des fenêtres était peint dans la couleur des façades** : une
+texture de jour, une de nuit, choisies à la génération. Elles vivent maintenant dans un
+masque d'émission séparé, et les mêmes assets servent à toute heure.
+
+`temps_vitesse` est à **zéro par défaut** : un cycle qui tourne pendant qu'on règle un
+curseur rend le réglage impossible à juger. On le met en marche pour voir, pas pour
+travailler.
+
+**Les scénarios de capture.** `.\bg.ps1 capture -Scenario tous` rend une planche de douze
+vues du jeu, déclarées en données. C'est la boucle de contrôle visuel : la plupart des
+défauts trouvés ici ne se voient sur aucun test.
+
+**Le téléphone**, le **désert**, et un **système de poses** en données pour les gestes.
+
+**Réparé** : `.tmp/` était suivi par git ; un dépôt bloqué au milieu d'une fusion ne pouvait
+plus rien récupérer ; un script qui ne compile pas se dégradait en nœud nu sans que rien ne
+le signale.
 ## 0.10.0
 
 **La nouvelle prise du dialogue de la cuisine.** Les dix répliques de la scène avec Skyler
