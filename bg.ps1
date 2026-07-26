@@ -474,6 +474,14 @@ switch ($Commande) {
             @{ cle = 'montee'; nom = 'montee et descente'
                script = 'res://verifs/test_montee.gd'
                couvre = @('systemes/controleur', 'systemes/vehicule', 'systemes/joueur', 'scenes/joueur') }
+            @{ cle = 'allures'; nom = 'allures de Walter'
+
+               script = 'res://verifs/test_allures.gd'
+
+               couvre = @('systemes/joueur', 'systemes/demarche', 'systemes/reglages',
+
+                          'scenes/joueur', 'assets/personnages', 'importer_perso') }
+
             @{ cle = 'marche'; nom = 'orientation de marche'
                script = 'res://verifs/test_marche.gd'
                couvre = @('systemes/joueur', 'systemes/silhouette', 'gen_personnage', 'scenes/joueur', 'segmenter_modele', 'assets/personnages') }

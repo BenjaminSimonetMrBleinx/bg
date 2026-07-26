@@ -31,6 +31,10 @@ extends CharacterBody3D
 ## pareil, et le joueur est le seul a savoir ou il est.
 var interieur: bool = false
 
+## L'allure en cours. Lue par les tests, et par rien d'autre : le personnage
+## n'a pas besoin de se souvenir, il recalcule a chaque image.
+var _allure: String = "trot"
+
 var _cam: Camera3D
 var _audio: Audio
 
@@ -66,6 +70,18 @@ var _refus: String = ""
 
 func raison_refus() -> String:
 	return _refus
+
+
+## L'allure en cours — marche, trot ou course — et l'animation qui la joue.
+##
+## Pour les tests, et il en faut : trois allures qui jouent toutes le meme clip
+## a la meme vitesse ressemblent exactement a trois allures qui marchent.
+func allure() -> String:
+	return _allure
+
+
+func animation() -> String:
+	return _demarche.animation() if _demarche != null else ""
 
 
 ## Prend une pose declaree dans donnees/poses.json — telephoner, degainer,
@@ -154,8 +170,34 @@ func _physics_process(delta: float) -> void:
 	devant.y = 0.0
 	devant = devant.normalized()
 
+	# L'ALLURE : marche dedans, trot dehors, course en maintenant Maj.
+	#
+	# Le trot est le DEFAUT. Traverser un quartier au pas serait interminable,
+	# et un jeu ou l'on marche par defaut oblige a tenir une touche en
+	# permanence — ce qui revient a faire du trot le defaut, en moins agreable.
+	#
+	# Dedans, on marche : courir dans un salon de sept metres n'a aucun sens et
+	# se lit tout de suite comme un personnage mal reglé.
+	var nom_allure := "trot"
+	var allure := reglages.trot_vitesse
+	var enjambee := reglages.trot_foulee
+	if interieur:
+		nom_allure = "marche"
+		allure = reglages.marche_vitesse
+		enjambee = reglages.foulee
+	elif avance > 0.0 and Input.is_action_pressed("sprint"):
+		# Seulement vers l'AVANT : personne ne sprinte a reculons, et une
+		# marche arriere rapide se lit comme un bug.
+		nom_allure = "course"
+		allure = reglages.course_vitesse
+		enjambee = reglages.course_foulee
+
+	_allure = nom_allure
+	if _demarche != null:
+		_demarche.allure(nom_allure)
+		_demarche.foulee = enjambee
+
 	# Reculer est plus lent qu'avancer : personne ne court a reculons.
-	var allure := reglages.marche_vitesse
 	if avance < 0.0:
 		allure *= reglages.marche_arriere
 

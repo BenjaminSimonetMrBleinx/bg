@@ -87,6 +87,22 @@ extends Resource
 @export_range(0.0, 1.0, 0.05) var anti_roulis: float = 0.55
 
 # ------------------------------------------------------------------ camera
+@export_group("Allures")
+
+## LES TROIS ALLURES DE WALTER.
+##
+## Par defaut il TROTTINE : c'est le rythme d'un jeu ou l'on traverse un
+## quartier a pied, et marcher partout serait interminable. Il marche a
+## l'interieur, ou courir n'a aucun sens, et il court en maintenant Maj.
+##
+## Chaque allure a sa vitesse ET sa foulee. La foulee accorde les jambes au
+## deplacement : trop courte, il pedale ; trop longue, il glisse.
+@export_range(0.5, 6.0, 0.1) var trot_vitesse: float = 3.6
+@export_range(0.6, 3.0, 0.05) var trot_foulee: float = 1.85
+
+@export_range(1.0, 12.0, 0.1) var course_vitesse: float = 6.4
+@export_range(0.8, 4.0, 0.05) var course_foulee: float = 2.55
+
 @export_group("Circulation")
 
 ## Vitesse de croisiere des voitures qui circulent, en m/s. 9 m/s font une
@@ -345,8 +361,14 @@ extends Resource
 # ------------------------------------------------------------------ joueur
 @export_group("Joueur a pied")
 
-## Vitesse de marche en m/s.
-@export_range(0.5, 12.0, 0.1) var marche_vitesse: float = 4.2
+## Vitesse de MARCHE en m/s. Un humain marche a 1,4 ; a 1,65 on est sur un pas
+## presse, ce qui va bien a Walter.
+##
+## Elle etait a 4,2 tant qu'elle etait la SEULE vitesse du jeu : il fallait
+## bien traverser le quartier. Mais 4,2 m/s est une allure de course, et les
+## passants la partagent — toute la rue trottinait sans qu'on sache pourquoi.
+## Depuis qu'il y a trois allures, celle-ci peut redevenir ce que son nom dit.
+@export_range(0.5, 12.0, 0.1) var marche_vitesse: float = 1.65
 
 ## Acceleration au sol. Haut = demarrage sec.
 @export_range(1.0, 60.0, 0.5) var marche_acceleration: float = 22.0

@@ -27,6 +27,19 @@ signal pas()
 const CYCLE := "Walking"
 const COURSE := "Running"
 
+## Les trois allures du personnage, et le clip que chacune joue.
+##
+## Elles ne sont que DEUX a l'ecran, et il faut le dire : le modele livre porte
+## « Walking » et « Running », pas de trot. Le trottinement partage donc le clip
+## de course, joue moins vite — ce qui se tient, un cycle de course ralenti se
+## lit comme un petit trot — mais une vraie animation de trot les separerait
+## nettement. C'est la seule chose qui manque cote assets.
+const ALLURES := {
+	"marche": CYCLE,
+	"trot": COURSE,
+	"course": COURSE,
+}
+
 var _reglages: Reglages
 var _lecteur: AnimationPlayer
 var _nom: String = ""
@@ -35,6 +48,17 @@ var _duree: float = 1.0
 ## Position dans le cycle, de 0 a 1.
 var _phase: float = 0.0
 var _depuis_le_pas: float = 0.0
+var _disponibles: PackedStringArray = PackedStringArray()
+
+## Clips reclames qui n'existent pas. On ne rale qu'une fois par nom : une
+## allure demandee a chaque image noierait la console.
+var _manquantes: Dictionary = {}
+
+## Longueur d'une foulee, en metres. Elle CHANGE avec l'allure : on ne fait pas
+## les memes enjambees en marchant et en courant, et c'est elle qui accorde la
+## vitesse des jambes a celle du deplacement. Une foulee trop courte donne un
+## personnage qui pedale, trop longue un personnage qui glisse.
+var foulee: float = 1.15
 
 ## Vitesse a laquelle le cycle se fige quand on s'arrete. Une animation coupee
 ## net laisse le personnage une jambe en l'air.
@@ -43,6 +67,7 @@ const REPOS := 6.0
 
 func _init(reglages: Reglages) -> void:
 	_reglages = reglages
+	foulee = reglages.foulee
 
 
 ## Retrouve l'AnimationPlayer sous ce noeud. Renvoie faux s'il n'y en a pas —
@@ -72,6 +97,32 @@ func recenser(racine: Node) -> bool:
 	# pendant qu'il traverse la rue.
 	_lecteur.play(_nom)
 	_lecteur.pause()
+	_disponibles = _lecteur.get_animation_list()
+	return true
+
+
+## Change d'allure. Renvoie faux si le clip demande n'existe pas — le
+## personnage garde alors le sien, ce qui vaut mieux qu'un arret net.
+##
+## Changer de clip REMET LA PHASE A SA PLACE et pas a zero : passer du trot a
+## la course au milieu d'une foulee ne doit pas replanter le pied.
+func allure(nom: String) -> bool:
+	var clip := str(ALLURES.get(nom, ""))
+	if clip == "" or clip == _nom:
+		return clip != ""
+	if not _disponibles.has(clip):
+		if not _manquantes.has(clip):
+			_manquantes[clip] = true
+			push_warning("demarche : pas d'animation '%s' pour l'allure '%s'. "
+					% [clip, nom] + "Disponibles : %s" % ", ".join(_disponibles))
+		return false
+	_nom = clip
+	var anim := _lecteur.get_animation(_nom)
+	_duree = maxf(0.01, anim.length)
+	anim.loop_mode = Animation.LOOP_LINEAR
+	_lecteur.play(_nom)
+	_lecteur.seek(_phase * _duree, true)
+	_lecteur.pause()
 	return true
 
 
@@ -88,17 +139,17 @@ func avancer(vitesse_au_sol: float, delta: float) -> void:
 		# zero au lieu de couper l'animation.
 		_phase = lerpf(_phase, 0.0, clampf(REPOS * delta, 0.0, 1.0))
 		_lecteur.seek(_phase * _duree, true)
-		_depuis_le_pas = maxf(_depuis_le_pas, _reglages.foulee * 0.35)
+		_depuis_le_pas = maxf(_depuis_le_pas, foulee * 0.35)
 		return
 
 	_phase = fposmod(_phase + vitesse_au_sol * delta
-			/ maxf(0.05, _reglages.foulee), 1.0)
+			/ maxf(0.05, foulee), 1.0)
 	_lecteur.seek(_phase * _duree, true)
 
 	# Deux pieds par foulee. On compte la DISTANCE et pas la phase : la phase
 	# tourne a l'envers en marche arriere, et detecter un franchissement de
 	# seuil dans les deux sens avec le bouclage demande trois cas particuliers.
-	var demi := maxf(0.05, _reglages.foulee) * 0.5
+	var demi := maxf(0.05, foulee) * 0.5
 	_depuis_le_pas += absf(vitesse_au_sol) * delta
 	if _depuis_le_pas >= demi:
 		_depuis_le_pas = fmod(_depuis_le_pas, demi)

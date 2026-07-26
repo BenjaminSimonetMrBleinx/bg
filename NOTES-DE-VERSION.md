@@ -16,6 +16,25 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.24.0 — Trois allures
+
+> **À essayer : marche, cours, entre dans une maison.**
+>
+> - **Par défaut Walter trottine** — c'est le rythme pour traverser un quartier.
+> - **Maj + avancer** : il court. Presque deux fois plus vite.
+> - **À l'intérieur** : il marche, et Maj n'y change rien. Courir dans un salon de sept
+>   mètres n'a pas de sens.
+
+**Une limite à connaître** : le modèle livré porte deux animations, `Walking` et `Running`.
+Le trot et la course partagent donc le clip de course, joué à deux vitesses. Ça se tient —
+un cycle de course ralenti se lit comme un petit trot — mais **une vraie animation de trot
+les séparerait nettement.** C'est la seule chose qui manque côté assets.
+
+**Corrigé au passage, et ça se voit** : la « vitesse de marche » valait 4,2 m/s, soit une
+allure de course. C'était la seule vitesse du jeu, donc elle avait été réglée pour traverser
+le quartier — **et les passants la partageaient.** Toute la rue trottinait. Elle est
+redescendue à 1,65 : les passants marchent enfin.
+
 ## 0.23.0 — Le vrai Walter
 
 > **À essayer : marche, cours, regarde-le.** C'est le modèle rigué de Guillaume — un
