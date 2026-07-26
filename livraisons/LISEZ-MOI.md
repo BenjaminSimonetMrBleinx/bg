@@ -5,40 +5,28 @@
 Rien de ce dossier n'est lu par le jeu. C'est un sas : ce qui est intégré part
 dans `game/`, transformé par les outils, et la source reste ici.
 
-## Le fichier qui compte : `TICKETS.csv`
+## Ce qu'on attend de toi, c'est dans les tickets
 
-**Double-clique dessus** — il s'ouvre dans Excel. Une ligne = une chose qui
-manque au jeu.
+**https://github.com/BenjaminSimonetMrBleinx/bg/issues**
 
-| Colonne | |
-|---|---|
-| **Ce qu'on attend** | Le détail. Combien de fichiers, quelle durée, quel usage |
-| **Où le poser** | Le dossier exact. Pose le fichier là, sans te demander où le jeu le range |
-| **Statut** | `A faire` → `Livre - a integrer` → `Integre`. **C'est la colonne que tu changes** |
-| **Note de Guillaume** | Ta colonne. Une question, un doute, « pas possible », « fait autrement » |
+Une ligne = une chose qui manque au jeu : le detail, le format, et le dossier ou la poser.
+Filtre sur l'etiquette `a-faire` pour ne voir que ce qui te concerne. Ca se lit tres bien
+depuis l'appli GitHub sur telephone.
 
-**Le cycle :**
+**Ton cycle :**
 
-1. `.\go.ps1` — tu récupères la dernière version, tickets compris
-2. Tu déposes tes fichiers dans le dossier indiqué
-3. Tu passes le statut à `Livre - a integrer`, et tu écris ta note s'il y a lieu
-4. `.\livrer.ps1 "mes sons de flingue"` — ça part
-5. Je relis le fichier au début de chaque session, j'intègre, et je passe les
-   lignes à `Integre`
+1. `.\go.ps1` — tu recuperes la derniere version
+2. Tu deposes tes fichiers dans le dossier indique par le ticket
+3. `.\livrer.ps1 "mes sons de flingue"` — ca part
+4. Tu ouvres un ticket **Je livre un fichier** en disant a quel besoin ca repond
+5. Quand c'est integre, le ticket se ferme et **tu recois un mail**
 
-**Enregistre en CSV**, pas en `.xlsx`. Excel proposera de changer de format à
-chaque sauvegarde : réponds **garder ce format**. Le CSV se relit ligne par
-ligne dans git, donc on voit exactement qui a changé quoi ; un `.xlsx` est un
-bloc binaire qu'on ne peut ni comparer ni fusionner à deux.
-
-Tu peux **ajouter des lignes**. Prends le numéro suivant, et remplis au moins
-**Titre**, **Ce qu'on attend** et **Priorité** — c'est de là que je pars.
+Le mode d'emploi complet : [docs/09-communiquer.md](../docs/09-communiquer.md).
 
 ## Où se pose quoi
 
 ```
 livraisons/
-  TICKETS.csv       ce qui manque, et ou on en est
   briefs/           les deroules de mission, les cadrages ecrits
   references/       les images de reference : decors, ambiances, lumiere
   modeles/          .glb, .obj, .fbx — personnages, vehicules, decors

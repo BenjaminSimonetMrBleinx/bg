@@ -1,0 +1,16 @@
+name: J'ai une idee
+description: Quelque chose qui rendrait le jeu meilleur
+title: "[Idee] "
+labels: ["idee"]
+body:
+  - type: textarea
+    id: idee
+    attributes:
+      label: Ton idee
+      description: En quelques lignes. Meme vague, meme pas sur — c'est le bon endroit.
+    validations: { required: true }
+  - type: textarea
+    id: pourquoi
+    attributes:
+      label: Pourquoi ce serait mieux ?
+      description: Ce que ca change pour celui qui joue.

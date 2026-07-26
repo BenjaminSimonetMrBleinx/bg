@@ -1,0 +1,31 @@
+name: J'ai trouve un bug
+description: Quelque chose ne marche pas, ou ne marche pas comme prevu
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "Merci. Trois questions, ca suffit — ne cherche pas a classer quoi que ce soit."
+  - type: textarea
+    id: faisait
+    attributes:
+      label: Qu'est-ce que tu faisais ?
+      placeholder: Je roulais vers le desert, je venais de parler a Jesse...
+    validations: { required: true }
+  - type: textarea
+    id: passe
+    attributes:
+      label: Qu'est-ce qui s'est passe ?
+      description: Et ce que tu attendais a la place, si tu le sais.
+    validations: { required: true }
+  - type: input
+    id: version
+    attributes:
+      label: Quelle version ?
+      description: Elle est affichee en haut a droite de l'ecran, en tout petit.
+      placeholder: v0.27.3
+  - type: textarea
+    id: image
+    attributes:
+      label: Une capture ?
+      description: Glisse-la ici. Facultatif, mais ca vaut souvent dix lignes.

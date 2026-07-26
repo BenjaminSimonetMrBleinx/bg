@@ -1,0 +1,33 @@
+name: Je propose une feature
+description: Une mission, un systeme, un morceau de jeu entier
+title: "[Feature] "
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Le brief de la mission 1 a produit quinze etapes et quatre decors en une
+        soiree. C'est le format. Ces quatre questions sont celles qui ont manque.
+  - type: textarea
+    id: sert
+    attributes:
+      label: Ca sert a quoi, pour le joueur ?
+    validations: { required: true }
+  - type: textarea
+    id: nouveau
+    attributes:
+      label: Qu'est-ce qu'on peut faire qu'on ne pouvait pas avant ?
+    validations: { required: true }
+  - type: textarea
+    id: fini
+    attributes:
+      label: A quoi on voit que c'est fini ?
+      description: >
+        LA question qui manque le plus souvent. Le brief de la mission 1 disait
+        « Cacher la Meth » et parlait de cacher l'argent : il a fallu deviner.
+    validations: { required: true }
+  - type: textarea
+    id: refs
+    attributes:
+      label: Des references ?
+      description: Images, sons, extraits. A deposer dans livraisons/references/.
