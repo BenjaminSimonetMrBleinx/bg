@@ -299,6 +299,12 @@ switch ($Commande) {
             Write-Host "`n$total Mo liberes. Tout est regenerable :" -ForegroundColor Green
             Write-Host "  .\bg.ps1 capture   pour les images" -ForegroundColor Gray
             Write-Host "  .\bg.ps1 exporter  pour l executable" -ForegroundColor Gray
+            # La palette de textures vit dans .tmp depuis qu elle est sortie du
+            # projet Godot. Elle disparait donc ici, et les generateurs Blender
+            # s arretent net tant qu on ne l a pas refaite - franchement, ils
+            # le disent. Autant l annoncer avant.
+            Write-Host "  .\bg.ps1 generer   AVANT de regenerer un modele :" -ForegroundColor Gray
+            Write-Host "                     la palette de textures partait avec." -ForegroundColor Gray
         }
     }
 

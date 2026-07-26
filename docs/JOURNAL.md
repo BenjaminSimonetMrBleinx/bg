@@ -816,3 +816,53 @@ sa tête, le revolver dans sa main — les points d'ancrage de la roue fonctionn
 ses segments, ses ancrages, sa taille — ne testait rien. Cinq suites le couvrent maintenant.
 
 Dix-huit suites.
+
+---
+
+## V20 — Ranger, brancher les sons, et deux pannes qui ne se voyaient pas d'ici
+
+**Voulu** : remettre Walter dans la scène, ranger un dépôt devenu confus, brancher les
+vingt-huit sons livrés par Guillaume.
+
+**Obtenu** : les trois, plus un numéro de version affiché en jeu, plus la nouvelle prise du
+dialogue de la cuisine. Dix-huit commits, `v0.10.0`.
+
+**Surprises** — cinq, et quatre concernent la même chose : *ce qui marche ici ne marche pas
+forcément là-bas.*
+
+1. **Walter n'était pas cassé, il ne se chargeait plus.** Godot extrait par défaut les
+   images d'un `.glb` dans un PNG posé à côté, et le `.import` se met à en dépendre. Un
+   commit précédent avait supprimé ce PNG en croyant nettoyer un doublon : le maillage ne
+   se charge plus, la scène se charge quand même, le jeu se lance sans un mot.
+   En creusant, mieux : les `.glb` **portent déjà leurs textures**, cuites par les
+   générateurs. Les 88 PNG posés à côté ne servaient à rien — retirés, le rendu à froid est
+   pixel pour pixel le même. L'extraction est coupée par défaut de projet.
+
+2. **Aucune boucle ne bouclait, depuis le début.** Godot lit « détecter depuis le WAV » et
+   nos fichiers n'ont pas de marqueur de boucle : les trois couches moteur repartaient de
+   zéro à chaque fin. Personne ne l'avait vu parce que **le test moteur ne durait pas plus
+   longtemps que le fichier**. La nouvelle suite dure plus que le plus court des flux, ce
+   qui est la seule façon de distinguer « il joue » de « il boucle ».
+
+3. **`bg.ps1` partait fonctionnel et arrivait cassé.** PowerShell 7 lit un `.ps1` en UTF-8
+   quoi qu'il arrive ; PowerShell 5.1 — celui de Windows, celui que lance `JOUER.bat` — le
+   lit en CP-1252 sans marque d'octets. Un tiret cadratin y devient trois caractères dont un
+   guillemet, qui ferme la chaîne et casse tout le fichier à partir de là. L'erreur pointait
+   une ligne jamais touchée. Le lanceur est repassé en ASCII, et `livrer.ps1` refuse
+   désormais d'envoyer un script qui ne s'exécuterait pas chez l'autre.
+
+4. **Un `git add -A` en plein rebase a ressuscité 28 sons**, dans leur version d'avant
+   conversion en PCM — exactement celles que Godot refuse. Le jeu marchait parfaitement
+   pendant ce temps, ce qui est tout le problème. Une vérification refuse maintenant qu'un
+   fichier traîne à la racine de `sons/`.
+
+5. **J'avais conclu que la nouvelle prise du dialogue était un montage des anciennes**, sur
+   la seule foi des durées. Benjamin a entendu que c'était faux. Leçon : une corrélation
+   circonstancielle ne vaut pas une écoute. La mesure qui a *ensuite* prouvé l'alignement
+   était d'une autre nature — deux cadences de parole distinctes et chacune constante, 13 à
+   16 caractères/seconde pour Skyler, 7 à 10 pour Walter. Un décalage d'une réplique aurait
+   mélangé les deux.
+
+**Ce qu'on emporte** : le dépôt a une règle unique — `game/` ne contient que ce que le jeu
+charge. Le son passe par une banque en données. Et trois garde-fous existent parce que les
+trois pannes correspondantes étaient invisibles depuis la machine qui les créait.
