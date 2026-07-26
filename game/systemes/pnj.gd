@@ -48,7 +48,34 @@ func _ready() -> void:
 	if geometrie == null:
 		push_error("pnj %s : aucune geometrie" % cle)
 		return
-	add_child(geometrie.instantiate())
+	var corps := geometrie.instantiate()
+	add_child(corps)
+	_respirer(corps)
+
+
+# Un personnage a squelette JOUE SA POSE DE REPOS.
+#
+# Sans ca il garde le clip que son fichier portait, et les modeles livres
+# arrivent en pose en T : Tuco attendait derriere son bureau les bras en
+# croix. Le clip de repos leur a ete recopie depuis Walter — meme squelette,
+# memes noms d'os — et il suffit de le lancer.
+#
+# On ne pilote rien d'autre : un PNJ de cette mission ne se deplace pas. Le
+# jour ou il le faudra, c'est Demarche qui prendra la suite.
+func _respirer(corps: Node) -> void:
+	var lecteur := corps.find_child("AnimationPlayer", true, false) as AnimationPlayer
+	if lecteur == null:
+		return
+	for candidat in [Demarche.IMMOBILE, Demarche.CYCLE]:
+		if lecteur.has_animation(candidat):
+			var anim := lecteur.get_animation(candidat)
+			anim.loop_mode = Animation.LOOP_LINEAR
+			lecteur.play(candidat)
+			# Chacun demarre a un endroit different de son cycle : trois
+			# hommes de main qui respirent a l'unisson se lisent comme un seul
+			# personnage copie trois fois, ce qu'ils sont.
+			lecteur.seek(randf() * anim.length, true)
+			return
 
 
 ## Le centre de la cible, en coordonnees du monde.

@@ -63,6 +63,9 @@ def arguments() -> argparse.Namespace:
     ap.add_argument("--dossier", default="game/assets/personnages")
     ap.add_argument("--marche", default="Walking",
                     help="le clip de marche livre, source de tout le reste")
+    ap.add_argument("--depuis", default="",
+                    help="copie les clips d'un AUTRE personnage au lieu de les "
+                         "fabriquer. Exige le meme squelette")
     ap.add_argument("--mesurer", action="store_true",
                     help="mesure et affiche, sans rien fabriquer ni ecrire")
     return ap.parse_args(argv)
@@ -794,6 +797,64 @@ def boucler(action) -> None:
 # --------------------------------------------------------------------------
 
 
+def _copier_les_clips(arm, source: Path, fichier: Path) -> None:
+    """Donne a ce personnage les animations d'un autre.
+
+    Ca ne marche que parce que les squelettes sont IDENTIQUES — memes os,
+    memes noms. Les courbes d'animation ne designent pas des os par un
+    identifiant mais par un chemin, `pose.bones["Hips"].rotation_quaternion` :
+    a noms egaux, elles s'appliquent telles quelles.
+
+    C'est le cas de Jesse et Tuco, rigges sur le meme squelette que Walter. Ils
+    arrivent avec un unique clip qui est une pose en T, ce qui donne des
+    personnages bras ecartes plantes derriere leur bureau. Leur recopier le
+    repos de Walter coute une commande ; leur fabriquer le leur reviendrait a
+    refaire le meme travail sur les memes os.
+    """
+    if not source.exists():
+        raise SystemExit("source introuvable : %s" % source)
+    avant = {x.name for x in bpy.data.actions}
+    bpy.ops.import_scene.gltf(filepath=str(source))
+    neuves = [x for x in bpy.data.actions if x.name not in avant]
+    if not neuves:
+        raise SystemExit("%s n'apporte aucune animation" % source.name)
+
+    # L'armature importee a servi de vehicule aux actions ; on la jette, les
+    # actions restent. Sans ca on exporte deux personnages superposes.
+    intrus = [o for o in bpy.data.objects
+              if o != arm and (o.type == "ARMATURE"
+                               or (o.parent is not None and o.parent != arm))]
+    for o in intrus:
+        bpy.data.objects.remove(o, do_unlink=True)
+
+    if arm.animation_data is None:
+        arm.animation_data_create()
+    arm.animation_data.action = None
+    gardees = []
+    for act in neuves:
+        # On ne reprend PAS le clip d'origine du fichier source s'il n'est
+        # qu'une pose : ce qui nous interesse, ce sont les clips fabriques.
+        if "baselayer" in act.name or "clip0" in act.name:
+            continue
+        act.use_fake_user = True
+        ranger(arm, act)
+        gardees.append(act.name)
+
+    print("")
+    print("  %-12s %s" % ("copies de", source.name))
+    print("  %-12s %s" % ("clips", ", ".join(gardees)))
+
+    bpy.ops.object.select_all(action="DESELECT")
+    arm.select_set(True)
+    for e in arm.children_recursive:
+        e.select_set(True)
+    bpy.ops.export_scene.gltf(
+        filepath=str(fichier), export_format="GLB", use_selection=True,
+        export_apply=False, export_yup=True, export_animations=True,
+        export_cameras=False, export_lights=False)
+    print("  %-12s %s" % ("sortie", fichier))
+
+
 def main() -> None:
     a = arguments()
     racine = Path.cwd()
@@ -805,6 +866,10 @@ def main() -> None:
     bpy.ops.import_scene.gltf(filepath=str(fichier))
     bpy.context.scene.render.fps = IPS
     arm = armature()
+
+    if a.depuis:
+        _copier_les_clips(arm, racine / a.depuis, fichier)
+        return
 
     livrees = [x.name for x in bpy.data.actions]
     print("")

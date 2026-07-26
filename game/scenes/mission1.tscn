@@ -13,7 +13,7 @@
 ; Le camping-car EXTERIEUR n'est pas ici : il existe deja dans le desert, pose
 ; par desert.gd a (877, -804). On lui ajoute seulement Jesse et sa porte.
 
-[gd_scene load_steps=12 format=3 uid="uid://bgmission1t001"]
+[gd_scene load_steps=13 format=3 uid="uid://bgmission1t001"]
 
 [ext_resource type="Script" path="res://systemes/pnj.gd" id="1_pnj"]
 [ext_resource type="Script" path="res://systemes/point.gd" id="2_point"]
@@ -25,6 +25,7 @@
 [ext_resource type="PackedScene" path="res://assets/personnages/passant_a.glb" id="8_passant_a"]
 [ext_resource type="PackedScene" path="res://assets/personnages/passant_b.glb" id="9_passant_b"]
 [ext_resource type="PackedScene" path="res://assets/personnages/passant_c.glb" id="10_passant_c"]
+[ext_resource type="PackedScene" path="res://assets/personnages/tuco.glb" id="11_tuco"]
 
 [sub_resource type="BoxShape3D" id="zone_qg"]
 size = Vector3(14, 4, 14)
@@ -296,7 +297,7 @@ shape = SubResource("mur_bureau_bout")
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -3.2)
 script = ExtResource("1_pnj")
 cle = "tuco"
-geometrie = ExtResource("9_passant_b")
+geometrie = ExtResource("11_tuco")
 
 ; Les trois hommes de main sont DERRIERE le joueur, au fond de la piece. C'est
 ; le placement du scenario, et il fait tout : on ne les voit pas, on sait

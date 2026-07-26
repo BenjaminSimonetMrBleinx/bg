@@ -16,6 +16,22 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.27.1 — Jesse et Tuco, les vrais
+
+> **À essayer : va parler à Jesse chez lui, puis regarde Tuco derrière son
+> bureau.** Ce sont les modèles de Guillaume, à la place des corps génériques.
+
+Ils partagent le squelette de Walter, donc **ses animations leur ont été
+recopiées** — ils respirent et se tiennent relâchés au lieu d''attendre bras en
+croix. C''est ce que faisait Tuco jusqu''ici : le seul clip de son fichier était
+une pose en T.
+
+**Corrigé au passage, et ça valait les deux heures** : l''outil qui normalise un
+modèle livré mesurait sa taille sur la boîte englobante du maillage, qui décrit
+la géométrie **avant** déformation par le squelette. Les deux modèles
+s''annonçaient à 2,70 m et ressortaient à 3,10 après une mise à l''échelle censée
+les ramener à 1,75. La taille se lit maintenant sur les os, comme les foulées.
+
 ## 0.27.0 — La première mission
 
 > **Le jeu a un début, un milieu et une fin.** Quinze étapes, quatre nouveaux

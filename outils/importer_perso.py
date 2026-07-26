@@ -68,15 +68,66 @@ def maillages() -> list:
 
 
 def boite(objets: list):
-    """Boite englobante, en coordonnees monde."""
+    """Boite englobante du maillage TEL QU'IL EST DEFORME par le squelette.
+
+    On evalue le depsgraph au lieu de lire bound_box. La difference n'est pas
+    un detail : bound_box decrit la geometrie AVANT modificateurs, donc avant
+    que l'armature ne la deforme. Sur un personnage dont le fichier livre pose
+    deja le squelette, les deux n'ont plus rien a voir — mesure faite, un
+    modele de 1,75 m s'annoncait a 2,70 puis ressortait a 3,10 apres une mise a
+    l'echelle censee le ramener a 1,75.
+
+    C'est le genre d'erreur qui ne se voit pas dans Blender et saute aux yeux
+    en jeu, sous la forme d'un personnage deux fois trop grand.
+    """
+    dg = bpy.context.evaluated_depsgraph_get()
     xs, ys, zs = [], [], []
     for o in objets:
-        for c in o.bound_box:
-            p = o.matrix_world @ Vector(c)
+        evalue = o.evaluated_get(dg)
+        maille = evalue.to_mesh()
+        for v in maille.vertices:
+            p = o.matrix_world @ v.co
             xs.append(p.x)
             ys.append(p.y)
             zs.append(p.z)
+        evalue.to_mesh_clear()
+    if not xs:
+        raise SystemExit("aucun sommet : le maillage est-il vide ?")
     return (min(xs), max(xs), min(ys), max(ys), min(zs), max(zs))
+
+
+def taille_au_squelette(arm) -> float:
+    """Hauteur du personnage, lue sur ses OS et pas sur son maillage.
+
+    C'est la mesure qui marche. Celle du maillage passe par le depsgraph et
+    depend de la facon dont le fichier livre attache sa peau a son squelette :
+    deux modeles rigges le meme jour, meme exportateur, s'annoncaient a 2,70 m
+    et refusaient de converger vers 1,75 quoi qu'on multiplie.
+
+    Les os, eux, sont dans un repere qu'on maitrise — c'est deja par eux que
+    animer_perso.py mesure les foulees et la hauteur des yeux. Du sol au sommet
+    du crane : le plus bas des deux pieds, le haut de la tete.
+    """
+    m = arm.matrix_world
+    hauts = [os for os in ("head_end", "HeadTop_End", "Head") if os in arm.pose.bones]
+    if not hauts or "LeftFoot" not in arm.pose.bones:
+        return 0.0
+    sommet = (m @ arm.pose.bones[hauts[0]].head).z
+    pieds = min((m @ arm.pose.bones[p].head).z
+                for p in ("LeftFoot", "RightFoot") if p in arm.pose.bones)
+    # L'os de la tete s'arrete au crane, pas aux cheveux, et le pied a la
+    # cheville. On ajoute ce qui manque en dessous et au-dessus, en proportion :
+    # une cheville est a 4 % de la taille, le sommet du crane 3 % au-dessus de
+    # l'os de tete le plus haut.
+    brut = sommet - pieds
+    return brut / 0.93 if brut > 0.0 else 0.0
+
+
+def sol_au_squelette(arm) -> float:
+    """Altitude de la cheville la plus basse, en monde."""
+    m = arm.matrix_world
+    return min((m @ arm.pose.bones[p].head).z
+               for p in ("LeftFoot", "RightFoot") if p in arm.pose.bones)
 
 
 def sens_du_regard(arm) -> str:
@@ -148,18 +199,38 @@ def main() -> None:
     # Tout se joue sur la racine — l'armature — et pas sur le maillage : c'est
     # elle qui porte le personnage, et lui appliquer la transformation emmene
     # les animations avec.
-    arm.scale = arm.scale * facteur
     if demi_tour:
         arm.rotation_euler.z += math.pi
     bpy.context.view_layer.update()
 
+    # ON MESURE, ON CORRIGE, ON REMESURE — jusqu'a tomber juste.
+    #
+    # Multiplier l'echelle par le rapport voulu SEMBLE suffire, et ca ne suffit
+    # pas toujours : selon la facon dont le fichier livre attache son maillage a
+    # son squelette, l'echelle de l'armature se propage une fois, deux fois, ou
+    # pas du tout. Deux modeles livres le meme jour, meme rig, meme exportateur,
+    # sortaient a 3,10 m pour 1,75 demandes — et rien dans Blender ne le disait.
+    #
+    # Trois tours suffisent quel que soit le mecanisme, parce qu'on ne raisonne
+    # plus sur la cause : on regarde le resultat.
+    for _ in range(8):
+        actuelle = taille_au_squelette(arm)
+        if actuelle < 1e-6 or abs(actuelle - a.hauteur) < 0.002:
+            break
+        arm.scale = arm.scale * (a.hauteur / actuelle)
+        bpy.context.view_layer.update()
+
     # Les pieds a zero, APRES mise a l'echelle : un decalage mesure avant ne
     # vaut plus rien une fois le modele redimensionne.
-    _, _, _, _, nz0, nz1 = boite(corps)
-    arm.location.z -= nz0
+    #
+    # Par les OS, comme la taille, et pour la meme raison. Le pied de l'os
+    # s'arrete a la cheville : on descend de ce qui reste dessous, quatre
+    # pour cent de la taille.
+    arm.location.z -= sol_au_squelette(arm) - a.hauteur * 0.04
     bpy.context.view_layer.update()
 
-    _, _, _, _, fz0, fz1 = boite(corps)
+    fz0 = sol_au_squelette(arm) - a.hauteur * 0.04
+    fz1 = fz0 + taille_au_squelette(arm)
     faces = sum(len(o.data.polygons) for o in corps)
 
     sortie = Path(a.sortie)
