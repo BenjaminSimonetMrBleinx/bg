@@ -55,6 +55,10 @@ var _roue: Roue
 var _telephone: Telephone
 var _passages: Array[Passage] = []
 var _desert: Node3D
+
+## Le passage dont il faut d'abord sortir avant qu'un franchissement redevienne
+## possible. Voir _gerer_les_passages : on atterrit sur la fleche du retour.
+var _sortie_attendue: Passage = null
 var _maisons: Array[Maison] = []
 
 ## Le bandeau de refus, et son compte a rebours. On ne le laisse pas colle a
@@ -226,6 +230,19 @@ func _gerer_les_passages() -> bool:
 	var au_volant := _etat == Etat.AU_VOLANT
 	var corps: Node3D = _v if au_volant else _j
 
+	# On arrive TOUJOURS dans une zone, ou juste a cote : la fleche du retour
+	# est posee sur le point d'arrivee, sinon on ne saurait pas qu'on peut
+	# repartir. Sans ce verrou, le passage se redeclenche a l'image suivante et
+	# renvoie d'ou l'on vient — puis recommence, indefiniment.
+	#
+	# Un simple delai n'aurait pas suffi : a l'arret sur la fleche, il expire
+	# et on repart. Il faut EN SORTIR, ce qui est aussi la regle qu'un joueur
+	# comprend sans qu'on la lui dise.
+	if _sortie_attendue != null:
+		if _sortie_attendue.contient(corps):
+			return false
+		_sortie_attendue = null
+
 	for p in _passages:
 		if not p.contient(corps):
 			continue
@@ -264,6 +281,16 @@ func _franchir(p: Passage, au_volant: bool) -> void:
 
 	_c.recaler()
 	await get_tree().physics_frame
+
+	# La zone d'arrivee est celle dont il faudra sortir. On la cherche APRES le
+	# deplacement : c'est seulement la qu'on sait ou l'on a atterri, et c'est
+	# souvent le passage du retour, pose expres sur le point d'arrivee.
+	_sortie_attendue = null
+	for autre in _passages:
+		if autre.contient(_v if au_volant else _j):
+			_sortie_attendue = autre
+			break
+
 	await _noircir(0.0)
 	_transition = false
 
@@ -300,6 +327,7 @@ func _gerer_le_telephone() -> bool:
 			if _dialogue != null and _dialogue.actif():
 				_dialogue.couper()
 			_telephone.ranger()
+			_j.relacher_la_pose()
 			_j.bloque = false
 			return true
 		# En ligne, la touche d'interaction fait avancer la conversation.
@@ -314,6 +342,9 @@ func _gerer_le_telephone() -> bool:
 			and not (_roue != null and _roue.ouverte())
 	if libre and Input.is_action_just_pressed("telephone"):
 		_telephone.sortir()
+		# Walter porte le combine a l'oreille. La pose ne decrit que le bras
+		# droit et le torse : s'il marchait, ses jambes continuent.
+		_j.poser("telephoner")
 		_j.bloque = true
 		return true
 	return false
@@ -329,6 +360,7 @@ func _sur_appel(cle: String) -> void:
 		push_warning("telephone : aucune conversation pour '%s'. "
 				% cle + "Ajouter une fiche dans donnees/dialogues.json")
 		_telephone.ranger()
+		_j.relacher_la_pose()
 		_j.bloque = false
 
 
@@ -339,6 +371,7 @@ func _sur_appel(cle: String) -> void:
 func _sur_fin_de_dialogue() -> void:
 	if _telephone != null and _telephone.sorti():
 		_telephone.ranger()
+		_j.relacher_la_pose()
 	_j.bloque = false
 
 
@@ -553,3 +586,4 @@ func dedans() -> bool:
 func _afficher(texte: String) -> void:
 	if _invite != null:
 		_invite.text = texte
+		var casse := 1

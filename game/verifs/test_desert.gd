@@ -124,6 +124,32 @@ func _scenario() -> void:
 			"elle n'est pas passee sous le terrain (y = %.2f)"
 					% _vehicule.global_position.y)
 
+	# LE RETOUR, et c'est le controle qui manquait.
+	#
+	# On arrive toujours sur ou pres d'une fleche — sinon on ne saurait pas
+	# qu'on peut repartir. La zone d'arrivee se redeclenchait donc a l'image
+	# suivante et renvoyait d'ou l'on venait, puis recommencait. Le test
+	# precedent s'arretait juste avant, et passait au vert.
+	print("\n--- on repart, et on RESTE en ville ---")
+	var retour := _desert.get_node("RetourVille") as Passage
+	_vehicule.global_position = retour.global_position + Vector3.DOWN * 0.5
+	_vehicule.linear_velocity = Vector3.ZERO
+	garde = 0
+	while _vehicule.global_position.distance_to(retour.destination) > 30.0 \
+			and garde < 260:
+		await process_frame
+		garde += 1
+	_verifier(garde < 260, "la voiture est revenue en ville (%d images)" % garde)
+
+	# On laisse tourner largement de quoi qu'un rebond se produise.
+	var ou_ville := _vehicule.global_position
+	await _attendre(90)
+	_verifier(_vehicule.global_position.distance_to(arrivee) > 200.0,
+			"elle n'est pas repartie toute seule au desert")
+	print("       voiture en %s, soit %.0f m du point de retour"
+			% [_vehicule.global_position,
+			   _vehicule.global_position.distance_to(ou_ville)])
+
 	print("")
 	if _erreurs.is_empty():
 		print("TEST DESERT OK")

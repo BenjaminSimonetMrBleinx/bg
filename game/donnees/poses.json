@@ -1,0 +1,86 @@
+{
+ "_lisez_moi": [
+  "Les poses du personnage. Une pose = des rotations cibles par segment.",
+  "",
+  "Ce fichier existe pour une raison precise : la marche est PARAMETRIQUE — sa",
+  "phase avance avec la distance parcourue, et aucune image cle ne la decrit.",
+  "C'est ce qui la rend juste a toutes les vitesses. Mais tout le reste — sortir",
+  "un objet, tendre la main, ouvrir un coffre — n'est pas parametrique : ce sont",
+  "des gestes, et un geste se decrit par ou vont les membres.",
+  "",
+  "Sans ce fichier, chaque geste serait dix lignes de code de plus dans",
+  "silhouette.gd. Le dixieme rendrait le fichier illisible, et personne ne",
+  "pourrait plus regler un bras sans ouvrir Godot.",
+  "",
+  "FORMAT. Chaque segment porte trois angles en DEGRES : x, y, z.",
+  "  x  plier vers l'avant (le sens de la marche)",
+  "  y  pivoter",
+  "  z  ecarter sur le cote",
+  "",
+  "Un segment ABSENT de la pose continue de marcher normalement. C'est ce qui",
+  "permet de degainer en marchant sans ecrire une pose de marche : on ne decrit",
+  "que le bras, les jambes continuent leur cycle.",
+  "",
+  "'duree' est le temps de fondu vers la pose, en secondes. Un geste instantane",
+  "se lit comme un saut d'image ; au-dela d'une demi-seconde, on attend.",
+  "",
+  "'bassin' descend ou monte le bassin, en metres. Pour s'accroupir."
+ ],
+
+ "poses": {
+  "degainer": {
+   "_note": "Le bras droit se leve devant soi, coude a demi plie.",
+   "duree": 0.22,
+   "segments": {
+    "BrasD": [-74, 0, 8],
+    "AvantBrasD": [-32, 0, 0],
+    "Torse": [0, -14, 0]
+   }
+  },
+
+  "tendre": {
+   "_note": "Tendre quelque chose a quelqu'un. Bras droit en avant, ouvert.",
+   "duree": 0.3,
+   "segments": {
+    "BrasD": [-58, 0, 14],
+    "AvantBrasD": [-18, 0, 0]
+   }
+  },
+
+  "telephoner": {
+   "_note": "Le combine a l'oreille. Le bras se replie tres haut.",
+   "duree": 0.28,
+   "segments": {
+    "BrasD": [-42, 0, 34],
+    "AvantBrasD": [-108, 0, 0],
+    "Torse": [0, -8, 0]
+   }
+  },
+
+  "accroupi": {
+   "_note": "Ouvrir un coffre, ramasser. Les jambes plient, le torse s'incline.",
+   "duree": 0.35,
+   "bassin": -0.34,
+   "segments": {
+    "CuisseG": [56, 0, 0],
+    "CuisseD": [56, 0, 0],
+    "TibiaG": [-96, 0, 0],
+    "TibiaD": [-96, 0, 0],
+    "Torse": [22, 0, 0],
+    "BrasG": [-24, 0, 0],
+    "BrasD": [-24, 0, 0]
+   }
+  },
+
+  "mains_en_l_air": {
+   "_note": "Se rendre. Les deux bras au-dessus de la tete.",
+   "duree": 0.4,
+   "segments": {
+    "BrasG": [-162, 0, -12],
+    "BrasD": [-162, 0, 12],
+    "AvantBrasG": [-18, 0, 0],
+    "AvantBrasD": [-18, 0, 0]
+   }
+  }
+ }
+}

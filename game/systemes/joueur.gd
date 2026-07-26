@@ -50,6 +50,26 @@ func raison_refus() -> String:
 	return _refus
 
 
+## Prend une pose declaree dans donnees/poses.json — telephoner, degainer,
+## s'accroupir. Elle se melange par-dessus la marche : les segments qu'elle ne
+## nomme pas continuent leur cycle, donc on peut marcher en telephonant.
+func poser(nom: String) -> void:
+	if _silhouette != null:
+		_silhouette.poser(nom)
+
+
+func relacher_la_pose() -> void:
+	if _silhouette != null:
+		_silhouette.relacher()
+
+
+## La pose en cours, pour les tests. Le poids d'un fondu n'est visible nulle
+## part ailleurs, et une pose qui ne se declenche pas ressemble exactement a
+## une pose qui n'existe pas.
+func pose() -> String:
+	return _silhouette.pose() if _silhouette != null else ""
+
+
 # Un pas est joue DEPUIS LES PIEDS, pas depuis le centre du personnage : a la
 # troisieme personne la camera est derriere et au-dessus, et un son emis a
 # hauteur de poitrine s'entend trop pres.

@@ -97,9 +97,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 156)
 collision_layer = 0
 collision_mask = 7
 script = ExtResource("24_passage")
-destination = Vector3(7, 0.4, -112)
+destination = Vector3(7, 0.4, -104)
 cap_degres = 0.0
-exige_vehicule = false
+exige_vehicule = true
 
 [node name="Forme" type="CollisionShape3D" parent="Rendu/Scene3D/Desert/RetourVille"]
 shape = SubResource("passage_forme")
@@ -114,7 +114,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, -112)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4)
 
 [node name="Panneau" parent="Rendu/Scene3D/VersDesert" instance=ExtResource("28_panneau")]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 6.5, 0, -2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.4, 0, -2)
 
 [node name="Zone" type="Area3D" parent="Rendu/Scene3D/VersDesert"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -4)

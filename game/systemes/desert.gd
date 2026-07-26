@@ -60,8 +60,14 @@ func _ready() -> void:
 	# La fleche du retour, posee sur la piste derriere le point d'arrivee. Elle
 	# est le seul indice qu'on peut repartir : sans elle, la zone est un
 	# cul-de-sac et on cherche la sortie.
-	_poser("fleche_sol", ARRIVEE + Vector3(0.0, -0.4, 6.0), 0.0)
-	_poser("panneau_desert", ARRIVEE + Vector3(6.5, -0.4, 8.0), 180.0)
+	# La fleche du retour pointe vers la ville, donc vers +Z : un demi-tour par
+	# rapport a celle de l'aller. Elle est le seul indice qu'on peut repartir —
+	# sans elle, la zone est un cul-de-sac et on cherche la sortie.
+	_poser("fleche_sol", ARRIVEE + Vector3(0.0, -0.4, 6.0), 180.0)
+	# Le panneau se pose A COTE de la piste, pas dessus : la piste fait douze
+	# metres de large, un panneau plante a six metres de son axe est encore
+	# dedans, et on le prend en roulant.
+	_poser("panneau_desert", ARRIVEE + Vector3(10.5, -0.4, 9.0), 0.0)
 
 
 # Meme dispositif que pour la ville : les collisions sont fabriquees a la

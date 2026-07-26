@@ -198,10 +198,19 @@ def panneau_desert(mats) -> int:
     total = p.finir()
 
     s = Maillage("Plaque", mats["panneau_desert"])
-    for sens in (-1.0, 1.0):
-        s.face([(-0.86, sens * 0.035, 1.90), (0.86, sens * 0.035, 1.90),
-                (0.86, sens * 0.035, 2.62), (-0.86, sens * 0.035, 2.62)][::int(sens)],
-               [(0, 0), (1, 0), (1, 1), (0, 1)])
+    # La face arriere n'est PAS la face avant retournee.
+    #
+    # Le panneau stop s'en accommodait — un aplat rouge barre de blanc est
+    # symetrique. Celui-ci porte du texte : inverser l'ordre des sommets sans
+    # inverser celui des UV ecrivait TRESED de l'autre cote. On decrit donc les
+    # deux faces separement, chacune avec ses coordonnees.
+    y = 0.035
+    s.face([(-0.86, -y, 1.90), (0.86, -y, 1.90),
+            (0.86, -y, 2.62), (-0.86, -y, 2.62)],
+           [(0, 0), (1, 0), (1, 1), (0, 1)])
+    s.face([(0.86, y, 1.90), (-0.86, y, 1.90),
+            (-0.86, y, 2.62), (0.86, y, 2.62)],
+           [(0, 0), (1, 0), (1, 1), (0, 1)])
     return total + s.finir()
 
 
@@ -213,8 +222,13 @@ def fleche_sol(mats) -> int:
     fleche clignote quand la camera bouge."""
     m = Maillage("Fleche", mats["fleche_orange"])
     z = 0.02
+    # La pointe est en HAUT de la texture, donc du cote v = 1. On la place
+    # explicitement vers -Y de Blender, qui devient -Z dans Godot : la fleche
+    # pointe alors dans le sens ou regarde un objet non tourne, comme tout le
+    # reste du projet. Sans ce reperage ecrit, l'orientation se decide par
+    # essais successifs et se reperd au premier remaniement.
     m.face([(-1.6, 2.4, z), (1.6, 2.4, z), (1.6, -2.4, z), (-1.6, -2.4, z)],
-           [(0, 0), (1, 0), (1, 1), (0, 1)])
+           [(0, 1), (1, 1), (1, 0), (0, 0)])
     return m.finir()
 
 
