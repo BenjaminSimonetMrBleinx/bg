@@ -19,6 +19,8 @@
  "banque": {
   "roue_ouvre": ["interface/open_menu_item.wav"],
   "roue_ferme": ["interface/close_menu_item.wav"],
+  "roue_maintien": ["interface/menu_item_hold.wav"],
+  "roue_temps": ["interface/stop_time.wav"],
   "roue_cran": [
    "interface/select_item01.wav",
    "interface/select_item02.wav",
@@ -107,14 +109,20 @@
   "reglages le jour ou celui-ci ne convient plus."
  ],
 
- "_non_branches": [
-  "Il ne reste que deux fichiers muets, et pour la meme raison : ce sont des",
-  "NAPPES, pas des bruitages. Une nappe demarre et s'arrete avec ce qu'elle",
-  "accompagne, ce que bruit() ne sait pas faire — il joue et oublie.",
+ "_nappes": [
+  "Deux mecanismes distincts vivent dans cette banque, et il faut les appeler",
+  "differemment.",
   "",
-  "interface/menu_item_hold.wav  — le maintien pendant que la roue est ouverte.",
-  "interface/stop_time.wav       — le ralenti a son ouverture.",
+  "Un BRUITAGE se joue et s'oublie : audio.bruit(nom). Un claquement de",
+  "portiere n'a pas de fin a decider.",
   "",
-  "A faire quand on saura si ca porte le geste ou si ca l'alourdit."
+  "Une NAPPE dure tant qu'on ne l'arrete pas : audio.nappe(nom), puis",
+  "audio.couper_nappe(nom). Elle se tient par son nom, boucle, et entre et",
+  "sort en fondu — une coupure nette sur un son tenu s'entend comme un declic.",
+  "",
+  "Les nappes du jeu :",
+  "  roue_maintien   tenue tant que la roue des outils est ouverte",
+  "",
+  "Tous les fichiers livres sont maintenant branches."
  ]
 }

@@ -407,8 +407,17 @@ les caracteres accentues, puis relance.
 #
 # On ne bloque pas : un envoi de docs ou d outils n a aucune raison de bumper.
 # On demande, une fois, au moment ou l on peut encore le faire.
+# Le CODE et les DONNEES, pas les assets.
+#
+# Deposer des sons ou un modele ne change pas ce qu'un testeur peut essayer :
+# ca habille ce qui existe deja. Reclamer un numero de version et une note a
+# celui qui livre des bruitages, c'est lui demander de raconter un lot dont il
+# ne connait pas le contenu — et l'agacer a chaque envoi.
+#
+# Guillaume ne verra donc jamais ce rappel. C'est voulu : bumper et ecrire la
+# note reviennent a celui qui a change le comportement du jeu.
 $touche_jeu = @($fichiers | Where-Object {
-    $_.Fichier -match '^game/(systemes|scenes|rendu|donnees|assets)/' -or
+    $_.Fichier -match '^game/(systemes|scenes|rendu|donnees)/' -or
     $_.Fichier -eq 'game/project.godot'
 })
 if ($touche_jeu.Count -gt 0) {
@@ -423,6 +432,29 @@ if ($touche_jeu.Count -gt 0) {
     $texte = (& git show 'origin/main:game/project.godot' 2>$null) -join "`n"
     $ErrorActionPreference = $ancien
     if ($texte -match 'config/version="(.+)"') { $ancienne = $Matches[1] }
+
+    # Un numero qui bouge sans note de version ne sert a personne.
+    #
+    # Celui qui recupere la version veut savoir CE QU IL PEUT ESSAYER, et quel
+    # bug genant a disparu. Sans cette note il relance le jeu et cherche la
+    # difference — ou, plus souvent, ne cherche pas et ne la trouve jamais.
+    if ($version -and $ancienne -and $version -ne $ancienne) {
+        $notes = Get-Content 'docs/10-versions.md' -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+        if ($notes -notmatch [regex]::Escape("## $version")) {
+            Souci "La version passe en $version, mais docs/10-versions.md n en parle pas."
+            Info  "Une entree dit deux choses : ce qu on peut essayer, et le bug"
+            Info  "genant qui a disparu. Les ajustements internes n y sont pas."
+            if (-not $Oui -and -not $Quoi) {
+                $r = Read-Host "`n  Envoyer sans note de version ? [o/N]"
+                if ($r -notmatch '^[oOyY]') {
+                    Write-Host "`n  Annule. Ecris la note, puis relance.`n" -ForegroundColor Yellow
+                    exit 0
+                }
+            }
+        } else {
+            Bien "Note de version presente pour $version"
+        }
+    }
 
     if ($version -and $ancienne -and $version -eq $ancienne) {
         Souci "Le jeu a change ($($touche_jeu.Count) fichier(s)) mais la version reste $version."

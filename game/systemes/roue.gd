@@ -56,7 +56,14 @@ func ouvrir() -> void:
 	# vides : la selection doit toujours commencer quelque part de sense.
 	_selection = _eq.actif() if _eq.actif() >= 0 else 0
 	Engine.time_scale = reglages.roue_ralenti
+	# Trois couches, et chacune fait un travail different :
+	#   roue_ouvre    le declic mecanique de l'ouverture
+	#   roue_temps    le monde qui ralentit, joue par-dessus
+	#   roue_maintien la tenue, qui dure aussi longtemps que la roue
 	_sonner("roue_ouvre")
+	_sonner("roue_temps")
+	if _son() != null:
+		_son().nappe("roue_maintien")
 
 
 func fermer(valider: bool) -> void:
@@ -65,6 +72,8 @@ func fermer(valider: bool) -> void:
 	_ouverte = false
 	Engine.time_scale = 1.0
 	_sonner("roue_ferme")
+	if _son() != null:
+		_son().couper_nappe("roue_maintien")
 	if valider:
 		_eq.equiper(_selection)
 		choisi.emit(_selection)

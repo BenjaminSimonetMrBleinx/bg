@@ -53,6 +53,11 @@ var _derniere: Dictionary = {}
 ## par nom, sinon un son manquant dans une boucle noie la console.
 var _inconnus: Dictionary = {}
 
+## Les nappes en cours, par nom. Un son tenu doit pouvoir etre retrouve pour
+## etre coupe — c'est toute la difference avec un bruitage, qu'on lance et
+## qu'on oublie.
+var _nappes: Dictionary = {}
+
 
 func _ready() -> void:
 	if reglages == null:
@@ -265,6 +270,58 @@ func bruit_ici(nom: String, position: Vector3, hauteur: float = 1.0) -> void:
 	p.global_position = position
 	p.finished.connect(p.queue_free)
 	p.play()
+
+
+## Demarre une NAPPE : un son qui dure tant qu'on ne l'arrete pas.
+##
+## bruit() joue et oublie, ce qui convient a un claquement de portiere et pas
+## du tout a un bourdonnement qui accompagne un menu ouvert. Une nappe se tient
+## par son nom, et se coupe par le meme nom.
+##
+## Redemander une nappe deja en cours ne la relance pas : sans ce garde, un
+## appel a chaque image la ferait repartir du debut soixante fois par seconde,
+## ce qui produit un grattement et pas un son.
+func nappe(nom: String, fondu: float = 0.12) -> void:
+	if _nappes.has(nom):
+		return
+	var flux := _tirer(nom)
+	if flux == null:
+		return
+	# La boucle se marque sur le flux, pas sur le lecteur : une nappe qui
+	# repart du debut a chaque fin s'entend. Voir le meme piege sur les couches
+	# moteur, ou aucune boucle ne bouclait pendant des semaines.
+	if flux is AudioStreamWAV:
+		(flux as AudioStreamWAV).loop_mode = AudioStreamWAV.LOOP_FORWARD
+	elif flux is AudioStreamOggVorbis:
+		(flux as AudioStreamOggVorbis).loop = true
+
+	var p := AudioStreamPlayer.new()
+	p.stream = flux
+	p.bus = BUS_INTERFACE
+	p.volume_db = -40.0
+	add_child(p)
+	p.play()
+	_nappes[nom] = p
+	var t := create_tween()
+	t.tween_property(p, "volume_db", 0.0, maxf(0.01, fondu))
+
+
+## Arrete une nappe, en fondu. Sans fondu, une coupure nette sur un son tenu
+## s'entend comme un declic — c'est le meme probleme qu'a l'ouverture.
+func couper_nappe(nom: String, fondu: float = 0.2) -> void:
+	if not _nappes.has(nom):
+		return
+	var p: AudioStreamPlayer = _nappes[nom]
+	_nappes.erase(nom)
+	var t := create_tween()
+	t.tween_property(p, "volume_db", -40.0, maxf(0.01, fondu))
+	t.tween_callback(p.queue_free)
+
+
+## Une nappe tourne-t-elle ? Pour les tests : un son tenu ne se distingue pas
+## d'un son absent sur une capture.
+func nappe_en_cours(nom: String) -> bool:
+	return _nappes.has(nom)
 
 
 ## Le son existe-t-il ? Sert aux systemes qui composent un nom — « objet_%s »

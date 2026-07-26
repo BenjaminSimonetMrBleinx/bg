@@ -1,69 +1,108 @@
-# Les versions
+# Notes de version
 
-Le numéro affiché en haut à droite de l'écran, et ce qu'il contient.
+**Ce fichier s'adresse à celui qui va tester**, pas à celui qui a codé.
 
-`MAJEUR.MINEUR.CORRECTIF`. **MAJEUR** passera à 1 le jour où le jeu se tient de bout en
-bout — on n'y est pas. **MINEUR** à chaque lot livré. **CORRECTIF** pour ce qui répare sans
-rien ajouter.
+Une entrée dit deux choses, et rien d'autre :
 
-Le numéro vit dans `game/project.godot`, et nulle part ailleurs. `livrer.ps1` réclame de le
-bouger dès que le jeu a changé.
+- **ce qu'on peut essayer** qui n'existait pas avant, et comment y accéder
+- **les bugs qui gênaient vraiment** et qui sont réparés
+
+Les ajustements internes, les remaniements, les corrections de tests n'y sont pas.
+Le détail technique vit dans les messages de commit et dans [JOURNAL.md](JOURNAL.md).
+
+Le numéro s'affiche en haut à droite de l'écran. `MAJEUR.MINEUR.CORRECTIF` : **MAJEUR**
+passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque lot livré,
+**CORRECTIF** pour ce qui répare sans rien ajouter.
 
 ---
 
-## 0.16.0
+## 0.19.0 — La roue des outils s'entend
 
-**Le cycle du jour et de la nuit.** Une heure continue, de 0 à 24, qui pilote ensemble le
-ciel, la brume, le soleil, les lampadaires et les fenêtres allumées. L'aube et le
-crépuscule sont des positions intermédiaires, pas des cas particuliers.
+> **À essayer : ouvre la roue (`Tab` maintenu) et écoute.** Trois couches se superposent
+> maintenant — le déclic de l'ouverture, le monde qui ralentit, et une tenue qui dure aussi
+> longtemps que la roue reste ouverte. Elle s'arrête en fondu quand tu relâches.
+>
+> **Dis si ça porte le geste ou si ça l'alourdit.** C'est exactement la question, et elle
+> ne se tranche qu'à l'oreille.
 
-Le verrou était que **l'état des fenêtres était peint dans la couleur des façades** : une
-texture de jour, une de nuit, choisies à la génération. Elles vivent maintenant dans un
-masque d'émission séparé, et les mêmes assets servent à toute heure.
+**Tous les sons livrés par Guillaume sont désormais branchés.** Il n'en reste aucun de côté.
 
-`temps_vitesse` est à **zéro par défaut** : un cycle qui tourne pendant qu'on règle un
-curseur rend le réglage impossible à juger. On le met en marche pour voir, pas pour
-travailler.
+## 0.18.0 — Le son marchait à moitié
 
-**Les scénarios de capture.** `.\bg.ps1 capture -Scenario tous` rend une planche de douze
-vues du jeu, déclarées en données. C'est la boucle de contrôle visuel : la plupart des
-défauts trouvés ici ne se voient sur aucun test.
+> **À essayer : rentre dans un mur en voiture.** Ça fait du bruit, et la tôle ne sonne pas
+> pareil selon la violence. Marche aussi : frotter un trottoir, taper une benne.
+>
+> **Et écoute tes pas.** Quinze variantes dehors, elles ne se répètent plus.
 
-**Le téléphone**, le **désert**, et un **système de poses** en données pour les gestes.
+**Le bug important.** Le véhicule, le joueur, la roue des outils et le téléphone ne
+trouvaient pas le système audio et **restaient muets pour toute la partie**. Les portes et
+les portières sonnaient quand même, ce qui rendait la panne difficile à voir : le son
+marchait *un peu*.
 
-**Réparé** : `.tmp/` était suivi par git ; un dépôt bloqué au milieu d'une fusion ne pouvait
-plus rien récupérer ; un script qui ne compile pas se dégradait en nœud nu sans que rien ne
-le signale.
-## 0.10.0
+Concrètement, tout ceci était silencieux et ne l'est plus : les pas, les crans de la roue,
+les objets qu'on équipe, la sonnerie du téléphone, le klaxon, et les chocs.
 
-**La nouvelle prise du dialogue de la cuisine.** Les dix répliques de la scène avec Skyler
-jouaient encore l'ancien enregistrement.
+**Ce qui reste muet, et c'est voulu** : deux sons d'interface qui demandent un mécanisme
+différent (une nappe qui dure tant que la roue est ouverte).
 
-**`-Grouper`.** Le découpage par silences rend toujours plus de segments que de répliques —
-un comédien respire, et le monologue final s'est trouvé coupé en six. Le regroupement se
-déclare maintenant à l'assignation au lieu de se recoller à la main dans un éditeur audio.
+## 0.17.0 — Les chocs
 
-**Réparé** : `bg.ps1` partait fonctionnel et arrivait cassé, faute de marque d'octets ;
-28 sons étaient revenus en double à la racine, dans leur version d'avant conversion ;
-l'archive des prises écrasait la précédente au lieu de la conserver.
+> **À essayer : tape quelque chose en voiture.** Un frottement et un impact violent ne
+> jouent pas le même son.
 
-## 0.9.0
+## 0.16.0 — Le jour et la nuit
 
-**Les sons de Guillaume, branchés.** Vingt-quatre sur vingt-huit : la roue, les objets
-équipés, les portes, les portières, le klaxon, les pas, le roulement et le crissement des
-pneus. Tout passe par `game/donnees/sons.json` — changer un son est une ligne de données.
+> **À essayer :** ouvre `game/systemes/reglages.tres` dans Godot et mets **`temps_vitesse`
+> à `0.05`**. Une journée complète passe en huit minutes : le soleil se lève, tourne,
+> rougit et se couche ; les lampadaires s'allument au crépuscule ; les fenêtres des
+> immeubles s'allument une à une.
 
-**Le rangement du dépôt.** Une règle : `game/` ne contient que ce que le jeu charge. Le
-dossier de dépôt devient `livraisons/`, les tests Godot deviennent `game/verifs/`.
+Avant, le moment était figé à la génération et changer d'heure demandait de refabriquer
+toute la ville.
 
-**La version, affichée.**
+Par défaut le temps est **arrêté** — un cycle qui tourne pendant qu'on règle autre chose
+rend tout réglage impossible à juger.
 
-**Trouvé au passage** : aucune boucle ne bouclait, depuis le début. Godot lit « détecter
-depuis le WAV » par défaut et nos fichiers n'ont pas de marqueur — les trois couches moteur
-repartaient de zéro à chaque fin.
+## 0.15.0 — Le désert, réparé
+
+> **À essayer :** la flèche orange au bout de la route ouest. En voiture, elle emmène au
+> désert ; à pied, un bandeau explique pourquoi ça ne marche pas.
+
+**Bugs corrigés** : la flèche pointait vers la ville, le panneau était planté sur la
+chaussée, DESERT s'écrivait à l'envers vu de dos, on pouvait repartir à pied, et surtout
+**revenir en ville renvoyait aussitôt au désert**, en boucle.
+
+## 0.14.0 — Voir le jeu sans y jouer
+
+> **Pour Benjamin :** `.\bg.ps1 capture -Scenario tous` rend une douzaine de vues du jeu
+> dans `.tmp\captures\`. Utile pour vérifier ce qui a changé sans lancer une partie.
+
+## 0.13.0 — Le désert
+
+> **À essayer :** rouler jusqu'au bout de la route ouest et franchir la flèche. Le
+> camping-car est là-bas.
+>
+> **Et le téléphone** : touche `T`, `Appeler`, choisis Jesse ou Skyler. Walter porte le
+> combiné à l'oreille.
+
+## 0.11.0 — Le téléphone
+
+> **À essayer :** `T` ouvre le SGH-127. Aucune voix pour l'instant, c'est normal.
+
+## 0.10.0 — La scène de la cuisine, nouvelle prise
+
+> **À essayer :** entre chez Skyler et parle-lui. Les dix répliques ont été réenregistrées.
+
+## 0.9.0 — Les sons de Guillaume, branchés
+
+> **À essayer :** la roue des outils (`Tab`), les portes des maisons, monter et descendre
+> de voiture, le klaxon (`H`). Tout ça fait du bruit maintenant.
+
+**Bug corrigé** : aucune boucle sonore ne bouclait — les trois couches du moteur repartaient
+de zéro toutes les cinq secondes.
 
 ## Avant
 
-Le premier jalon, sans numéro de version : la ville, la conduite, marcher, les maisons et
-leurs habitants, les dialogues doublés, la roue des outils, la visée à la souris, les
-passants, le modèle sculpté de Walter. Le détail est dans [JOURNAL.md](JOURNAL.md).
+Le premier jalon, sans numéro : la ville, la conduite, marcher, les maisons et leurs
+habitants, les dialogues doublés, la roue des outils, la visée à la souris, les passants,
+le modèle sculpté de Walter. Le détail est dans [JOURNAL.md](JOURNAL.md).

@@ -111,6 +111,21 @@ func _la_banque() -> void:
 	for cle in ["livre", "chapeau", "meth"]:
 		_verifier(_audio.connait("objet_%s" % cle), "'objet_%s'" % cle)
 
+	print("\n--- les nappes durent, et s'arretent ---")
+	# Une nappe ne se distingue d'un bruitage que par sa FIN : les deux
+	# demarrent pareil. Ce qui compte est donc qu'elle tienne, qu'un second
+	# appel ne la relance pas, et qu'on sache l'arreter.
+	_verifier(_audio.connait("roue_maintien"), "'roue_maintien'")
+	_verifier(not _audio.nappe_en_cours("roue_maintien"), "rien ne tourne au depart")
+	_audio.nappe("roue_maintien")
+	_verifier(_audio.nappe_en_cours("roue_maintien"), "elle demarre")
+	var n_avant := _lecteurs_de(_audio).size()
+	_audio.nappe("roue_maintien")
+	_verifier(_lecteurs_de(_audio).size() == n_avant,
+			"la redemander ne cree pas un second lecteur")
+	_audio.couper_nappe("roue_maintien", 0.01)
+	_verifier(not _audio.nappe_en_cours("roue_maintien"), "et elle s'arrete")
+
 
 # On demande un son, et on regarde s'il apparait un lecteur qui joue. Verifier
 # que la banque contient le fichier ne prouverait rien : la premiere version
