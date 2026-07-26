@@ -1,0 +1,126 @@
+Déroulé de la première mission du jeu:
+Grandes étapes
+1)	Parler à Jesse
+2)	Prendre la voiture de Walt
+3)	Se rendre au Camping-car lab dans le désert
+4)	Récupérer la meth dans le camping-car
+5)	Se rendre au QG de Salamanca
+6)	Vendre la meth à Salamanca
+7)	S’enfuir en utilisant la fausse meth
+8)	Rentrer chez Walt
+9)	Cacher la Meth
+
+
+Je vais détailler le contenu de chaque étape. Tu peux broder de ton côté pour rajouter du réalisme, et de l’enjeu. Notamment dans les dialogues et le gameplay.
+PS : les boite de dialogue « tuto » sont placé ou agencés de sorte qu’on les lise bien malgré les possibles autres apparitions de texte (style : il vous faut une voiture pour quitter la ville). Faire apparaitre le téléphone samsung pour indiquer la nouvelle étape de la mission. Le telephone apparait, montre l’objectif de l’étape, puis se referme. Les objectifs de la missions et leur suivi sont accessible dans le téléphone à tout moment.
+
+INFOS IMPORTANTES : 
+-	Je joins des images de référence à cette mission dans le dossier « références visuelles » dans le dossier livraison. Ces images serviront à la création des nouvelles map (décor, éléments, accessoires, ambiance, lumière couleur). Le nom est explicite pour comprendre de quel map il s’agit. Faire abstraction des personnages présents dans les images de référence visuel
+-	Supprimer la meth de l’inventaire (roue item)  dés le début du jeu)
+-	Supprimer aussi le « gun de ouf »
+-	Walt a maintenant une barre de vie. Une balle lui retire environ 25% de point de vie
+-	Il y a maintenant un indicateur d’argent en haut de l’écran, symbolisé par un sac de sport rempli de billet (Image dans le dossier livraison : Money.png (penser à retirer le fond blanc)).
+-	Au début du jeu le joueur a un montant aléatoire entre 100$ et 200$
+-	Jouer le son « gain_money.wav » quand le joueur obtient de l’argent.
+-	Intégration du Game Over. Jouer son « game_over_loop.wav” en boucle tant que l’écran Game over est à l’image. Avec un constant fondu très très lent (sur 10 secondes) jusqu’à ne plus l’entendre. Au bout de 15 secondes sans rien faire, ou au bout de 5 secondes, on peut cliquer sur « recommencer ». fondu au noir, et on se retrouve au début de la mission. Item, argent et script réinitialisé.
+-	Si on se fait tuer : écran Game Over « vous êtes mort » quelques secondes, écran noir et blanc, tout est ralenti, Walter tombe au sol (ragdoll). 
+
+-	Utilisation du revolver :
+o	Si on tire sur Jessie : écran de Game over + « Jesse est mort »
+En tirant sur Skyler : Game over + « Je sais que c’est tentant, mais ne tuez pas votre femme tout de suite »
+o	Si on tire sur le garde du corps à l’entrée du QG de Tuco, on se fait tirer dessus de tous les côtés (sans voir l’ennemi), environ 10 coups de feu, mitraillette etc. On meurt très vite
+o	Si on Tire sur Tuco, Les garde du corps nous tirent dessus.
+
+1)	Parler à Jesse
+On reçoit un coup de fil sur le téléphone 5 secondes après être sorti de chez Walter. C’est un homme de Tuco Salamanca qui demande expressément sa marchandise. Il lui faut absolument sa commande dans les plus brefs délai. Un texte « tutoriel » apparait pour nous indiquer d’en parler à Jesse.
+
+Une fois dans la maison de Jesse, on lance le dialogue :
+Tu peux créer un dialogue court (moins d’1 min à lire) intéressant et dans l’adn de Breaking bad. (Plus tard il y aura un fichier dialogue audio et texte pour remplacer cette partie avec des voix).
+Dans l’idée : « il faut que nous allions faire la commande, mais on aura pas assez de composants. Walter dit qu’il a un plan et de lui faire confiance. Il a un « botte secrète ». (On garde un peu de suspens)
+
+Jesse lui dit de le rejoindre dans le Camping Lab qui se trouve dans le désert
+
+2)	Prendre la voiture de Walt
+Mettre un texte « tuto » pour indiquer au joueur d’aller dans le désert. 
+Normalement le joueur va se diriger vers la sortie de la ville (au panneau « désert ») à ce moment là, mettre l’indication : « il vous faut une voiture pour quitter la ville » (pas en pop-up mission téléphone). A ce moment là, l’étape de la mission devient : trouver la voiture de Walt.
+
+Si le joueur s’est directement dirigé vers sa voiture pour partir de la ville, ignorer cette étape et valider l’étape « trouver la voiture de Walt »
+
+3)	Se rendre au Camping-car lab dans le désert
+Arrivé sur la map Camping Lab, avec le camping car. 
+Il y a toujours la possibilité de retourner à Albuquerque. Il y a aussi une autre sortie possible : « QG de Tuco » . Si on s’y dirige, une indication apparait : « vous ne pouvez pas vous rendre chez Tuco sans sa marchandise ». 
+Jesse se trouve devant l’entrée du camping car. Il faut lui parler.
+Un dialogue court se lance. Dans l’idée :
+« J :Vous êtes en retard.
+W :j’ai eu des choses à faire avec ma famille pour me créer un alibi pour être ici toute la journée. Allons vite cuisiner.
+J : j’ai déjà commencé, c’est bientôt prêt.
+Fin du dialogue. Jesse entre dans le camping car.
+Le joueur entre dans le campingcar en appuyant sur F à l’entrée.
+Le joueur se retrouve dans une nouvelle map : l’intérieur du camping car. Celui-ci est aménagé de beaucoup d’élément de chimie, bocaux, tuyaux et tout le matériel necessaire pour faire de la meth. Le camping car est assez grand pour pouvoir s’y déplacer sans trop d’encombre. Jesse est en bout de couloir en train de cuisiner. Si on lui parle, il répond qu’il est concentré.
+Si on se dirige vers le volant du camping car et qu’on appuie sur « f » pour « conduire » : une indication apparait : «  vous ne pouvez pas conduire le campingcar pour l’instant ».
+
+Quelque part dans un des tiroirs du campingcar (boite à gant près du volant ?) on peut trouver un revolver. Le joueur a la possibilité de le ramasser ou non. S’il le ramasse, il apparait dans l’inventaire. S’il l’équipe, il peut tirer avec (clic droit pour viser + pointeur et clique gauche pour tirer).
+
+Si on se rend de l’autre coté du couloir, on peut intéragir avec un « atelier » chimique précis. 1 seul.
+en appuyant sur f on peut « Cuisiner ».
+Au moment ou on lance la cuisine, Jesse lance un dialogue, pendant que Walter utilise l’atelier en manipulant des bocaux de liquides colorés.
+Dialogue :
+«  - J : C’est votre « botte secrète ? » 
+-	W : Affirmatif
+-	J : ça va marcher ?
+-	Ça doit marcher.. »
+Fin du dialogue, on peut à présent « récupérer » l’item cuisiné sur l’atelier avec « F » 
+Dans l’inventaire (roue des outil) on peut voir un nouvel item : « botte secrète » représenté par un cristal blanc.
+
+4)	Récupérer la meth dans le camping-car
+
+Une fois la bote secrète récupérée, on peut maintenant parler à Jesse. Celui-ci n’est plus occupé. Il nous répond que c’est prêt dans un court dialogue :
+- J : C’est prêt, j’espère que ça fera l’affaire.
+w : Ce n’est pas encore parfait, mais au vu du temps qu’il nous reste, c’est déjà bien.
+Fin du dialogue.
+On peut maintenant récupérer la meth sur l’atelier de jesse. Elle apparait dans l’inventaire.
+
+
+5)	Se rendre au QG de Salamanca
+Une fois la meth obtenue, Si on se dirige vers « QG de Tuco » sans la voiture, une indication apparait : « Vous avez besoin d’une voiture ». Sinon le joueur monte dans sa voiture et se dirige vers la sortie du QG.
+
+6)	Vendre la meth à Salamanca
+
+Nouvelle map. On est sur une rue avec un batiment unique. Il y a du fog autour, le batiment est très endommagé, visiblement à l’abandon. Devant il y a un  homme de main qui monte la garde à l’entrée.
+On ne peut pas lui parler.
+Si on se dirige vers la porte et qu’on l’ouvre avec « f », un dialogue se lance entre walt et l’homme de main.
+Le joueur ne peux plus se déplacer. Dans l’idée : Le garde l’empêche de passer, walt dit qu’il a une commande, l’homme ne le croit pas car il n’as pas du tout le profile d’un dealer et lui dit de retourner à ses court de chimie. Un voix téléphonique (tuco) intervient via l’interphone et ordonne au garde de le laisser passer, puis jubile. (garder un ton un peu fou pour Tuco).
+
+Le joueur se retrouve alors à l’intérieur du bâtiment (nouvelle map). Un bureau très sombre, les fenêtres baricadées et ambiance calfeutrée. Tuco est assis à son bureau. Le joueur est au centre de la pièce. 3 hommes de main sont derrière le joueur au fond de la pièce.
+
+Un dialogue se lance. Dans l’idée : 
+Vente de la meth à Tuco. Walter reçoit 300.000$. Le montant de l’argent du joueur monte. Walt essaye de cacher le fait qu’il en manque, mais Tuco le remarque. « Ou est le reste » ?
+Walt essaye de négocier en gardant son calme mais Tuco s’impatiente et la tension monte. Les gardes du corps deviennent menaçant et on sent que  la vie de Walter est en danger.
+L’ambiance devient progressivement plus chaude et rouge à mesure que le dialogue avance. À noter que le joueur n’est pas bloqué pendant le dialogue et peut se déplacer.
+Lorsque la tension monte, Tuco demande à Walt s’il lui reste de la meth sur lui. Il se fait fouiller par un garde du corps et celui-ci dépose la « botte secrète » sur le bureau de Tuco.
+
+Continuité du dialogue (perso toujours libre). Tuco : tu m’avais caché ça ?? Tu voulais m’arnaquer ??
+
+7)	S’enfuir en utilisant la fausse meth
+Là, la tension est à son comble. Les garde du corps s’impatientent et tuco aussi.
+Les boite de dialogue défile tant que le joueur ne fait rien. Mais les garde du corps et Tuco finissent par tirer sur le joueur s’il ne fait rien pendant 1 minute.
+
+Si le joueur interagit avec la « botte secrète » posée sur le bureau avec « f » pour « utiliser ».
+Jouer le son « this is not meth » dans le dossier livraison. Puis on voit Walter lancer un cristal blanc sur le sol. Suivi d’une explosion qui remplit l’écran du joueur.
+
+8)	Rentrer chez Walt
+Le joueur se retrouve téléporté à Albuquerque, Sa voiture est garée prêt de chez lui.
+On voit l’intitulé de mission : « cacher l’argent chez vous »
+Il faut rentrer chez vous.
+
+9)	Cacher la Meth
+Une fois chez vous, il faut trouver un morceau de latte légèrement différent parmis les mur de la maison de walter. On peut intéragir avec « f » pour « cacher votre argent ».
+En appuyant sur F, on peut alors décider du montant qu’on souhaite cacher. On peut varier se montant avec des flèches en cliquant dessus. Cela marche aussi avec les touches haut et bas, ou « z » et « s ».
+
+Il faut tout cacher un maximum d’argent, de sorte d’avoir moins de 10.000$ sur nous. Si le essaye de sortir de chez Walt, et qu’il possède plus de 10.000$, une indication apparait: « vous avez trop d’argent sur vous, vous ne pouvez pas sortir ainsi ».
+
+Quand le joueur a mis suffisamment d’argent dans la cachète. Un gros texte « mission accomplie » apparait à l’écran pendant quelques secondes avant de disparaitre. Jouer jingle « victory.wav ».
+
+Fin de la mission. 
+Celle-ci est notée comme complétée dans le téléphone.
+
