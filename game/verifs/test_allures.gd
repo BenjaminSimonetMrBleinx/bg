@@ -127,6 +127,8 @@ func _scenario() -> void:
 					% [d_dedans_sprint, d_marche])
 
 	await _le_repos()
+	await _le_saut()
+	await _l_accroupissement()
 
 	print("")
 	if _erreurs.is_empty():
@@ -215,6 +217,98 @@ func _le_repos() -> void:
 			% (plus_haut * echelle * 100.0) + "a la %.1f e seconde" % a_la_seconde)
 	_verifier(plus_haut > 0.0,
 			"il remonte ses lunettes une fois par cycle")
+
+
+# Le saut, et surtout : SAUTER EN COURANT PROJETTE EN AVANT.
+#
+# C'est le seul point qui merite un test. Qu'une impulsion verticale fasse
+# monter est difficile a rater ; qu'on garde son elan une fois en l'air, en
+# revanche, depend de ce qu'on fait de la vitesse horizontale a chaque image —
+# et la recalculer comme au sol arrete net le personnage des qu'on lache la
+# commande, suspendu au milieu de son saut.
+func _le_saut() -> void:
+	print("\n--- le saut ---")
+	_joueur.interieur = false
+	await _poser()
+	var sol := _joueur.global_position.y
+	Input.action_press("saut")
+	for i in 3:
+		await physics_frame
+	Input.action_release("saut")
+	var plafond := sol
+	for i in 70:
+		await physics_frame
+		plafond = maxf(plafond, _joueur.global_position.y)
+	print("       saut sur place : %.2f m de haut" % (plafond - sol))
+	_verifier(plafond - sol > 0.35, "il decolle (%.2f m)" % (plafond - sol))
+
+	# Puis le meme saut, en courant, en LACHANT tout des le decollage.
+	await _poser()
+	var depart := _joueur.global_position
+	Input.action_press("gaz")
+	for i in 45:
+		await physics_frame
+	Input.action_press("saut")
+	for i in 3:
+		await physics_frame
+	Input.action_release("saut")
+	Input.action_release("gaz")
+	var en_l_air := ""
+	for i in 40:
+		await physics_frame
+		if _joueur.allure() == "saut":
+			en_l_air = "saut"
+	var avancee := Vector2(_joueur.global_position.x - depart.x,
+			_joueur.global_position.z - depart.z).length()
+	print("       saut en courant : %.2f m parcourus" % avancee)
+	_verifier(en_l_air == "saut", "l'allure passe au saut en l'air")
+	# Sans conservation de l'elan, il s'arreterait au decollage : la distance
+	# se limiterait a celle des trois quarts de seconde de course.
+	_verifier(avancee > 3.0, "il avance dans le saut (%.2f m)" % avancee)
+
+
+func _poser() -> void:
+	_joueur.global_position = Vector3(8.5, 0.4, -30.0)
+	_joueur.rotation = Vector3.ZERO
+	_joueur.velocity = Vector3.ZERO
+	for i in 20:
+		await physics_frame
+
+
+func _l_accroupissement() -> void:
+	print("\n--- accroupi ---")
+	await _poser()
+	var haute := (_joueur.get_node("Collision").shape as CapsuleShape3D).height
+
+	Input.action_press("accroupir")
+	for i in 20:
+		await physics_frame
+	var basse := (_joueur.get_node("Collision").shape as CapsuleShape3D).height
+	print("       capsule %.2f m -> %.2f m, allure '%s'"
+			% [haute, basse, _joueur.allure()])
+	_verifier(_joueur.accroupi(), "il s'accroupit")
+	# La capsule DOIT suivre. Baisser le modele sans elle ne sert a rien : on
+	# bute toujours sur ce sous quoi on vient de se baisser.
+	_verifier(basse < haute - 0.3, "et la capsule descend avec lui")
+
+	var avant := _joueur.global_position
+	Input.action_press("gaz")
+	for i in 60:
+		await physics_frame
+	var accroupie := _joueur.global_position.distance_to(avant)
+	var allure_vue := _joueur.allure()
+	Input.action_release("gaz")
+	Input.action_release("accroupir")
+	for i in 25:
+		await physics_frame
+	print("       %.2f m en 1 s accroupi, allure '%s'" % [accroupie, allure_vue])
+	_verifier(allure_vue == "accroupi_marche", "il se deplace accroupi")
+	_verifier(accroupie > 0.4, "il avance vraiment (%.2f m)" % accroupie)
+	_verifier(accroupie < 2.2, "et moins vite qu'en marchant (%.2f m)" % accroupie)
+	_verifier(not _joueur.accroupi(), "et il se releve en relachant")
+	var revenue := (_joueur.get_node("Collision").shape as CapsuleShape3D).height
+	_verifier(absf(revenue - haute) < 0.01,
+			"la capsule retrouve sa taille (%.2f m)" % revenue)
 
 
 func _trouver(n: Node, nom: String) -> Node:

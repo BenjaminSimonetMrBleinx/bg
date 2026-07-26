@@ -54,8 +54,9 @@ de Jesse vingt mètres plus loin, la voiture est garée le long de la rue.
 | **Souris** | Regarder autour | Regarder autour |
 | **Molette** | Rapprocher ou éloigner la caméra | idem |
 | **F** | Fait toujours la chose la plus proche : monter, descendre, entrer, parler, sortir | |
-| Espace | — | Frein à main |
 | **Maj** maintenue | Courir. Par défaut Walter trottine ; à l'intérieur il marche | |
+| **Espace** | **Sauter** — l'élan est conservé, on ne saute pas sur place | Frein à main |
+| **Ctrl gauche** maintenu | **S'accroupir**, et se déplacer accroupi | |
 | **H** | — | Klaxon |
 | **Tab** maintenu, ou clic droit | Roue des outils — viser avec gauche/droite, relâcher pour équiper | |
 | Échap | Rend le curseur de la souris | |

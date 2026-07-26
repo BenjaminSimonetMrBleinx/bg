@@ -16,6 +16,36 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.26.0 — Sauter, s'accroupir, et emboutir pour de bon
+
+> **À essayer, trois choses.**
+>
+> - **Espace : il saute.** Environ un mètre de haut. Saute en courant : **il
+>   part en avant** et garde son élan jusqu'à l'atterrissage, il ne saute pas
+>   sur place.
+> - **Ctrl gauche maintenu : il s'accroupit**, et il peut se déplacer comme ça.
+>   **Sa capsule de collision descend avec lui** — c'est ce qui compte, sinon
+>   s'accroupir ne servirait qu'à aller moins vite.
+> - **Rentre dans un mur à plus de 50 mph** : la tôle sonne violent, quoi qu'on
+>   ait tapé.
+
+**Le choc violent a deux déclencheurs maintenant**, et le second est nouveau :
+au-delà de **50 mph à l'arrivée**, c'est classé violent quelle que soit la
+vitesse perdue. Avant, seule la décélération comptait — juste pour un mur, faux
+pour tout ce qui cède un peu : on pouvait emboutir à cent kilomètres/heure
+quelque chose qui amortit et n'entendre qu'un frottement. Le critère de perte
+brutale reste, sinon un mur pris à trente sonnerait léger.
+
+Le seuil se règle : `choc_impact_mph` dans `reglages.tres`.
+
+**Espace saute à pied et reste le frein à main au volant.** Les deux ne se
+gênent pas.
+
+Les animations d'accroupissement et de saut sont fabriquées comme les
+précédentes, et pour l'accroupissement il a fallu **chercher** les flexions :
+descendre le bassin de quarante centimètres sans plier correctement hanches,
+genoux et chevilles enterre les pieds. Ils bougent de 2 millimètres.
+
 ## 0.25.0 — Walter respire
 
 > **À essayer : lâche les commandes et regarde-le.** Il ne se fige plus sur une

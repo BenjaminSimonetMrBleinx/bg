@@ -185,21 +185,34 @@ def tourner(arm, pose: dict, os: str, axe: Vector, degres: float) -> None:
     pose[os] = q @ pose.get(os, Quaternion())
 
 
-def appliquer(arm, pose: dict, monter: float = 0.0) -> None:
-    """Pose le squelette. `monter` est une elevation du bassin, EN METRES.
+def appliquer(arm, pose: dict, monter: float = 0.0,
+              origine: Vector | None = None) -> None:
+    """Pose le squelette.
 
-    Le deplacement d'un os vit dans le repere de l'os, pas dans celui du monde.
-    Ecrire directement dans location.z fait glisser le bassin dans une
-    direction qui depend du rig — mesure faite, sur celui-ci, ca ne montait pas
-    du tout.
+    `monter` est une elevation du bassin, EN METRES, et `origine` la
+    translation que le clip source lui donnait deja : un cycle de marche fait
+    monter et descendre le bassin, et l'ecraser rend la marche plate.
+
+    DEUX conversions sur `monter`, et oublier l'une ou l'autre ne previent pas :
+
+      - le deplacement d'un os vit dans le repere DE L'OS. Ecrire directement
+        dans location.z fait glisser le bassin dans une direction qui depend du
+        rig — sur celui-ci, ca ne montait pas du tout.
+      - et dans l'UNITE de l'armature, qui n'est pas le metre. Celle-ci est a
+        l'echelle 0,011 : demander quarante centimetres en donnait quatre
+        dixiemes de millimetre. L'accroupissement descendait de rien, en
+        silence, et le solveur cherchait tres serieusement comment plier les
+        jambes pour accompagner un bassin qui ne bougeait pas.
     """
     for nom, os in arm.pose.bones.items():
         os.rotation_mode = "QUATERNION"
         os.rotation_quaternion = pose.get(nom, Quaternion()).normalized()
     if "Hips" in arm.pose.bones:
         bassin = arm.pose.bones["Hips"]
+        echelle = max(1e-6, arm.matrix_world.to_scale().z)
         repere = bassin.bone.matrix_local.to_3x3().inverted()
-        bassin.location = repere @ (HAUT * monter)
+        garde = origine if origine is not None else Vector((0.0, 0.0, 0.0))
+        bassin.location = garde + repere @ (HAUT * (monter / echelle))
     bpy.context.view_layer.update()
 
 
@@ -329,6 +342,62 @@ def pose_relachee(arm, action) -> dict:
     return pose
 
 
+def resoudre(arm, depart: dict, leviers: list, cout, departs: list,
+             monter: float = 0.0) -> dict:
+    """Cherche les angles qui satisfont un objectif, et rend la pose.
+
+    `leviers` est une liste de (os, axe, borne en degres), `cout` une fonction
+    a MINIMISER evaluee sur le squelette pose, `departs` une liste de jeux
+    d'angles initiaux.
+
+    Descente par coordonnees, a pas decroissant. C'est fruste, et c'est le bon
+    outil ici : on cherche quatre a huit angles sur un squelette dont on ne
+    connait pas l'orientation des os, et ecrire ces angles a la main donne des
+    poses fausses qu'on corrige ensuite pendant une heure.
+
+    PLUSIEURS DEPARTS, parce qu'une descente par coordonnees s'arrete dans le
+    premier creux venu et que ce creux depend entierement d'ou elle commence :
+    avec un seul depart, la meme fonction trouvait sa cible au millimetre pour
+    un point vise et la manquait de quinze centimetres pour un autre, bras
+    bloque en butee.
+    """
+    def construire(valeurs) -> dict:
+        pose = {k: v.copy() for k, v in depart.items()}
+        for (o, axe, _), deg in zip(leviers, valeurs):
+            tourner(arm, pose, o, axe, deg)
+        return pose
+
+    def evaluer(valeurs) -> float:
+        poser_pose(arm, construire(valeurs), monter)
+        # Une pose contorsionnee atteint la cible aussi bien qu'une pose
+        # naturelle. On paie donc chaque degre : a resultat egal, le membre qui
+        # se tord le moins gagne.
+        return cout(valeurs) + 0.00012 * sum(abs(v) for v in valeurs)
+
+    meilleur = None
+    for depuis in departs:
+        angles = list(depuis)
+        courant = evaluer(angles)
+        pas = 30.0
+        while pas > 0.4:
+            bouge = False
+            for i, (_, _, borne) in enumerate(leviers):
+                for signe in (1.0, -1.0):
+                    essai = list(angles)
+                    essai[i] += signe * pas
+                    if abs(essai[i]) > borne:
+                        continue
+                    neuf = evaluer(essai)
+                    if neuf < courant - 1e-5:
+                        courant, angles, bouge = neuf, essai, True
+                        break
+            if not bouge:
+                pas *= 0.5
+        if meilleur is None or courant < meilleur[0]:
+            meilleur = (courant, angles)
+    return construire(meilleur[1])
+
+
 def axe_de_flexion(arm, depart: dict, coude: str, main: str,
                    epaule: str) -> tuple[Vector, float]:
     """Sur quel axe, et dans quel sens, ce coude PLIE.
@@ -399,56 +468,13 @@ def resoudre_les_lunettes(arm, depart: dict) -> dict:
                 ("LeftHand", axes[0], 70.0), ("LeftHand", axes[1], 70.0),
                 ("LeftHand", axes[2], 70.0)]
 
-    def construire(valeurs) -> dict:
-        pose = {k: v.copy() for k, v in depart.items()}
-        for (o, axe, _), deg in zip(reglages, valeurs):
-            tourner(arm, pose, o, axe, deg)
-        return pose
+    def ecart_de(_valeurs) -> float:
+        return ((bout(arm, "LeftHand", MAIN) - cible).length
+                + 0.7 * (place(arm, "LeftHand") - poignet).length)
 
-    def evaluer(valeurs) -> float:
-        poser_pose(arm, construire(valeurs))
-        ecart = ((bout(arm, "LeftHand", MAIN) - cible).length
-                 + 0.7 * (place(arm, "LeftHand") - poignet).length)
-        # Une pose contorsionnee atteint la cible aussi bien qu'une pose
-        # naturelle. On paie donc chaque degre : a distance egale, le bras qui
-        # se tord le moins gagne.
-        return ecart + 0.00012 * sum(abs(v) for v in valeurs)
-
-    def descendre(depuis: list) -> tuple[float, list]:
-        angles = list(depuis)
-        cout = evaluer(angles)
-        pas = 30.0
-        while pas > 0.4:
-            bouge = False
-            for i, (_, _, borne) in enumerate(reglages):
-                for signe in (1.0, -1.0):
-                    essai = list(angles)
-                    essai[i] += signe * pas
-                    if abs(essai[i]) > borne:
-                        continue
-                    neuf = evaluer(essai)
-                    if neuf < cout - 1e-5:
-                        cout, angles, bouge = neuf, essai, True
-                        break
-            if not bouge:
-                pas *= 0.5
-        return cout, angles
-
-    # PLUSIEURS DEPARTS. Une descente par coordonnees s'arrete dans le premier
-    # creux venu, et ce creux depend entierement d'ou elle commence : avec un
-    # seul depart, la meme fonction trouvait la cible au millimetre pour un
-    # point vise et la manquait de quinze centimetres pour un autre, bras
-    # bloque en butee. Six essais coutent quelques secondes.
-    meilleur = None
-    for pli in (35.0, 75.0, 110.0):
-        for lever in (0.0, -50.0):
-            depart_i = [lever, 0.0, 0.0, pli * sens, 0.0, 0.0, 0.0, 0.0, 0.0]
-            resultat = descendre(depart_i)
-            if meilleur is None or resultat[0] < meilleur[0]:
-                meilleur = resultat
-    angles = meilleur[1]
-
-    pose = construire(angles)
+    departs = [[lever, 0.0, 0.0, pli * sens, 0.0, 0.0, 0.0, 0.0, 0.0]
+               for pli in (35.0, 75.0, 110.0) for lever in (0.0, -50.0)]
+    pose = resoudre(arm, depart, reglages, ecart_de, departs)
     poser_pose(arm, pose)
     ecart = (bout(arm, "LeftHand", MAIN) - cible).length
     print("  lunettes   doigts a %.1f cm des montures, poignet a %.1f cm "
@@ -463,11 +489,8 @@ def resoudre_les_lunettes(arm, depart: dict) -> dict:
     return pose
 
 
-def poser_pose(arm, pose: dict) -> None:
-    for nom, os in arm.pose.bones.items():
-        os.rotation_mode = "QUATERNION"
-        os.rotation_quaternion = pose.get(nom, Quaternion()).normalized()
-    bpy.context.view_layer.update()
+def poser_pose(arm, pose: dict, monter: float = 0.0) -> None:
+    appliquer(arm, pose, monter)
 
 
 def melange(a: dict, b: dict, t: float) -> dict:
@@ -551,7 +574,7 @@ def clip_repos(arm, source, duree_s: float = 8.0):
                 poids = 1.0 - adoucir((t - g2) / (g3 - g2))
             pose = melange(pose, lunettes, poids)
 
-        appliquer(arm, pose, 0.009 * souffle)
+        appliquer(arm, pose, 0.005 * souffle)
         cycle = t * duree_s / 4.0
         if abs(cycle - 0.25) < 0.01:
             inspire = (place(arm, "Spine"), place(arm, "Head"))
@@ -563,6 +586,145 @@ def clip_repos(arm, source, duree_s: float = 8.0):
         print("  respiration  le buste bouge de %.1f mm, la tete de %.1f mm"
               % ((inspire[0] - expire[0]).length * 1000.0,
                  (inspire[1] - expire[1]).length * 1000.0))
+    boucler(action)
+    return action
+
+
+def pose_accroupie(arm, debout: dict, descente: float) -> dict:
+    """Le bassin descend, ET LES PIEDS RESTENT AU SOL.
+
+    C'est tout le probleme. Baisser le bassin sans rien d'autre enterre les
+    pieds de quarante centimetres ; les plier au juge donne un personnage a
+    genoux ou en equilibre sur la pointe. On impose donc la descente et on
+    CHERCHE les flexions qui laissent les deux pieds exactement ou ils etaient.
+    """
+    # On DETACHE l'action avant de mesurer : une action encore assignee est
+    # reevaluee au prochain rafraichissement et repose le squelette par-dessus
+    # ce qu'on vient d'ecrire, ce qui fait mesurer la pose du clip precedent.
+    if arm.animation_data is not None:
+        arm.animation_data.action = None
+    poser_pose(arm, debout)
+    ancre = {n: place(arm, n) for n in ("LeftFoot", "RightFoot")}
+    vise = place(arm, "Hips").z - descente
+
+    axes = [TANGAGE, ROULIS, LACET]
+    leviers = []
+    for cote in ("Left", "Right"):
+        leviers += [(cote + "UpLeg", axes[0], 120.0),
+                    (cote + "UpLeg", axes[1], 35.0),
+                    (cote + "Leg", axes[0], 140.0),
+                    (cote + "Foot", axes[0], 60.0)]
+
+    def cout(_v) -> float:
+        # Le bassin est DEJA descendu — c'est une translation, imposee, pas une
+        # inconnue. Plier une cuisse deplace le pied, jamais le bassin : celui-ci
+        # est la racine de la hierarchie. Une premiere version demandait au
+        # solveur de faire descendre le bassin en pliant les jambes, et il
+        # repondait tres correctement en ne pliant rien.
+        return sum((place(arm, n) - ancre[n]).length for n in ancre)
+
+    depart = {k: v.copy() for k, v in debout.items()}
+    # On penche le buste en avant : un accroupi dos droit est un squat de salle
+    # de sport, pas quelqu'un qui se baisse.
+    tourner(arm, depart, "Hips", TANGAGE, -14.0)
+    tourner(arm, depart, "Spine02", TANGAGE, -10.0)
+    tourner(arm, depart, "Spine01", TANGAGE, -6.0)
+    tourner(arm, depart, "neck", TANGAGE, 12.0)
+    tourner(arm, depart, "Head", TANGAGE, 8.0)
+
+    departs = [[a, 0.0, b, c, a, 0.0, b, c]
+               for a, b, c in ((-40.0, 70.0, -25.0), (-70.0, 100.0, -30.0),
+                               (40.0, -70.0, 25.0))]
+    pose = resoudre(arm, depart, leviers, cout, departs, -descente)
+    poser_pose(arm, pose, -descente)
+    reste = max((place(arm, n) - ancre[n]).length for n in ancre)
+    print("  accroupi   bassin %.2f m -> %.2f m, tete a %.2f m, pieds deplaces "
+          "de %.1f cm" % (vise + descente, place(arm, "Hips").z,
+                          place(arm, "Head").z, reste * 100.0))
+    if reste > 0.06:
+        print("  ATTENTION  les pieds glissent de %.1f cm" % (reste * 100.0))
+    return pose
+
+
+def clip_accroupi(arm, debout: dict, duree_s: float = 4.0):
+    """Accroupi, immobile. Il respire, mais moins amplement : on se tasse."""
+    descente = 0.42
+    pose_base = pose_accroupie(arm, debout, descente)
+    action = action_neuve("Accroupi")
+    arm.animation_data.action = action
+    total = int(duree_s * IPS)
+    for i in range(total + 1):
+        t = i / float(total)
+        pose = {k: v.copy() for k, v in pose_base.items()}
+        souffle = math.sin(t * math.tau)
+        tourner(arm, pose, "Spine01", TANGAGE, 1.0 * souffle)
+        tourner(arm, pose, "Head", LACET, 2.0 * math.sin(t * 0.7 * math.tau))
+        appliquer(arm, pose, -descente + 0.003 * souffle)
+        cle(arm, action, i)
+    boucler(action)
+    return action
+
+
+def clip_marche_accroupie(arm, source, debout: dict):
+    """Se deplacer accroupi : la marche, jambes pliees et buste baisse.
+
+    On ne refait pas un cycle. On prend celui qui existe et on lui ajoute la
+    FLEXION de la pose accroupie, dosee pour rester praticable — un accroupi
+    complet ne marche pas, il se traine. La foulee raccourcit d'autant, et
+    c'est mesure comme les autres.
+    """
+    descente = 0.34
+    accroupi = pose_accroupie(arm, debout, descente)
+    d, f = images_de(source)
+    lu = []
+    for i in range(d, f + 1):
+        poser(arm, source, i)
+        lu.append({n: o.rotation_quaternion.copy()
+                   for n, o in arm.pose.bones.items()})
+        lu[-1]["#loc"] = arm.pose.bones["Hips"].location.copy()
+
+    action = action_neuve("AccroupiMarche")
+    arm.animation_data.action = action
+    n = len(lu) - 1
+    for i, base in enumerate(lu):
+        t = i / float(n)
+        # 80 % de la flexion accroupie, 20 % du cycle de marche pour les
+        # jambes : assez pour que les pieds continuent d'alterner, assez peu
+        # pour qu'il reste bas.
+        pose = melange({k: v for k, v in base.items() if k != "#loc"},
+                       accroupi, 0.55)
+        tourner(arm, pose, "Spine02", ROULIS, 2.2 * math.sin(t * math.tau))
+        appliquer(arm, pose, -descente * 0.55, base["#loc"])
+        cle(arm, action, d + i)
+    boucler(action)
+    return action
+
+
+def clip_saut(arm, debout: dict, duree_s: float = 0.8):
+    """En l'air. Jambes repliees a la montee, tendues a la retombee.
+
+    Le clip tourne a l'horloge et se rejoue a chaque saut. Il est plus long que
+    la plupart des sauts : on n'en voit alors que le debut, ce qui est
+    exactement ce qu'on veut — l'impulsion.
+    """
+    action = action_neuve("Saut")
+    arm.animation_data.action = action
+    total = int(duree_s * IPS)
+    for i in range(total + 1):
+        t = i / float(total)
+        pose = {k: v.copy() for k, v in debout.items()}
+        # Les genoux montent puis redescendent ; les bras partent en arriere a
+        # l'impulsion et reviennent devant.
+        repli = math.sin(min(1.0, t * 1.4) * math.pi)
+        tourner(arm, pose, "LeftUpLeg", TANGAGE, -52.0 * repli)
+        tourner(arm, pose, "RightUpLeg", TANGAGE, -34.0 * repli)
+        tourner(arm, pose, "LeftLeg", TANGAGE, 62.0 * repli)
+        tourner(arm, pose, "RightLeg", TANGAGE, 38.0 * repli)
+        tourner(arm, pose, "LeftArm", TANGAGE, 40.0 * repli)
+        tourner(arm, pose, "RightArm", TANGAGE, 26.0 * repli)
+        tourner(arm, pose, "Spine01", TANGAGE, -8.0 * repli)
+        appliquer(arm, pose)
+        cle(arm, action, i)
     boucler(action)
     return action
 
@@ -612,7 +774,7 @@ def clip_marche(arm, source):
         tourner(arm, pose, "Spine02", ROULIS, 1.8 * cote)
         tourner(arm, pose, "LeftShoulder", TANGAGE, 1.5 * max(0.0, cote))
 
-        appliquer(arm, pose, base["#loc"])
+        appliquer(arm, pose, 0.0, base["#loc"])
         cle(arm, action, d + i)
 
     boucler(action)
@@ -666,7 +828,11 @@ def main() -> None:
     if a.mesurer:
         return
 
-    nouvelles = (clip_repos(arm, source), clip_marche(arm, source))
+    debout = pose_relachee(arm, source)
+    nouvelles = (clip_repos(arm, source), clip_marche(arm, source),
+                 clip_accroupi(arm, debout),
+                 clip_marche_accroupie(arm, source, debout),
+                 clip_saut(arm, debout))
     print("")
     # On RELIT ce qu'on vient d'ecrire. Construire une pose et l'inserer en cle
     # sont deux operations distinctes, et rien ne garantit que la seconde ait
@@ -680,9 +846,12 @@ def main() -> None:
             p = place(arm, "Head")
             mini = Vector((min(mini[k], p[k]) for k in range(3)))
             maxi = Vector((max(maxi[k], p[k]) for k in range(3)))
-        print("  %-10s %3d images, %.1f s, la tete parcourt %.0f mm"
+        marque = ""
+        if nouvelle.name in ("Marche", "AccroupiMarche"):
+            marque = ", foulee %.2f m" % foulee_mesuree(arm, nouvelle)
+        print("  %-14s %3d images, %.1f s, la tete parcourt %.0f mm%s"
               % (nouvelle.name, f - d, (f - d) / float(IPS),
-                 (maxi - mini).length * 1000.0))
+                 (maxi - mini).length * 1000.0, marque))
         if nouvelle.name != "Repos":
             continue
         # Le geste, RELU DANS LE CLIP. La pose resolue etait juste et
@@ -706,7 +875,7 @@ def main() -> None:
     # Les actions creees ici ne sont attachees a rien : sans piste NLA, elles
     # ne sortent pas du fichier et on cherche pourquoi le jeu ne les voit pas.
     arm.animation_data.action = None
-    for nom in ("Repos", "Marche"):
+    for nom in ("Repos", "Marche", "Accroupi", "AccroupiMarche", "Saut"):
         ranger(arm, bpy.data.actions[nom])
 
     bpy.ops.object.select_all(action="SELECT")

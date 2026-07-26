@@ -112,6 +112,30 @@ extends Resource
 ## La marche a l'interieur. Foulee mesuree sur le clip livre : 1,76 m.
 @export_range(0.3, 3.0, 0.05) var marche_foulee: float = 1.76
 
+## LE SAUT. Vitesse verticale a l'impulsion, en m/s. Avec la gravite du projet
+## (14 m/s2), 5,2 m/s donnent une hauteur d'un peu moins d'un metre et un saut
+## de trois quarts de seconde — assez pour franchir une bordure et une haie,
+## pas assez pour monter sur un toit.
+@export_range(1.0, 12.0, 0.1) var saut_vitesse: float = 5.2
+
+## Part de la commande qui repond ENCORE une fois en l'air, de 0 a 1. A zero on
+## ne corrige plus rien et le saut est une parabole que l'on subit ; a un, on
+## pilote en l'air comme au sol et le saut ne pese rien. Ce qui compte surtout,
+## c'est qu'a zero l'elan pris au sol est CONSERVE : sauter en courant projette
+## en avant au lieu de sauter sur place.
+@export_range(0.0, 1.0, 0.05) var saut_controle: float = 0.25
+
+## ACCROUPI. On se traine : la vitesse tombe sous celle de la marche, et la
+## foulee est celle du clip accroupi — mesuree, 0,73 m.
+@export_range(0.2, 3.0, 0.05) var accroupi_vitesse: float = 1.15
+@export_range(0.2, 2.0, 0.05) var accroupi_foulee: float = 0.73
+
+## Hauteur de la capsule accroupie, en metres. Le personnage fait 1,78 m
+## debout ; accroupi sa tete est a 1,17 m — mesure sur le clip — et la capsule
+## suit, sinon on reste bloque a l'entree de ce sous quoi on vient de se
+## baisser, ce qui est le seul interet de s'accroupir.
+@export_range(0.6, 1.8, 0.05) var accroupi_capsule: float = 1.2
+
 ## En dessous de cette vitesse, et manette au neutre, le personnage passe au
 ## REPOS : il respire, se tient d'aplomb, et remonte ses lunettes de temps en
 ## temps. Trop haut, il se met a respirer alors qu'il avance encore ; trop bas,
@@ -331,6 +355,12 @@ extends Resource
 
 ## Au-dela, c'est de la tole. En dessous, on a frotte.
 @export_range(1.0, 30.0, 0.5) var choc_fort: float = 4.5
+
+## VITESSE D'ARRIVEE, en miles a l'heure, au-dela de laquelle un choc est
+## forcement violent — quoi qu'on ait tape et quelle que soit la vitesse
+## perdue. C'est un SECOND declencheur, pas un remplacant : un mur pris a
+## trente qui arrete la caisse net sonne fort lui aussi.
+@export_range(10.0, 120.0, 1.0) var choc_impact_mph: float = 50.0
 
 ## Temps mort apres un choc, en secondes. Un impact dure plusieurs images et
 ## en declencherait un par image sans ce repos.

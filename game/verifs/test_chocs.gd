@@ -155,6 +155,27 @@ func _scenario() -> void:
 		_verifier(_chocs.size() < 8,
 				"le repos evite la rafale (%d, pas des dizaines)" % _chocs.size())
 
+	# --- AU-DELA DE CINQUANTE MILES A L'HEURE, c'est forcement violent.
+	#
+	# Le critere d'origine ne regardait que la vitesse PERDUE dans l'image.
+	# C'est juste pour un mur, et faux pour tout ce qui cede un peu : on
+	# pouvait emboutir a cent kilometres/heure quelque chose qui amortit et
+	# n'entendre qu'un frottement de tole.
+	print("\n--- un mur pris a plus de 50 mph ---")
+	var reglages2 := ResourceLoader.load("res://systemes/reglages.tres") as Reglages
+	var vite := reglages2.choc_impact_mph / 2.23694 + 2.0
+	_vehicule.dernier_choc_fort = false
+	_vehicule.global_position = Vector3(7.0, 0.45, -46.0)
+	_vehicule.rotation = Vector3(0.0, deg_to_rad(-90.0), 0.0)
+	_vehicule.linear_velocity = Vector3(vite, 0.0, 0.0)
+	for i in 60:
+		await physics_frame
+	print("       arrive a %.0f mph" % _vehicule.dernier_choc_mph)
+	_verifier(_vehicule.dernier_choc_mph >= reglages2.choc_impact_mph,
+			"la voiture arrive bien au-dela du seuil")
+	_verifier(_vehicule.dernier_choc_fort,
+			"et le choc est classe violent")
+
 	# --- LA TELEPORTATION, qui a exactement la signature d'un mur.
 	print("\n--- une teleportation n'est pas un accident ---")
 	_chocs.clear()

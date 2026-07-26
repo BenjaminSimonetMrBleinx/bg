@@ -40,6 +40,9 @@ const ALLURES := {
 	"marche": ["Marche", "Walking"],
 	"trot": ["Trot", "Running"],
 	"course": ["Course", "Running"],
+	"accroupi": ["Accroupi"],
+	"accroupi_marche": ["AccroupiMarche", "Marche", "Walking"],
+	"saut": ["Saut"],
 }
 
 ## Les allures qui avancent AVEC L'HORLOGE et non avec la distance.
@@ -48,7 +51,11 @@ const ALLURES := {
 ## Le repos est l'exception, et c'est logique : on respire en secondes, pas en
 ## metres. Un personnage immobile dont l'animation serait calee sur la distance
 ## ne respirerait jamais.
-const AU_TEMPS := ["repos"]
+## Le saut et l'accroupi immobile s'y ajoutent pour la meme raison : ils ne
+## sont pas des cycles de deplacement. Un saut cale sur la distance parcourue
+## se figerait au sommet de la parabole, la ou la vitesse horizontale est
+## constante mais ou il ne se passe rien.
+const AU_TEMPS := ["repos", "accroupi", "saut"]
 
 var _reglages: Reglages
 var _lecteur: AnimationPlayer

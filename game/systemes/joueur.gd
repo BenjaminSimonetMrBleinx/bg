@@ -61,6 +61,34 @@ var _demarche: Demarche
 var _rayon: float = 0.28
 var _gravite: float = ProjectSettings.get_setting("physics/3d/default_gravity", 14.0)
 
+## L'accroupissement, et la capsule qui va avec.
+##
+## Baisser le modele sans toucher a la capsule ne sert a RIEN : on continue de
+## buter sur ce sous quoi on vient de se baisser, et s'accroupir n'a plus
+## d'autre effet que d'aller moins vite.
+var _accroupi: bool = false
+var _capsule: CapsuleShape3D
+var _debout: float = 1.78
+
+
+## La capsule suit l'allure. Elle est ancree AU SOL et pas au centre : une
+## capsule qu'on raccourcit sans la redescendre laisse les pieds en l'air, et
+## le personnage tombe de vingt centimetres a chaque accroupissement.
+func _regler_la_capsule() -> void:
+	if _capsule == null:
+		return
+	var h: float = reglages.accroupi_capsule if _accroupi else _debout
+	_capsule.height = maxf(2.0 * _rayon + 0.01, h)
+	var forme := $Collision as CollisionShape3D
+	if forme != null:
+		forme.position.y = _capsule.height * 0.5
+
+
+## Est-il accroupi ? Pour les tests, et pour qui voudra s'en servir plus tard :
+## rien d'autre ne distingue un personnage accroupi d'un personnage lent.
+func accroupi() -> bool:
+	return _accroupi
+
 ## Diagnostic, lu par les tests : nombre de bordures effectivement franchies,
 ## et raison du dernier refus. Un franchissement rate est silencieux sinon, et
 ## on passe son temps a supposer pourquoi.
@@ -144,7 +172,13 @@ func _ready() -> void:
 	# l'arete, sinon on retombe dedans. On le lit plutot que de le supposer.
 	var forme := $Collision as CollisionShape3D
 	if forme != null and forme.shape is CapsuleShape3D:
-		_rayon = (forme.shape as CapsuleShape3D).radius
+		# La forme est PROPRE a ce joueur : sans copie, s'accroupir raccourcirait
+		# la capsule de toutes les instances qui partagent la ressource, y
+		# compris dans une autre scene chargee en meme temps.
+		forme.shape = forme.shape.duplicate()
+		_capsule = forme.shape as CapsuleShape3D
+		_rayon = _capsule.radius
+		_debout = _capsule.height
 
 
 func _physics_process(delta: float) -> void:
@@ -178,10 +212,21 @@ func _physics_process(delta: float) -> void:
 	#
 	# Dedans, on marche : courir dans un salon de sept metres n'a aucun sens et
 	# se lit tout de suite comme un personnage mal reglé.
+	# ACCROUPI tant que la touche est tenue. On peut se deplacer accroupi —
+	# c'est meme tout l'interet — mais on ne court pas, et on ne saute pas.
+	var accroupi := not bloque and Input.is_action_pressed("accroupir")
+	if accroupi != _accroupi:
+		_accroupi = accroupi
+		_regler_la_capsule()
+
 	var nom_allure := "trot"
 	var allure := reglages.trot_vitesse
 	var enjambee := reglages.trot_foulee
-	if interieur:
+	if accroupi:
+		nom_allure = "accroupi_marche"
+		allure = reglages.accroupi_vitesse
+		enjambee = reglages.accroupi_foulee
+	elif interieur:
 		nom_allure = "marche"
 		allure = reglages.marche_vitesse
 		enjambee = reglages.marche_foulee
@@ -202,8 +247,14 @@ func _physics_process(delta: float) -> void:
 	# traverse zero.
 	var au_sol_avant := Vector2(velocity.x, velocity.z).length()
 	if absf(avance) < 0.01 and au_sol_avant < reglages.repos_seuil \
-			and _demarche != null and _demarche.connait("repos"):
-		nom_allure = "repos"
+			and _demarche != null:
+		var arret := "accroupi" if accroupi else "repos"
+		if _demarche.connait(arret):
+			nom_allure = arret
+
+	# EN L'AIR, plus rien de tout ca : on saute.
+	if not is_on_floor() and _demarche != null and _demarche.connait("saut"):
+		nom_allure = "saut"
 
 	_allure = nom_allure
 	if _demarche != null:
@@ -214,14 +265,39 @@ func _physics_process(delta: float) -> void:
 	if avance < 0.0:
 		allure *= reglages.marche_arriere
 
+	# LE SAUT. On saute avec l'elan qu'on avait, pas depuis l'arret.
+	#
+	# C'est le point qui distingue un saut d'un ressort : la vitesse
+	# horizontale n'est PAS remise a zero, et en l'air on ne la recalcule
+	# presque plus. Sans ca, relacher la commande en plein vol arreterait le
+	# personnage net, suspendu — et sauter en courant reviendrait a sauter sur
+	# place, ce qui est precisement ce qu'on ne veut pas.
+	if not bloque and Input.is_action_just_pressed("saut") \
+			and is_on_floor() and not accroupi:
+		velocity.y = reglages.saut_vitesse
+		if _son() != null:
+			_son().bruit_ici("pas_exterieur", global_position, 0.82)
+
 	var voulu := devant * avance
 	var cible := voulu * allure
 	var k := clampf(reglages.marche_acceleration * delta, 0.0, 1.0)
+	if not is_on_floor():
+		# COMMANDE AU NEUTRE EN L'AIR : on ne touche a rien du tout.
+		#
+		# Ramener la vitesse vers zero, meme lentement, suffit a manger l'elan :
+		# un saut dure trois quarts de seconde, et a un quart de l'acceleration
+		# au sol il retombait a moins de la moitie de la distance attendue.
+		# Personne ne freine en l'air.
+		k = 0.0 if absf(avance) < 0.01 else k * reglages.saut_controle
 	velocity.x = lerpf(velocity.x, cible.x, k)
 	velocity.z = lerpf(velocity.z, cible.z, k)
 
 	move_and_slide()
-	_franchir(voulu, delta)
+	# Pas de franchissement de bordure en l'air : la manoeuvre teleporte le
+	# personnage vers le haut, et l'enchainer avec un saut le fait grimper les
+	# murs par a-coups.
+	if is_on_floor():
+		_franchir(voulu, delta)
 
 	# Vitesse SIGNEE : la silhouette inverse le cycle de marche quand on
 	# recule, sinon il marche a l'endroit en se deplacant a l'envers.

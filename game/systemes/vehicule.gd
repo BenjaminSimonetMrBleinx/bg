@@ -32,6 +32,14 @@ signal regime_change(regime: float)
 ## m/s : elle dit tout de suite si on a frotte un trottoir ou pris un mur.
 signal choc(force: float)
 
+## Un metre par seconde, en miles a l'heure. Le compteur du jeu est en km/h ;
+## le seuil de choc violent, lui, se pense en mph — c'est l'unite du pays.
+const MS_EN_MPH := 2.23694
+
+## Le dernier choc : etait-il violent, et a quelle vitesse est-on arrive.
+var dernier_choc_fort: bool = false
+var dernier_choc_mph: float = 0.0
+
 @onready var _avant: Array[VehicleWheel3D] = [$RoueAvantG, $RoueAvantD]
 @onready var _arriere: Array[VehicleWheel3D] = [$RoueArriereG, $RoueArriereD]
 @onready var _phares: Array[SpotLight3D] = [$PhareG, $PhareD]
@@ -179,7 +187,22 @@ func _ecouter_les_chocs(delta: float) -> void:
 	choc.emit(perdue)
 	if _son() == null:
 		return
-	var fort := perdue >= reglages.choc_fort
+	# DEUX facons d'avoir un choc fort, et il en faut deux.
+	#
+	#   - arriver vite. Au-dela de cinquante miles a l'heure, ce qu'on percute
+	#     n'a plus d'importance : c'est violent.
+	#   - perdre beaucoup d'un coup. Un mur pris a trente qui arrete la caisse
+	#     net est un choc violent lui aussi, et il l'etait deja avant.
+	#
+	# Le OU est volontaire. Ne garder que la vitesse ferait sonner en tole
+	# legere tous les murs pris a allure de ville, ou l'on passe la partie.
+	var vite := av.length() * MS_EN_MPH >= reglages.choc_impact_mph
+	var fort := vite or perdue >= reglages.choc_fort
+	# Lu par les tests. Le son joue ou ne joue pas, et rien dans la scene ne
+	# permet de savoir LEQUEL : sans ce temoin, un choc a cent a l'heure qui
+	# sonnerait en tole legere passerait au vert.
+	dernier_choc_fort = fort
+	dernier_choc_mph = av.length() * MS_EN_MPH
 	# La hauteur descend avec la violence : un gros choc sonne plus grave, et
 	# ca suffit a etager quatre variantes en une dizaine de nuances.
 	var hauteur := clampf(1.12 - perdue * 0.02, 0.85, 1.12)

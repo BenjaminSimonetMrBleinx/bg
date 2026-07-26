@@ -135,6 +135,15 @@
    ]
   },
 
+  "walt_accroupi": {
+   "quoi": "Walter accroupi, touche Ctrl gauche tenue. Sa tete doit descendre a 1,17 m et ses pieds rester au sol.",
+   "fin": 110,
+   "etapes": [
+    { "image": 30, "appui": "accroupir" },
+    { "image": 40, "camera": [22.2, 1.2, -10.4], "vise": [23.5, 0.9, -12] }
+   ]
+  },
+
   "depart": {
    "quoi": "Le point de depart, tel qu'on le decouvre en lancant le jeu.",
    "fin": 150,
