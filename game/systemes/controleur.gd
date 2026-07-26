@@ -29,6 +29,9 @@ extends Node
 ## La roue des outils. Facultative : sans elle, on joue les mains vides.
 @export var roue: NodePath
 
+## Le telephone. Facultatif : sans lui, la touche ne fait rien.
+@export var telephone: NodePath
+
 enum Etat { A_PIED, AU_VOLANT, DEDANS }
 
 var _etat: int = Etat.A_PIED
@@ -40,6 +43,7 @@ var _fondu: ColorRect
 var _audio: Audio
 var _dialogue: Dialogue
 var _roue: Roue
+var _telephone: Telephone
 var _maisons: Array[Maison] = []
 
 ## La maison dans laquelle on se trouve. Nulle des qu'on est dehors.
@@ -67,8 +71,11 @@ func _ready() -> void:
 	_audio = get_node_or_null(audio) as Audio
 	_dialogue = get_node_or_null(dialogue) as Dialogue
 	_roue = get_node_or_null(roue) as Roue
+	_telephone = get_node_or_null(telephone) as Telephone
 	if _dialogue != null:
-		_dialogue.termine.connect(func() -> void: _j.bloque = false)
+		_dialogue.termine.connect(_sur_fin_de_dialogue)
+	if _telephone != null:
+		_telephone.appel.connect(_sur_appel)
 	var racine := get_node_or_null(maisons)
 	if racine != null:
 		for n in racine.get_children():
@@ -129,6 +136,8 @@ func _unhandled_input(evenement: InputEvent) -> void:
 func _process(_delta: float) -> void:
 	if _transition:
 		return
+	if _gerer_le_telephone():
+		return
 	if _gerer_la_roue():
 		return
 
@@ -171,6 +180,68 @@ func _gerer_la_roue() -> bool:
 			_j.bloque = true
 			return true
 	return false
+
+
+# Le telephone passe AVANT la roue et avant tout le reste.
+#
+# Il capte alors l'avant, l'arriere et la touche d'interaction, qui servent a
+# naviguer et a valider. Sans ce court-circuit, choisir un correspondant
+# ferait marcher Walter dans la rue pendant qu'il compose.
+#
+# On ne s'en sert pas au volant : composer un numero en conduisant demanderait
+# de decider ce qu'il advient de la voiture, et ce n'est pas le sujet du jour.
+func _gerer_le_telephone() -> bool:
+	if _telephone == null:
+		return false
+
+	if _telephone.sorti():
+		_afficher("")
+		# Pendant que ca sonne, la touche ne raccroche pas : on vient de la
+		# presser pour appeler, et elle serait relue dans la meme seconde.
+		if not _telephone.occupe() and Input.is_action_just_pressed("telephone"):
+			if _dialogue != null and _dialogue.actif():
+				_dialogue.couper()
+			_telephone.ranger()
+			_j.bloque = false
+			return true
+		# En ligne, la touche d'interaction fait avancer la conversation.
+		if _dialogue != null and _dialogue.actif():
+			_afficher("F   Suite        T   Raccrocher")
+			if Input.is_action_just_pressed("interagir"):
+				_dialogue.avancer()
+		return true
+
+	var libre := _etat == Etat.A_PIED \
+			and not (_dialogue != null and _dialogue.actif()) \
+			and not (_roue != null and _roue.ouverte())
+	if libre and Input.is_action_just_pressed("telephone"):
+		_telephone.sortir()
+		_j.bloque = true
+		return true
+	return false
+
+
+# L'appel aboutit : le correspondant decroche, et c'est le systeme de dialogue
+# qui prend la main. Rien de neuf — c'est la meme conversation que chez lui,
+# declenchee autrement.
+func _sur_appel(cle: String) -> void:
+	if _dialogue == null:
+		return
+	if not _dialogue.demarrer(cle):
+		push_warning("telephone : aucune conversation pour '%s'. "
+				% cle + "Ajouter une fiche dans donnees/dialogues.json")
+		_telephone.ranger()
+		_j.bloque = false
+
+
+# Une conversation peut se terminer de deux facons : en face a face, on rend la
+# main au joueur ; au telephone, on raccroche d'abord. Sans cette distinction,
+# la derniere replique d'un appel laissait Walter libre de marcher avec le
+# combine toujours a l'ecran.
+func _sur_fin_de_dialogue() -> void:
+	if _telephone != null and _telephone.sorti():
+		_telephone.ranger()
+	_j.bloque = false
 
 
 func _presenter_le_joueur() -> void:

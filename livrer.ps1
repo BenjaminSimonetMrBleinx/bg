@@ -428,6 +428,16 @@ if (-not $Oui) {
 
 if ((Invoke-Git add -A).Code -ne 0) { Stop-Net "Impossible de preparer les fichiers." }
 
+# version.json est REGENERE avant chaque lancement : il change a chaque commit,
+# et le suivre cree un conflit a chaque envoi croise.
+#
+# Le mettre dans .gitignore ne suffit pas, et c'est le piege : .gitignore ne
+# s'applique qu'aux fichiers NON suivis. Une fois qu'il est entre dans l'index
+# de quelqu'un - et il y est entre avant qu'on l'ignore - il y reste, et
+# "git add -A" le represente a chaque fois. Il est donc retire de l'index ici,
+# explicitement, a chaque envoi.
+Invoke-Git rm --cached -q --ignore-unmatch game/donnees/version.json | Out-Null
+
 if ((Invoke-Git commit -q -m $Message).Code -ne 0) {
     Stop-Net "Impossible d enregistrer les modifications."
 }

@@ -243,6 +243,20 @@ extends Resource
 @export_range(1.0, 30.0, 0.5) var son_portee: float = 5.0
 @export_range(5.0, 100.0, 1.0) var son_distance_max: float = 34.0
 
+@export_subgroup("Telephone")
+
+## Temps de sortie et de rangement du combine, en secondes. Un telephone qui
+## apparait d'un coup n'a pas de poids ; au-dela d'une demi-seconde on attend.
+@export_range(0.05, 1.5, 0.05) var telephone_ouverture: float = 0.35
+
+## Duree de la sonnerie avant que le correspondant decroche. C'est du temps
+## mort assume : sans lui, appeler quelqu'un et lui parler sont le meme geste.
+@export_range(0.0, 8.0, 0.1) var telephone_sonnerie: float = 2.2
+
+## Taille du combine a l'ecran, en pixels du rendu interne (512 x 384).
+@export_range(30.0, 140.0, 1.0) var telephone_largeur: float = 66.0
+@export_range(50.0, 240.0, 1.0) var telephone_hauteur: float = 118.0
+
 @export_subgroup("Pas")
 
 ## Longueur d'une foulee sonore, en fraction du cycle. Le pied se pose deux

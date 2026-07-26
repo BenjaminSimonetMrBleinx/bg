@@ -62,8 +62,16 @@ func _process(_delta: float) -> bool:
 		var data: Dictionary = JSON.parse_string(brut)
 		var total := 0
 		var manquants: Array[String] = []
+		var muettes := 0
 		for cle in data:
 			if typeof(data[cle]) != TYPE_DICTIONARY:
+				continue
+			# Une fiche peut se declarer SANS VOIX, et c'est un etat legitime :
+			# les appels telephoniques n'en ont pas encore. Le dire dans les
+			# donnees vaut mieux que de baisser l'exigence du test, qui ne
+			# verrait alors plus les vraies voix manquantes.
+			if bool((data[cle] as Dictionary).get("sans_voix", false)):
+				muettes += 1
 				continue
 			for conv in (data[cle] as Dictionary).get("conversations", []):
 				for r in conv:
@@ -78,7 +86,8 @@ func _process(_delta: float) -> bool:
 							texte.md5_text().substr(0, 10)]
 					if not ResourceLoader.exists(chemin):
 						manquants.append("%s : %s" % [qui, texte])
-		print("       %d replique(s), %d sans voix" % [total, manquants.size()])
+		print("       %d replique(s), %d sans voix, %d fiche(s) muettes assumees"
+				% [total, manquants.size(), muettes])
 		for m in manquants.slice(0, 3):
 			printerr("       manque : " + m)
 		_verifier(total > 0, "il y a des repliques")

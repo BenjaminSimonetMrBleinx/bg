@@ -11,7 +11,7 @@
 ; Le vehicule demarre sur la chaussee verticale du couloir 0, qui court le
 ; long de -Z : il est donc deja dans le bon sens.
 
-[gd_scene load_steps=26 format=3 uid="uid://bgmonde0v0001"]
+[gd_scene load_steps=27 format=3 uid="uid://bgmonde0v0001"]
 
 [ext_resource type="Script" path="res://rendu/rendu_ps2.gd" id="1_rendu"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
@@ -33,6 +33,7 @@
 [ext_resource type="PackedScene" path="res://assets/personnages/jesse.glb" id="18_jesse"]
 [ext_resource type="Script" path="res://systemes/equipement.gd" id="19_equipement"]
 [ext_resource type="Script" path="res://systemes/roue.gd" id="20_roue"]
+[ext_resource type="Script" path="res://systemes/telephone.gd" id="21_telephone"]
 [ext_resource type="Script" path="res://systemes/hud.gd" id="21_hud"]
 [ext_resource type="Script" path="res://systemes/foule.gd" id="22_foule"]
 
@@ -216,6 +217,18 @@ script = ExtResource("20_roue")
 reglages = ExtResource("2_reglages")
 equipement = NodePath("../../../Equipement")
 
+; Le telephone. Dessine par-dessus la roue : les deux ne s'ouvrent jamais en
+; meme temps, mais si ca arrivait c'est le combine qu'on veut voir.
+[node name="Telephone" type="Control" parent="Rendu/Interface"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("21_telephone")
+reglages = ExtResource("2_reglages")
+
 ; Le fondu de porte. Declare APRES l'invite, donc dessine par-dessus : pendant
 ; le noir, plus rien ne doit rester lisible a l'ecran.
 [node name="Fondu" type="ColorRect" parent="Rendu/Interface"]
@@ -254,6 +267,7 @@ fondu = NodePath("../Rendu/Interface/Fondu")
 audio = NodePath("../Audio")
 dialogue = NodePath("../Dialogue")
 roue = NodePath("../Rendu/Interface/Roue")
+telephone = NodePath("../Rendu/Interface/Telephone")
 
 [node name="Affichage" type="CanvasLayer" parent="."]
 layer = -1

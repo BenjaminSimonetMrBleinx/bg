@@ -155,6 +155,17 @@ static func _simplifier(nom: String) -> String:
 	return sortie
 
 
+## Interrompt la conversation en cours. Raccrocher au milieu d'un appel doit
+## couper la voix : sinon le correspondant continue de parler dans le vide,
+## combine range.
+func couper() -> void:
+	if not _actif:
+		return
+	if _lecteur != null:
+		_lecteur.stop()
+	_fermer()
+
+
 func _fermer() -> void:
 	_actif = false
 	_repliques = []

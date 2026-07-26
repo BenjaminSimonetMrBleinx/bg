@@ -38,6 +38,9 @@
   "assise": ["vehicule/sit_car.wav"],
   "klaxon": ["vehicule/klaxon.wav"],
 
+  "sonnerie": ["telephone/phone_ring.wav"],
+
+
   "pas_exterieur": ["pas/steps_beton.wav"],
   "pas_interieur": ["pas/step_indoors01.wav"]
  },

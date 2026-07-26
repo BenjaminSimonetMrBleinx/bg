@@ -1,0 +1,23 @@
+{
+ "_lisez_moi": [
+  "Le repertoire du telephone. Une entree = un correspondant appelable.",
+  "",
+  "La 'cle' pointe vers une fiche de dialogues.json, exactement comme celle",
+  "d'un habitant de maison. Appeler quelqu'un et lui parler chez lui passent",
+  "donc par le meme systeme : ce sont deux facons de declencher la meme chose.",
+  "",
+  "Ajouter un correspondant ne demande aucun code. Une entree ici, une fiche",
+  "dans dialogues.json, et il est dans le repertoire.",
+  "",
+  "Une cle sans fiche correspondante donne un appel qui sonne dans le vide.",
+  "Le test 'telephone' verifie ce point, parce que ca ne se voit autrement",
+  "qu'en appelant."
+ ],
+
+ "menu": ["Appeler"],
+
+ "contacts": [
+  { "cle": "telephone_jesse", "nom": "Jesse" },
+  { "cle": "telephone_skyler", "nom": "Skyler" }
+ ]
+}

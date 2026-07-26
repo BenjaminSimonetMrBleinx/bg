@@ -10,6 +10,33 @@
     "cadre en affiche trois lignes."
   ],
 
+  "telephone_jesse": {
+    "nom": "Jesse",
+    "sans_voix": true,
+    "_note": [
+      "Appele depuis le telephone, pas rencontre chez lui. Volontairement",
+      "court : un appel qui s'eternise donne envie de raccrocher, et le",
+      "telephone n'est pour l'instant qu'un accessoire d'ambiance."
+    ],
+    "conversations": [
+      [
+        { "qui": "Jesse",  "texte": "Yo." },
+        { "qui": "Walter", "texte": "Bonjour." }
+      ]
+    ]
+  },
+
+  "telephone_skyler": {
+    "nom": "Skyler",
+    "sans_voix": true,
+    "conversations": [
+      [
+        { "qui": "Skyler", "texte": "Bonjour." },
+        { "qui": "Walter", "texte": "Bonjour." }
+      ]
+    ]
+  },
+
   "skyler": {
     "nom": "Skyler",
     "_note": [
