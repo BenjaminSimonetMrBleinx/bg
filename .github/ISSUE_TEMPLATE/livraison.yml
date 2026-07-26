@@ -1,0 +1,22 @@
+name: Je livre un fichier
+description: Pour Guillaume — dire qu'un fichier est depose et pret a integrer
+title: "[Livre] "
+labels: ["a-integrer"]
+body:
+  - type: input
+    id: fichier
+    attributes:
+      label: Le fichier
+      description: Son chemin dans livraisons/, tel que tu l'as depose.
+      placeholder: livraisons/sons/this_is_not_meth.wav
+    validations: { required: true }
+  - type: input
+    id: ticket
+    attributes:
+      label: Ca repond a quel ticket ?
+      placeholder: "#3, ou rien si c'est nouveau"
+  - type: textarea
+    id: note
+    attributes:
+      label: Ta note
+      description: Ce que tu as fait, ce dont tu n'es pas sur, ce qui t'a pose probleme.

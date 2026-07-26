@@ -1,0 +1,33 @@
+name: Il manque quelque chose
+description: Un son, une voix, un modele, une animation dont le jeu a besoin
+title: "[Manque] "
+labels: ["a-faire"]
+body:
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      options: [Son, Voix, Modele, Animation, Texture, Info, Autre]
+    validations: { required: true }
+  - type: dropdown
+    id: priorite
+    attributes:
+      label: Priorite
+      options: [Haute, Moyenne, Basse]
+    validations: { required: true }
+  - type: textarea
+    id: attendu
+    attributes:
+      label: Ce qu'on attend
+      description: Le detail. Combien de fichiers, quelle duree, pour quel moment du jeu.
+    validations: { required: true }
+  - type: input
+    id: format
+    attributes:
+      label: Format
+      placeholder: WAV 44,1 kHz mono / GLB rigge / PNG
+  - type: input
+    id: ou
+    attributes:
+      label: Ou le poser
+      placeholder: livraisons/sons/
