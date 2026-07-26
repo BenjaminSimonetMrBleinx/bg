@@ -144,6 +144,29 @@ def materiau(nom: str, dossier: Path) -> bpy.types.Material:
     tex.extension = "REPEAT"
     tex.location = (-420, 220)
     arbre.links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
+
+    # Les fenetres allumees, sur le canal d'EMISSION.
+    #
+    # C'est ce qui permet au jeu de changer d'heure sans refabriquer la ville.
+    # La couleur de base porte les vitres de jour, qui renvoient le ciel ; le
+    # masque porte celles qui s'allument. Godot n'a plus qu'a monter ou
+    # descendre l'energie d'emission, en continu.
+    #
+    # La force est laissee a 1 a l'export, PAS a 0 : l'exportateur glTF
+    # abandonne purement et simplement une texture d'emission dont la force est
+    # nulle, et le masque n'arriverait jamais dans le .glb. C'est le jeu qui la
+    # ramene a zero de jour, des le chargement.
+    vitres = dossier / f"{nom}_vitres.png"
+    if vitres.exists() and "Emission Color" in bsdf.inputs:
+        img_v = bpy.data.images.load(str(vitres), check_existing=True)
+        img_v.pack()
+        tex_v = arbre.nodes.new("ShaderNodeTexImage")
+        tex_v.image = img_v
+        tex_v.interpolation = "Linear"
+        tex_v.extension = "REPEAT"
+        tex_v.location = (-420, -160)
+        arbre.links.new(tex_v.outputs["Color"], bsdf.inputs["Emission Color"])
+        bsdf.inputs["Emission Strength"].default_value = 1.0
     return mat
 
 

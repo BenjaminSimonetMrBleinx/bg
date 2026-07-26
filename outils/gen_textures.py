@@ -127,6 +127,50 @@ def trottoir(u: float, v: float):
     return (g, g, g + 7)
 
 
+def facade_vitres(base, graine: int):
+    """Le masque d'EMISSION d'une facade : ce qui s'allume la nuit.
+
+    C'EST LA PIECE QUI DEBLOQUE LE JOUR/NUIT.
+
+    Jusqu'ici l'etat des fenetres etait peint dans la couleur meme de la
+    facade : une texture de jour, une texture de nuit, choisies a la
+    GENERATION. Le jeu ne pouvait donc pas changer d'heure — il aurait fallu
+    refabriquer la ville, et le moment etait cuit dans le .glb.
+
+    Ici, la facade n'a plus qu'une seule couleur — celle du jour, ou les vitres
+    renvoient le ciel — et les fenetres allumees vivent dans un canal separe.
+    Godot n'a plus qu'a monter l'emission de zero a un pour passer du jour a la
+    nuit, en continu, sur les memes assets. L'aube et le crepuscule deviennent
+    gratuits.
+
+    Le tirage 'k' est IDENTIQUE a celui de facade() : c'est ce qui garantit que
+    la fenetre qui s'allume est bien une fenetre, et pas un morceau de mur.
+    """
+
+    def fn(u: float, v: float):
+        cu, cv = int(u * 2), int(v * 2)
+        bu, bv = (u * 2) % 1.0, (v * 2) % 1.0
+
+        noir = (0, 0, 0)
+        if bv < 0.10:
+            return noir
+        if not (0.18 < bu < 0.82 and 0.24 < bv < 0.84):
+            return noir
+        # L'encadrement ne s'allume pas : seule la vitre.
+        if bu < 0.235 or bu > 0.765 or bv < 0.295 or bv > 0.795:
+            return noir
+
+        k = hache(cu * 17 + graine * 5, cv * 23 + graine * 3)
+        j = 0.88 + hache(int(u * 220), int(v * 220)) * 0.24
+        if k > 0.86:
+            return (94 * j, 200 * j, 126 * j)      # un neon vert
+        if k > 0.46:
+            return (210 * j, 158 * j, 80 * j)      # une lampe chaude
+        return noir                                 # personne, ou tout le monde dort
+
+    return fn
+
+
 def facade(base, graine: int, jour: bool = False):
     """Une tuile = **2 x 2 travees** de fenetre, aux etats differents.
 
@@ -729,10 +773,16 @@ def main() -> None:
     faits.append("trottoir.png")
 
     for i, (nom, couleur) in enumerate(FACADES.items()):
+        # La couleur de base est TOUJOURS celle du jour, quel que soit --moment.
+        # Les fenetres allumees ne sont plus peintes dedans : elles vivent dans
+        # le masque d'emission ci-dessous, que le jeu monte et descend a l'heure
+        # qu'il veut. Voir facade_vitres().
         ecrire_png(dossier / f"{nom}.png", t, t,
-                   rendre(t, t, facade(couleur, i * 13, jour)))
+                   rendre(t, t, facade(couleur, i * 13, True)))
+        ecrire_png(dossier / f"{nom}_vitres.png", t, t,
+                   rendre(t, t, facade_vitres(couleur, i * 13)))
         ecrire_png(dossier / f"{nom}_mur.png", t, t, rendre(t, t, mur(couleur)))
-        faits.append(f"{nom}.png + _mur")
+        faits.append(f"{nom}.png + _vitres + _mur")
 
     # --- vehicules ---
     for nom, couleur in CARROSSERIES.items():

@@ -33,11 +33,50 @@ const SCENES := {
 const SOLIDES := ["benne", "banc", "cactus", "panneau"]
 
 
+## Les materiaux de facade qui portent un masque de fenetres allumees. On les
+## garde pour pouvoir monter et descendre leur emission a l'heure voulue.
+var _fenetres: Array[BaseMaterial3D] = []
+
+
 func _ready() -> void:
 	_poser_geometrie()
+	_recenser_fenetres()
+	eclairer_fenetres(0.0 if Reglages.est_jour() else 1.0)
 	_poser_lampes()
 	_poser_decor()
 	prete.emit(etendue)
+
+
+# Les fenetres allumees sont un masque d'EMISSION sur les facades, pas une
+# couleur peinte dedans. C'est ce qui permet de changer d'heure sans
+# refabriquer la ville : jusqu'ici l'etat des vitres etait cuit dans la texture,
+# choisi a la generation, et le jeu ne pouvait rien y faire.
+#
+# Les materiaux viennent du .glb importe, donc ils sont PARTAGES entre toutes
+# les faces qui les utilisent. Les modifier ici les modifie partout, ce qui est
+# exactement ce qu'on veut : quatre materiaux pour toute la ville.
+func _recenser_fenetres() -> void:
+	_fenetres.clear()
+	_collecter(self)
+
+
+func _collecter(n: Node) -> void:
+	if n is MeshInstance3D:
+		var mi := n as MeshInstance3D
+		if mi.mesh != null:
+			for i in mi.mesh.get_surface_count():
+				var m := mi.mesh.surface_get_material(i) as BaseMaterial3D
+				if m != null and m.emission_enabled and not _fenetres.has(m):
+					_fenetres.append(m)
+	for e in n.get_children():
+		_collecter(e)
+
+
+## Allume les fenetres, de 0 (plein jour) a 1 (nuit noire). Continu : l'aube et
+## le crepuscule sont des valeurs intermediaires, pas des cas particuliers.
+func eclairer_fenetres(part: float) -> void:
+	for m in _fenetres:
+		m.emission_energy_multiplier = clampf(part, 0.0, 1.0)
 
 
 func _poser_geometrie() -> void:
