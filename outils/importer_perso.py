@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Met un personnage RIGGE livre a la main aux conventions du projet.
 
-    blender -b -P outils/importer_perso.py -- --fichier "livraisons/Walt anim.glb" \\
+    blender -b -P outils/importer_perso.py -- --fichier "livraisons/modeles/walt_anim.glb" \\
             --nom walt --hauteur 1.78
 
 Un modele livre arrive rarement pret : il est a l'echelle de son logiciel

@@ -82,6 +82,7 @@ Rééquiper l'outil qu'on tient déjà le range — c'est le seul moyen de reven
 | [`docs/05-demarrage.md`](docs/05-demarrage.md) | **Machine neuve : commence ici.** |
 | [`docs/07-ajouter-du-contenu.md`](docs/07-ajouter-du-contenu.md) | **Écrire des dialogues, créer un personnage — sans coder.** |
 | [`docs/06-travailler-a-deux.md`](docs/06-travailler-a-deux.md) | Qui fait quoi, qui tranche quoi, et pourquoi personne n'attend personne |
+| [`livraisons/TICKETS.csv`](livraisons/TICKETS.csv) | **Ce qui manque au jeu, et où on en est.** S'ouvre dans Excel. Le canal entre Guillaume et l'intégration |
 | [`docs/04-brief-son.md`](docs/04-brief-son.md) | Liste exhaustive des sons — pour Guillaume |
 | [`docs/00-questions.md`](docs/00-questions.md) | Les questions de cadrage, **à remplir** |
 | [`docs/01-cadrage.md`](docs/01-cadrage.md) | Décisions verrouillées, choix du moteur, répartition |
