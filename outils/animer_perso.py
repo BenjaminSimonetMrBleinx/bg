@@ -703,6 +703,94 @@ def clip_marche_accroupie(arm, source, debout: dict):
     return action
 
 
+def pose_assise(arm, debout: dict, hauteur: float = 0.46) -> dict:
+    """Assis sur un siege : cuisses a l'horizontale, tibias verticaux.
+
+    Ce n'est PAS un accroupi plus bas. Un accroupi garde les pieds sous le
+    bassin et le buste en avant ; assis, les pieds sont DEVANT, le buste est
+    droit et le poids repose sur le siege. Les deux poses ont l'air proches
+    sur le papier et n'ont aucune articulation en commun.
+
+    On impose donc les cuisses et le bassin, et on CHERCHE les genoux et les
+    chevilles qui reposent les pieds a plat au sol, devant.
+    """
+    if arm.animation_data is not None:
+        arm.animation_data.action = None
+    poser_pose(arm, debout)
+    depart_hanche = place(arm, "Hips").z
+    descente = depart_hanche - hauteur
+
+    pose = {k: v.copy() for k, v in debout.items()}
+    # Les cuisses partent a l'horizontale. C'est la seule chose qu'on ecrit :
+    # tout le reste en decoule et se resout.
+    for cote in ("Left", "Right"):
+        tourner(arm, pose, cote + "UpLeg", TANGAGE, -82.0)
+        tourner(arm, pose, cote + "Leg", TANGAGE, 78.0)
+    # Le buste droit, legerement en arriere : on est cale dans un fauteuil.
+    tourner(arm, pose, "Hips", TANGAGE, 6.0)
+    tourner(arm, pose, "Spine01", TANGAGE, 3.0)
+    # Les avant-bras sur les accoudoirs.
+    tourner(arm, pose, "LeftArm", AVANT, -8.0)
+    tourner(arm, pose, "RightArm", AVANT, 8.0)
+    tourner(arm, pose, "LeftForeArm", GAUCHE, 62.0)
+    tourner(arm, pose, "RightForeArm", GAUCHE, 62.0)
+
+    poser_pose(arm, pose, -descente)
+    # Les pieds doivent finir AU SOL et devant. On les vise la ou ils sont
+    # tombes, ramenes a z = 0 : c'est la seule contrainte qui compte, un
+    # personnage assis dont les pieds pendent dans le vide se voit tout de
+    # suite.
+    ancre = {}
+    for n in ("LeftFoot", "RightFoot"):
+        p = place(arm, n)
+        p.z = hauteur * 0.09
+        ancre[n] = p
+
+    axes = [TANGAGE, ROULIS, LACET]
+    leviers = []
+    for cote in ("Left", "Right"):
+        leviers += [(cote + "Leg", axes[0], 60.0),
+                    (cote + "Foot", axes[0], 55.0),
+                    (cote + "UpLeg", axes[0], 30.0)]
+
+    def cout(_v) -> float:
+        return sum((place(arm, n) - ancre[n]).length for n in ancre)
+
+    departs = [[a, b, 0.0, a, b, 0.0]
+               for a, b in ((0.0, 0.0), (20.0, -15.0), (-20.0, 15.0))]
+    pose = resoudre(arm, pose, leviers, cout, departs, -descente)
+    poser_pose(arm, pose, -descente)
+    reste = max((place(arm, n) - ancre[n]).length for n in ancre)
+    print("  assis      bassin %.2f m -> %.2f m, tete a %.2f m, pieds a %.2f m "
+          "(ecart %.1f cm)"
+          % (depart_hanche, place(arm, "Hips").z, place(arm, "Head").z,
+             place(arm, "LeftFoot").z, reste * 100.0))
+    pose["#descente"] = descente
+    return pose
+
+
+def clip_assis(arm, debout: dict, duree_s: float = 5.0):
+    """Assis, et vivant. Il respire, et il bouge la tete de temps en temps."""
+    base = pose_assise(arm, debout)
+    descente = base.pop("#descente")
+    action = action_neuve("Assis")
+    if arm.animation_data is None:
+        arm.animation_data_create()
+    arm.animation_data.action = action
+    total = int(duree_s * IPS)
+    for i in range(total + 1):
+        t = i / float(total)
+        pose = {k: v.copy() for k, v in base.items()}
+        souffle = math.sin(t * duree_s / 4.0 * math.tau)
+        tourner(arm, pose, "Spine01", TANGAGE, 1.1 * souffle)
+        tourner(arm, pose, "Head", LACET, 3.2 * math.sin(t * 0.8 * math.tau))
+        tourner(arm, pose, "Head", TANGAGE, 1.4 * math.cos(t * 1.3 * math.tau))
+        appliquer(arm, pose, -descente + 0.004 * souffle)
+        cle(arm, action, i)
+    boucler(action)
+    return action
+
+
 def clip_saut(arm, debout: dict, duree_s: float = 0.8):
     """En l'air. Jambes repliees a la montee, tendues a la retombee.
 
@@ -813,6 +901,24 @@ def _copier_les_clips(arm, source: Path, fichier: Path) -> None:
     """
     if not source.exists():
         raise SystemExit("source introuvable : %s" % source)
+
+    # ON PURGE D'ABORD LES CLIPS DEJA COPIES.
+    #
+    # Blender ne remplace pas une action homonyme, il la renomme : un second
+    # transfert produit « Repos.001 » et le jeu, qui cherche « Repos », ne
+    # trouve plus rien. Le personnage redevient une pose en T sans qu'aucune
+    # erreur ne le dise.
+    #
+    # On garde le clip d'origine du fichier — c'est le seul que le modele
+    # possede en propre.
+    purges = [a for a in bpy.data.actions
+              if "baselayer" not in a.name and "clip0" not in a.name]
+    for a in purges:
+        bpy.data.actions.remove(a)
+    if purges:
+        print("  %-12s %d clip(s) precedents remplaces"
+              % ("purge", len(purges)))
+
     avant = {x.name for x in bpy.data.actions}
     bpy.ops.import_scene.gltf(filepath=str(source))
     neuves = [x for x in bpy.data.actions if x.name not in avant]
@@ -821,11 +927,43 @@ def _copier_les_clips(arm, source: Path, fichier: Path) -> None:
 
     # L'armature importee a servi de vehicule aux actions ; on la jette, les
     # actions restent. Sans ca on exporte deux personnages superposes.
+    # L'ECHELLE DES TRANSLATIONS, et c'est le piege du transfert.
+    #
+    # Une rotation se recopie telle quelle d'un squelette a l'autre : elle
+    # n'a pas d'unite. Une TRANSLATION en a une — celle de l'armature — et les
+    # deux modeles n'ont pas ete mis a la meme echelle en arrivant. Le bassin
+    # que le clip « Assis » fait descendre de cinquante-neuf centimetres chez
+    # Walter descendait d'un centimetre chez Tuco, qui restait donc debout au
+    # milieu de son bureau EN JOUANT L'ANIMATION ASSISE. Rien ne le signalait :
+    # le clip existait, il tournait, il ne faisait simplement presque rien.
+    source_arm = next((o for o in bpy.data.objects
+                       if o.type == "ARMATURE" and o != arm), None)
+    facteur = 1.0
+    if source_arm is not None:
+        e_source = source_arm.matrix_world.to_scale().z
+        e_cible = arm.matrix_world.to_scale().z
+        if e_cible > 1e-9:
+            facteur = e_source / e_cible
+
     intrus = [o for o in bpy.data.objects
               if o != arm and (o.type == "ARMATURE"
                                or (o.parent is not None and o.parent != arm))]
     for o in intrus:
         bpy.data.objects.remove(o, do_unlink=True)
+
+    if abs(facteur - 1.0) > 1e-6:
+        touchees = 0
+        for act in neuves:
+            for c in courbes(act):
+                if not c.data_path.endswith(".location"):
+                    continue
+                for k in c.keyframe_points:
+                    k.co.y *= facteur
+                    k.handle_left.y *= facteur
+                    k.handle_right.y *= facteur
+                touchees += 1
+        print("  %-12s x %.4f sur %d courbe(s) de position"
+              % ("echelle", facteur, touchees))
 
     if arm.animation_data is None:
         arm.animation_data_create()
@@ -844,15 +982,19 @@ def _copier_les_clips(arm, source: Path, fichier: Path) -> None:
     print("  %-12s %s" % ("copies de", source.name))
     print("  %-12s %s" % ("clips", ", ".join(gardees)))
 
-    bpy.ops.object.select_all(action="DESELECT")
-    arm.select_set(True)
-    for e in arm.children_recursive:
-        e.select_set(True)
-    bpy.ops.export_scene.gltf(
-        filepath=str(fichier), export_format="GLB", use_selection=True,
-        export_apply=False, export_yup=True, export_animations=True,
-        export_cameras=False, export_lights=False)
-    print("  %-12s %s" % ("sortie", fichier))
+    # ON N'EXPORTE PAS ICI. Les clips transferes servent de MATIERE : la
+    # fabrication normale reprend juste apres et refait Repos, Assis, Accroupi
+    # et les autres SUR CE RIG-CI.
+    #
+    # C'est indispensable. Une rotation se recopie d'un squelette a l'autre sans
+    # rien perdre ; une TRANSLATION est exprimee dans le repere de l'os, propre
+    # a chaque rig. Mesure faite : le bassin que « Assis » fait descendre de
+    # cinquante-neuf centimetres chez Walter REMONTAIT de trente-six chez Tuco,
+    # qui restait donc plante debout en jouant l'animation assise. Aucune
+    # erreur, aucun avertissement : le clip existait et tournait.
+    #
+    # Seuls Walking et Running survivent au transfert — ce sont les seuls dont
+    # on a besoin, et la fabrication recalcule tout le reste dans le bon repere.
 
 
 def main() -> None:
@@ -869,7 +1011,6 @@ def main() -> None:
 
     if a.depuis:
         _copier_les_clips(arm, racine / a.depuis, fichier)
-        return
 
     livrees = [x.name for x in bpy.data.actions]
     print("")
@@ -897,7 +1038,7 @@ def main() -> None:
     nouvelles = (clip_repos(arm, source), clip_marche(arm, source),
                  clip_accroupi(arm, debout),
                  clip_marche_accroupie(arm, source, debout),
-                 clip_saut(arm, debout))
+                 clip_saut(arm, debout), clip_assis(arm, debout))
     print("")
     # On RELIT ce qu'on vient d'ecrire. Construire une pose et l'inserer en cle
     # sont deux operations distinctes, et rien ne garantit que la seconde ait
@@ -940,7 +1081,7 @@ def main() -> None:
     # Les actions creees ici ne sont attachees a rien : sans piste NLA, elles
     # ne sortent pas du fichier et on cherche pourquoi le jeu ne les voit pas.
     arm.animation_data.action = None
-    for nom in ("Repos", "Marche", "Accroupi", "AccroupiMarche", "Saut"):
+    for nom in ("Repos", "Marche", "Accroupi", "AccroupiMarche", "Saut", "Assis"):
         ranger(arm, bpy.data.actions[nom])
 
     bpy.ops.object.select_all(action="SELECT")

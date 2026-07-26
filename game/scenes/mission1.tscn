@@ -295,9 +295,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -4.2)
 shape = SubResource("mur_bureau_bout")
 
 [node name="Tuco" type="Node3D" parent="QgInterieur"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -3.2)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -3.55)
 script = ExtResource("1_pnj")
 cle = "tuco"
+pose = "Assis"
 geometrie = ExtResource("11_tuco")
 
 ; Les trois hommes de main sont DERRIERE le joueur, au fond de la piece. C'est

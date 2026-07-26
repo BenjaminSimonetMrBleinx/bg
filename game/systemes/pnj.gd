@@ -12,6 +12,13 @@ extends Node3D
 
 @export var geometrie: PackedScene
 
+## L'animation qu'il joue en boucle. Vide = sa pose de repos.
+##
+## Tuco est ASSIS derriere son bureau : un chef de cartel qui recoit debout au
+## milieu de son bureau n'a pas la meme autorite, et la reference le montre
+## cale dans son fauteuil de cuir.
+@export var pose: String = ""
+
 ## Vitesse a laquelle il pivote vers le joueur, en radians par seconde.
 @export_range(0.2, 12.0, 0.1) var rotation_vitesse: float = 3.0
 
@@ -66,7 +73,9 @@ func _respirer(corps: Node) -> void:
 	var lecteur := corps.find_child("AnimationPlayer", true, false) as AnimationPlayer
 	if lecteur == null:
 		return
-	for candidat in [Demarche.IMMOBILE, Demarche.CYCLE]:
+	for candidat in [pose, Demarche.IMMOBILE, Demarche.CYCLE]:
+		if candidat == "":
+			continue
 		if lecteur.has_animation(candidat):
 			var anim := lecteur.get_animation(candidat)
 			anim.loop_mode = Animation.LOOP_LINEAR
