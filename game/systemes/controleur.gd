@@ -600,6 +600,23 @@ func _commencer_dedans() -> void:
 		_audio.ambiance(m.nom_affiche)
 
 
+## Repose le joueur DEHORS, sans fondu ni bruit de porte.
+##
+## Pour les captures, et pour elles seules. La partie s'ouvre dans le salon de
+## Walter depuis qu'il faut en SORTIR pour recevoir l'appel de Tuco : toutes les
+## vues qui cadraient le personnage dans la rue se sont mises a montrer une rue
+## vide, et le defaut est passe inapercu parce qu'une rue vide reste une image
+## plausible. On ne s'en apercoit qu'en cherchant quelqu'un qui n'y est pas.
+func sortir_du_batiment() -> void:
+	_etat = Etat.A_PIED
+	_dedans = null
+	_j.interieur = false
+	_c.interieur(false)
+	_c.recaler()
+	if _audio != null:
+		_audio.ambiance("")
+
+
 ## Un bandeau, pour dire quelque chose au joueur.
 func annoncer(texte: String) -> void:
 	_texte_bandeau = texte

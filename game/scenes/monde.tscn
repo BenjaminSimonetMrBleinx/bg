@@ -236,6 +236,33 @@ etape = "cacher"
 une_fois = false
 portee = 1.9
 
+; CE QUE WALTER A CHEZ LUI, et qu'il faut aller chercher.
+;
+; Il partait les mains vides depuis la 0.28.0 — c'etait le correctif : le
+; porkpie sur la tete des la premiere image donne la fin du personnage avant
+; son debut. Mais rien ne permettait plus de les recuperer, et les deux objets
+; existaient sans exister.
+;
+; Ils sont donc POSES DANS LE DECOR, chacun la ou on l'attend : le chapeau sur
+; le porte-manteau de l'entree, le livre dans la bibliotheque. Le meuble et le
+; point d'interaction sont declares a deux endroits — outils/gen_maison.py pour
+; la boite, ici pour le point — et leurs coordonnees viennent du meme repere :
+; l'interieur de Walter est a (26, -20) + (-600, 600), et le generateur
+; construit en convention Blender, donc son y devient un z de signe oppose.
+[node name="PorteManteau" type="Node3D" parent="Rendu/Scene3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -580.4, 1.4, 583.6)
+script = ExtResource("39_point")
+invite = "Prendre le chapeau"
+donne = "chapeau"
+portee = 1.7
+
+[node name="Bibliotheque" type="Node3D" parent="Rendu/Scene3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -580.5, 1.2, 579.6)
+script = ExtResource("39_point")
+invite = "Prendre le livre"
+donne = "livre"
+portee = 1.7
+
 [node name="Vehicule" parent="Rendu/Scene3D" instance=ExtResource("5_vehicule")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 17, 0.6, -7)
 

@@ -43,13 +43,34 @@ MAISONS = {
         "toit": "terrasse",
         "fenetres": [(-3.6, 1.6), (3.2, 1.6), (4.8, 1.6)],
         "sol": "carrelage",
-        "piece": (10.4, 7.4, 2.7),
+        # LA PIECE EST PLUS GRANDE QUE LA MAISON, et c'est assume.
+        #
+        # Un interieur jouable est plus vaste que la facade qui l'annonce : la
+        # camera se tient a deux metres derriere le personnage, et une piece
+        # aux cotes reels la colle contre le mur d'en face. Les deux ne se
+        # voient jamais ensemble — l'interieur vit a six cents metres de la
+        # ville — donc rien ne trahit l'ecart.
+        "piece": (14.0, 10.0, 2.9),
         "meubles": [
             # (x, y, largeur, profondeur, hauteur, texture)
-            (-3.2, 1.8, 2.6, 1.0, 0.78, "parquet"),      # plan de travail
-            (2.2, -1.4, 2.2, 1.1, 0.42, "parquet"),      # table basse
-            (3.6, 1.9, 2.4, 0.9, 0.85, "chemise"),       # canape
-            (-4.2, -2.2, 0.7, 0.7, 1.10, "pantalon"),    # colonne, appoint
+            # LE LONG DU MUR DU FOND : la cuisine.
+            (-4.6, 4.2, 3.6, 0.7, 0.90, "parquet"),      # plan de travail
+            (-4.6, 4.2, 3.6, 0.7, 0.34, "mur_interieur", 1.65),  # placards hauts
+            (-1.9, 4.3, 0.8, 0.65, 1.75, "chemise"),     # refrigerateur
+            (-6.3, 4.2, 0.7, 0.7, 0.92, "carrelage"),    # evier, en bout
+            # LE COIN SALON, au centre.
+            (2.6, -1.2, 2.6, 1.2, 0.42, "parquet"),      # table basse
+            (4.4, 2.2, 2.6, 0.95, 0.85, "chemise"),      # canape
+            (1.2, 2.4, 1.0, 0.9, 0.80, "chemise"),       # fauteuil
+            (5.9, -1.0, 1.3, 0.5, 0.62, "bardage"),      # meuble tele
+            (5.9, -1.0, 1.0, 0.12, 0.55, "pantalon", 0.62),      # la tele
+            # LE MUR DE GAUCHE : la bibliotheque et le porte-manteau.
+            (-6.5, 0.4, 0.45, 2.4, 2.05, "bardage"),     # bibliotheque
+            (-6.4, -3.6, 0.35, 0.35, 1.80, "pantalon"),  # porte-manteau
+            # LA SALLE A MANGER, cote droit.
+            (6.0, 3.4, 1.6, 0.9, 0.76, "parquet"),       # table
+            (5.2, 3.4, 0.42, 0.42, 0.92, "bardage"),     # chaise
+            (6.8, 3.4, 0.42, 0.42, 0.92, "bardage"),     # chaise
         ],
         "habitant": (1.0, 1.4),
     },
@@ -60,12 +81,20 @@ MAISONS = {
         "toit": "pente",
         "fenetres": [(-2.6, 1.5), (2.4, 1.5), (-2.6, 4.2), (2.4, 4.2)],
         "sol": "parquet",
-        "piece": (7.2, 6.6, 2.8),
+        "piece": (11.0, 8.6, 2.9),
+        # Chez Jesse, le desordre EST le decor. Beaucoup de choses, aucune a sa
+        # place, rien qui aille ensemble : c'est ce qui le distingue du salon
+        # tenu de Walter, alors que les deux pieces sont faites des memes boites.
         "meubles": [
-            (-2.0, 1.6, 2.6, 1.0, 0.72, "pantalon"),
-            (1.8, -1.2, 1.9, 1.9, 0.40, "chaussure"),
-            (2.4, 1.8, 1.2, 0.9, 1.30, "bardage"),
-            (-2.4, -2.0, 1.0, 0.6, 0.95, "chemise"),
+            (-3.6, 3.4, 3.0, 0.8, 0.74, "pantalon"),     # plan encombre
+            (-3.6, 3.4, 3.0, 0.8, 0.30, "bardage", 1.60),  # etagere murale
+            (1.4, -1.6, 2.2, 2.0, 0.40, "chaussure"),    # matelas au sol
+            (3.6, 2.6, 1.3, 0.9, 1.35, "bardage"),       # sono
+            (-4.2, -2.4, 1.1, 0.6, 0.95, "chemise"),     # commode
+            (4.4, -2.8, 0.6, 0.6, 0.70, "carrelage"),    # frigo d'appoint
+            (0.2, 3.2, 1.4, 0.7, 0.45, "parquet"),       # table basse
+            (-1.2, -3.2, 0.5, 0.5, 1.05, "pantalon"),    # lampe
+            (4.6, 0.6, 0.45, 1.8, 1.90, "bardage"),      # etagere haute
         ],
         "habitant": (0.0, 1.5),
     },
@@ -252,7 +281,13 @@ def verifier(nom: str, spec: dict) -> None:
     if abs(px) > hx - marge or abs(py) > hy - marge:
         raise SystemExit(f"{nom} : l'habitant {spec['habitant']} est dans un mur")
 
-    for mx, my, ml, mp, _mh, _tex in spec["meubles"]:
+    for meuble in spec["meubles"]:
+        mx, my, ml, mp = meuble[0], meuble[1], meuble[2], meuble[3]
+        # Un meuble SUSPENDU ne gene personne : on passe dessous. Les placards
+        # hauts de la cuisine sont poses a 1,65 m, pile au-dessus du plan de
+        # travail, et la verification les refusait comme s'ils etaient au sol.
+        if len(meuble) > 6 and float(meuble[6]) >= 1.4:
+            continue
         if (abs(px - mx) < ml / 2 + marge) and (abs(py - my) < mp / 2 + marge):
             raise SystemExit(
                 f"{nom} : l'habitant {spec['habitant']} est dans le meuble "
@@ -281,11 +316,16 @@ def construire_interieur(spec: dict, mats: dict) -> int:
     total += murs.finir()
 
     meubles = {}
-    for mx, my, ml, mp, mh, tex in spec["meubles"]:
+    for meuble in spec["meubles"]:
+        mx, my, ml, mp, mh, tex = meuble[:6]
+        # Le septieme champ, facultatif : la hauteur du DESSOUS. Il vaut zero
+        # pour tout ce qui est pose par terre, et sert aux placards suspendus,
+        # aux etageres et aux televiseurs poses sur un meuble.
+        bas: float = float(meuble[6]) if len(meuble) > 6 else 0.0
         if tex not in meubles:
             meubles[tex] = Maillage(f"Meuble_{tex}", mats[tex])
         boite(meubles[tex], mx - ml / 2, my - mp / 2, mx + ml / 2, my + mp / 2,
-              0.0, mh, 1.2)
+              bas, bas + mh, 1.2)
     for m in meubles.values():
         total += m.finir()
 
@@ -308,6 +348,29 @@ def construire_interieur(spec: dict, mats: dict) -> int:
                 (d0 - 0.09, -hy + 0.01, H_PORTE + 0.09)],
                [(0, 0), (1, 0), (1, 1), (0, 1)])
     total += cadre.finir()
+
+    # DES FENETRES, VUES DE L'INTERIEUR.
+    #
+    # La piece n'en avait aucune : quatre murs pleins, alors que la facade en
+    # porte trois. On voyait donc le jour entrer par des vitres qui n'existaient
+    # pas de ce cote — et surtout, une piece sans fenetre est une cave, ce que
+    # le salon de Walter n'est pas.
+    #
+    # Elles sont posees sur le mur avant, de part et d'autre de la porte, aux
+    # abscisses de la facade : les deux listes viennent de la meme source, donc
+    # une fenetre deplacee dehors se retrouve dedans.
+    vitres = Maillage("FenetresInterieur", mats["fenetre_maison"])
+    for fx, _fz in spec["fenetres"]:
+        # Celles de l'etage n'ont rien a faire ici : la piece est de plain-pied.
+        if _fz > H - 0.4 or abs(fx) > hx - 0.8:
+            continue
+        # Ni celles que la porte recouvre.
+        if abs(fx) < L_PORTE / 2 + 0.5:
+            continue
+        vitres.face([(fx - 0.62, -hy + 0.02, 0.95), (fx + 0.62, -hy + 0.02, 0.95),
+                     (fx + 0.62, -hy + 0.02, 2.05), (fx - 0.62, -hy + 0.02, 2.05)],
+                    [(0, 0), (1, 0), (1, 1), (0, 1)])
+    total += vitres.finir()
 
     porte = Maillage("BattantInterieur", mats["porte"])
     porte.face([(d0, -hy + 0.02, 0.0), (d1, -hy + 0.02, 0.0),

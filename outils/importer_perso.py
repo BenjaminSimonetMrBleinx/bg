@@ -49,6 +49,9 @@ def arguments() -> argparse.Namespace:
     ap.add_argument("--sens", default="auto",
                     choices=["auto", "tel-quel", "tourner"],
                     help="auto deduit du squelette ; les deux autres decident")
+    ap.add_argument("--mains", type=float, default=1.0,
+                    help="retrecit les mains vers le poignet. 1 = telles que "
+                         "livrees, 0.8 = un cinquieme plus petites")
     ap.add_argument("--garder", default="",
                     help="ne conserve que les maillages dont le nom commence "
                          "par ceci (les autres sont des objets de travail)")
@@ -128,6 +131,54 @@ def sol_au_squelette(arm) -> float:
     m = arm.matrix_world
     return min((m @ arm.pose.bones[p].head).z
                for p in ("LeftFoot", "RightFoot") if p in arm.pose.bones)
+
+
+def reduire_les_mains(arm, facteur: float) -> float:
+    """Retrecit les mains vers le poignet, en suivant le poids des sommets.
+
+    LES MAINS LIVREES SONT TROP GRANDES. C'est le genre de defaut qu'on ne voit
+    pas sur un modele isole et qui saute aux yeux des qu'un personnage tient
+    quelque chose : le revolver disparait dedans.
+
+    On ne peut pas simplement mettre l'os a l'echelle — un os d'armature met a
+    l'echelle tout ce qui en depend, poignet compris, et le bras se retrecit
+    avec. On deplace donc les SOMMETS, chacun vers le poignet, et l'amplitude
+    du deplacement suit son POIDS sur l'os de la main : un sommet du bout des
+    doigts, pese a un, se rapproche pleinement ; un sommet de l'avant-bras,
+    pese a zero, ne bouge pas du tout. La transition se fait donc toute seule,
+    exactement la ou le rig l'a placee.
+
+    Renvoie de combien la main a retreci, en centimetres, pour qu'on puisse le
+    lire au lieu de le supposer.
+    """
+    if abs(facteur - 1.0) < 1e-4:
+        return 0.0
+    bouge_max = 0.0
+    for nom in ("LeftHand", "RightHand"):
+        os_ = arm.data.bones.get(nom)
+        if os_ is None:
+            print("  %-14s os '%s' absent, mains inchangees" % ("mains", nom))
+            continue
+        poignet = arm.matrix_world @ os_.head_local
+        for m in maillages():
+            groupe = m.vertex_groups.get(nom)
+            if groupe is None:
+                continue
+            vers_local = m.matrix_world.inverted()
+            for v in m.data.vertices:
+                poids = 0.0
+                for g in v.groups:
+                    if g.group == groupe.index:
+                        poids = g.weight
+                        break
+                if poids <= 0.0:
+                    continue
+                monde = m.matrix_world @ v.co
+                cible = poignet + (monde - poignet) * facteur
+                final = monde.lerp(cible, poids)
+                bouge_max = max(bouge_max, (final - monde).length)
+                v.co = vers_local @ final
+    return bouge_max * 100.0
 
 
 def sens_du_regard(arm) -> str:
@@ -229,6 +280,11 @@ def main() -> None:
     arm.location.z -= sol_au_squelette(arm) - a.hauteur * 0.04
     bpy.context.view_layer.update()
 
+    # APRES la mise a l'echelle et le calage au sol : le retrecissement se
+    # mesure en centimetres du monde, et il n'a de sens qu'une fois le
+    # personnage a sa taille reelle.
+    mains = reduire_les_mains(arm, a.mains)
+
     fz0 = sol_au_squelette(arm) - a.hauteur * 0.04
     fz1 = fz0 + taille_au_squelette(arm)
     faces = sum(len(o.data.polygons) for o in corps)
@@ -260,6 +316,9 @@ def main() -> None:
     print("%-14s %d os" % ("squelette", len(arm.data.bones)))
     print("%-14s %s" % ("animations", [x.name for x in bpy.data.actions]))
     print("%-14s %d faces" % ("maillage", faces))
+    if mains > 0.0:
+        print("%-14s x%.2f, le bout des doigts recule de %.1f cm"
+              % ("mains", a.mains, mains))
     print("%-14s %s" % ("sortie", fichier))
 
 

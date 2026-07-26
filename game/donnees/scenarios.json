@@ -107,6 +107,8 @@
    "quoi": "Walter vu de FACE. Doit montrer son visage : il regarde -Z.",
    "fin": 70,
    "etapes": [
+    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
+    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
     { "image": 30, "camera": [23.5, 1.5, -15.5], "vise": [23.5, 1.4, -12] }
    ]
   },
@@ -115,6 +117,8 @@
    "quoi": "Walter vu de DOS, comme la camera de jeu le voit.",
    "fin": 70,
    "etapes": [
+    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
+    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
     { "image": 30, "camera": [23.5, 1.5, -8.5], "vise": [23.5, 1.4, -12] }
    ]
   },
@@ -123,6 +127,8 @@
    "quoi": "Walter debout, sans commande. Doit se tenir RELACHE : bras le long du corps, jambes sous lui. Une image de course figee se voit tout de suite.",
    "fin": 90,
    "etapes": [
+    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
+    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
     { "image": 30, "camera": [22.2, 1.35, -10.6], "vise": [23.5, 1.15, -12] }
    ]
   },
@@ -131,6 +137,8 @@
    "quoi": "Le geste du repos : la main GAUCHE monte aux lunettes. Le geste occupe un cinquieme du cycle de huit secondes, donc l'image est calee dessus — la deplacer de vingt images ne montre plus rien.",
    "fin": 372,
    "etapes": [
+    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
+    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
     { "image": 30, "camera": [22.75, 1.72, -12.95], "vise": [23.45, 1.6, -12.08] }
    ]
   },
@@ -139,6 +147,8 @@
    "quoi": "Walter accroupi, touche Ctrl gauche tenue. Sa tete doit descendre a 1,17 m et ses pieds rester au sol.",
    "fin": 110,
    "etapes": [
+    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
+    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
     { "image": 30, "appui": "accroupir" },
     { "image": 40, "camera": [22.2, 1.2, -10.4], "vise": [23.5, 0.9, -12] }
    ]

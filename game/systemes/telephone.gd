@@ -372,14 +372,40 @@ func _ecran_de_mission(police: Font, ecran: Rect2, x: float, y: float,
 	# a pas de quoi lire quinze objectifs sur un telephone de 2008.
 	var dispo := ecran.end.x - 5.0 - x
 	var faites := _mission.faites()
-	var ligne := y + 14.0
-	# Une seule etape faite au lieu de deux : l'objectif COURANT tient
-	# desormais sur deux ou trois lignes, et c'est lui qu'on vient lire.
-	for i in range(maxi(0, faites.size() - 1), faites.size()):
-		for morceau in _couper(police, "x " + str(faites[i]), 9, dispo):
-			draw_string(police, Vector2(x, ligne), morceau,
-					HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(encre, 0.55))
-			ligne += 10.0
+	var total := _mission.etapes().size()
+	var ligne := y + 13.0
+
+	# LA PROGRESSION D'ABORD, EN UN COUP D'OEIL.
+	#
+	# L'ecran listait la derniere etape faite en toutes lettres, puis l'etape
+	# courante. Sur cinquante pixels de large, ca faisait cinq lignes de texte
+	# gris ou l'on ne distinguait plus ce qui etait fait de ce qui restait — et
+	# surtout, rien ne DISAIT qu'on venait de progresser.
+	#
+	# Une jauge et un compte le disent sans une phrase : la barre avance, le
+	# chiffre monte. C'est ce qu'on vient verifier neuf fois sur dix, et ca
+	# tient sur une ligne.
+	var part := clampf(float(faites.size()) / maxf(1.0, float(total)), 0.0, 1.0)
+	var jauge := Rect2(Vector2(x, ligne - 5.0), Vector2(dispo - 20.0, 4.0))
+	draw_rect(jauge, Color(encre, 0.22))
+	draw_rect(Rect2(jauge.position, Vector2(jauge.size.x * part, jauge.size.y)),
+			Color(encre, 0.85))
+	draw_string(police, Vector2(jauge.end.x + 3.0, ligne),
+			"%d/%d" % [faites.size(), total],
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 8, encre)
+	ligne += 11.0
+
+	# La derniere etape franchie, BARREE d'une croix et en petit : elle sert de
+	# repere — « c'est bien ca que je viens de faire » — pas de lecture.
+	if not faites.is_empty():
+		var derniere: String = str(faites[faites.size() - 1])
+		var lignes := _couper(police, "x " + derniere, 8, dispo)
+		# Une seule ligne, coupee net : c'est un accuse de reception, et
+		# l'objectif courant doit garder la place.
+		draw_string(police, Vector2(x, ligne), str(lignes[0]),
+				HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color(encre, 0.5))
+		ligne += 11.0
+
 	for morceau in _couper(police, "> " + _mission.objectif(), 10, dispo):
 		draw_string(police, Vector2(x, ligne), morceau,
 				HORIZONTAL_ALIGNMENT_LEFT, -1, 10, encre)
