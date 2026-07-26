@@ -289,6 +289,32 @@ def construire_interieur(spec: dict, mats: dict) -> int:
     for m in meubles.values():
         total += m.finir()
 
+    # LA PORTE DE SORTIE, SUR LE MUR D'EN FACE.
+    #
+    # L'interieur etait une boite lisse : quatre murs identiques, aucun d'eux ne
+    # disant par ou l'on est entre. On ressortait en cherchant l'endroit ou
+    # l'invite « F Sortir » veut bien apparaitre, ce qui revient a tatonner le
+    # long d'un mur — et le seul repere de la piece, le repere « Sortie », est
+    # invisible par construction.
+    #
+    # Elle est posee sur le mur avant, a x = 0, c'est-a-dire exactement en face
+    # du repere Sortie : les deux se calculent a partir de -hy, donc ils ne
+    # peuvent pas diverger. Un chambranle un peu plus large que le battant
+    # detache la porte du mur, sans quoi elle se lit comme une affiche.
+    d0, d1 = -L_PORTE / 2, L_PORTE / 2
+    cadre = Maillage("Chambranle", mats["bardage"])
+    cadre.face([(d0 - 0.09, -hy + 0.01, 0.0), (d1 + 0.09, -hy + 0.01, 0.0),
+                (d1 + 0.09, -hy + 0.01, H_PORTE + 0.09),
+                (d0 - 0.09, -hy + 0.01, H_PORTE + 0.09)],
+               [(0, 0), (1, 0), (1, 1), (0, 1)])
+    total += cadre.finir()
+
+    porte = Maillage("BattantInterieur", mats["porte"])
+    porte.face([(d0, -hy + 0.02, 0.0), (d1, -hy + 0.02, 0.0),
+                (d1, -hy + 0.02, H_PORTE), (d0, -hy + 0.02, H_PORTE)],
+               [(0, 0), (1, 0), (1, 1), (0, 1)])
+    total += porte.finir()
+
     # Reperes : Blender +Y donne Godot -Z, les scripts s'y retrouvent seuls.
     for nom, (px, py) in [("Sortie", (0.0, -hy + 1.2)),
                           ("Habitant", spec["habitant"])]:

@@ -54,10 +54,21 @@ ECART_HANCHE = 0.11
 # Un personnage, c'est une taille et un jeu de textures. Le maillage, lui, ne
 # change pas : c'est ce qui permet a joueur.gd d'animer n'importe lequel
 # d'entre eux sans savoir de qui il s'agit.
+# UN PERSONNAGE LIVRE NE FIGURE PLUS ICI.
+#
+# « jesse » y etait encore alors que Guillaume avait livre son modele. Un
+# `.\bg.ps1 generer` — lance pour une tout autre raison, repasser le monde en
+# journee — a donc silencieusement remplace un modele de 6,6 Mo par le corps
+# generique de 68 Ko. Rien ne l'a signale : le fichier de sortie porte le meme
+# nom, le jeu charge, et le personnage est simplement redevenu laid.
+#
+# La regle : des qu'un modele est livre et integre, on retire son nom de cette
+# table. Le corps generique reste pour ceux que personne n'a encore sculptes.
+#
+# Deja livres, donc absents d'ici : walt, jesse, tuco.
 PERSONNAGES = {
     "walter": {"taille": 1.00},
     "skyler": {"taille": 0.97},
-    "jesse": {"taille": 0.96},
     # Les passants varient de taille : une rue ou tout le monde mesure
     # pareil se lit comme une rangee de copies, meme avec des visages
     # differents.

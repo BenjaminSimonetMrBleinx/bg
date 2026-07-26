@@ -729,11 +729,22 @@ def pose_assise(arm, debout: dict, hauteur: float = 0.46) -> dict:
     # Le buste droit, legerement en arriere : on est cale dans un fauteuil.
     tourner(arm, pose, "Hips", TANGAGE, 6.0)
     tourner(arm, pose, "Spine01", TANGAGE, 3.0)
-    # Les avant-bras sur les accoudoirs.
-    tourner(arm, pose, "LeftArm", AVANT, -8.0)
-    tourner(arm, pose, "RightArm", AVANT, 8.0)
+    # Les avant-bras remontent sur les accoudoirs.
     tourner(arm, pose, "LeftForeArm", GAUCHE, 62.0)
     tourner(arm, pose, "RightForeArm", GAUCHE, 62.0)
+    # ET LES BRAS SE REFERMENT SUR LE CORPS.
+    #
+    # Ils etaient ecartes de huit degres, ecrits a la main. Huit degres sur un
+    # rig ne valent pas huit degres sur un autre — l'axe qui ECARTE un bras
+    # depend de l'orientation que le rig a donnee a l'os — et chez Tuco ca
+    # donnait un homme assis les bras en croix, ce qui lit comme une pose en T
+    # ratee plutot que comme un chef de cartel dans son fauteuil.
+    #
+    # On BALAIE l'angle jusqu'a une distance main-hanche mesuree, exactement
+    # comme pour la pose debout. Un peu plus large que debout : assis, les
+    # coudes reposent sur les accoudoirs, ils ne pendent pas le long du corps.
+    serrer_le_bras(arm, pose, "LeftArm", "LeftHand", "LeftUpLeg", 0.30)
+    serrer_le_bras(arm, pose, "RightArm", "RightHand", "RightUpLeg", 0.30)
 
     poser_pose(arm, pose, -descente)
     # Les pieds doivent finir AU SOL et devant. On les vise la ou ils sont

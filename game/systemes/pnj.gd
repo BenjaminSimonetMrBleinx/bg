@@ -97,6 +97,7 @@ func _ready() -> void:
 func _respirer(lecteur: AnimationPlayer) -> void:
 	if lecteur == null:
 		return
+	_lecteur = lecteur
 	for candidat in [pose, Demarche.IMMOBILE, Demarche.CYCLE]:
 		if candidat == "":
 			continue
@@ -141,6 +142,34 @@ func aller_vers(ou: Vector3) -> void:
 	_but = ou
 	_marche = true
 	set_process(true)
+	_jouer(CLIP_MARCHE)
+
+
+## Il est arrive quelque part ? Le scenario attend la fin d'un deplacement pour
+## enchainer — Jesse franchit sa porte une fois qu'il l'a atteinte, pas avant.
+func arrive() -> bool:
+	return not _marche
+
+
+## Les noms possibles du clip de marche, dans l'ordre de preference. Meme table
+## d'esprit que Demarche.ALLURES : les modeles livres n'ont pas tous les memes
+## noms de clips, et un nom absent doit degrader au lieu de casser.
+const CLIP_MARCHE := ["Marche", "Walking"]
+
+var _lecteur: AnimationPlayer
+
+
+# Joue le premier clip disponible de la liste. Rien si aucun n'existe : un
+# personnage qui glisse est laid, un personnage qui plante est pire.
+func _jouer(candidats: Array) -> void:
+	if _lecteur == null:
+		return
+	for nom in candidats:
+		if _lecteur.has_animation(str(nom)):
+			var anim := _lecteur.get_animation(str(nom))
+			anim.loop_mode = Animation.LOOP_LINEAR
+			_lecteur.play(str(nom))
+			return
 
 
 ## Combien de metres par seconde quand il se deplace. Un pas decide, pas une
@@ -196,6 +225,8 @@ func _avancer(delta: float) -> void:
 	if vers.length() <= 0.15:
 		_marche = false
 		_cap_repos = rotation.y
+		# Il reprend sa respiration la ou il s'est arrete.
+		_jouer([pose, Demarche.IMMOBILE, Demarche.CYCLE])
 		return
 	var pas := minf(ALLURE * delta, vers.length())
 	global_position += vers.normalized() * pas

@@ -494,17 +494,58 @@ func _jesse_chez_lui() -> Pnj:
 	return null
 
 
+## IL SORT, ET ON LE VOIT SORTIR.
+##
+## Il disparaissait a la seconde ou la conversation se terminait : le probleme
+## des deux Jesse etait regle, mais sa derniere phrase — « le camping-car dans
+## le desert, j'y vais devant » — n'etait suivie d'aucun geste. Quelqu'un qui
+## s'evapore dans son salon ne part pas, il cesse d'exister.
+##
+## Il marche donc jusqu'a sa porte, et c'est en la franchissant qu'il quitte la
+## piece. La porte est celle du repere de sortie de la maison : la meme que
+## celle du joueur, donc elle ne peut pas etre ailleurs.
 func _jesse_quitte_sa_maison() -> void:
 	var p := _jesse_chez_lui()
 	if p == null:
 		return
 	if _jesse_cle == "":
 		_jesse_cle = p.cle
-	p.visible = false
-	# La cle videe le rend muet : c'est ainsi que le controleur decide a qui
-	# l'on peut parler, et le rendre invisible seul aurait laisse une voix
-	# sortir d'une piece vide.
+	# Muet des maintenant : on ne le retient pas par la manche pendant qu'il
+	# traverse la piece.
 	p.cle = ""
+
+	var chez_lui := _maison_de(p)
+	if chez_lui != null:
+		p.aller_vers(chez_lui.entree())
+		# On attend qu'il ARRIVE, pas un delai : la piece peut changer de
+		# taille, et un compte a rebours le ferait disparaitre en chemin.
+		while not p.arrive() and is_instance_valid(p):
+			await get_tree().process_frame
+		if not is_instance_valid(p):
+			return
+		if _son() != null:
+			_son().bruit_ici("porte_ouvre", p.global_position)
+			await get_tree().create_timer(0.35).timeout
+			if not is_instance_valid(p):
+				return
+			_son().bruit_ici("porte_ferme", p.global_position)
+	p.visible = false
+
+
+# La maison qui contient ce personnage. On remonte l'arbre plutot que de la
+# passer par l'inspecteur : l'habitant est cree par la maison elle-meme, il est
+# donc toujours sous elle, et un NodePath de plus serait un NodePath de plus a
+# tenir a jour.
+func _maison_de(p: Node) -> Maison:
+	var n := p.get_parent()
+	while n != null:
+		if n is Maison:
+			return n as Maison
+		n = n.get_parent()
+	return null
+	# La cle videe plus haut le rend muet : c'est ainsi que le controleur
+	# decide a qui l'on peut parler, et le rendre invisible seul aurait laisse
+	# une voix sortir d'une piece vide.
 
 
 func _rendre_jesse_a_sa_maison() -> void:

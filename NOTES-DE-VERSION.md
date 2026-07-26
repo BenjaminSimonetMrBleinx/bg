@@ -16,6 +16,22 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.28.1 — Les portes, Jesse qui s'en va, et Jesse qui redevient beau
+
+**Jesse avait perdu son visage.** Le modèle de Guillaume avait été écrasé par le
+corps générique — c'est ma faute, une régénération d'assets lancée pour une tout
+autre raison. Il est revenu, et le générateur ne peut plus le remplacer.
+
+**Les maisons ont une porte de l'intérieur.** Le salon était une boîte lisse : on
+cherchait le mur par lequel on était entré.
+
+**Jesse sort vraiment de chez lui.** Il dit qu'il part devant, il traverse la
+pièce, il ouvre la porte et il s'en va — au lieu de disparaître sur place.
+
+**Tuco ne reçoit plus les bras en croix.** Sa pose assise gardait les bras
+écartés d'un angle écrit à la main, qui ne veut pas dire la même chose sur son
+squelette que sur celui de Walter.
+
 ## 0.28.0 — La mission 1 en entier, et le camping-car de Guillaume
 
 > **La mission se joue maintenant du début à la fin en plein jour.** Elle se
