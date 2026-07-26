@@ -243,8 +243,12 @@ func _unhandled_input(evenement: InputEvent) -> void:
 			_c.zoomer(1.0)
 		elif bouton == MOUSE_BUTTON_WHEEL_DOWN:
 			_c.zoomer(-1.0)
-		elif Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
-			# Un clic dans la fenetre reprend la main apres un Echap.
+		elif Input.mouse_mode != Input.MOUSE_MODE_CAPTURED \
+				and not (_pause != null and _pause.ouverte()):
+			# Un clic dans la fenetre reprend la main apres un Echap — sauf
+			# pendant le menu pause, ou le curseur sert a choisir. Sans cette
+			# reserve, le premier clic sur « Options » reprenait la souris et
+			# le menu devenait injouable a la main.
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		return
 
@@ -302,6 +306,11 @@ func _process(delta: float) -> void:
 			_afficher("F   Descendre")
 			if Input.is_action_just_pressed("klaxon") and _audio != null:
 				_audio.bruit_ici("klaxon", _v.global_position)
+			# Les phares se commandent, et seulement au volant : c'est la
+			# seule place d'ou l'on peut raisonnablement atteindre un
+			# interrupteur de tableau de bord.
+			if Input.is_action_just_pressed("phares"):
+				_v.basculer_phares()
 			if Input.is_action_just_pressed("interagir"):
 				_descendre()
 
@@ -326,6 +335,11 @@ func _gerer_la_pause() -> bool:
 	if _pause == null:
 		return false
 	if _pause.ouverte():
+		return true
+	# L'image ou le menu vient de se fermer ne compte pas : la touche qui a
+	# valide « Reprendre » est encore enfoncee, et elle vaut « interagir » ici.
+	if _pause.vient_de_fermer():
+		_afficher("")
 		return true
 	if _transition or (_cachette != null and _cachette.ouverte()):
 		return false
@@ -383,6 +397,12 @@ func _gerer_les_passages() -> bool:
 	# et on repart. Il faut EN SORTIR, ce qui est aussi la regle qu'un joueur
 	# comprend sans qu'on la lui dise.
 	if _sortie_attendue != null:
+		# On la relache quand on en est SORTI, et rien de plus.
+		#
+		# La marge d'arrivee ne sert qu'a POSER le verrou, pas a le lever :
+		# l'appliquer ici aussi obligeait a s'eloigner de dix metres avant de
+		# pouvoir repartir, alors que la fleche du retour est justement posee
+		# sur le point d'arrivee. On ne pouvait plus quitter le desert.
 		if _sortie_attendue.contient(corps):
 			return false
 		_sortie_attendue = null
@@ -447,6 +467,16 @@ func _franchir(p: Passage, au_volant: bool) -> void:
 	# La zone d'arrivee est celle dont il faudra sortir. On la cherche APRES le
 	# deplacement : c'est seulement la qu'on sait ou l'on a atterri, et c'est
 	# souvent le passage du retour, pose expres sur le point d'arrivee.
+	# On cherche la zone qui nous CONTIENT, et rien d'autre.
+	#
+	# Une version elargie a tout ce qui se trouvait a dix metres a ete essayee,
+	# pour couvrir le cas de l'elan d'arrivee. Elle rendait le desert
+	# inquittable : sa fleche de retour est justement posee a six metres du
+	# point d'atterrissage, elle etait donc verrouillee des l'arrivee et il
+	# fallait s'en eloigner de dix metres avant de pouvoir repartir.
+	#
+	# Le vrai remede a l'elan est ailleurs, et il est geometrique : on arrive
+	# TOURNE DU BON COTE. Voir le cap du passage vers le QG de Tuco.
 	_sortie_attendue = null
 	for autre in _passages:
 		if autre.contient(_v if au_volant else _j):

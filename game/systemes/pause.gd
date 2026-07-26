@@ -86,6 +86,7 @@ func fermer() -> void:
 		return
 	_vue = Vue.FERME
 	visible = false
+	_ferme_a_l_instant = true
 	get_tree().paused = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	if _son() != null:
@@ -100,20 +101,54 @@ func fermer() -> void:
 ## clignotait sans jamais rester. Une image d'attente suffit.
 var _neuf: bool = false
 
+## Vrai pendant l'image ou le menu vient de se fermer, et consomme par qui le
+## lit. C'est le symetrique exact de `_neuf`, et il repare le meme genre de
+## defaut dans l'autre sens.
+##
+## « Reprendre » se valide avec F. Le menu se ferme, releve la pause, et le
+## controleur — qui vit plus bas dans l'arbre, donc traite APRES — relit le
+## MEME appui dans la MEME image. Il y voyait une interaction ordinaire : on
+## sortait du menu et on franchissait la porte devant laquelle on se tenait,
+## teleporte a l'autre bout de la carte sans avoir rien demande.
+var _ferme_a_l_instant: bool = false
 
-func _process(_delta: float) -> void:
+
+## A-t-on ferme le menu a l'instant ? La reponse ne vaut qu'une fois : celui
+## qui la lit consomme le drapeau, sinon un second lecteur ignorerait aussi
+## l'image suivante.
+func vient_de_fermer() -> bool:
+	var oui := _ferme_a_l_instant
+	_ferme_a_l_instant = false
+	return oui
+
+
+func _process(delta: float) -> void:
 	if _vue == Vue.FERME:
 		return
 	if _neuf:
 		_neuf = false
 		queue_redraw()
 		return
-	_naviguer()
+	_naviguer(delta)
+	# Apres le clavier : une ligne survolee doit gagner sur une ligne
+	# selectionnee, sinon la selection saute entre les deux.
+	_suivre_la_souris()
 	queue_redraw()
 
 
-func _naviguer() -> void:
+func _naviguer(delta: float) -> void:
 	var taille := LIGNES.size() if _vue == Vue.RACINE else CURSEURS.size()
+
+	# ECHAP FERME LE MENU, D'OU QU'ON SOIT.
+	#
+	# Il ramenait des options vers la racine, ce qui est l'usage habituel d'un
+	# menu a etages. Mais celui-ci n'a que deux etages et une seule raison
+	# d'exister : reprendre la partie. Devoir presser Echap deux fois pour
+	# revenir au jeu, depuis un ecran de reglages ou l'on n'a rien a valider,
+	# est une marche de plus vers la sortie.
+	if Input.is_action_just_pressed("ui_cancel"):
+		fermer()
+		return
 
 	var bouge := 0
 	if Input.is_action_just_pressed("frein"):
@@ -126,26 +161,120 @@ func _naviguer() -> void:
 			_son().bruit("roue_cran")
 
 	if _vue == Vue.OPTIONS:
-		var pas := 0
-		if Input.is_action_just_pressed("droite"):
-			pas = 1
-		elif Input.is_action_just_pressed("gauche"):
-			pas = -1
-		if pas != 0:
-			_regler(_choix, pas)
-		if Input.is_action_just_pressed("ui_cancel"):
-			_vue = Vue.RACINE
-			_choix = 1
-		elif Input.is_action_just_pressed("interagir"):
+		_regler_en_continu(delta)
+		if Input.is_action_just_pressed("interagir"):
 			_vue = Vue.RACINE
 			_choix = 1
 		return
 
-	if Input.is_action_just_pressed("ui_cancel"):
-		fermer()
-		return
 	if Input.is_action_just_pressed("interagir"):
 		_valider()
+
+
+# ------------------------------------------------------------------- souris
+#
+# LE MENU SE CLIQUE, parce qu'il rend le curseur.
+#
+# Ouvrir le menu libere la souris — on n'est plus en train de viser. Un curseur
+# visible sur une liste de choix demande a etre utilise, et ne rien pouvoir
+# cliquer se lit comme une interface cassee plutot que comme un parti pris.
+#
+# LES RECTANGLES SONT CALCULES LA OU ILS SONT DESSINES, et gardes. Recalculer
+# la mise en page a deux endroits — une fois pour peindre, une fois pour
+# cliquer — c'est se garantir qu'ils divergeront au premier ajustement de
+# marge, et un bouton qui ne repond pas trois pixels a cote est le pire des
+# defauts a diagnostiquer.
+var _zones: Array[Rect2] = []
+var _clic_avant: bool = false
+
+
+# ON SCRUTE LA SOURIS, on n'ecoute pas _gui_input.
+#
+# Toute l'interface vit dans le SubViewport de rendu, affiche par un simple
+# TextureRect. Godot ne propage aucune entree la-dedans — seul un
+# SubViewportContainer le ferait — donc un _gui_input y serait silencieusement
+# mort. C'est le meme piege que pour les touches, deja documente en tete de ce
+# fichier et dans systemes/roue.gd.
+#
+# La position se convertit a la main : le curseur est en pixels de FENETRE,
+# les zones en pixels de rendu (512 x 384). L'ecran couvre la fenetre entiere,
+# donc le rapport suffit.
+func _souris() -> Vector2:
+	var fenetre := get_tree().root
+	var taille := Vector2(fenetre.size)
+	if taille.x <= 0.0 or taille.y <= 0.0:
+		return Vector2(-1.0, -1.0)
+	return fenetre.get_mouse_position() / taille * size
+
+
+func _suivre_la_souris() -> void:
+	var p := _souris()
+	var vise := _zone_sous(p)
+	if vise >= 0 and vise != _choix:
+		_choix = vise
+		if _son() != null:
+			_son().bruit("roue_cran")
+
+	var clic := Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+	var appui := clic and not _clic_avant
+	_clic_avant = clic
+	if not appui or vise < 0:
+		return
+	if _vue == Vue.RACINE:
+		_valider()
+	else:
+		# Sur un curseur, on clique la VALEUR : la moitie gauche baisse, la
+		# droite monte. Faire glisser demanderait de suivre le bouton entre
+		# deux images, pour un reglage qui se prend par crans de toute facon.
+		_regler(vise, 1 if p.x > _zones[vise].get_center().x else -1)
+
+
+func _zone_sous(point: Vector2) -> int:
+	for i in _zones.size():
+		if _zones[i].has_point(point):
+			return i
+	return -1
+
+
+## Cadence de repetition quand on MAINTIENT gauche ou droite, en crans par
+## seconde. Le premier cran part a l'appui ; les suivants s'enchainent apres un
+## temps mort, sinon un appui bref en lance deux.
+const REPETITION := 14.0
+const AVANT_REPETITION := 0.32
+
+var _tenu: float = -1.0
+
+
+# Regler un volume par crans d'un decibel demande quarante-six appuis pour
+# traverser la plage. On maintient donc, et ca defile — c'est ce que fait
+# n'importe quel curseur, et l'absence de repetition se remarque tout de suite.
+func _regler_en_continu(delta: float) -> void:
+	var sens := 0
+	if Input.is_action_pressed("droite"):
+		sens = 1
+	elif Input.is_action_pressed("gauche"):
+		sens = -1
+
+	if sens == 0:
+		_tenu = -1.0
+		return
+
+	if _tenu < 0.0:
+		_regler(_choix, sens)
+		_tenu = 0.0
+		return
+
+	var avant := _tenu
+	_tenu += delta
+	if _tenu < AVANT_REPETITION:
+		return
+	# Combien de crans se sont ecoules depuis la derniere image. On compte les
+	# crans plutot que d'en passer un par image : la cadence ne doit pas
+	# dependre du nombre d'images par seconde.
+	var crans := int(_tenu * REPETITION) - int(maxf(avant, AVANT_REPETITION)
+			* REPETITION)
+	for _i in maxi(0, crans):
+		_regler(_choix, sens)
 
 
 func _valider() -> void:
@@ -215,7 +344,10 @@ func _dessiner_racine(police: Font) -> void:
 
 	_ecrire(police, "PAUSE", coin + Vector2(l / 2.0, 20.0), 15,
 			Color(0.949, 0.776, 0.42), true)
+	_zones.clear()
 	for i in LIGNES.size():
+		_zones.append(Rect2(coin + Vector2(8.0, 32.0 + float(i) * 22.0),
+				Vector2(l - 16.0, 20.0)))
 		var vise := i == _choix
 		# Un chevron, pas une couleur : deux teintes proches ne se distinguent
 		# pas a cette resolution, un caractere en plus se voit toujours.
@@ -223,7 +355,7 @@ func _dessiner_racine(police: Font) -> void:
 				coin + Vector2(24.0, 44.0 + float(i) * 22.0), 13,
 				Color(0.949, 0.925, 0.867) if vise else Color(0.68, 0.66, 0.62),
 				false)
-	_ecrire(police, "W / S   choisir      F   valider",
+	_ecrire(police, "W / S ou la souris      F   valider      Echap   fermer",
 			coin + Vector2(l / 2.0, h - 6.0), 9, Color(0.62, 0.60, 0.56), true)
 
 
@@ -236,10 +368,13 @@ func _dessiner_options(police: Font) -> void:
 	_ecrire(police, "OPTIONS", coin + Vector2(l / 2.0, 20.0), 15,
 			Color(0.949, 0.776, 0.42), true)
 
+	_zones.clear()
 	for i in CURSEURS.size():
 		var c: Array = CURSEURS[i]
 		var vise := i == _choix
 		var y := 42.0 + float(i) * 20.0
+		_zones.append(Rect2(coin + Vector2(8.0, y - 13.0),
+				Vector2(l - 16.0, 18.0)))
 		var teinte := Color(0.949, 0.925, 0.867) if vise \
 				else Color(0.68, 0.66, 0.62)
 		_ecrire(police, ("> " if vise else "   ") + str(c[0]),
@@ -256,7 +391,7 @@ func _dessiner_options(police: Font) -> void:
 				jauge.size.y)), Color(0.60, 0.82, 0.44, 0.9 if vise else 0.55))
 		draw_rect(jauge, Color(0.36, 0.35, 0.32, 0.8), false, 1.0)
 
-	_ecrire(police, "A / D   regler      F   retour",
+	_ecrire(police, "A / D maintenus   regler      F   retour      Echap   fermer",
 			coin + Vector2(l / 2.0, h - 6.0), 9, Color(0.62, 0.60, 0.56), true)
 
 

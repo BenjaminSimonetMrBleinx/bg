@@ -22,6 +22,11 @@ extends Control
 ## dollar : une image manquante ne doit jamais faire disparaitre l'information.
 @export var icone_argent: Texture2D
 
+## Le portrait de Walter, a gauche de sa barre de vie. Genere par
+## outils/gen_textures.py, en 32 pixels : c'est sa taille d'affichage, et
+## l'agrandir puis le reduire ne ferait que le rendre flou.
+@export var icone_visage: Texture2D
+
 var _v: Vehicule
 var _eq: Equipement
 var _c: Node
@@ -151,8 +156,7 @@ func _draw() -> void:
 
 	_version(police)
 	_bandeau(police)
-	_argent(police)
-	_sante()
+	_etat_du_joueur(police)
 	_objectif_courant(police)
 	_reticule()
 
@@ -200,43 +204,56 @@ func _version(police: Font) -> void:
 			Color(0.72, 0.70, 0.64, 0.55), false, HORIZONTAL_ALIGNMENT_RIGHT)
 
 
-# L'argent, en haut a gauche, avec le sac de billets.
+# L'ETAT DU JOUEUR : son visage, sa vie, son argent. Un seul bloc.
 #
-# Il reste affiche EN PERMANENCE, ce qui enfreint la regle du fichier comme le
-# fait la version. La raison la vaut aussi : toute la fin de la mission
-# consiste a surveiller combien on a sur soi, et une information qu'il faut
-# aller chercher dans un menu n'est pas une information.
-func _argent(police: Font) -> void:
+# Les trois etaient dispersés : l'argent en haut a gauche, la barre de vie
+# dessous et SEULEMENT quand elle n'etait pas pleine, ce qui deplacait tout au
+# premier coup recu. Trois informations sur la meme personne se lisent comme
+# une seule, et une interface qui bouge toute seule oblige a la relire.
+#
+# La barre est desormais TOUJOURS la. La regle du fichier dit de n'afficher que
+# ce qui change ; celle-ci est l'exception que sa fonction justifie, comme
+# l'argent et la version — on veut savoir ou l'on en est avant de pousser une
+# porte, pas apres avoir pris une balle.
+func _etat_du_joueur(police: Font) -> void:
+	var coin := Vector2(6.0, 6.0)
+	var haut := 26.0
+	var x := coin.x
+
+	if icone_visage != null:
+		# Un liseré derriere le portrait : sans lui il flotte sur le decor, et
+		# sur une facade claire on ne distingue plus ses contours.
+		draw_rect(Rect2(coin - Vector2(1.0, 1.0),
+				Vector2(icone_visage.get_width() + 2.0,
+						icone_visage.get_height() + 2.0)),
+				Color(0.043, 0.055, 0.086, 0.8))
+		draw_texture(icone_visage, coin)
+		x += icone_visage.get_width() + 5.0
+
+	# La barre de vie, a droite du visage, sur la moitie haute.
+	if _j != null:
+		var l := 78.0
+		var h := 6.0
+		var barre := Vector2(x, coin.y + 3.0)
+		draw_rect(Rect2(barre, Vector2(l, h)), Color(0.043, 0.055, 0.086, 0.8))
+		var part := clampf(_j.pv / 100.0, 0.0, 1.0)
+		# Du vert au rouge en passant par l'ambre : la couleur dit l'urgence
+		# avant que la longueur ne se lise.
+		var teinte := Color(0.78, 0.26, 0.20).lerp(Color(0.55, 0.76, 0.36), part)
+		draw_rect(Rect2(barre, Vector2(l * part, h)), teinte)
+		draw_rect(Rect2(barre, Vector2(l, h)), Color(0.72, 0.70, 0.64, 0.55),
+				false, 1.0)
+
+	# L'argent, sous la barre, aligne sur elle.
 	if _bourse == null:
 		return
-	var x := 8.0
-	var y := 12.0
+	var xa := x
+	var ya := coin.y + haut - 6.0
 	if icone_argent != null:
-		draw_texture(icone_argent, Vector2(x, y - 8.0))
-		x += icone_argent.get_width() + 4.0
-	_ecrire(police, Bourse.ecrire(roundi(_affiche)), Vector2(x, y + 6.0), 14,
+		draw_texture(icone_argent, Vector2(xa, ya - 8.0))
+		xa += icone_argent.get_width() + 4.0
+	_ecrire(police, Bourse.ecrire(roundi(_affiche)), Vector2(xa, ya + 3.0), 13,
 			Color(0.60, 0.82, 0.44), false)
-
-
-# La sante : une barre, et seulement quand elle n'est pas pleine.
-#
-# Une barre de vie constamment a l'ecran dans un jeu ou l'on passe des heures
-# a conduire est du bruit. Elle apparait au premier coup et ne repart plus,
-# ce qui est aussi une facon de dire que quelque chose a change.
-func _sante() -> void:
-	if _j == null or _j.pv >= 100.0:
-		return
-	var l := 92.0
-	var h := 5.0
-	var coin := Vector2(8.0, 26.0)
-	draw_rect(Rect2(coin, Vector2(l, h)), Color(0.043, 0.055, 0.086, 0.75))
-	var part := clampf(_j.pv / 100.0, 0.0, 1.0)
-	# Du vert au rouge en passant par l'ambre : la couleur dit l'urgence avant
-	# que la longueur ne se lise.
-	var teinte := Color(0.78, 0.26, 0.20).lerp(Color(0.55, 0.76, 0.36), part)
-	draw_rect(Rect2(coin, Vector2(l * part, h)), teinte)
-	draw_rect(Rect2(coin, Vector2(l, h)), Color(0.72, 0.70, 0.64, 0.55),
-			false, 1.0)
 
 
 # L'OBJECTIF COURANT, en haut a gauche, sous l'argent.

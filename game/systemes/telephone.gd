@@ -291,6 +291,22 @@ func _draw() -> void:
 	var y := ecran.position.y + 12.0
 	var x := ecran.position.x + 5.0
 
+	# L'HEURE, en haut a droite de l'ecran, quel que soit le menu affiche.
+	#
+	# C'est la premiere chose qu'on regarde sur un telephone, et le jeu n'avait
+	# aucun autre endroit ou lire l'heure — alors que la mission entiere se
+	# joue sur un compte a rebours de journee et que le ciel change.
+	#
+	# Elle est dessinee AVANT le contenu et en petit : elle ne doit jamais
+	# disputer la place a ce qu'on est venu lire.
+	var horloge := get_tree().get_first_node_in_group(Temps.GROUPE) as Temps
+	if horloge != null:
+		var heure := horloge.texte()
+		var largeur := police.get_string_size(heure, HORIZONTAL_ALIGNMENT_LEFT,
+				-1, 8).x
+		draw_string(police, Vector2(ecran.end.x - 4.0 - largeur, y - 4.0),
+				heure, HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color(encre, 0.75))
+
 	match _etat:
 		Etat.MISSION:
 			_ecran_de_mission(police, ecran, x, y, encre)

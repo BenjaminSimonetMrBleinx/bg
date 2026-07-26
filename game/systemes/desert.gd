@@ -67,7 +67,11 @@ func _ready() -> void:
 	# Le panneau se pose A COTE de la piste, pas dessus : la piste fait douze
 	# metres de large, un panneau plante a six metres de son axe est encore
 	# dedans, et on le prend en roulant.
-	_poser("panneau_desert", ARRIVEE + Vector3(10.5, -0.4, 9.0), 0.0)
+	#
+	# Il annonce ALBUQUERQUE, pas DESERT. C'est le panneau du RETOUR, pose sur
+	# le point d'arrivee : il dit ou mene la route qu'il signale, et il disait
+	# donc au joueur deja dans le desert qu'il allait au desert.
+	_poser("panneau_albuquerque", ARRIVEE + Vector3(10.5, -0.4, 9.0), 0.0)
 
 
 # Meme dispositif que pour la ville : les collisions sont fabriquees a la

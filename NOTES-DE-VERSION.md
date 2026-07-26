@@ -16,6 +16,44 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.29.0 — Le QG accessible, la nuit habitable, et l'Aztek
+
+> **Bloquant, corrigé.** On ne pouvait pas se rendre chez Tuco : la voiture
+> arrivait tournée vers la sortie, et l'élan qu'elle garde depuis la 0.28.0 la
+> renvoyait au désert en une seconde. On arrive maintenant face au bâtiment.
+
+**La nuit se voit.** Ciel étoilé, lune, et une vraie lumière lunaire — froide et
+orientée, donc elle garde le relief au lieu d'aplatir la rue comme l'aurait fait
+une simple ambiante plus forte. On distingue le sol entre deux lampadaires.
+
+**La voiture de Walter est la Pontiac Aztek** livrée par Guillaume.
+
+**Le menu pause ne vous téléporte plus.** Valider « Reprendre » avec F faisait
+aussi ouvrir la porte devant laquelle on se tenait. Échap ferme le menu depuis
+n'importe où, les entrées se **cliquent à la souris**, et on peut **maintenir**
+A ou D pour faire défiler un réglage.
+
+**Le téléphone affiche l'heure.**
+
+**Le visage de Walter** est en haut à gauche, avec sa barre de vie — toujours
+visible désormais — et son argent juste dessous. Les trois parlent de la même
+personne, ils sont ensemble.
+
+**Les phares** ne s'allument plus tout seuls à la tombée de la nuit et
+s'éteignent en descendant. Ils se commandent à la touche **A**, au volant.
+
+**Le camping-car a une porte** de l'intérieur, comme les maisons.
+
+**Les panneaux disent où ils mènent** : « QG TUCO » à la nouvelle sortie du
+désert, et « ALBUQUERQUE » au retour — il annonçait « DESERT » à quelqu'un qui
+était déjà dans le désert. La sortie vers Tuco est ramenée à soixante mètres du
+camping-car ; à cent quatre-vingt-dix, la route n'était qu'une corvée.
+
+**« Gun de ouf » s'appelle « Revolver ».**
+
+> **Pas fait :** l'objet équipé ne se voit toujours pas dans la main, et Walter
+> ne prend pas de position de tir quand il vise.
+
 ## 0.28.1 — Les portes, Jesse qui s'en va, et Jesse qui redevient beau
 
 **Jesse avait perdu son visage.** Le modèle de Guillaume avait été écrasé par le

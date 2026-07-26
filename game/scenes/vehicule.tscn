@@ -11,7 +11,7 @@
 
 [ext_resource type="Script" path="res://systemes/vehicule.gd" id="1_vehicule"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
-[ext_resource type="PackedScene" path="res://assets/vehicules/caisse.glb" id="3_caisse"]
+[ext_resource type="PackedScene" path="res://assets/vehicules/aztek.glb" id="3_caisse"]
 [ext_resource type="PackedScene" path="res://assets/vehicules/roue.glb" id="4_roue"]
 [ext_resource type="Script" path="res://systemes/moteur_audio.gd" id="5_moteur"]
 [ext_resource type="AudioStream" path="res://assets/sons/vehicule/moteur_ralenti.wav" id="6_ralenti"]
@@ -50,6 +50,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, 0.15)
 shape = SubResource("forme_toit")
 
 [node name="Caisse" parent="." instance=ExtResource("3_caisse")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.16, 0)
 
 [node name="RoueAvantG" type="VehicleWheel3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.82, 0.49, -1.375)
@@ -64,7 +65,6 @@ suspension_stiffness = 200.0
 damping_compression = 7.1
 damping_relaxation = 9.9
 
-[node name="Mesh" parent="RoueAvantG" instance=ExtResource("4_roue")]
 
 [node name="RoueAvantD" type="VehicleWheel3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.82, 0.49, -1.375)
@@ -79,7 +79,6 @@ suspension_stiffness = 200.0
 damping_compression = 7.1
 damping_relaxation = 9.9
 
-[node name="Mesh" parent="RoueAvantD" instance=ExtResource("4_roue")]
 
 [node name="RoueArriereG" type="VehicleWheel3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.82, 0.49, 1.375)
@@ -93,7 +92,6 @@ suspension_stiffness = 200.0
 damping_compression = 7.1
 damping_relaxation = 9.9
 
-[node name="Mesh" parent="RoueArriereG" instance=ExtResource("4_roue")]
 
 [node name="RoueArriereD" type="VehicleWheel3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.82, 0.49, 1.375)
@@ -107,7 +105,6 @@ suspension_stiffness = 200.0
 damping_compression = 7.1
 damping_relaxation = 9.9
 
-[node name="Mesh" parent="RoueArriereD" instance=ExtResource("4_roue")]
 
 [node name="PhareG" type="SpotLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.996, 0.0872, 0, -0.0872, 0.996, -0.48, 0.82, -2.34)

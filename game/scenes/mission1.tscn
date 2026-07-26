@@ -27,7 +27,7 @@
 [ext_resource type="PackedScene" path="res://assets/personnages/passant_c.glb" id="10_passant_c"]
 [ext_resource type="PackedScene" path="res://assets/personnages/tuco.glb" id="11_tuco"]
 [ext_resource type="PackedScene" path="res://assets/decor/fleche_sol.glb" id="12_fleche"]
-[ext_resource type="PackedScene" path="res://assets/decor/panneau_desert.glb" id="13_panneau"]
+[ext_resource type="PackedScene" path="res://assets/decor/panneau_tuco.glb" id="13_panneau"]
 
 [sub_resource type="BoxShape3D" id="zone_qg"]
 size = Vector3(14, 4, 14)
@@ -156,16 +156,22 @@ portee = 3.2
 ; retrouvait devant chez Tuco sans avoir eu le sentiment d'y aller. Un voyage
 ; qu'on n'a pas conduit n'est pas un voyage.
 ;
-; Elle est maintenant a cent quatre-vingt-dix metres au sud du point d'arrivee,
-; plus bas sur la meme piste — voir PISTE dans outils/gen_desert.py : la bande
-; d'asphalte court du nord au sud sur toute la longueur du terrain, il suffit
-; de la descendre. Un panneau et une fleche peinte la signalent, exactement
-; comme la sortie de la ville.
+; Elle est plus bas sur la meme piste — voir PISTE dans outils/gen_desert.py :
+; la bande d'asphalte court du nord au sud sur toute la longueur du terrain, il
+; suffit de la descendre. Un panneau QG TUCO et une fleche peinte la signalent,
+; exactement comme la sortie de la ville.
+;
+; DEUX FOIS DEPLACEE, et il fallait les deux. Elle etait a vingt-cinq metres du
+; camping-car : on roulait dessus sans l'avoir cherchee. Repoussee a cent
+; quatre-vingt-dix metres, le trajet devenait une corvee pour rien — le desert
+; est vide, et cent quatre-vingt-dix metres de sable ne racontent pas plus
+; qu'une route separee bien signalee. Elle est a soixante metres du camping-car,
+; assez pour qu'on prenne la voiture, pas assez pour qu'on s'ennuie.
 ;
 ; Coordonnees du MONDE : le desert est a (900, -900) et le terrain fait 460 m
-; de cote, donc z = -940 est largement dedans.
+; de cote, donc z = -862 est largement dedans.
 [node name="RouteTuco" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 900, 0, -940)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 900, 0, -862)
 
 [node name="Fleche" parent="RouteTuco" instance=ExtResource("12_fleche")]
 
@@ -180,7 +186,13 @@ collision_layer = 0
 collision_mask = 7
 script = ExtResource("3_passage")
 destination = Vector3(-1200, 0.4, -588)
-cap_degres = 180.0
+; ON ARRIVE FACE AU BATIMENT, pas face a la sortie.
+;
+; Le cap etait a 180 degres, donc vers +Z — c'est-a-dire droit sur la zone de
+; retour posee dix metres plus loin. Avec l'elan conserve a l'arrivee, la
+; voiture y entrait en une seconde et repartait au desert sans qu'on ait
+; touche a rien : le QG etait litteralement inaccessible.
+cap_degres = 0.0
 exige_vehicule = true
 refus = "Il vous faut une voiture pour vous rendre chez Tuco"
 zone = "qg"
@@ -306,8 +318,12 @@ donne = "meth"
 etape = "prendre_meth"
 portee = 1.9
 
+; DEVANT LA PORTE, et la porte existe maintenant — voir gen_lieux.py, qui la
+; pose sur le flanc gauche a z = 1,5. Les deux doivent bouger ensemble : un
+; point de sortie a trois metres de son battant, c'est un joueur qui ressort en
+; passant a travers la paroi.
 [node name="Sortie" type="Node3D" parent="CampingCarInterieur"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 0, 0.6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.25, 0, 1.5)
 script = ExtResource("2_point")
 invite = "Sortir"
 emmene_a = Vector3(875, 0.4, -803)
@@ -347,14 +363,16 @@ dialogue = "mission_garde"
 etape = "entrer_qg"
 portee = 2.4
 
+; Reculee de 22 a 30 : a 22 elle mordait presque sur le point d'arrivee, qui
+; est a z = 12 dans ce repere. Une sortie doit se chercher, pas se subir.
 [node name="RetourCamping" type="Area3D" parent="QgExterieur"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 22)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 30)
 collision_layer = 0
 collision_mask = 7
 ; On revient sur la route par laquelle on est venu, et TOURNE VERS LA VILLE :
 ; reposer le joueur face au sud le renverrait chez Tuco au premier appui.
 script = ExtResource("3_passage")
-destination = Vector3(900, 0.4, -925)
+destination = Vector3(900, 0.4, -845)
 cap_degres = 180.0
 exige_vehicule = true
 

@@ -268,6 +268,27 @@ extends Resource
 ## est parfaitement noir.
 @export_range(0.0, 1.0, 0.01) var ambiante: float = 0.16
 
+## LA LUNE. Une directionnelle faible et froide, active la nuit seulement.
+##
+## Elle existe parce que monter l'ambiante ne suffisait pas : une ambiante
+## forte eclaire toutes les faces pareil, donc elle supprime le relief et
+## donne une nuit plate et grise. La lune garde une direction, donc des faces
+## claires et des faces sombres — on voit ou l'on marche sans que la nuit
+## cesse d'etre la nuit.
+@export_range(0.0, 2.0, 0.01) var lune_energie: float = 0.38
+@export var lune_couleur: Color = Color(0.72, 0.80, 1.0)
+
+## Densite du semis d'etoiles. Plus le seuil est haut, moins il y en a — la
+## plage utile est etroite, d'ou le pas tres fin.
+@export_range(0.9, 0.9995, 0.0005) var etoiles_seuil: float = 0.9955
+
+## Combien la brume mange le ciel LA NUIT.
+##
+## Elle valait 1 : le brouillard recouvrait entierement la voute, ce qui etait
+## sans consequence tant que le ciel etait un aplat. Avec des etoiles, il les
+## effacait toutes. On garde de quoi noyer l'horizon, pas le zenith.
+@export_range(0.0, 1.0, 0.05) var nuit_brume_ciel: float = 0.55
+
 ## Filtrage lineaire des textures. Vrai = flou PS2. Faux = texels carres PS1.
 @export var filtrage_lineaire: bool = true
 
@@ -700,4 +721,4 @@ func brume_fin() -> float:
 ## le ciel EST le brouillard ; de jour il faut le laisser respirer, sinon on
 ## obtient un aplat gris pale au lieu du bleu d'Albuquerque.
 func brume_ciel() -> float:
-	return lerpf(jour_brume_ciel, 1.0, nuit_part())
+	return lerpf(jour_brume_ciel, nuit_brume_ciel, nuit_part())

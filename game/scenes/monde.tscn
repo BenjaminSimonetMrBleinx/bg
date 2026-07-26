@@ -11,7 +11,7 @@
 ; Le vehicule demarre sur la chaussee verticale du couloir 0, qui court le
 ; long de -Z : il est donc deja dans le bon sens.
 
-[gd_scene load_steps=39 format=3 uid="uid://bgmonde0v0001"]
+[gd_scene load_steps=40 format=3 uid="uid://bgmonde0v0001"]
 
 [ext_resource type="Script" path="res://rendu/rendu_ps2.gd" id="1_rendu"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
@@ -56,6 +56,7 @@
 [ext_resource type="Texture2D" path="res://assets/images/argent.png" id="41_argent"]
 [ext_resource type="Script" path="res://systemes/foule.gd" id="22_foule"]
 [ext_resource type="Script" path="res://systemes/pause.gd" id="42_pause"]
+[ext_resource type="Texture2D" path="res://assets/images/visage.png" id="43_visage"]
 
 [sub_resource type="ViewportTexture" id="tex_ecran"]
 viewport_path = NodePath("Rendu")
@@ -324,6 +325,7 @@ controleur = NodePath("../../../Controleur")
 joueur = NodePath("../../Scene3D/Joueur")
 tir = NodePath("../../../Tir")
 icone_argent = ExtResource("41_argent")
+icone_visage = ExtResource("43_visage")
 
 ; La roue des outils. Sous le fondu, pour qu'un passage de porte la recouvre
 ; si elle etait restee ouverte.

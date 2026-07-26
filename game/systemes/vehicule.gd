@@ -111,10 +111,24 @@ func appliquer_reglages() -> void:
 		p.spot_range = reglages.phare_portee
 		p.spot_angle = reglages.phare_angle
 		p.light_color = reglages.phare_couleur
-		# De jour ils ne servent a rien et se voient : un cone de lumiere en
-		# plein soleil est le detail qui trahit une scene de nuit eclaircie a
-		# la va-vite.
-		p.visible = reglages.phares_allumes and not Reglages.est_jour()
+		# L'ETAT ALLUME NE SE RELIT PAS ICI.
+		#
+		# appliquer_reglages() est appele a chaud, chaque fois qu'on bouge un
+		# curseur. En y remettant `visible = phares_allumes`, les phares se
+		# rallumaient tout seuls a chaque relecture — y compris a l'arrivee de
+		# la nuit, voiture vide, moteur coupe. Le curseur dit ce que le joueur
+		# a choisi ; c'est _allumes qui dit ce qui brille maintenant.
+		p.visible = _allumes and not Reglages.est_jour()
+
+
+## Les phares sont-ils allumes ? FAUX au chargement : une voiture garee dont
+## les phares s'allument seuls a la tombee de la nuit eclaire la rue pendant
+## que le joueur marche a cote.
+var _allumes: bool = false
+
+
+func phares_allumes() -> bool:
+	return _allumes
 
 
 func _toutes() -> Array[VehicleWheel3D]:
@@ -322,6 +336,14 @@ func prendre_le_volant() -> void:
 ## la voiture continuerait toute seule pendant qu'on marche. Il faut annuler
 ## la poussee et serrer le frein explicitement.
 func quitter_le_volant() -> void:
+	# ON COUPE LES PHARES EN DESCENDANT.
+	#
+	# Ils s'allumaient tout seuls a la nuit tombee — le reglage phares_allumes
+	# est vrai par defaut et appliquer_reglages() le lit au chargement — et
+	# rien ne les eteignait jamais. On sortait de la voiture, elle continuait
+	# d'eclairer la rue, et les deux cones suivaient le joueur a pied dans le
+	# champ de la camera.
+	eteindre_phares()
 	set_physics_process(false)
 	engine_force = 0.0
 	steering = 0.0
@@ -331,10 +353,19 @@ func quitter_le_volant() -> void:
 		m.call("couper")
 
 
+## Coupe les phares sans toucher au reglage : le curseur de reglages.tres dit
+## ce que le joueur a CHOISI, l'etat des lampes dit ce qui est allume MAINTENANT.
+## Les confondre rallumait la voiture au premier changement d'heure.
+func eteindre_phares() -> void:
+	_allumes = false
+	for p in _phares:
+		p.visible = false
+
+
 func basculer_phares() -> void:
-	reglages.phares_allumes = not reglages.phares_allumes
+	_allumes = not _allumes
 	for p in _phares:
 		# De jour ils ne servent a rien et se voient : un cone de lumiere en
 		# plein soleil est le detail qui trahit une scene de nuit eclaircie a
 		# la va-vite.
-		p.visible = reglages.phares_allumes and not Reglages.est_jour()
+		p.visible = _allumes and not Reglages.est_jour()

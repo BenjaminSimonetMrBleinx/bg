@@ -173,6 +173,28 @@ def campingcar_interieur(mats) -> int:
     sol.dalle(-hx, -CC_P, hx, 0.0, 0.01)
     total += sol.finir()
 
+    # LA PORTE DE SORTIE, sur le flanc gauche pres de l'arriere.
+    #
+    # Le camping-car etait clos : cinq surfaces identiques, aucune ne disant
+    # par ou l'on entre ni par ou l'on sort. Meme defaut que les interieurs de
+    # maison, et meme correctif — un chambranle plus large que le battant, pose
+    # la ou le point de sortie attend le joueur, c'est-a-dire vers l'arriere du
+    # couloir cote paillasse.
+    #
+    # Elle est SUR LE FLANC parce que c'est la que la porte du modele exterieur
+    # se trouve : entrer par le cote et ressortir par le fond ferait deux
+    # camping-cars differents.
+    pz, ph = 0.98, 1.92        # demi-largeur de l'ouverture, et sa hauteur
+    py = -1.5                  # a un metre cinquante du fond
+    cadre = Maillage("Chambranle", mats["metal_sombre"])
+    cadre.mur((-hx + 0.02, py - pz - 0.08), (-hx + 0.02, py + pz + 0.08),
+              0.0, ph + 0.08)
+    total += cadre.finir()
+
+    battant = Maillage("Battant", mats["bache"])
+    battant.mur((-hx + 0.03, py - pz), (-hx + 0.03, py + pz), 0.0, ph)
+    total += battant.finir()
+
     # LES STORES, sur toute la longueur du bord gauche et deux pans a droite.
     # C'est la seule source de lumiere de la piece et ce qui donne son
     # atmosphere aux images de reference : des raies chaudes en travers.

@@ -592,44 +592,117 @@ def panneau_stop(u: float, v: float):
     return (base[0] * g, base[1] * g, base[2] * g)
 
 
-def panneau_desert(u: float, v: float):
-    """Panneau routier vert du Nouveau-Mexique, avec DESERT en lettres claires.
+def panneau_ecrit(texte: str):
+    """Fabrique un panneau routier vert portant CE texte.
 
     Les lettres sont dessinees a la main sur une grille 5x7 : a 128 pixels de
-    large pour six caracteres, aucune police ne survivrait, et on ne peut pas
-    non plus se contenter d'une barre claire comme pour le stop — la
-    destination est justement l'information."""
-    n = hache(int(u * 150), int(v * 150))
-    fond = (28, 74, 52)
-    g = 0.93 + n * 0.12
+    large pour une poignee de caracteres, aucune police ne survivrait, et on ne
+    peut pas non plus se contenter d'une barre claire comme pour le stop — la
+    destination est justement l'information.
 
-    # Le bord clair, qui donne au panneau sa lecture de panneau.
-    if u < 0.045 or u > 0.955 or v < 0.07 or v > 0.93:
-        return (214 * g, 222 * g, 214 * g)
+    LE TEXTE EST UN PARAMETRE, et il ne l'etait pas. Le panneau ne savait ecrire
+    que DESERT : celui du retour vers la ville annoncait donc « DESERT » alors
+    qu'il pointe vers Albuquerque, et il n'y avait aucun moyen d'en poser un
+    pour le QG de Tuco. Une lettre en plus est une entree dans ALPHABET.
+    """
+    lettres = list(texte.upper())
+    n_lettres = max(1, len(lettres))
+    # Les lettres retrecissent quand il y en a beaucoup, mais pas en dessous
+    # d'une hauteur lisible : au-dela d'une douzaine, mieux vaut deux lignes,
+    # et on n'en est pas la.
+    hauteur = min(0.28, 1.8 / n_lettres)
 
-    if 0.36 < v < 0.64:
-        col = (u - 0.09) / 0.82 * 6.0        # six lettres
-        i = int(col)
-        if 0 <= i < 6:
-            cx = (col - i - 0.08) / 0.84     # 0..1 dans la lettre
-            cy = (v - 0.36) / 0.28           # 0..1, haut vers bas
-            if 0.0 <= cx <= 1.0 and _lettre(LETTRES_DESERT[i], cx, cy):
-                return (226 * g, 232 * g, 226 * g)
+    def dessin(u: float, v: float):
+        n = hache(int(u * 150), int(v * 150))
+        fond = (28, 74, 52)
+        g = 0.93 + n * 0.12
 
-    return (fond[0] * g, fond[1] * g, fond[2] * g)
+        # Le bord clair, qui donne au panneau sa lecture de panneau.
+        if u < 0.045 or u > 0.955 or v < 0.07 or v > 0.93:
+            return (214 * g, 222 * g, 214 * g)
+
+        v0 = 0.5 - hauteur / 2.0
+        if v0 < v < v0 + hauteur:
+            col = (u - 0.09) / 0.82 * float(n_lettres)
+            i = int(col)
+            if 0 <= i < n_lettres:
+                cx = (col - i - 0.08) / 0.84     # 0..1 dans la lettre
+                cy = (v - v0) / hauteur          # 0..1, haut vers bas
+                if 0.0 <= cx <= 1.0 and _lettre(lettres[i], cx, cy):
+                    return (226 * g, 232 * g, 226 * g)
+
+        return (fond[0] * g, fond[1] * g, fond[2] * g)
+
+    return dessin
 
 
-LETTRES_DESERT = ["D", "E", "S", "E", "R", "T"]
+def portrait_hud(u: float, v: float):
+    """Le portrait de Walter pour le HUD, en 32 pixels de cote.
+
+    Trente-deux pixels, c'est la taille d'une vignette de jeu PS2, et c'est
+    aussi trop peu pour un visage : on ne dessine donc pas un visage, on
+    dessine ce qui le rend RECONNAISSABLE en trois traits. Chez Walter c'est le
+    crane degarni, les lunettes et le bouc — dans cet ordre d'importance.
+
+    Fond transparent impossible ici : le format de sortie du projet est un PNG
+    opaque. On pose donc un fond sombre, qui fait cadre.
+    """
+    fond = (18, 20, 26)
+    peau = (206, 168, 138)
+    poil = (58, 52, 48)
+
+    # Le cadre.
+    if u < 0.06 or u > 0.94 or v < 0.06 or v > 0.94:
+        return (92, 88, 80)
+
+    # La tete : une ellipse un peu haute, posee bas dans le cadre.
+    dx = (u - 0.5) / 0.34
+    dy = (v - 0.56) / 0.40
+    if dx * dx + dy * dy > 1.0:
+        return fond
+
+    # La couronne de cheveux : sur les cotes, jamais sur le dessus.
+    if v < 0.34 and abs(u - 0.5) > 0.17:
+        return poil
+    # Le bouc, autour de la bouche.
+    if v > 0.72 and abs(u - 0.5) < 0.17:
+        return poil
+    # Les lunettes : deux verres et le pont.
+    if 0.44 < v < 0.56:
+        if 0.20 < abs(u - 0.5) < 0.30:
+            return (36, 38, 44)
+        if abs(u - 0.5) < 0.06:
+            return (36, 38, 44)
+    if 0.46 < v < 0.54 and 0.09 < abs(u - 0.5) < 0.20:
+        return (24, 26, 30)
+
+    return peau
+
+
+panneau_desert = panneau_ecrit("DESERT")
+panneau_albuquerque = panneau_ecrit("ALBUQUERQUE")
+panneau_tuco = panneau_ecrit("QG TUCO")
 
 # Chaque lettre : sept lignes de cinq caracteres. Le point est vide, le diese
 # est allume. Une grille 5x7 est le plus petit format ou l'alphabet latin reste
 # lisible, et c'est celui des afficheurs de l'epoque.
 ALPHABET = {
+    "A": [".###.", "#...#", "#...#", "#####", "#...#", "#...#", "#...#"],
+    "B": ["####.", "#...#", "#...#", "####.", "#...#", "#...#", "####."],
+    "C": [".####", "#....", "#....", "#....", "#....", "#....", ".####"],
     "D": ["####.", "#...#", "#...#", "#...#", "#...#", "#...#", "####."],
     "E": ["#####", "#....", "#....", "####.", "#....", "#....", "#####"],
-    "S": [".####", "#....", "#....", ".###.", "....#", "....#", "####."],
+    "G": [".####", "#....", "#....", "#..##", "#...#", "#...#", ".####"],
+    "L": ["#....", "#....", "#....", "#....", "#....", "#....", "#####"],
+    "N": ["#...#", "##..#", "##..#", "#.#.#", "#..##", "#..##", "#...#"],
+    "O": [".###.", "#...#", "#...#", "#...#", "#...#", "#...#", ".###."],
+    "Q": [".###.", "#...#", "#...#", "#...#", "#.#.#", "#..#.", ".##.#"],
     "R": ["####.", "#...#", "#...#", "####.", "#..#.", "#...#", "#...#"],
+    "S": [".####", "#....", "#....", ".###.", "....#", "....#", "####."],
     "T": ["#####", "..#..", "..#..", "..#..", "..#..", "..#..", "..#.."],
+    "U": ["#...#", "#...#", "#...#", "#...#", "#...#", "#...#", ".###."],
+    "Z": ["#####", "....#", "...#.", "..#..", ".#...", "#....", "#####"],
+    " ": [".....", ".....", ".....", ".....", ".....", ".....", "....."],
 }
 
 
@@ -969,7 +1042,14 @@ def main() -> None:
     # Le panneau de direction et la fleche au sol restent en pleine resolution :
     # le premier porte du texte, la seconde une diagonale. Les deux se lisent
     # tres mal a 64 pixels, alors qu'un panneau stop n'est qu'un aplat rouge.
+    # Le portrait du HUD : 32 pixels, sa taille d'affichage. L'agrandir puis le
+    # reduire a l'ecran ne ferait que le rendre flou.
+    ecrire_png(dossier / "visage.png", 32, 32, rendre(32, 32, portrait_hud))
+    faits.append("visage.png")
+
     for nom, fn in [("panneau_desert", panneau_desert),
+                    ("panneau_albuquerque", panneau_albuquerque),
+                    ("panneau_tuco", panneau_tuco),
                     ("fleche_orange", fleche_orange),
                     ("camping_car", camping_car)]:
         ecrire_png(dossier / f"{nom}.png", t, t, rendre(t, t, fn))

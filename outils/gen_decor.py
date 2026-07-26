@@ -185,7 +185,19 @@ def panneau(mats) -> int:
     return total + s.finir()
 
 
-def panneau_desert(mats) -> int:
+def panneau_direction(texture: str):
+    """Fabrique un panneau de direction portant CETTE texture.
+
+    Le meme modele sert pour toutes les destinations — DESERT, ALBUQUERQUE,
+    QG TUCO — parce qu'il n'y a rien qui les distingue sinon la plaque. Le
+    texte, lui, est cuit dans la texture par gen_textures.panneau_ecrit.
+    """
+    def batir(mats) -> int:
+        return _panneau_direction(mats, texture)
+    return batir
+
+
+def _panneau_direction(mats, texture: str) -> int:
     """Le panneau de direction au bord de la ville.
 
     Plus haut et plus large que le stop : c'est une destination, on doit la
@@ -197,7 +209,7 @@ def panneau_desert(mats) -> int:
         p.prisme(sx, 0, 0.0, 2.55, 0.05, 0.05, 6, 1.0)
     total = p.finir()
 
-    s = Maillage("Plaque", mats["panneau_desert"])
+    s = Maillage("Plaque", mats[texture])
     # La face arriere n'est PAS la face avant retournee.
     #
     # Le panneau stop s'en accommodait — un aplat rouge barre de blanc est
@@ -279,7 +291,12 @@ OBJETS = {
     "borne": (borne, ["rouge_borne"]),
     "cactus": (saguaro, ["cactus"]),
     "climatiseur": (climatiseur, ["metal", "metal_sombre"]),
-    "panneau_desert": (panneau_desert, ["metal_sombre", "panneau_desert"]),
+    "panneau_desert": (panneau_direction("panneau_desert"),
+                       ["metal_sombre", "panneau_desert"]),
+    "panneau_albuquerque": (panneau_direction("panneau_albuquerque"),
+                            ["metal_sombre", "panneau_albuquerque"]),
+    "panneau_tuco": (panneau_direction("panneau_tuco"),
+                     ["metal_sombre", "panneau_tuco"]),
     "fleche_sol": (fleche_sol, ["fleche_orange"]),
 }
 

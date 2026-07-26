@@ -233,6 +233,15 @@
    ]
   },
 
+  "nuit_ciel": {
+   "quoi": "La rue de nuit, camera levee vers le ciel. Doit montrer les etoiles, la lune, et assez de lumiere pour qu'on distingue le sol entre deux lampadaires. Les autres vues de nuit demarrent dans le salon depuis que la partie s'ouvre chez Walter, et ne montrent donc aucun ciel.",
+   "fin": 90,
+   "etapes": [
+    { "image": 20, "appeler": "Temps", "methode": "regler", "argument": 22 },
+    { "image": 30, "camera": [24, 2.4, -4], "vise": [24, 8, -26] }
+   ]
+  },
+
   "camping_car_porte": {
    "quoi": "Le camping-car vu de haut, avec Walter pose sur le point d'entree. Le modele est livre par Guillaume et son orientation vient d'un lacet impose a l'import : cette vue est le seul moyen de verifier que la porte du modele tombe bien la ou le jeu propose d'entrer.",
    "fin": 70,

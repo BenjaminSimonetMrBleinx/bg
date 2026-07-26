@@ -67,8 +67,12 @@ func _configurer_environnement() -> void:
 		env = Environment.new()
 		_environnement.environment = env
 
-	env.background_mode = Environment.BG_COLOR
+	# UN CIEL, PAS UN APLAT. De nuit, le fond uni ne donnait rien au-dessus des
+	# toits : pas un repere quand on leve la camera, et aucune source visible
+	# pour justifier qu'on y voie quelque chose. Voir rendu/ciel_nuit.gdshader.
+	env.background_mode = Environment.BG_SKY
 	env.background_color = reglages.ciel()
+	_configurer_ciel(env)
 
 	# Sans ambiante, tout ce qui n'est pas sous un lampadaire est un aplat
 	# parfaitement noir — illisible, et ce n'est pas ce que faisait la PS2.
@@ -96,6 +100,80 @@ func _configurer_environnement() -> void:
 	env.ssao_enabled = false
 	env.ssil_enabled = false
 	env.sdfgi_enabled = false
+
+
+const CIEL := "res://rendu/ciel_nuit.gdshader"
+
+## Ou se tient la lune, en degres : hauteur au-dessus de l'horizon, puis
+## orientation. A l'OPPOSE du soleil de midi, ce qui est aussi la seule
+## position ou elle ne se retrouve jamais derriere lui.
+const LUNE_HAUTEUR := 42.0
+const LUNE_AZIMUT := -145.0
+
+
+# Le ciel est un shader, et ses couleurs suivent l'heure comme le reste.
+#
+# Il est construit UNE FOIS et garde : refabriquer un Sky et son materiau a
+# chaque relecture de l'heure — c'est-a-dire cinquante fois par seconde quand
+# le cycle tourne — recompilerait le shader a chaque image.
+func _configurer_ciel(env: Environment) -> void:
+	var ciel := env.sky
+	if ciel == null:
+		ciel = Sky.new()
+		# Basse resolution assumee, comme le reste du rendu : la voute n'a que
+		# des degrades et des points, elle n'a pas besoin de 1024 pixels.
+		ciel.radiance_size = Sky.RADIANCE_SIZE_128
+		env.sky = ciel
+	var mat := ciel.sky_material as ShaderMaterial
+	if mat == null:
+		mat = ShaderMaterial.new()
+		mat.shader = load(CIEL) as Shader
+		ciel.sky_material = mat
+
+	var nuit := Reglages.nuit_part()
+	mat.set_shader_parameter("nuit", nuit)
+	mat.set_shader_parameter("couleur_zenith", reglages.ciel())
+	# L'horizon est toujours plus clair que le zenith, de jour comme de nuit :
+	# c'est ce qui donne au ciel son volume.
+	mat.set_shader_parameter("couleur_horizon",
+			reglages.ciel().lerp(reglages.brume(), 0.55))
+	mat.set_shader_parameter("lune_direction", _direction(
+			LUNE_HAUTEUR, LUNE_AZIMUT))
+	mat.set_shader_parameter("lune_couleur", reglages.lune_couleur)
+	mat.set_shader_parameter("etoiles_seuil", reglages.etoiles_seuil)
+
+	_configurer_lune(nuit)
+
+
+static func _direction(hauteur_deg: float, azimut_deg: float) -> Vector3:
+	var h := deg_to_rad(hauteur_deg)
+	var a := deg_to_rad(azimut_deg)
+	return Vector3(cos(h) * sin(a), sin(h), cos(h) * cos(a)).normalized()
+
+
+# LA LUNE ECLAIRE, elle ne fait pas que se voir.
+#
+# C'est le fond du probleme signale : « quand il fait nuit, on ne voit
+# absolument rien dans les endroits non eclaires ». Monter la seule lumiere
+# ambiante aurait aplati la scene — une ambiante forte supprime les ombres et
+# rend tout egal. Une lumiere directionnelle faible et froide, elle, garde le
+# relief et donne une direction a la nuit.
+func _configurer_lune(nuit: float) -> void:
+	var scene := scene_3d()
+	if scene == null:
+		return
+	var lune := scene.get_node_or_null("Lune") as DirectionalLight3D
+	if lune == null:
+		lune = DirectionalLight3D.new()
+		lune.name = "Lune"
+		scene.add_child(lune)
+	lune.rotation_degrees = Vector3(-LUNE_HAUTEUR, LUNE_AZIMUT + 180.0, 0.0)
+	lune.light_color = reglages.lune_couleur
+	lune.light_energy = reglages.lune_energie * nuit
+	# Pas d'ombres : deux jeux d'ombres portees dans la meme scene se croisent
+	# et se contredisent, et celles de la lune ne se remarqueraient pas.
+	lune.shadow_enabled = false
+	lune.visible = nuit > 0.02
 
 
 # Le soleil se leve et se couche.
