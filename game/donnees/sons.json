@@ -37,9 +37,15 @@
   "coup_de_feu": [
    "mission/coup_de_feu_01.wav",
    "mission/coup_de_feu_02.wav",
-   "mission/coup_de_feu_03.wav"
+   "mission/coup_de_feu_03.wav",
+   "mission/coup_de_feu_04.wav"
   ],
-  "fusillade": ["mission/fusillade.wav"],
+  "fusillade": [
+   "mission/fusillade.wav",
+   "mission/fusillade_02.wav",
+   "mission/mitraillette.wav"
+  ],
+  "pas_de_meth": ["mission/this_is_not_meth.wav"],
   "explosion": ["mission/explosion.wav"],
 
   "porte_ouvre": ["maison/ouvre_porte.wav"],

@@ -16,6 +16,19 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.27.2 — Les vrais sons de Guillaume
+
+> **À essayer : tire, et surtout va au bout de la scène chez Tuco.** Les coups
+> de feu, la fusillade et l''explosion ne sont plus synthétisés — ce sont ceux
+> de Guillaume, livrés dans la foulée.
+>
+> Et **« this is not meth » est là.** Walt annonce ce qu''il tient, puis lance le
+> cristal. La réplique passe une seconde avant l''explosion : jouées ensemble,
+> la phrase serait devenue un bruit parmi deux autres.
+
+Quatre variantes de coup de feu au lieu de trois, trois fichiers de fusillade
+tirés au hasard. Les cinq tickets correspondants sont clos.
+
 ## 0.27.1 — Jesse et Tuco, les vrais
 
 > **À essayer : va parler à Jesse chez lui, puis regarde Tuco derrière son

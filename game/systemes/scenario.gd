@@ -279,9 +279,19 @@ func refus_de_sortie() -> String:
 # La botte secrete jetee au sol. Le fulminate de mercure : ca n'est pas de la
 # meth, et Tuco l'apprend a ses depens.
 func _faire_exploser() -> void:
-	if _son() != null:
-		_son().bruit_ici("explosion", _joueur.global_position)
 	_patience = -1.0
+	if _son() == null:
+		if _controleur != null:
+			_controleur.call("souffler_l_explosion")
+		return
+	# LA REPLIQUE D'ABORD, l'explosion ensuite. C'est tout le sens de la scene :
+	# Walt annonce ce qu'il tient avant de le lancer. Les jouer ensemble ferait
+	# de la phrase un bruit parmi deux autres.
+	_son().bruit("pas_de_meth")
+	await get_tree().create_timer(1.15).timeout
+	if not is_instance_valid(_joueur):
+		return
+	_son().bruit_ici("explosion", _joueur.global_position)
 	if _controleur != null:
 		_controleur.call("souffler_l_explosion")
 
