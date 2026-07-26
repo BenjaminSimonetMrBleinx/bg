@@ -161,6 +161,12 @@ celui qui aurait montré le panneau à l'envers.
 
 La planche **reste** : on la rejoue après un remaniement et on compare.
 
+## Quoi de neuf
+
+[NOTES-DE-VERSION.md](NOTES-DE-VERSION.md) — **à lire avant de tester**. Une entrée par
+version, et deux choses seulement : ce qu'on peut essayer qui n'existait pas, et les bugs
+qui gênaient vraiment. Pas de détail technique, il vit dans les commits.
+
 ## La version
 
 Elle est affichée **en permanence en haut à droite de l'écran**, en tout petit :

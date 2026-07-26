@@ -33,9 +33,20 @@ import bmesh
 
 # Toutes les distances sont en metres. Blender est en Z-up ; l'exportateur
 # glTF convertit vers le Y-up de Godot, on ne compense rien a la main.
-ROUTE = 8.0
+# Largeur de la chaussee, en metres.
+#
+# Elle etait a 8, ce qui parait genereux — jusqu a ce qu on y gare des
+# voitures des deux cotes. Mesure : il restait 3,84 m de passage libre pour
+# une caisse de 1,86 m, soit moins d un metre de chaque cote. Longer un
+# trottoir a cinquante devenait impossible sans accrocher, et la sensation
+# etait celle d une ville qui freine sans raison.
+#
+# Le trottoir n y etait pour rien. La mesure l a montre : le franchir coute un
+# kilometre/heure. C est le stationnement qui etranglait la rue.
+ROUTE = 11.0
 TROTTOIR = 3.0
 H_TROTTOIR = 0.18
+
 BLOC = 40.0
 BATI = 12.0                # profondeur des immeubles, cour au centre de l'ilot
 COULOIR = ROUTE + 2 * TROTTOIR
@@ -444,6 +455,13 @@ def construire(n: int, rng: random.Random, mats: dict) -> dict:
                 dalle(m["trottoir"], a, b, c, d, H_TROTTOIR, TUILE_SOL)
 
             # bordure : quatre faces verticales, pas une ligne peinte
+            #
+            # On a essaye de les BISEAUTER, en croyant qu une face droite de
+            # dix-huit centimetres arretait la voiture. Mesure faite image par
+            # image : elle la franchit sans peine, et le biseau ne changeait
+            # rien — a 54 km/h le trottoir coute un kilometre/heure. Ce qui
+            # bloquait etait le stationnement des deux cotes d une chaussee
+            # de huit metres. Voir ROUTE.
             for pts, lg in [
                 ([(x0, y0, 0), (x1, y0, 0), (x1, y0, H_TROTTOIR), (x0, y0, H_TROTTOIR)], x1 - x0),
                 ([(x1, y1, 0), (x0, y1, 0), (x0, y1, H_TROTTOIR), (x1, y1, H_TROTTOIR)], x1 - x0),

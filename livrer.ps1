@@ -439,9 +439,9 @@ if ($touche_jeu.Count -gt 0) {
     # bug genant a disparu. Sans cette note il relance le jeu et cherche la
     # difference — ou, plus souvent, ne cherche pas et ne la trouve jamais.
     if ($version -and $ancienne -and $version -ne $ancienne) {
-        $notes = Get-Content 'docs/10-versions.md' -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+        $notes = Get-Content 'NOTES-DE-VERSION.md' -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
         if ($notes -notmatch [regex]::Escape("## $version")) {
-            Souci "La version passe en $version, mais docs/10-versions.md n en parle pas."
+            Souci "La version passe en $version, mais NOTES-DE-VERSION.md n en parle pas."
             Info  "Une entree dit deux choses : ce qu on peut essayer, et le bug"
             Info  "genant qui a disparu. Les ajustements internes n y sont pas."
             if (-not $Oui -and -not $Quoi) {
@@ -459,7 +459,7 @@ if ($touche_jeu.Count -gt 0) {
     if ($version -and $ancienne -and $version -eq $ancienne) {
         Souci "Le jeu a change ($($touche_jeu.Count) fichier(s)) mais la version reste $version."
         Info  "Elle se bouge dans game/project.godot, ligne config/version."
-        Info  "Voir docs/10-versions.md pour ce qui merite un chiffre."
+        Info  "Voir NOTES-DE-VERSION.md pour ce qui merite un chiffre."
         # -Quoi ne demande rien : il montre. Poser la question ici bloquait le
         # mode apercu, qui est justement celui qu'on lance sans y assister.
         if (-not $Oui -and -not $Quoi) {

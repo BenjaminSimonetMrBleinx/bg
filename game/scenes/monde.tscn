@@ -98,7 +98,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 156)
 collision_layer = 0
 collision_mask = 7
 script = ExtResource("24_passage")
-destination = Vector3(7, 0.4, -104)
+destination = Vector3(8.5, 0.4, -118)
 cap_degres = 0.0
 exige_vehicule = true
 
@@ -109,13 +109,13 @@ shape = SubResource("passage_forme")
 ; est peinte SUR la chaussee : on la franchit en roulant, on ne la contourne
 ; pas.
 [node name="VersDesert" type="Node3D" parent="Rendu/Scene3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, -112)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0, -126)
 
 [node name="Fleche" parent="Rendu/Scene3D/VersDesert" instance=ExtResource("27_fleche")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4)
 
 [node name="Panneau" parent="Rendu/Scene3D/VersDesert" instance=ExtResource("28_panneau")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.4, 0, -2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, -2)
 
 [node name="Zone" type="Area3D" parent="Rendu/Scene3D/VersDesert"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -4)

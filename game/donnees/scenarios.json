@@ -33,6 +33,7 @@
   "  appui      action                   presse et maintient",
   "  relache    action",
   "  camera     pos [x,y,z], vise [x,y,z]   camera libre, ignore le jeu",
+  "  lancer     noeud, vitesse [x,y,z]      donne une vitesse a un corps",
   "",
   "'fin' est l'image ou l'on enregistre. Prevoir large : un fondu de porte dure",
   "une seconde, une sonnerie deux, et capturer au milieu ne montre rien."
@@ -67,6 +68,17 @@
     { "image": 20, "appeler": "Temps", "methode": "regler", "argument": 22 }
    ]
   },
+  "bordure": {
+   "quoi": "La voiture lancee sur une bordure de trottoir. Monte-t-elle ?",
+   "fin": 120,
+   "etapes": [
+    { "image": 20, "placer": "Vehicule", "pos": [5, 0.45, -40], "cap": -90 },
+    { "image": 22, "appeler": "Controleur", "methode": "_monter" },
+    { "image": 40, "lancer": "Vehicule", "vitesse": [8, 0, 0] },
+    { "image": 95, "camera": [4, 3.2, -34], "vise": [12, 0.6, -40] }
+   ]
+  },
+
   "depart": {
    "quoi": "Le point de depart, tel qu'on le decouvre en lancant le jeu.",
    "fin": 150,
@@ -95,7 +107,7 @@
    "quoi": "A pied sur la fleche : le bandeau doit expliquer le refus.",
    "fin": 60,
    "etapes": [
-    { "image": 20, "placer": "Joueur", "pos": [7, 0.4, -116] }
+    { "image": 20, "placer": "Joueur", "pos": [8.5, 0.4, -128] }
    ]
   },
 
@@ -103,7 +115,7 @@
    "quoi": "La fleche et le panneau vus de haut, pour juger sens et position.",
    "fin": 60,
    "etapes": [
-    { "image": 30, "camera": [7, 11, -104], "vise": [8.5, 0, -115] }
+    { "image": 30, "camera": [8.5, 11, -118], "vise": [10, 0, -129] }
    ]
   },
 
@@ -111,7 +123,7 @@
    "quoi": "Ce qu'on voit en arrivant au desert : la piste et le camping-car.",
    "fin": 170,
    "etapes": [
-    { "image": 20, "placer": "Vehicule", "pos": [7, 0.4, -116] },
+    { "image": 20, "placer": "Vehicule", "pos": [8.5, 0.4, -128] },
     { "image": 22, "appeler": "Controleur", "methode": "_monter" }
    ]
   },

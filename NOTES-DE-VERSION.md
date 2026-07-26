@@ -8,13 +8,28 @@ Une entrée dit deux choses, et rien d'autre :
 - **les bugs qui gênaient vraiment** et qui sont réparés
 
 Les ajustements internes, les remaniements, les corrections de tests n'y sont pas.
-Le détail technique vit dans les messages de commit et dans [JOURNAL.md](JOURNAL.md).
+Le détail technique vit dans les messages de commit et dans [docs/JOURNAL.md](docs/JOURNAL.md).
 
 Le numéro s'affiche en haut à droite de l'écran. `MAJEUR.MINEUR.CORRECTIF` : **MAJEUR**
 passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque lot livré,
 **CORRECTIF** pour ce qui répare sans rien ajouter.
 
 ---
+
+## 0.20.0 — Les rues sont enfin praticables
+
+> **À essayer : roule vite en frôlant le trottoir.** Avant, la voiture perdait **62 % de sa
+> vitesse** en une seconde et demie. Maintenant elle en garde 82 %.
+
+**Ce n'était pas le trottoir.** Mesuré image par image : franchir une bordure de dix-huit
+centimètres à 54 km/h coûte **un** kilomètre/heure.
+
+C'était le **stationnement**. Deux rangées de voitures garées sur une chaussée de huit
+mètres laissaient 3,84 m de passage pour une caisse de 1,86 m — moins d'un mètre de chaque
+côté. On accrochait une aile à la moindre dérive.
+
+La chaussée passe de 8 à 11 mètres. Les rues sont un peu plus larges, la ville un peu plus
+grande, et on peut doubler une voiture garée sans la toucher.
 
 ## 0.19.0 — La roue des outils s'entend
 
@@ -105,4 +120,4 @@ de zéro toutes les cinq secondes.
 
 Le premier jalon, sans numéro : la ville, la conduite, marcher, les maisons et leurs
 habitants, les dialogues doublés, la roue des outils, la visée à la souris, les passants,
-le modèle sculpté de Walter. Le détail est dans [JOURNAL.md](JOURNAL.md).
+le modèle sculpté de Walter. Le détail est dans [docs/JOURNAL.md](docs/JOURNAL.md).

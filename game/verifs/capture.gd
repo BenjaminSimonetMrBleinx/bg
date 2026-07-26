@@ -134,6 +134,19 @@ func _jouer_les_etapes() -> void:
 			elif n is CharacterBody3D:
 				(n as CharacterBody3D).velocity = Vector3.ZERO
 
+		if etape.has("lancer"):
+			var n := _trouver(_monde, str(etape["lancer"])) as Node3D
+			var v: Array = etape.get("vitesse", [0, 0, 0])
+			if n is RigidBody3D:
+				(n as RigidBody3D).linear_velocity = Vector3(
+						float(v[0]), float(v[1]), float(v[2]))
+			elif n is CharacterBody3D:
+				(n as CharacterBody3D).velocity = Vector3(
+						float(v[0]), float(v[1]), float(v[2]))
+			else:
+				printerr("capture : '%s' n'est pas un corps qu'on lance"
+						% etape["lancer"])
+
 		if etape.has("appeler"):
 			var n := _trouver(_monde, str(etape["appeler"]))
 			var m := str(etape.get("methode", ""))
