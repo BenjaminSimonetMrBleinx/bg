@@ -233,6 +233,15 @@
    ]
   },
 
+  "voiture_joueur": {
+   "quoi": "La voiture de Walter vue de trois quarts avant. Le modele est livre et son orientation vient d'un lacet impose a l'import : cette vue est le seul moyen de verifier qu'elle roule dans le bon sens. La voiture est posee cap zero, donc son nez doit pointer vers -Z, c'est-a-dire vers le fond de l'image.",
+   "fin": 70,
+   "etapes": [
+    { "image": 20, "placer": "Vehicule", "pos": [880, 0.6, -760], "cap": 0 },
+    { "image": 30, "camera": [884, 2.2, -766], "vise": [880, 0.9, -760] }
+   ]
+  },
+
   "nuit_ciel": {
    "quoi": "La rue de nuit, camera levee vers le ciel. Doit montrer les etoiles, la lune, et assez de lumiere pour qu'on distingue le sol entre deux lampadaires. Les autres vues de nuit demarrent dans le salon depuis que la partie s'ouvre chez Walter, et ne montrent donc aucun ciel.",
    "fin": 90,
