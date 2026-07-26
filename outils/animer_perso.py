@@ -427,6 +427,45 @@ def axe_de_flexion(arm, depart: dict, coude: str, main: str,
     return axe, signe
 
 
+def distance_au_segment(p: Vector, a: Vector, b: Vector) -> float:
+    ab = b - a
+    l2 = ab.dot(ab)
+    t = 0.0 if l2 < 1e-9 else max(0.0, min(1.0, (p - a).dot(ab) / l2))
+    return (p - (a + ab * t)).length
+
+
+def traverse(arm, tronc: tuple, tete: tuple) -> tuple[float, float]:
+    """De combien le bras gauche RENTRE dans le buste et dans le crane.
+
+    En metres, et jamais negatif : zero veut dire qu'il passe a cote.
+
+    Cette mesure manquait, et son absence explique le geste. Le solveur ne
+    payait que l'arrivee des doigts ; le chemin pour y aller ne lui coutait
+    rien. Il trouvait donc la solution la moins chere en degres — l'avant-bras
+    a plat en travers de la poitrine, le coude colle au sternum, la main qui
+    ressort par la joue. Vue de face, la main arrive aux lunettes ; vue de
+    trois quarts, le bras est dans le torse.
+
+    On echantillonne le bras et l'avant-bras, et on garde le pire enfoncement.
+    L'avant-bras n'est suivi qu'aux trois quarts : son extremite est CENSEE
+    finir contre le visage, et la lui reprocher interdirait le geste.
+    """
+    tronc_bas, tronc_haut, r_tronc = tronc
+    centre_tete, r_tete = tete
+    epaule = place(arm, "LeftArm")
+    coude = place(arm, "LeftForeArm")
+    poignet = place(arm, "LeftHand")
+    dans_tronc = 0.0
+    dans_tete = 0.0
+    for a, b, jusqu in ((epaule, coude, 1.0), (coude, poignet, 0.75)):
+        for k in range(1, 9):
+            p = a + (b - a) * (jusqu * k / 8.0)
+            dans_tronc = max(dans_tronc,
+                             r_tronc - distance_au_segment(p, tronc_bas, tronc_haut))
+            dans_tete = max(dans_tete, r_tete - (p - centre_tete).length)
+    return max(0.0, dans_tronc), max(0.0, dans_tete)
+
+
 def resoudre_les_lunettes(arm, depart: dict) -> dict:
     """Trouve la pose du bras gauche qui amene la main aux lunettes.
 
@@ -460,31 +499,68 @@ def resoudre_les_lunettes(arm, depart: dict) -> dict:
     plie, sens = axe_de_flexion(arm, depart, "LeftForeArm", "LeftHand",
                                 "LeftArm")
 
+    # LE BUSTE ET LE CRANE, en volumes, MESURES sur le rig au repos.
+    #
+    # Le rayon du buste n'est pas un nombre choisi : c'est la distance de l'axe
+    # du tronc a l'articulation de l'epaule, un peu rentree. Sur n'importe quel
+    # humanoide, l'epaule est posee sur le bord de la cage thoracique.
+    tronc_bas = place(arm, "Hips")
+    tronc_haut = bas
+    r_tronc = distance_au_segment(place(arm, "LeftArm"), tronc_bas, tronc_haut) * 0.80
+    centre_tete = bas + (haut - bas) * 0.5
+    r_tete = (haut - bas).length * 0.48
+    tronc = (tronc_bas, tronc_haut, r_tronc)
+    tete = (centre_tete, r_tete)
+    print("  volumes    buste rayon %.1f cm, crane rayon %.1f cm"
+          % (r_tronc * 100.0, r_tete * 100.0))
+
     # QUATRE inconnues, pas neuf : trois pour viser avec le bras, une pour
     # plier le coude. Laisser les neuf libres trouve toujours une solution qui
     # touche la cible, et c'est le probleme — elle passe par un poignet retourne
     # et une epaule a l'envers. Un modele a moins de liberte se trompe moins.
+    #
+    # Le poignet est desormais borne a 34 degres au lieu de 70 : au-dela on ne
+    # remonte plus ses lunettes, on se casse la main.
     axes = [TANGAGE, ROULIS, LACET]
     reglages = [("LeftArm", axes[0], 120.0), ("LeftArm", axes[1], 120.0),
                 ("LeftArm", axes[2], 120.0), ("LeftForeArm", plie, 140.0),
                 ("LeftShoulder", axes[0], 18.0), ("LeftShoulder", axes[2], 18.0),
-                ("LeftHand", axes[0], 70.0), ("LeftHand", axes[1], 70.0),
-                ("LeftHand", axes[2], 70.0)]
+                ("LeftHand", axes[0], 34.0), ("LeftHand", axes[1], 34.0),
+                ("LeftHand", axes[2], 34.0)]
 
+    # LE COUT. Trois termes, et les deux derniers sont nouveaux :
+    #
+    #   - ou arrivent les doigts, et ou arrive le poignet ;
+    #   - ce que le bras traverse en chemin, paye QUATRE fois le prix d'un
+    #     ecart de visee. Un centimetre de bras dans le torse se voit
+    #     infiniment plus qu'un centimetre de doigts a cote des montures ;
+    #   - le coude qui monte au-dessus de l'epaule. Rien ne l'interdisait, et
+    #     c'est le « pli bizarre » : on remonte ses lunettes coude BAS, le
+    #     coude en l'air est un salut.
     def ecart_de(_valeurs) -> float:
+        dans_tronc, dans_tete = traverse(arm, tronc, tete)
+        coude_haut = max(0.0, place(arm, "LeftForeArm").z - place(arm, "LeftArm").z)
         return ((bout(arm, "LeftHand", MAIN) - cible).length
-                + 0.7 * (place(arm, "LeftHand") - poignet).length)
+                + 0.7 * (place(arm, "LeftHand") - poignet).length
+                + 4.0 * (dans_tronc + dans_tete)
+                + 1.5 * coude_haut)
 
     departs = [[lever, 0.0, 0.0, pli * sens, 0.0, 0.0, 0.0, 0.0, 0.0]
                for pli in (35.0, 75.0, 110.0) for lever in (0.0, -50.0)]
     pose = resoudre(arm, depart, reglages, ecart_de, departs)
     poser_pose(arm, pose)
     ecart = (bout(arm, "LeftHand", MAIN) - cible).length
+    dans_tronc, dans_tete = traverse(arm, tronc, tete)
     print("  lunettes   doigts a %.1f cm des montures, poignet a %.1f cm "
           "sous eux" % (ecart * 100.0,
                         (cible.z - place(arm, "LeftHand").z) * 100.0))
+    print("  passage    buste %.1f cm, crane %.1f cm, coude %.1f cm sous l epaule"
+          % (dans_tronc * 100.0, dans_tete * 100.0,
+             (place(arm, "LeftArm").z - place(arm, "LeftForeArm").z) * 100.0))
     if ecart > 0.05:
         print("  ATTENTION  le geste manque la tete de %.1f cm" % (ecart * 100))
+    if dans_tronc > 0.02 or dans_tete > 0.02:
+        print("  ATTENTION  le bras traverse encore")
     # La tete accompagne un peu : on baisse le menton quand on remonte ses
     # lunettes, on ne reste pas plante droit pendant que la main monte.
     tourner(arm, pose, "Head", TANGAGE, -3.0)
