@@ -1,0 +1,109 @@
+{
+ "_lisez_moi": [
+  "Les scenarios de capture : des situations de jeu qu'on veut pouvoir REVOIR",
+  "a la demande, sans y jouer.",
+  "",
+  "POURQUOI CE FICHIER EXISTE.",
+  "",
+  "Le seul moyen de savoir si quelque chose est juste, dans ce projet, est de",
+  "le regarder. La fleche pointait vers la ville, le cap d'arrivee etait a 180",
+  "degres, le bord du terrain se lisait comme une table posee dans le vide :",
+  "aucun des trois n'a ete trouve par un test, et tous les trois ont saute aux",
+  "yeux sur une image.",
+  "",
+  "Or produire cette image demandait a chaque fois d'ECRIRE un script jetable —",
+  "instancier le monde, teleporter la voiture, presser une touche, attendre,",
+  "enregistrer — puis de le supprimer. Quatre fois dans la meme journee, dont",
+  "trois quasi identiques. Le quatrieme n'a pas ete ecrit, et c'est celui qui",
+  "aurait montre le panneau a l'envers.",
+  "",
+  "Ici, une situation est une liste d'ETAPES datees en images. Le cout d'une",
+  "nouvelle vue tombe a six lignes, et surtout elle RESTE : on peut rejouer",
+  "toute la planche apres un remaniement et comparer.",
+  "",
+  "  .\\bg.ps1 capture -Scenario desert     une vue",
+  "  .\\bg.ps1 capture -Scenario tous       toute la planche",
+  "",
+  "LE VOCABULAIRE. Chaque etape porte une 'image' — le numero d'image ou elle",
+  "se declenche — et une action :",
+  "",
+  "  placer     noeud, pos [x,y,z], et cap en degres (facultatif)",
+  "  appeler    noeud, methode           appelle une methode publique",
+  "  touche     action                   presse et relache une action d'entree",
+  "  appui      action                   presse et maintient",
+  "  relache    action",
+  "  camera     pos [x,y,z], vise [x,y,z]   camera libre, ignore le jeu",
+  "",
+  "'fin' est l'image ou l'on enregistre. Prevoir large : un fondu de porte dure",
+  "une seconde, une sonnerie deux, et capturer au milieu ne montre rien."
+ ],
+
+ "scenarios": {
+
+  "depart": {
+   "quoi": "Le point de depart, tel qu'on le decouvre en lancant le jeu.",
+   "fin": 150,
+   "etapes": []
+  },
+
+  "roue": {
+   "quoi": "La roue des outils ouverte, avec ses quatre parts.",
+   "fin": 90,
+   "etapes": [
+    { "image": 40, "appui": "roue" }
+   ]
+  },
+
+  "telephone": {
+   "quoi": "Un appel en cours : le combine, le cadre de dialogue, l'invite.",
+   "fin": 260,
+   "etapes": [
+    { "image": 30, "touche": "telephone" },
+    { "image": 60, "touche": "interagir" },
+    { "image": 90, "touche": "interagir" }
+   ]
+  },
+
+  "refus_desert": {
+   "quoi": "A pied sur la fleche : le bandeau doit expliquer le refus.",
+   "fin": 60,
+   "etapes": [
+    { "image": 20, "placer": "Joueur", "pos": [7, 0.4, -116] }
+   ]
+  },
+
+  "panneau_desert": {
+   "quoi": "La fleche et le panneau vus de haut, pour juger sens et position.",
+   "fin": 60,
+   "etapes": [
+    { "image": 30, "camera": [7, 11, -104], "vise": [8.5, 0, -115] }
+   ]
+  },
+
+  "arrivee_desert": {
+   "quoi": "Ce qu'on voit en arrivant au desert : la piste et le camping-car.",
+   "fin": 170,
+   "etapes": [
+    { "image": 20, "placer": "Vehicule", "pos": [7, 0.4, -116] },
+    { "image": 22, "appeler": "Controleur", "methode": "_monter" }
+   ]
+  },
+
+  "camping_car": {
+   "quoi": "Le camping-car de pres, seul point de repere de la zone.",
+   "fin": 60,
+   "etapes": [
+    { "image": 30, "camera": [866, 4, -792], "vise": [877, 1.5, -804] }
+   ]
+  },
+
+  "maison_walter": {
+   "quoi": "Le salon de Walter et son habitante.",
+   "fin": 120,
+   "etapes": [
+    { "image": 20, "placer": "Joueur", "pos": [-574, 0.5, 583], "cap": 180 },
+    { "image": 24, "appeler": "Camera3D", "methode": "recaler" }
+   ]
+  }
+ }
+}

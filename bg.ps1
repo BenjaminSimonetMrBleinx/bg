@@ -44,6 +44,12 @@ param(
     # texte. .\bg.ps1 test -Suite camera
     [string]$Suite = '',
 
+    # Pour 'capture' : joue une situation declaree dans donnees\scenarios.json
+    # au lieu de photographier le point de depart. 'tous' rend la planche
+    # complete. C est la boucle de controle visuel du projet : la plupart des
+    # defauts trouves ici ne se voient sur aucun test, seulement a l image.
+    [string]$Scenario = '',
+
     # Pour 'test' : demande a git ce qui a bouge et n en joue que les suites
     # concernees. C est le mode a utiliser avant chaque commit.
     [switch]$Modifies,
@@ -266,9 +272,42 @@ switch ($Commande) {
         Set-Build
         Initialize-Projet
         New-Item -ItemType Directory -Force -Path $Tmp | Out-Null
-        $sortie = Join-Path $Tmp 'capture.png'
-        & $GodotConsole --path $Projet --script 'res://verifs/capture.gd' -- --sortie $sortie --frames 150
-        if (Test-Path $sortie) { Write-Host "-> $sortie" -ForegroundColor Green }
+
+        if (-not $Scenario) {
+            $sortie = Join-Path $Tmp 'capture.png'
+            & $GodotConsole --path $Projet --script 'res://verifs/capture.gd' `
+                -- --sortie $sortie --frames 150
+            if (Test-Path $sortie) { Write-Host "-> $sortie" -ForegroundColor Green }
+            Write-Host "Situations disponibles : .\bg.ps1 capture -Scenario tous" -ForegroundColor Gray
+            break
+        }
+
+        # Les situations sont declarees dans game\donnees\scenarios.json. On les
+        # lit ICI aussi, pour pouvoir en jouer plusieurs et dire lesquelles
+        # existent quand le nom demande n en est pas une.
+        $fiche = Join-Path $Projet 'donnees\scenarios.json'
+        $connus = (Get-Content $fiche -Raw -Encoding UTF8 | ConvertFrom-Json).scenarios
+        $noms = @($connus.PSObject.Properties.Name)
+        $choisis = if ($Scenario -eq 'tous') { $noms }
+                   else { @($noms | Where-Object { $_ -like "*$Scenario*" }) }
+        if ($choisis.Count -eq 0) {
+            Write-Host "Aucune situation ne correspond a '$Scenario'." -ForegroundColor Red
+            Write-Host "Connues : $($noms -join ', ')" -ForegroundColor Gray
+            exit 1
+        }
+
+        $dossier = Join-Path $Tmp 'captures'
+        New-Item -ItemType Directory -Force -Path $dossier | Out-Null
+        foreach ($s in $choisis) {
+            $sortie = Join-Path $dossier "$s.png"
+            Write-Host "`n--- $s ---" -ForegroundColor Cyan
+            Write-Host "    $($connus.$s.quoi)" -ForegroundColor Gray
+            & $GodotConsole --path $Projet --script 'res://verifs/capture.gd' `
+                -- --sortie $sortie --scenario $s
+            if (Test-Path $sortie) { Write-Host "  -> $sortie" -ForegroundColor Green }
+            else { Write-Host "  rien produit" -ForegroundColor Red }
+        }
+        Write-Host "`n$($choisis.Count) vue(s) dans $dossier" -ForegroundColor Green
     }
 
     'verif' {

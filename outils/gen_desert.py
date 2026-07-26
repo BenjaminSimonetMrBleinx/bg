@@ -46,6 +46,12 @@ CENTRE = (900.0, -900.0)
 # posee dans le vide — et on ne peut pas le masquer par du brouillard puisque
 # c'est justement au-dela que commence le rien.
 COTE = 460.0             # cote du terrain, en metres
+
+# Ou le jeu pose le camping-car, en coordonnees du TERRAIN (Blender : x, y).
+# Duplique de systemes/desert.gd, qui l'instancie — le generateur ne peut pas
+# lire un script Godot. Les deux doivent bouger ensemble ; s'ils divergent, un
+# cactus repousse dans le vehicule.
+CAMPING_CAR = (-23.0, -96.0)
 TUILE_SABLE = 12.0       # la texture de sable se repete tous les 12 m
 PISTE = 6.0              # DEMI-largeur de la piste : elle fait donc 12 m
 Z_PISTE = 0.012
@@ -202,6 +208,12 @@ def cactus(mats, graine: int) -> int:
         y = rng.uniform(-COTE / 2 + 12, COTE / 2 - 12)
         # Jamais sur la piste, ni assez pres pour qu'on les percute en roulant.
         if abs(x) < PISTE + 3.5:
+            continue
+        # Ni sur le camping-car. Le generateur du terrain ne sait pas qu'un
+        # objet sera pose ici — c'est le jeu qui l'instancie — donc la reserve
+        # est declaree en dur. Un saguaro traversait la cellule de part en
+        # part, et ca ne se voyait que sur une capture rapprochee.
+        if (x - CAMPING_CAR[0]) ** 2 + (y - CAMPING_CAR[1]) ** 2 < 8.0 ** 2:
             continue
         h = rng.uniform(2.2, 4.4)
         m.prisme(x, y, 0.0, h, 0.26, 0.20, 6, 1.0)

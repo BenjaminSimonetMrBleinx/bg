@@ -137,6 +137,30 @@ dans un fichier de données :
 | `outils/gen_maison.py` | `MAISONS` — pièces, meubles, place de l'habitant |
 | `outils/gen_ville.py` | `RESERVES` — les parcelles laissées libres pour les bâtiments faits main |
 
+## Regarder le jeu sans y jouer
+
+```powershell
+.\bg.ps1 capture -Scenario tous       # la planche complète, dans .tmp\captures\
+.\bg.ps1 capture -Scenario desert     # une seule vue
+```
+
+Un **scénario** est une situation de jeu déclarée dans
+[game/donnees/scenarios.json](game/donnees/scenarios.json) : une liste d'étapes datées en
+images — placer quelqu'un, presser une touche, appeler une méthode, poser la caméra — puis
+une capture. Ajouter une vue coûte six lignes de données.
+
+**Pourquoi ça existe.** Le seul moyen de savoir si quelque chose est juste, ici, est de le
+regarder. La flèche du désert pointait vers la ville, le cap d'arrivée était à 180°, un
+cactus poussait à travers le camping-car : aucun des trois n'a été trouvé par un test, et
+tous les trois ont sauté aux yeux sur une image.
+
+Produire cette image demandait d'écrire un script jetable à chaque fois — instancier le
+monde, téléporter, presser, attendre, enregistrer — puis de le supprimer. Quatre fois dans
+la même journée, dont trois quasi identiques. Le quatrième n'a pas été écrit, et c'est
+celui qui aurait montré le panneau à l'envers.
+
+La planche **reste** : on la rejoue après un remaniement et on compare.
+
 ## La version
 
 Elle est affichée **en permanence en haut à droite de l'écran**, en tout petit :
