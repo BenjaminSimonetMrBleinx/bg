@@ -243,6 +243,10 @@ extends Resource
 @export_range(1.0, 30.0, 0.5) var son_portee: float = 5.0
 @export_range(5.0, 100.0, 1.0) var son_distance_max: float = 34.0
 
+## Duree d'affichage d'un bandeau d'information en haut de l'ecran, en
+## secondes. Un message qui reste colle est un message qu'on ne lit plus.
+@export_range(0.5, 10.0, 0.1) var bandeau_duree: float = 3.0
+
 @export_subgroup("Telephone")
 
 ## Temps de sortie et de rangement du combine, en secondes. Un telephone qui

@@ -464,6 +464,84 @@ def panneau_stop(u: float, v: float):
     return (base[0] * g, base[1] * g, base[2] * g)
 
 
+def panneau_desert(u: float, v: float):
+    """Panneau routier vert du Nouveau-Mexique, avec DESERT en lettres claires.
+
+    Les lettres sont dessinees a la main sur une grille 5x7 : a 128 pixels de
+    large pour six caracteres, aucune police ne survivrait, et on ne peut pas
+    non plus se contenter d'une barre claire comme pour le stop — la
+    destination est justement l'information."""
+    n = hache(int(u * 150), int(v * 150))
+    fond = (28, 74, 52)
+    g = 0.93 + n * 0.12
+
+    # Le bord clair, qui donne au panneau sa lecture de panneau.
+    if u < 0.045 or u > 0.955 or v < 0.07 or v > 0.93:
+        return (214 * g, 222 * g, 214 * g)
+
+    if 0.36 < v < 0.64:
+        col = (u - 0.09) / 0.82 * 6.0        # six lettres
+        i = int(col)
+        if 0 <= i < 6:
+            cx = (col - i - 0.08) / 0.84     # 0..1 dans la lettre
+            cy = (v - 0.36) / 0.28           # 0..1, haut vers bas
+            if 0.0 <= cx <= 1.0 and _lettre(LETTRES_DESERT[i], cx, cy):
+                return (226 * g, 232 * g, 226 * g)
+
+    return (fond[0] * g, fond[1] * g, fond[2] * g)
+
+
+LETTRES_DESERT = ["D", "E", "S", "E", "R", "T"]
+
+# Chaque lettre : sept lignes de cinq caracteres. Le point est vide, le diese
+# est allume. Une grille 5x7 est le plus petit format ou l'alphabet latin reste
+# lisible, et c'est celui des afficheurs de l'epoque.
+ALPHABET = {
+    "D": ["####.", "#...#", "#...#", "#...#", "#...#", "#...#", "####."],
+    "E": ["#####", "#....", "#....", "####.", "#....", "#....", "#####"],
+    "S": [".####", "#....", "#....", ".###.", "....#", "....#", "####."],
+    "R": ["####.", "#...#", "#...#", "####.", "#..#.", "#...#", "#...#"],
+    "T": ["#####", "..#..", "..#..", "..#..", "..#..", "..#..", "..#.."],
+}
+
+
+def _lettre(c: str, x: float, y: float) -> bool:
+    grille = ALPHABET.get(c)
+    if grille is None:
+        return False
+    ligne = int(y * 7.0)
+    colonne = int(x * 5.0)
+    if not (0 <= ligne < 7 and 0 <= colonne < 5):
+        return False
+    return grille[ligne][colonne] == "#"
+
+
+def fleche_orange(u: float, v: float):
+    """Fleche peinte sur la chaussee, pointant vers le haut de la texture.
+
+    Peinte, pas posee : elle porte le grain de l'asphalte au travers, sinon
+    elle flotte au-dessus de la route comme un autocollant."""
+    n = hache(int(u * 190), int(v * 190))
+    sol = asphalte(u, v)
+
+    # La hampe, puis la pointe. v croit vers le bas : la pointe est en v petit.
+    dans = False
+    if v > 0.42:
+        dans = 0.38 < u < 0.62
+    else:
+        demi = v / 0.42 * 0.46 + 0.04      # s'elargit en descendant
+        dans = abs(u - 0.5) < demi
+
+    if not dans:
+        return sol
+
+    # L'usure : la peinture s'ecaille et laisse voir le bitume dessous.
+    if n > 0.86:
+        return sol
+    g = 0.88 + n * 0.20
+    return (226 * g, 128 * g, 34 * g)
+
+
 def cactus(u: float, v: float):
     """Saguaro : vert sourd, cotes verticales marquees, epines claires."""
     n = hache(int(u * 200), int(v * 200))
@@ -600,6 +678,29 @@ CARROSSERIES = {
 }
 
 
+def camping_car(u: float, v: float):
+    """La cellule du camping-car : blanc creme sale, avec la bande brune des
+    campings-cars des annees quatre-vingt.
+
+    Le sale n'est pas un detail : un blanc propre en plein desert ne se lit pas
+    comme un vehicule qui a roule, et c'est tout ce qu'on demande a celui-la."""
+    n = hache(int(u * 170), int(v * 170))
+    trainee = hache(int(u * 30), int(v * 6) + 41)
+
+    # Deux bandes horizontales, dans le tiers bas de la cellule.
+    if 0.56 < v < 0.63:
+        g = 0.90 + n * 0.16
+        return (128 * g, 88 * g, 54 * g)
+    if 0.66 < v < 0.70:
+        g = 0.90 + n * 0.16
+        return (154 * g, 116 * g, 72 * g)
+
+    # La crasse monte du bas de caisse, pas du haut.
+    bas = max(0.0, (v - 0.72)) / 0.28
+    g = (0.92 + n * 0.14) * (1.0 - bas * 0.22 * (0.5 + trainee))
+    return (216 * g, 210 * g, 194 * g)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--sortie", default=".tmp/textures")
@@ -698,6 +799,15 @@ def main() -> None:
     for nom, fn in [("panneau_stop", panneau_stop), ("cactus", cactus)]:
         ecrire_png(dossier / f"{nom}.png", t // 2, t // 2,
                    rendre(t // 2, t // 2, fn))
+        faits.append(f"{nom}.png")
+
+    # Le panneau de direction et la fleche au sol restent en pleine resolution :
+    # le premier porte du texte, la seconde une diagonale. Les deux se lisent
+    # tres mal a 64 pixels, alors qu'un panneau stop n'est qu'un aplat rouge.
+    for nom, fn in [("panneau_desert", panneau_desert),
+                    ("fleche_orange", fleche_orange),
+                    ("camping_car", camping_car)]:
+        ecrire_png(dossier / f"{nom}.png", t, t, rendre(t, t, fn))
         faits.append(f"{nom}.png")
 
     # --- maisons ---

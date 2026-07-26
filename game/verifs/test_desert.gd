@@ -1,0 +1,143 @@
+# Aller au desert, et en revenir.
+#
+#   godot --path game --script res://verifs/test_desert.gd
+#
+# Trois choses se verifient ici, et aucune ne se voit sur une image :
+#
+#   - la zone existe vraiment la ou le passage croit l'envoyer. Une
+#     destination fausse depose le joueur dans le vide, il tombe, et le seul
+#     symptome est un ecran qui devient bleu.
+#   - a pied, on est refuse. Un passage qui laisse passer tout le monde a
+#     exactement la meme apparence qu'un passage qui filtre.
+#   - en voiture, on arrive POSE. Une masse teleportee garde sa vitesse : elle
+#     repart dans le decor a l'arrivee, une seconde apres le fondu, quand plus
+#     personne ne regarde le lien de cause a effet.
+extends SceneTree
+
+const POSE := 40
+
+var _n := 0
+var _erreurs: Array[String] = []
+var _monde: Node
+var _controleur: Node
+var _joueur: Joueur
+var _vehicule: Vehicule
+var _desert: Node3D
+
+
+func _initialize() -> void:
+	var ps := ResourceLoader.load("res://scenes/monde.tscn") as PackedScene
+	_monde = ps.instantiate()
+	root.add_child(_monde)
+
+
+func _verifier(ok: bool, message: String) -> void:
+	if ok:
+		print("  ok   " + message)
+	else:
+		_erreurs.append(message)
+		printerr("  ECHEC " + message)
+
+
+func _process(_d: float) -> bool:
+	_n += 1
+	if _n != POSE:
+		return false
+	_scenario()
+	return false
+
+
+func _attendre(images: int) -> void:
+	for i in images:
+		await process_frame
+
+
+func _scenario() -> void:
+	_controleur = _trouver(_monde, "Controleur")
+	_joueur = _trouver(_monde, "Joueur") as Joueur
+	_vehicule = _trouver(_monde, "Vehicule") as Vehicule
+	_desert = _trouver(_monde, "Desert") as Node3D
+	for n in [["Controleur", _controleur], ["Joueur", _joueur],
+			["Vehicule", _vehicule], ["Desert", _desert]]:
+		if n[1] == null:
+			printerr("  ECHEC %s introuvable" % n[0])
+			quit(1)
+			return
+
+	print("\n--- la zone est bien la ---")
+	var arrivee: Vector3 = _desert.call("arrivee")
+	print("       arrivee attendue %s" % arrivee)
+	_verifier(arrivee.distance_to(Vector3.ZERO) > 300.0,
+			"le desert est loin de la ville (%.0f m)"
+					% arrivee.distance_to(Vector3.ZERO))
+
+	# Il doit y avoir du SOL sous le point d'arrivee. Sans ce controle, une
+	# erreur de signe sur l'axe depose le joueur a cote du terrain, et le seul
+	# symptome est une chute silencieuse.
+	var espace := _joueur.get_world_3d().direct_space_state
+	var vers := PhysicsRayQueryParameters3D.create(
+			arrivee + Vector3.UP * 6.0, arrivee + Vector3.DOWN * 12.0)
+	var touche := espace.intersect_ray(vers)
+	_verifier(not touche.is_empty(), "il y a du sol sous le point d'arrivee")
+	if not touche.is_empty():
+		print("       sol a y = %.2f" % (touche["position"] as Vector3).y)
+
+	var cc := _desert.get_node_or_null("CampingCar")
+	_verifier(cc != null, "le camping-car est pose dans la zone")
+
+	print("\n--- a pied, on est refuse ---")
+	var zone := _trouver(_monde, "VersDesert").get_node("Zone") as Passage
+	_joueur.global_position = zone.global_position + Vector3.DOWN * 0.6
+	await _attendre(6)
+	var ou_avant := _joueur.global_position
+	await _attendre(20)
+	_verifier(_joueur.global_position.distance_to(ou_avant) < 12.0,
+			"le joueur n'est pas parti au desert")
+	var message: String = _controleur.call("bandeau")
+	_verifier(message != "", "un bandeau explique pourquoi : « %s »" % message)
+
+	print("\n--- en voiture, on passe ---")
+	_joueur.global_position = Vector3(23.5, 0.3, -12.0)
+	_vehicule.global_position = zone.global_position + Vector3.DOWN * 0.5
+	_vehicule.linear_velocity = Vector3(0.0, 0.0, -14.0)
+	# On monte au volant par le meme chemin que le jeu, sinon on testerait un
+	# etat que personne n'atteint jamais en jouant.
+	_controleur.call("_monter")
+	await _attendre(4)
+	_verifier(bool(_controleur.call("au_volant")), "on est au volant")
+
+	var garde := 0
+	while _vehicule.global_position.distance_to(arrivee) > 30.0 and garde < 260:
+		await process_frame
+		garde += 1
+	_verifier(garde < 260,
+			"la voiture est arrivee au desert (%d images)" % garde)
+	print("       voiture en %s" % _vehicule.global_position)
+
+	# Elle doit etre POSEE, pas lancee. Le fondu masque le saut ; ce qui se voit
+	# ensuite, c'est une voiture qui part toute seule.
+	await _attendre(4)
+	_verifier(_vehicule.linear_velocity.length() < 6.0,
+			"elle est arrivee a l'arret (%.1f m/s)"
+					% _vehicule.linear_velocity.length())
+	_verifier(_vehicule.global_position.y > -2.0,
+			"elle n'est pas passee sous le terrain (y = %.2f)"
+					% _vehicule.global_position.y)
+
+	print("")
+	if _erreurs.is_empty():
+		print("TEST DESERT OK")
+		quit(0)
+	else:
+		printerr("TEST DESERT ECHOUE : %d probleme(s)" % _erreurs.size())
+		quit(1)
+
+
+func _trouver(n: Node, nom: String) -> Node:
+	if n.name == nom:
+		return n
+	for e in n.get_children():
+		var t := _trouver(e, nom)
+		if t != null:
+			return t
+	return null

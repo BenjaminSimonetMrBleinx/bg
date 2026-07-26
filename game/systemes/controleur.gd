@@ -32,6 +32,15 @@ extends Node
 ## Le telephone. Facultatif : sans lui, la touche ne fait rien.
 @export var telephone: NodePath
 
+## Les passages entre zones. Le controleur les surveille tous, sans savoir
+## lequel mene ou : chacun porte sa destination.
+@export var passages: Array[NodePath] = []
+
+## Ou l'on arrive dans le desert. Lu sur la zone elle-meme plutot que recopie :
+## deux coordonnees ecrites a deux endroits finissent par diverger, et
+## celle-ci deposerait le joueur dans le vide.
+@export var desert: NodePath
+
 enum Etat { A_PIED, AU_VOLANT, DEDANS }
 
 var _etat: int = Etat.A_PIED
@@ -44,7 +53,14 @@ var _audio: Audio
 var _dialogue: Dialogue
 var _roue: Roue
 var _telephone: Telephone
+var _passages: Array[Passage] = []
+var _desert: Node3D
 var _maisons: Array[Maison] = []
+
+## Le bandeau de refus, et son compte a rebours. On ne le laisse pas colle a
+## l'ecran : un message qui reste est un message qu'on ne lit plus.
+var _bandeau: float = 0.0
+var _texte_bandeau: String = ""
 
 ## La maison dans laquelle on se trouve. Nulle des qu'on est dehors.
 var _dedans: Maison = null
@@ -76,6 +92,18 @@ func _ready() -> void:
 		_dialogue.termine.connect(_sur_fin_de_dialogue)
 	if _telephone != null:
 		_telephone.appel.connect(_sur_appel)
+	_desert = get_node_or_null(desert) as Node3D
+	for p in passages:
+		var n := get_node_or_null(p) as Passage
+		if n == null:
+			push_error("controleur : passage introuvable (%s)" % p)
+			continue
+		# Le passage vers le desert n'ecrit pas sa destination : elle vit sur
+		# la zone d'arrivee, qui la calcule depuis sa propre position.
+		if n.destination == Vector3.ZERO and _desert != null:
+			n.destination = _desert.call("arrivee")
+			n.cap_degres = _desert.call("cap_arrivee")
+		_passages.append(n)
 	var racine := get_node_or_null(maisons)
 	if racine != null:
 		for n in racine.get_children():
@@ -133,8 +161,12 @@ func _unhandled_input(evenement: InputEvent) -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	if _bandeau > 0.0:
+		_bandeau = maxf(0.0, _bandeau - delta)
 	if _transition:
+		return
+	if _gerer_les_passages():
 		return
 	if _gerer_le_telephone():
 		return
@@ -180,6 +212,72 @@ func _gerer_la_roue() -> bool:
 			_j.bloque = true
 			return true
 	return false
+
+
+# Franchir un passage.
+#
+# On regarde le corps qui MENE : la voiture quand on conduit, le personnage
+# sinon. Ce n'est pas un detail — au volant, le joueur est desactive et retire
+# du monde physique, donc il n'entre dans aucune zone. Un declencheur branche
+# sur lui ne se serait jamais declenche, et rien ne l'aurait signale.
+func _gerer_les_passages() -> bool:
+	if _etat == Etat.DEDANS:
+		return false
+	var au_volant := _etat == Etat.AU_VOLANT
+	var corps: Node3D = _v if au_volant else _j
+
+	for p in _passages:
+		if not p.contient(corps):
+			continue
+		if p.exige_vehicule and not au_volant:
+			# On refuse, et on le dit UNE FOIS. Sans ce garde le bandeau se
+			# reposerait a chaque image tant qu'on reste sur la fleche, et son
+			# compte a rebours ne s'ecoulerait jamais.
+			if _texte_bandeau != p.refus or _bandeau <= 0.0:
+				_texte_bandeau = p.refus
+				_bandeau = reglages.bandeau_duree
+			return false
+		_franchir(p, au_volant)
+		return true
+	return false
+
+
+# Le fondu, puis on deplace. La voiture emmene le joueur avec elle : il est
+# dedans, donc il n'a pas de position propre a corriger — mais la camera, si.
+func _franchir(p: Passage, au_volant: bool) -> void:
+	_transition = true
+	_afficher("")
+	_bandeau = 0.0
+	await _noircir(1.0)
+
+	if au_volant:
+		# Une masse lancee a soixante qu'on teleporte garde sa vitesse et part
+		# dans le decor a l'arrivee. On la repose a l'arret, dans le bon sens.
+		_v.linear_velocity = Vector3.ZERO
+		_v.angular_velocity = Vector3.ZERO
+		_v.global_position = p.destination
+		_v.rotation = Vector3(0.0, p.cap(), 0.0)
+	else:
+		_j.global_position = p.destination
+		_j.velocity = Vector3.ZERO
+		_j.rotation.y = p.cap()
+
+	_c.recaler()
+	await get_tree().physics_frame
+	await _noircir(0.0)
+	_transition = false
+
+
+## Le bandeau de refus, lu par le HUD. Vide quand il n'y a rien a dire.
+func bandeau() -> String:
+	return _texte_bandeau if _bandeau > 0.0 else ""
+
+
+## Son opacite, pour que le HUD le fasse disparaitre en fondu.
+func bandeau_opacite() -> float:
+	if _bandeau <= 0.0 or reglages == null:
+		return 0.0
+	return clampf(_bandeau / maxf(0.01, reglages.bandeau_duree * 0.4), 0.0, 1.0)
 
 
 # Le telephone passe AVANT la roue et avant tout le reste.

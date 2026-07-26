@@ -11,7 +11,7 @@
 ; Le vehicule demarre sur la chaussee verticale du couloir 0, qui court le
 ; long de -Z : il est donc deja dans le bon sens.
 
-[gd_scene load_steps=27 format=3 uid="uid://bgmonde0v0001"]
+[gd_scene load_steps=34 format=3 uid="uid://bgmonde0v0001"]
 
 [ext_resource type="Script" path="res://rendu/rendu_ps2.gd" id="1_rendu"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
@@ -34,6 +34,12 @@
 [ext_resource type="Script" path="res://systemes/equipement.gd" id="19_equipement"]
 [ext_resource type="Script" path="res://systemes/roue.gd" id="20_roue"]
 [ext_resource type="Script" path="res://systemes/telephone.gd" id="21_telephone"]
+[ext_resource type="Script" path="res://systemes/desert.gd" id="23_desert"]
+[ext_resource type="Script" path="res://systemes/passage.gd" id="24_passage"]
+[ext_resource type="PackedScene" path="res://assets/desert/desert.glb" id="25_sol_desert"]
+[ext_resource type="PackedScene" path="res://assets/desert/camping_car.glb" id="26_camping_car"]
+[ext_resource type="PackedScene" path="res://assets/decor/fleche_sol.glb" id="27_fleche"]
+[ext_resource type="PackedScene" path="res://assets/decor/panneau_desert.glb" id="28_panneau"]
 [ext_resource type="Script" path="res://systemes/hud.gd" id="21_hud"]
 [ext_resource type="Script" path="res://systemes/foule.gd" id="22_foule"]
 
@@ -50,6 +56,9 @@ border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 border_color = Color(0.322, 0.298, 0.243, 1)
+
+[sub_resource type="BoxShape3D" id="passage_forme"]
+size = Vector3(9, 3, 5)
 
 [node name="Monde" type="Node"]
 script = ExtResource("1_rendu")
@@ -70,6 +79,53 @@ script = ExtResource("3_ville")
 reglages = ExtResource("2_reglages")
 geometrie = ExtResource("4_geometrie")
 
+; Le desert. Pose a neuf cents metres de la ville, dans CE monde et pas dans
+; une autre scene — exactement comme les interieurs de maison. Voir l'en-tete
+; de systemes/desert.gd : c'est un choix, et il economise un mecanisme entier.
+[node name="Desert" type="Node3D" parent="Rendu/Scene3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 900, 0, -900)
+script = ExtResource("23_desert")
+reglages = ExtResource("2_reglages")
+geometrie = ExtResource("25_sol_desert")
+camping_car = ExtResource("26_camping_car")
+
+; Le passage du retour, sur la piste juste derriere le point d'arrivee. Il
+; n'exige pas de vehicule : quelqu'un qui descend de voiture la-bas resterait
+; coince, et un cul-de-sac est un bug meme quand il est logique.
+[node name="RetourVille" type="Area3D" parent="Rendu/Scene3D/Desert"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 156)
+collision_layer = 0
+collision_mask = 7
+script = ExtResource("24_passage")
+destination = Vector3(7, 0.4, -112)
+cap_degres = 0.0
+exige_vehicule = false
+
+[node name="Forme" type="CollisionShape3D" parent="Rendu/Scene3D/Desert/RetourVille"]
+shape = SubResource("passage_forme")
+
+; Le panneau DESERT et la fleche au sol, au bout de la route ouest. La fleche
+; est peinte SUR la chaussee : on la franchit en roulant, on ne la contourne
+; pas.
+[node name="VersDesert" type="Node3D" parent="Rendu/Scene3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, -112)
+
+[node name="Fleche" parent="Rendu/Scene3D/VersDesert" instance=ExtResource("27_fleche")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4)
+
+[node name="Panneau" parent="Rendu/Scene3D/VersDesert" instance=ExtResource("28_panneau")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 6.5, 0, -2)
+
+[node name="Zone" type="Area3D" parent="Rendu/Scene3D/VersDesert"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -4)
+collision_layer = 0
+collision_mask = 7
+script = ExtResource("24_passage")
+cap_degres = 180.0
+exige_vehicule = true
+
+[node name="Forme" type="CollisionShape3D" parent="Rendu/Scene3D/VersDesert/Zone"]
+shape = SubResource("passage_forme")
 ; Les passants. Leurs trajets viennent du generateur de ville, comme les
 ; lampadaires : une ville regeneree repeuple ses trottoirs toute seule.
 [node name="Foule" type="Node3D" parent="Rendu/Scene3D"]
@@ -268,6 +324,8 @@ audio = NodePath("../Audio")
 dialogue = NodePath("../Dialogue")
 roue = NodePath("../Rendu/Interface/Roue")
 telephone = NodePath("../Rendu/Interface/Telephone")
+desert = NodePath("../Rendu/Scene3D/Desert")
+passages = [NodePath("../Rendu/Scene3D/VersDesert/Zone"), NodePath("../Rendu/Scene3D/Desert/RetourVille")]
 
 [node name="Affichage" type="CanvasLayer" parent="."]
 layer = -1

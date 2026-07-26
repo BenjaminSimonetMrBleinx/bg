@@ -66,6 +66,7 @@ func _draw() -> void:
 		return
 
 	_version(police)
+	_bandeau(police)
 
 	if _au_volant():
 		_compteur(police)
@@ -75,6 +76,25 @@ func _draw() -> void:
 		var a := clampf(_annonce / maxf(0.01, reglages.hud_annonce * 0.33), 0.0, 1.0)
 		_ecrire(police, _texte_annonce, Vector2(size.x / 2.0, size.y - 62.0),
 				17, Color(0.949, 0.776, 0.42, a), true)
+
+
+# Un bandeau en haut de l'ecran, quand le jeu a quelque chose a refuser ou a
+# annoncer. Le texte vient du controleur : le HUD ne decide de rien, il dessine.
+#
+# Une bande sombre derriere, pas seulement du texte : le haut de l'ecran est
+# le ciel, et un texte clair sur un ciel clair de midi ne se lit pas.
+func _bandeau(police: Font) -> void:
+	if _c == null:
+		return
+	var texte: String = _c.call("bandeau")
+	if texte == "":
+		return
+	var a: float = _c.call("bandeau_opacite")
+	var h := 22.0
+	draw_rect(Rect2(Vector2(0.0, 26.0), Vector2(size.x, h)),
+			Color(0.043, 0.055, 0.086, 0.72 * a))
+	_ecrire(police, texte, Vector2(size.x / 2.0, 41.0), 13,
+			Color(0.949, 0.925, 0.867, a), true)
 
 
 # La version, en haut a droite, en permanence.

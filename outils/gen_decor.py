@@ -185,6 +185,39 @@ def panneau(mats) -> int:
     return total + s.finir()
 
 
+def panneau_desert(mats) -> int:
+    """Le panneau de direction au bord de la ville.
+
+    Plus haut et plus large que le stop : c'est une destination, on doit la
+    lire en roulant. Deux mats plutot qu'un, comme les vrais panneaux de cette
+    taille — un seul pied sous une plaque d'un metre soixante se lit comme une
+    pancarte plantee a la va-vite."""
+    p = Maillage("Mat", mats["metal_sombre"])
+    for sx in (-0.62, 0.62):
+        p.prisme(sx, 0, 0.0, 2.55, 0.05, 0.05, 6, 1.0)
+    total = p.finir()
+
+    s = Maillage("Plaque", mats["panneau_desert"])
+    for sens in (-1.0, 1.0):
+        s.face([(-0.86, sens * 0.035, 1.90), (0.86, sens * 0.035, 1.90),
+                (0.86, sens * 0.035, 2.62), (-0.86, sens * 0.035, 2.62)][::int(sens)],
+               [(0, 0), (1, 0), (1, 1), (0, 1)])
+    return total + s.finir()
+
+
+def fleche_sol(mats) -> int:
+    """La fleche peinte sur la chaussee, pointant vers -Y.
+
+    Un simple quadrilatere pose a deux centimetres du sol. Pas zero : deux
+    surfaces exactement coplanaires se disputent le tampon de profondeur et la
+    fleche clignote quand la camera bouge."""
+    m = Maillage("Fleche", mats["fleche_orange"])
+    z = 0.02
+    m.face([(-1.6, 2.4, z), (1.6, 2.4, z), (1.6, -2.4, z), (-1.6, -2.4, z)],
+           [(0, 0), (1, 0), (1, 1), (0, 1)])
+    return m.finir()
+
+
 def borne(mats) -> int:
     """Bouche d'incendie. Deux volumes et deux bras : lisible a vingt metres,
     ce qui est tout ce qu'on lui demande."""
@@ -232,6 +265,8 @@ OBJETS = {
     "borne": (borne, ["rouge_borne"]),
     "cactus": (saguaro, ["cactus"]),
     "climatiseur": (climatiseur, ["metal", "metal_sombre"]),
+    "panneau_desert": (panneau_desert, ["metal_sombre", "panneau_desert"]),
+    "fleche_sol": (fleche_sol, ["fleche_orange"]),
 }
 
 
