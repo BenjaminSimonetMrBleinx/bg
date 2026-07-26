@@ -29,7 +29,10 @@ Ce qui existe aujourd'hui :
 | **Affichage** | Compteur au volant, nom de l'outil équipé |
 | **Tests** | **10 suites automatiques**, `.\bg.ps1 test` |
 
-Ce qui n'existe pas encore : missions, quêtes, trafic, police, PNJ qui se déplacent, jour.
+**La première mission est jouable de bout en bout** — neuf temps, quinze
+objectifs, quatre décors. Voir [NOTES-DE-VERSION.md](NOTES-DE-VERSION.md).
+
+Ce qui n'existe pas encore : une deuxième mission, la police, le jour.
 
 **La question ouverte** reste [`docs/00-questions.md`](docs/00-questions.md), blocs A, B, C et
 F. Rien de ce qui a été fait n'en dépendait. La suite, si.
@@ -58,7 +61,9 @@ de Jesse vingt mètres plus loin, la voiture est garée le long de la rue.
 | **Espace** | **Sauter** — l'élan est conservé, on ne saute pas sur place | Frein à main |
 | **Ctrl gauche** maintenu | **S'accroupir**, et se déplacer accroupi | |
 | **H** | — | Klaxon |
-| **Tab** maintenu, ou clic droit | Roue des outils — viser avec gauche/droite, relâcher pour équiper | |
+| **Tab** maintenu | Roue des outils — viser avec gauche/droite, relâcher pour équiper | |
+| **Clic droit** | **Viser**, le revolver en main | |
+| **Clic gauche** | **Tirer**, en visant | |
 | Échap | Rend le curseur de la souris | |
 
 **À pied, gauche et droite font pivoter, elles ne déplacent pas.** Seuls avant et arrière
@@ -133,6 +138,7 @@ dans un fichier de données :
 | Fichier | Ce qu'on y règle |
 |---|---|
 | `game/systemes/reglages.tres` | ~80 curseurs : conduite, caméra, rendu PS2, audio, marche, portes, roue |
+| `game/donnees/mission1.json` | **Le déroulé de la première mission** : ses étapes, ses objectifs, ses seuils |
 | `game/donnees/dialogues.json` | Tout le texte parlé |
 | `game/donnees/outils.json` | Les objets tenus, leur ancrage et leur orientation |
 | `outils/animer_perso.py` | Les clips que les modèles livrés n'ont pas : repos, marche relâchée. **Et il MESURE les foulées** — ne pas les régler à l'œil |

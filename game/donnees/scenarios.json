@@ -144,6 +144,38 @@
    ]
   },
 
+  "labo_interieur": {
+   "quoi": "L'interieur du camping-car : le couloir, la paillasse, la verrerie, les bidons.",
+   "fin": 80,
+   "etapes": [
+    { "image": 30, "camera": [300, 1.55, 1200.8], "vise": [300, 1.05, 1207] }
+   ]
+  },
+
+  "labo_atelier": {
+   "quoi": "L'atelier de chimie, celui qu'on utilise pour cuisiner la botte secrete.",
+   "fin": 80,
+   "etapes": [
+    { "image": 30, "camera": [298.9, 1.5, 1202.4], "vise": [301.2, 1.0, 1203.8] }
+   ]
+  },
+
+  "qg_dehors": {
+   "quoi": "Le QG de Tuco vu de la rue : le batiment a l'abandon et sa fresque.",
+   "fin": 80,
+   "etapes": [
+    { "image": 30, "camera": [-1214, 6, -578], "vise": [-1200, 3, -595] }
+   ]
+  },
+
+  "qg_bureau": {
+   "quoi": "Le bureau de Tuco : lambris, stores barricades, et trois hommes de main.",
+   "fin": 80,
+   "etapes": [
+    { "image": 30, "camera": [-1201, 1.65, -897.4], "vise": [-1200, 1.15, -903] }
+   ]
+  },
+
   "depart": {
    "quoi": "Le point de depart, tel qu'on le decouvre en lancant le jeu.",
    "fin": 150,

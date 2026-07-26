@@ -41,6 +41,25 @@ extends Node
 ## celle-ci deposerait le joueur dans le vide.
 @export var desert: NodePath
 
+## La mission, et tout ce qu'elle amene. Tous FACULTATIFS : sans eux, le jeu
+## reste le bac a sable qu'il etait, ce qui est exactement ce qu'on veut pour
+## la moitie des suites de tests.
+@export var scenario: NodePath
+@export var tir: NodePath
+@export var fin_de_partie: NodePath
+@export var cachette: NodePath
+@export var ecran: NodePath
+
+var _scenario: Scenario
+var _tir: Tir
+var _fin: FinDePartie
+var _cachette: Cachette
+var _ragdoll: Ragdoll
+
+## Ou le joueur reprend quand il recommence. Fige au premier lancement : c'est
+## le seuil de chez Walter, et le scenario veut qu'on reparte de la.
+var _depart: Transform3D
+
 enum Etat { A_PIED, AU_VOLANT, DEDANS }
 
 var _etat: int = Etat.A_PIED
@@ -128,6 +147,27 @@ func _ready() -> void:
 		_fondu.color.a = 0.0
 	_afficher("")
 
+	_depart = _j.global_transform
+	_scenario = get_node_or_null(scenario) as Scenario
+	_tir = get_node_or_null(tir) as Tir
+	_fin = get_node_or_null(fin_de_partie) as FinDePartie
+	_cachette = get_node_or_null(cachette) as Cachette
+	if _tir != null:
+		var eq := get_node_or_null(NodePath("../Equipement")) as Equipement
+		_tir.brancher(_c, _j, eq)
+	if _fin != null:
+		var affichage := get_node_or_null(ecran) as CanvasItem
+		if affichage != null:
+			_fin.brancher_l_ecran(affichage)
+	if _scenario != null:
+		_scenario.brancher(_dialogue, _telephone, _tir, _fin, _cachette,
+				get_node_or_null(NodePath("../Equipement")) as Equipement)
+	# Le ragdoll se construit MAINTENANT, pas a la mort : fabriquer douze corps
+	# physiques a l'image precise ou le jeu doit etre le plus lisible se voit.
+	var r := Ragdoll.new()
+	if r.preparer(_j):
+		_ragdoll = r
+
 
 # La souris est lue ICI, et pas dans la camera.
 #
@@ -168,11 +208,25 @@ func _unhandled_input(evenement: InputEvent) -> void:
 func _process(delta: float) -> void:
 	if _bandeau > 0.0:
 		_bandeau = maxf(0.0, _bandeau - delta)
+	# L'ecran de fin capte tout : plus rien d'autre ne doit repondre pendant
+	# qu'on regarde son personnage par terre.
+	if _fin != null and _fin.actif():
+		return
 	if _transition:
+		return
+	if _scenario != null:
+		_scenario.traiter(delta)
+	if _cachette != null and _cachette.ouverte():
+		_afficher("")
 		return
 	if _gerer_les_passages():
 		return
 	if _gerer_le_telephone():
+		return
+	# Viser passe AVANT la roue et avant les interactions : une arme au poing,
+	# la question n'est plus de savoir si l'on peut ouvrir une porte.
+	if _tir != null and _tir.traiter(delta):
+		_afficher("")
 		return
 	if _gerer_la_roue():
 		return
@@ -246,6 +300,17 @@ func _gerer_les_passages() -> bool:
 	for p in _passages:
 		if not p.contient(corps):
 			continue
+		# Un passage encore ferme par le scenario. On le DIT : un decor qu'on
+		# traverse sans effet donne l'impression d'un bug, alors qu'une phrase
+		# transforme le mur en consigne.
+		if p.etape_minimale != "":
+			var m := Mission.courante(self)
+			if m != null and not m.passee(p.etape_minimale) \
+					and not m.a_l_etape(p.etape_minimale):
+				if p.refus_etape != "" and (_texte_bandeau != p.refus_etape
+						or _bandeau <= 0.0):
+					annoncer(p.refus_etape)
+				return false
 		if p.exige_vehicule and not au_volant:
 			# On refuse, et on le dit UNE FOIS. Sans ce garde le bandeau se
 			# reposerait a chaque image tant qu'on reste sur la fleche, et son
@@ -296,6 +361,8 @@ func _franchir(p: Passage, au_volant: bool) -> void:
 
 	await _noircir(0.0)
 	_transition = false
+	if p.zone != "" and _scenario != null:
+		_scenario.zone_atteinte(p.zone)
 
 
 ## Le bandeau de refus, lu par le HUD. Vide quand il n'y a rien a dire.
@@ -376,6 +443,102 @@ func _sur_fin_de_dialogue() -> void:
 		_telephone.ranger()
 		_j.relacher_la_pose()
 	_j.bloque = false
+	if _scenario != null and _dialogue != null:
+		_scenario.dialogue_fini(_dialogue.cle_courante())
+
+
+# ------------------------------------------------------- ce que le scenario
+# demande au controleur. Il sait faire ces gestes ; il ne sait pas quand.
+
+
+## Un bandeau, pour dire quelque chose au joueur.
+func annoncer(texte: String) -> void:
+	_texte_bandeau = texte
+	_bandeau = reglages.bandeau_duree
+
+
+## Le meme, mais qui reste. Pour « MISSION ACCOMPLIE », qu'on veut lire.
+func annoncer_longtemps(texte: String) -> void:
+	_texte_bandeau = texte
+	_bandeau = reglages.bandeau_duree * 3.0
+
+
+## Le telephone sonne, et quelqu'un parle. Meme mecanique qu'un appel sortant,
+## dans l'autre sens : c'est le jeu qui compose.
+func recevoir_un_appel(cle: String) -> void:
+	if _telephone == null or _dialogue == null or _etat != Etat.A_PIED:
+		return
+	if _telephone.sorti() or _dialogue.actif():
+		return
+	_telephone.sortir()
+	_j.poser("telephoner")
+	_j.bloque = true
+	_dialogue.demarrer(cle)
+
+
+## Le corps s'effondre. Le joueur cesse d'etre pilotable et devient une masse.
+func effondrer_le_joueur() -> void:
+	_j.bloque = true
+	_j.set_physics_process(false)
+	if _ragdoll != null:
+		# Pousse vers l'arriere : on vient de le cribler de face. Un corps qui
+		# tombe droit apres une rafale se lit comme un bug.
+		var arriere := _j.global_transform.basis.z
+		_ragdoll.lacher(arriere * 2.4 + Vector3.UP * 1.2)
+
+
+## L'explosion du fulminate : un souffle blanc, et on se reveille en ville.
+func souffler_l_explosion() -> void:
+	if _transition:
+		return
+	_transition = true
+	_afficher("")
+	if _fondu != null:
+		# BLANC, et pas noir. Le noir dit « on change de lieu », le blanc dit
+		# « quelque chose vient d'exploser a un metre de vous ».
+		_fondu.color = Color(1.0, 0.98, 0.94, 0.0)
+		var t := create_tween()
+		t.tween_property(_fondu, "color:a", 1.0, 0.18)
+		await t.finished
+	_j.global_transform = _depart
+	_j.velocity = Vector3.ZERO
+	_v.global_position = _depart.origin + Vector3(3.0, 0.05, 1.5)
+	_v.linear_velocity = Vector3.ZERO
+	_v.ignorer_les_chocs()
+	_c.recaler()
+	await get_tree().physics_frame
+	if _scenario != null:
+		_scenario.zone_atteinte("albuquerque")
+	if _fondu != null:
+		var t2 := create_tween()
+		t2.tween_property(_fondu, "color:a", 0.0, 1.6)
+		await t2.finished
+		_fondu.color = Color(0.0, 0.0, 0.0, 0.0)
+	_transition = false
+
+
+## Tout remettre en place apres un Game Over.
+func recommencer_la_partie() -> void:
+	if _ragdoll != null:
+		_ragdoll.relever()
+	if _etat == Etat.AU_VOLANT:
+		_descendre()
+	_etat = Etat.A_PIED
+	_dedans = null
+	_j.interieur = false
+	_c.interieur(false)
+	_j.process_mode = Node.PROCESS_MODE_INHERIT
+	_j.visible = true
+	_j.set_physics_process(true)
+	_j.global_transform = _depart
+	_j.velocity = Vector3.ZERO
+	_v.global_position = _depart.origin + Vector3(3.0, 0.05, 1.5)
+	_v.linear_velocity = Vector3.ZERO
+	_v.ignorer_les_chocs()
+	_c.suivre(_j)
+	_c.recaler()
+	_sortie_attendue = null
+	_bandeau = 0.0
 
 
 func _presenter_le_joueur() -> void:
@@ -404,10 +567,26 @@ func _dans_la_maison() -> void:
 				_parler(p)
 			return
 
+	# Les points d'interaction valent aussi a l'interieur : la cachette de la
+	# derniere etape est une latte du mur de chez Walter.
+	var point := _point_proche()
+	if point != null:
+		_afficher("F   %s" % point.invite)
+		if Input.is_action_just_pressed("interagir"):
+			_utiliser(point)
+		return
+
 	var sortable := _j.global_position.distance_to(_dedans.entree()) \
 			<= reglages.portee_porte
 	_afficher("F   Sortir" if sortable else "")
 	if sortable and Input.is_action_just_pressed("interagir"):
+		# On ne ressort pas de chez soi avec trois cent mille dollars a la
+		# main. C'est le seul verrou de la derniere etape, et il faut qu'il
+		# s'explique — sinon la porte a simplement l'air cassee.
+		var refus := _scenario.refus_de_sortie() if _scenario != null else ""
+		if refus != "":
+			annoncer(refus)
+			return
 		_sortir()
 
 
@@ -429,6 +608,15 @@ func _nom_de(p: Pnj) -> String:
 # exactement ce qu'on fera tout le temps, et il faut que F fasse alors la
 # chose la plus proche, pas la premiere testee.
 func _a_pied() -> void:
+	# Une conversation en cours capte la touche. Chez Tuco, le joueur reste
+	# libre de ses mouvements pendant qu'on lui parle : la scene se joue autour
+	# de lui, pas a sa place.
+	if _dialogue != null and _dialogue.actif():
+		_afficher("F   Suite")
+		if Input.is_action_just_pressed("interagir"):
+			_dialogue.avancer()
+		return
+
 	var d_v := _j.global_position.distance_to(_v.global_position)
 	var portee_v := reglages.portee_interaction + 1.4
 
@@ -436,6 +624,26 @@ func _a_pied() -> void:
 	var d_m := INF
 	if maison != null:
 		d_m = _j.global_position.distance_to(maison.seuil())
+
+	# LES POINTS ET LES GENS passent avant la voiture et les portes.
+	#
+	# Ils sont plus rares et plus precis : on gare rarement sa voiture SUR
+	# l'atelier de chimie, mais on parle tres souvent a quelqu'un qui se tient
+	# devant une porte. Faire gagner le plus proche donnerait « Entrer chez
+	# Jesse » alors qu'on est plante devant Jesse.
+	var point := _point_proche()
+	if point != null:
+		_afficher("F   %s" % point.invite)
+		if Input.is_action_just_pressed("interagir"):
+			_utiliser(point)
+		return
+
+	var gens := _pnj_proche()
+	if gens != null:
+		_afficher("F   Parler a %s" % _nom_de(gens))
+		if Input.is_action_just_pressed("interagir"):
+			_parler(gens)
+		return
 
 	if maison != null and d_m <= reglages.portee_porte and d_m < d_v:
 		_afficher("F   Entrer chez %s" % maison.nom_affiche)
@@ -447,6 +655,77 @@ func _a_pied() -> void:
 	_afficher("F   Monter" if proche else "")
 	if proche and Input.is_action_just_pressed("interagir"):
 		_monter()
+
+
+# Le point d'interaction le plus proche parmi ceux qui sont offerts. Ils se
+# declarent dans un groupe : la mission en pose une dizaine, repartis dans
+# quatre decors, et les enumerer a la main dans l'inspecteur garantirait d'en
+# oublier un.
+func _point_proche() -> Point:
+	var m := Mission.courante(self)
+	var meilleur: Point = null
+	var mini := INF
+	for n in get_tree().get_nodes_in_group("point"):
+		var p := n as Point
+		if p == null or not p.offert(_j, m):
+			continue
+		var d := p.distance(_j)
+		if d < mini:
+			mini = d
+			meilleur = p
+	return meilleur
+
+
+# Les PNJ hors maison : Jesse devant le camping-car, le garde, Tuco. Ceux des
+# maisons sont geres par la maison elle-meme et ne sont pas dans ce groupe
+# quand on est dehors — ils sont a six cents metres.
+func _pnj_proche() -> Pnj:
+	var meilleur: Pnj = null
+	var mini := reglages.portee_dialogue
+	for n in get_tree().get_nodes_in_group(Pnj.GROUPE):
+		var p := n as Pnj
+		if p == null or p.abattu or p.cle == "":
+			continue
+		if _dialogue == null or not _dialogue.connait(p.cle):
+			continue
+		var d := _j.global_position.distance_to(p.global_position)
+		if d < mini:
+			mini = d
+			meilleur = p
+	return meilleur
+
+
+func _utiliser(p: Point) -> void:
+	var refus := p.declencher()
+	if refus != "":
+		annoncer(refus)
+		return
+	if p.evenement == "action:cachette":
+		if _scenario != null:
+			_scenario.ouvrir_la_cachette()
+		return
+	if p.dialogue != "" and _dialogue != null and _dialogue.demarrer(p.dialogue):
+		# On ne bloque PAS le joueur : chez Tuco, la scene se joue autour de
+		# lui pendant qu'il peut encore marcher, et c'est ce qui la rend
+		# tendue plutot que regardee.
+		pass
+	if p.emmene_a != Vector3.ZERO:
+		await emmener(p.emmene_a, deg_to_rad(p.cap_degres), p.zone)
+		return
+	if _scenario != null:
+		_scenario.point_utilise(p)
+
+
+## Emmene le joueur ailleurs, par un fondu. Meme geste qu'une porte de maison,
+## et c'est bien le meme : entrer dans le camping-car ou dans le QG n'est pas
+## un autre mecanisme, juste une autre destination.
+func emmener(ou: Vector3, cap: float, zone: String = "") -> void:
+	if _transition:
+		return
+	var depart := _j.global_position
+	await _passer_la_porte(ou, cap, depart)
+	if zone != "" and _scenario != null:
+		_scenario.zone_atteinte(zone)
 
 
 func _maison_proche() -> Maison:
@@ -524,6 +803,11 @@ func _entrer(m: Maison) -> void:
 	_c.interieur(true)
 	if _audio != null:
 		_audio.ambiance(m.nom_affiche)
+	# Entrer chez quelqu'un est une arrivee comme une autre. Le nom du lieu se
+	# DEDUIT de celui de la maison : « Walter » donne « maison_walter », et
+	# ajouter une maison ne demande donc rien de plus a la mission.
+	if _scenario != null:
+		_scenario.zone_atteinte("maison_" + m.nom_affiche.to_lower())
 
 
 func _sortir() -> void:

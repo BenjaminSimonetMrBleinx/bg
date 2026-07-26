@@ -21,6 +21,45 @@
 class_name Joueur
 extends CharacterBody3D
 
+## Emis quand Walter prend un coup, et quand il tombe. Le premier sert au HUD,
+## le second a l'ecran de fin. Aucun des deux n'est traite ici : mourir met en
+## jeu le ralenti, le noir et blanc, une musique et un ragdoll, et rien de tout
+## cela n'est l'affaire du personnage qui marche.
+signal blesse(restant: float)
+signal mort
+
+## Points de vie, sur 100. Une balle en retire un quart — quatre balles et
+## c'est fini, ce qui est peu et c'est voulu : on ne gagne pas un echange de
+## tirs contre les hommes de Tuco, on s'enfuit.
+var pv: float = 100.0
+var _vivant: bool = true
+
+
+func vivant() -> bool:
+	return _vivant
+
+
+## Encaisse des degats. Renvoie vrai si le coup a ete fatal.
+func blesser(degats: float) -> bool:
+	if not _vivant or degats <= 0.0:
+		return false
+	pv = maxf(0.0, pv - degats)
+	blesse.emit(pv)
+	if pv > 0.0:
+		return false
+	_vivant = false
+	bloque = true
+	mort.emit()
+	return true
+
+
+## Remet Walter d'aplomb. Appele en recommencant une partie.
+func ressusciter() -> void:
+	pv = 100.0
+	_vivant = true
+	bloque = false
+	velocity = Vector3.ZERO
+
 @export var reglages: Reglages
 ## Conserve pour la compatibilite de la scene. Le deplacement ne s'en sert
 ## plus du tout : c'est precisement ce qui a regle le probleme.

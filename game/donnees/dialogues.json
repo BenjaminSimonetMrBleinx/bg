@@ -96,5 +96,183 @@
         { "qui": "Walter", "texte": "Good-bye." }
       ]
     ]
+  },
+
+  "_mission_1": [
+    "LA PREMIERE MISSION. Les cles commencent toutes par mission_, et l'ordre",
+    "dans lequel elles se declenchent vit dans donnees/mission1.json.",
+    "",
+    "Aucune de ces fiches n'a de SECONDE conversation, et c'est volontaire :",
+    "elles font avancer la mission, et la rejouer en reparlant a quelqu'un la",
+    "ferait avancer deux fois. Les habitants de la ville, eux, en ont",
+    "plusieurs — c'est ce qui donne l'impression qu'ils vivent."
+  ],
+
+  "mission_tuco_appel": {
+    "nom": "Inconnu",
+    "sans_voix": true,
+    "conversations": [
+      [
+        { "qui": "?",      "texte": "Heisenberg. C'est bien a qui je pense ?" },
+        { "qui": "Walter", "texte": "Qui est a l'appareil ?" },
+        { "qui": "?",      "texte": "Je travaille pour M. Salamanca. Il attend sa commande." },
+        { "qui": "Walter", "texte": "Elle sera prete. Il faut juste que..." },
+        { "qui": "?",      "texte": "Aujourd'hui. Il n'aime pas attendre, et moi non plus." },
+        { "qui": "?",      "texte": "Vous savez ou nous trouver." },
+        { "qui": "Walter", "texte": "... Allo ?" }
+      ]
+    ]
+  },
+
+  "mission_jesse_maison": {
+    "nom": "Jesse",
+    "sans_voix": true,
+    "conversations": [
+      [
+        { "qui": "Jesse",  "texte": "Yo, vous avez une tete de deterre." },
+        { "qui": "Walter", "texte": "L'homme de Salamanca vient d'appeler. Il veut la commande aujourd'hui." },
+        { "qui": "Jesse",  "texte": "Aujourd'hui ? On n'a pas de quoi ! Il nous manque la moitie des precurseurs !" },
+        { "qui": "Walter", "texte": "Je sais ce qu'il nous manque, Jesse." },
+        { "qui": "Jesse",  "texte": "Alors on lui dit quoi ? On lui dit non a Tuco Salamanca ?" },
+        { "qui": "Walter", "texte": "On ne lui dit rien. On livre." },
+        { "qui": "Jesse",  "texte": "Avec quoi ?!" },
+        { "qui": "Walter", "texte": "J'ai une idee. Une botte secrete." },
+        { "qui": "Jesse",  "texte": "... J'aime pas quand vous dites ca." },
+        { "qui": "Walter", "texte": "Fais-moi confiance." },
+        { "qui": "Jesse",  "texte": "Bon. Le camping-car, dans le desert. J'y vais devant." },
+        { "qui": "Jesse",  "texte": "Et soyez a l'heure, pour une fois." }
+      ]
+    ]
+  },
+
+  "mission_jesse_camping": {
+    "nom": "Jesse",
+    "sans_voix": true,
+    "conversations": [
+      [
+        { "qui": "Jesse",  "texte": "Vous etes en retard." },
+        { "qui": "Walter", "texte": "J'avais des choses a faire. Un alibi, pour la journee." },
+        { "qui": "Jesse",  "texte": "Un alibi. Bien sur." },
+        { "qui": "Walter", "texte": "Allons cuisiner." },
+        { "qui": "Jesse",  "texte": "J'ai deja commence. C'est bientot pret." }
+      ]
+    ]
+  },
+
+  "mission_jesse_occupe": {
+    "nom": "Jesse",
+    "sans_voix": true,
+    "_note": "Tant qu'il cuisine. Plusieurs versions : on va lui reparler.",
+    "conversations": [
+      [ { "qui": "Jesse", "texte": "Pas maintenant. Je suis concentre." } ],
+      [ { "qui": "Jesse", "texte": "Vous voyez bien que je bosse, la." } ],
+      [ { "qui": "Jesse", "texte": "Vous voulez le faire vous-meme ? Non ? Alors." } ]
+    ]
+  },
+
+  "mission_jesse_botte": {
+    "nom": "Jesse",
+    "sans_voix": true,
+    "_note": "Se declenche pendant que Walter manipule l'atelier.",
+    "conversations": [
+      [
+        { "qui": "Jesse",  "texte": "C'est ca, votre botte secrete ?" },
+        { "qui": "Walter", "texte": "Affirmatif." },
+        { "qui": "Jesse",  "texte": "Ca ressemble a rien. Ca va marcher, au moins ?" },
+        { "qui": "Walter", "texte": "Ca doit marcher." }
+      ]
+    ]
+  },
+
+  "mission_jesse_pret": {
+    "nom": "Jesse",
+    "sans_voix": true,
+    "conversations": [
+      [
+        { "qui": "Jesse",  "texte": "C'est pret. J'espere que ca fera l'affaire." },
+        { "qui": "Walter", "texte": "Ce n'est pas encore parfait." },
+        { "qui": "Jesse",  "texte": "Merci, hein." },
+        { "qui": "Walter", "texte": "Mais vu le temps qu'il nous restait, c'est deja bien." },
+        { "qui": "Jesse",  "texte": "Prenez-la et filez. Et... faites attention." }
+      ]
+    ]
+  },
+
+  "mission_garde": {
+    "nom": "Homme de main",
+    "sans_voix": true,
+    "conversations": [
+      [
+        { "qui": "Garde",  "texte": "Tu t'es perdu, papi ?" },
+        { "qui": "Walter", "texte": "J'ai une livraison pour M. Salamanca." },
+        { "qui": "Garde",  "texte": "Toi ? Une livraison." },
+        { "qui": "Walter", "texte": "C'est exact." },
+        { "qui": "Garde",  "texte": "Retourne a tes cours de chimie avant de te salir." },
+        { "qui": "Tuco",   "texte": "(interphone) Laisse-le entrer." },
+        { "qui": "Garde",  "texte": "Patron, ce type c'est..." },
+        { "qui": "Tuco",   "texte": "(interphone) J'ai dit LAISSE-LE ENTRER !" },
+        { "qui": "Tuco",   "texte": "(interphone) Le chimiste ! Ha ! Fais-le monter !" },
+        { "qui": "Garde",  "texte": "... Les mains ou je peux les voir." }
+      ]
+    ]
+  },
+
+  "mission_tuco_vente": {
+    "nom": "Tuco",
+    "sans_voix": true,
+    "_note": [
+      "La scene centrale. Le joueur n'est PAS bloque pendant celle-ci : il",
+      "peut se deplacer, ce qui laisse monter la tension au lieu de la",
+      "raconter."
+    ],
+    "conversations": [
+      [
+        { "qui": "Tuco",   "texte": "Le voila ! Le chimiste ! Approche, approche." },
+        { "qui": "Walter", "texte": "Vous vouliez votre commande." },
+        { "qui": "Tuco",   "texte": "Ha ! Direct au business. J'aime ca." },
+        { "qui": "Tuco",   "texte": "Trois cent mille. Compte-les si tu veux." },
+        { "qui": "Walter", "texte": "Ce ne sera pas necessaire." },
+        { "qui": "Tuco",   "texte": "..." },
+        { "qui": "Tuco",   "texte": "Attends. Attends, attends, attends." },
+        { "qui": "Tuco",   "texte": "Il en manque. OU EST LE RESTE ?" },
+        { "qui": "Walter", "texte": "Les delais etaient courts. Vous les avez fixes vous-meme." },
+        { "qui": "Tuco",   "texte": "Je fixe ce que je veux ! C'est MON business !" },
+        { "qui": "Walter", "texte": "Nous pouvons livrer le reste sous deux jours." },
+        { "qui": "Tuco",   "texte": "Deux jours. Il me parle de deux jours." },
+        { "qui": "Tuco",   "texte": "Vous entendez ca, les gars ?" },
+        { "qui": "Tuco",   "texte": "Dis-moi, le chimiste. Il t'en reste sur toi ?" },
+        { "qui": "Walter", "texte": "... Non." },
+        { "qui": "Tuco",   "texte": "Fouille-le." },
+        { "qui": "Garde",  "texte": "Patron. Il avait ca." },
+        { "qui": "Tuco",   "texte": "Tu m'avais cache ca ?" },
+        { "qui": "Tuco",   "texte": "TU VOULAIS M'ARNAQUER ?" }
+      ]
+    ]
+  },
+
+  "mission_tuco_menace": {
+    "nom": "Tuco",
+    "sans_voix": true,
+    "_note": [
+      "Boucle tant que le joueur ne se sert pas de la botte secrete. Au bout",
+      "d'une minute, ils tirent."
+    ],
+    "conversations": [
+      [ { "qui": "Tuco", "texte": "Reponds-moi. REPONDS-MOI !" } ],
+      [ { "qui": "Garde", "texte": "On s'en occupe, patron ?" } ],
+      [ { "qui": "Tuco", "texte": "Tu crois que je suis un imbecile, c'est ca ?" } ],
+      [ { "qui": "Tuco", "texte": "Personne ne vole Tuco Salamanca. Personne." } ],
+      [ { "qui": "Walter", "texte": "(ce cristal sur le bureau...)" } ]
+    ]
+  },
+
+  "mission_fin": {
+    "nom": "Walter",
+    "sans_voix": true,
+    "conversations": [
+      [
+        { "qui": "Walter", "texte": "Il ne faut pas que Skyler trouve ca." }
+      ]
+    ]
   }
 }

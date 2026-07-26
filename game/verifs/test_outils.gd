@@ -60,8 +60,15 @@ func _process(_d: float) -> bool:
 		return true
 
 	print("--- objets ---")
+	# LA ROUE MONTRE CE QU'ON POSSEDE, pas le catalogue.
+	#
+	# Depuis la mission, Walter demarre avec deux objets et gagne les autres en
+	# chemin. On donne donc tout ici avant de compter : le sujet de ce test est
+	# que chaque objet s'accroche au bon endroit du corps, pas l'inventaire.
+	for cle in ["arme", "meth", "botte", "livre", "chapeau"]:
+		_eq.call("donner", cle)
 	var n: int = _eq.call("nombre")
-	_verifier(n >= 4, "%d outil(s) declares dans outils.json" % n)
+	_verifier(n >= 4, "%d outil(s) accrochables" % n)
 
 	for i in n:
 		var nom: String = _eq.call("nom_de", i)
@@ -171,7 +178,7 @@ func _suite() -> bool:
 # Un maillage garde visible = true sous un parent masque, et une premiere
 # version de ce test annoncait donc « le revolver apparait » pour les quatre
 # outils, y compris quand on avait les mains vides.
-const RACINES := ["arme", "meth", "livre", "chapeau"]
+const RACINES := ["arme", "meth", "botte", "livre", "chapeau"]
 
 
 func _visible_sous(n: Node) -> String:

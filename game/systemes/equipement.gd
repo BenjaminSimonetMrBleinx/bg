@@ -28,6 +28,18 @@ var _actif: int = RIEN
 var _porteur: Node3D
 var _audio: Audio
 
+## CE QU'ON POSSEDE, dans l'ordre de la roue. Ce sont des indices de fiches.
+##
+## outils.json decrit tout ce qui EXISTE dans le jeu ; ceci dit ce que Walter a
+## sur lui a cet instant. Les deux etaient confondus jusqu'ici — la roue
+## montrait le catalogue — ce qui donnait un chimiste demarrant la partie avec
+## un revolver et un sachet de meth, et une mission entiere consacree a aller
+## chercher les deux.
+##
+## Vide au chargement veut dire « tout », pour que le bac a sable continue de
+## marcher sans mission.
+var _possedes: Array[int] = []
+
 ## Le systeme audio, retrouve A LA DEMANDE et garde ensuite.
 ##
 ## Pas dans _ready() : le noeud Audio est declare plus bas dans la scene, donc
@@ -148,24 +160,103 @@ static func _vecteur(v: Variant) -> Vector3:
 	return Vector3(float(a[0]), float(a[1]), float(a[2]))
 
 
+# -------------------------------------------------------------- l'inventaire
+#
+# Tout ce qui suit parle en indices de ROUE, pas en indices de fiches. La roue
+# affiche ce qu'on possede et rien d'autre ; la conversion se fait ici, et
+# nulle part ailleurs.
+
+
+func _fiche_de(rang: int) -> int:
+	if _possedes.is_empty():
+		return rang
+	if rang < 0 or rang >= _possedes.size():
+		return RIEN
+	return _possedes[rang]
+
+
+func _rang_de(fiche: int) -> int:
+	if _possedes.is_empty():
+		return fiche
+	return _possedes.find(fiche)
+
+
+func _indice_de_cle(cle: String) -> int:
+	for i in _fiches.size():
+		if str(_fiches[i].get("cle", "")) == cle:
+			return i
+	return RIEN
+
+
+## Fixe l'inventaire de depart. Une liste vide rend TOUT disponible, ce qui est
+## le comportement du bac a sable : sans mission chargee, on veut ses jouets.
+func definir_inventaire(cles: Array) -> void:
+	_possedes.clear()
+	for c in cles:
+		var i := _indice_de_cle(str(c))
+		if i == RIEN:
+			push_warning("equipement : '%s' n'est pas dans outils.json" % c)
+			continue
+		_possedes.append(i)
+	equiper(RIEN)
+
+
+func possede(cle: String) -> bool:
+	var i := _indice_de_cle(cle)
+	return i != RIEN and (_possedes.is_empty() or _possedes.has(i))
+
+
+## Ramasser quelque chose. Renvoie faux si on l'avait deja — l'appelant s'en
+## sert pour ne pas rejouer l'annonce.
+func donner(cle: String) -> bool:
+	var i := _indice_de_cle(cle)
+	if i == RIEN or _possedes.has(i):
+		return false
+	_possedes.append(i)
+	# On garde l'ordre de outils.json : la roue doit avoir la meme disposition
+	# d'une partie a l'autre, sinon on cherche son objet a chaque fois.
+	_possedes.sort()
+	return true
+
+
+func retirer(cle: String) -> bool:
+	var i := _indice_de_cle(cle)
+	if i == RIEN or not _possedes.has(i):
+		return false
+	if _actif == i:
+		equiper(RIEN)
+	_possedes.erase(i)
+	return true
+
+
 func nombre() -> int:
-	return _fiches.size()
+	return _possedes.size() if not _possedes.is_empty() else _fiches.size()
 
 
-func nom_de(i: int) -> String:
+func nom_de(rang: int) -> String:
+	var i := _fiche_de(rang)
 	if i < 0 or i >= _fiches.size():
 		return "Rien"
 	return str(_fiches[i].get("nom", _fiches[i].get("cle", "?")))
 
 
+## La cle de l'objet en main, ou "" les mains vides. C'est par elle que le tir
+## sait qu'on tient le revolver, sans avoir a connaitre son rang dans la roue.
+func cle_equipee() -> String:
+	if _actif < 0 or _actif >= _fiches.size():
+		return ""
+	return str(_fiches[_actif].get("cle", ""))
+
+
 func actif() -> int:
-	return _actif
+	return _rang_de(_actif) if _actif != RIEN else RIEN
 
 
 ## Equipe l'objet d'indice i, ou RIEN pour ranger. Reequiper celui qu'on a
 ## deja en main le range : c'est le comportement attendu d'une roue, et ca
 ## evite d'avoir une part « rien » qui n'aurait servi qu'a ca.
-func equiper(i: int) -> void:
+func equiper(rang: int) -> void:
+	var i := _fiche_de(rang) if rang != RIEN else RIEN
 	if i == _actif:
 		i = RIEN
 	for k in _noeuds.size():
@@ -173,7 +264,7 @@ func equiper(i: int) -> void:
 			_noeuds[k].visible = (k == i)
 	_actif = i
 	_sonner(i)
-	change.emit(i)
+	change.emit(actif())
 
 
 # Le nom du son se DEDUIT de la cle de l'objet : « livre » -> « objet_livre ».

@@ -5,5 +5,5 @@
   "fichier seul donnerait un ciel de jour sur des fenetres de nuit.",
   "Pour changer : .\\bg.ps1 generer -Moment jour"
  ],
- "moment": "jour"
+ "moment": "nuit"
 }

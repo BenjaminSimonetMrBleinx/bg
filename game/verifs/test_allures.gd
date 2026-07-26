@@ -80,6 +80,14 @@ func _scenario() -> void:
 	var trafic := _trouver(_monde, "Trafic")
 	if trafic != null:
 		trafic.free()
+	# Sans SCENARIO non plus. La mission fait sonner le telephone cinq secondes
+	# apres qu'on met le pied dehors, et un appel entrant bloque le personnage
+	# le temps de la conversation — ce qui est le comportement voulu du jeu, et
+	# ce qui a rendu ce test rouge de la premiere a la derniere mesure : Walter
+	# ne bougeait plus d'un centimetre, le combine a l'oreille.
+	var scenario := _trouver(_monde, "Scenario")
+	if scenario != null:
+		scenario.free()
 	_joueur = _trouver(_monde, "Joueur") as Joueur
 	if _joueur == null:
 		printerr("  ECHEC Joueur introuvable")

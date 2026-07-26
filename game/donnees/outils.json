@@ -31,6 +31,14 @@
       "echelle": 1.0
     },
     {
+      "cle": "botte",
+      "nom": "Botte secrete",
+      "ancrage": "MainD",
+      "position": [0.0, -0.04, 0.0],
+      "rotation": [180.0, 0.0, 0.0],
+      "echelle": 1.0
+    },
+    {
       "cle": "livre",
       "nom": "Feuilles d'herbe",
       "ancrage": "MainD",

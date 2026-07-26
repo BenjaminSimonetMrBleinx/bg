@@ -82,6 +82,16 @@ func actif() -> bool:
 	return _actif
 
 
+## Qui vient de parler. Le signal `termine` ne porte pas cette information, et
+## la lui ajouter aurait casse tous ceux qui l'ecoutent deja ; une lecture
+## apres coup fait le meme travail. C'est par elle que la mission sait quelle
+## conversation vient de se finir.
+func cle_courante() -> String:
+	return _cle
+
+var _cle: String = ""
+
+
 ## Ouvre la conversation suivante de ce personnage. Renvoie faux s'il n'a
 ## rien a dire — l'appelant ne doit alors pas proposer de lui parler.
 func demarrer(cle: String) -> bool:
@@ -97,6 +107,7 @@ func demarrer(cle: String) -> bool:
 	_vus[cle] = tour + 1
 	_index = 0
 	_actif = true
+	_cle = cle
 	if _cadre != null:
 		_cadre.visible = true
 	_montrer()

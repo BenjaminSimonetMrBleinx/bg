@@ -496,6 +496,90 @@ def uni(base, grain: float = 0.10, veine: bool = False):
     return rendu
 
 
+def planches(base, largeur: float = 0.14, joint: float = 0.30):
+    """Lambris vertical : des lattes, et un joint sombre entre elles.
+
+    C'est la matiere du bureau de Tuco — un lambris de bois sombre du sol au
+    plafond — et c'est aussi celle des murs interieurs de la maison de Walter,
+    ou l'on doit reperer LA latte qui n'est pas comme les autres. La regularite
+    est donc le sujet : sans elle, rien ne depasse.
+    """
+    def rendu(u: float, v: float):
+        n = hache(int(u * 230), int(v * 90))
+        # Chaque latte a sa teinte propre, tiree de son numero : du bois debite
+        # dans le meme arbre n'est jamais deux fois du meme ton.
+        latte = int(u / largeur)
+        teinte = 0.86 + 0.28 * hache(latte * 37, 11)
+        g = teinte * (0.94 + n * 0.12)
+        bord = (u / largeur) % 1.0
+        if bord < joint * 0.12 or bord > 1.0 - joint * 0.12:
+            g *= 1.0 - joint
+        # Le fil du bois, horizontal et serre.
+        g *= 0.97 + 0.03 * ((int(v * 120) % 3) == 0)
+        return (base[0] * g, base[1] * g, base[2] * g)
+    return rendu
+
+
+def paillasse(u: float, v: float):
+    """Le plan de travail du labo : contreplaque brut, tache par endroits.
+
+    Les taches comptent plus que le bois. Un etabli propre dit « meuble de
+    cuisine » ; ce sont les cernes et les brulures qui disent qu'on y travaille
+    des produits.
+    """
+    n = hache(int(u * 200), int(v * 200))
+    base = (152, 122, 84)
+    g = 0.90 + n * 0.20
+    g *= 0.96 + 0.04 * ((int(v * 44) % 4) == 0)
+    # Cernes sombres, poses sur une grille lache pour ne pas se repeter a l'oeil
+    t = hache(int(u * 9), int(v * 7))
+    if t > 0.86:
+        g *= 0.62 + 0.2 * n
+    return (base[0] * g, base[1] * g, base[2] * g)
+
+
+def graffiti(u: float, v: float):
+    """Le mur peint du QG, vu de la rue.
+
+    Aucune lettre : a la distance ou on le voit, une fresque de rue est une
+    suite de TACHES vives cernees de noir. On empile donc des bandes de
+    couleurs saturees et on les cerne, ce qui donne la meme lecture qu'un
+    tag reel sans avoir a en dessiner un.
+    """
+    n = hache(int(u * 170), int(v * 170))
+    # Le bas du mur est du beton nu : les fresques ne descendent pas au sol.
+    if v > 0.86:
+        g = 0.88 + n * 0.18
+        return (146 * g, 142 * g, 134 * g)
+    palette = [(196, 58, 48), (58, 92, 168), (214, 176, 56),
+               (74, 148, 84), (156, 78, 156), (222, 226, 232)]
+    # Des formes larges et obliques, comme les lettres bombees d'un tag.
+    forme = int((u * 5.0 + v * 1.7 + 0.8 * hache(int(u * 6), int(v * 4))) % 6)
+    base = palette[forme]
+    g = 0.86 + n * 0.26
+    # Le cerne noir entre deux formes.
+    bord = (u * 5.0 + v * 1.7) % 1.0
+    if bord < 0.10:
+        g *= 0.22
+    return (base[0] * g, base[1] * g, base[2] * g)
+
+
+def store(u: float, v: float):
+    """Un store venitien ferme : des lames, et la lumiere qui passe entre.
+
+    C'est l'element central des deux interieurs de reference — le camping-car
+    et le bureau de Tuco sont tous les deux eclaires par des raies horizontales.
+    """
+    n = hache(int(u * 120), int(v * 260))
+    lame = (v * 34.0) % 1.0
+    if lame > 0.78:
+        # L'interstice : chaud et lumineux, c'est le soleil du dehors.
+        g = 0.95 + n * 0.10
+        return (236 * g, 206 * g, 150 * g)
+    g = 0.70 + 0.30 * lame + n * 0.10
+    return (128 * g, 118 * g, 104 * g)
+
+
 def panneau_stop(u: float, v: float):
     """Panneau rouge barre de blanc. On ne lit jamais le mot a cette taille :
     ce qui identifie un stop, c'est le rouge et la barre claire."""
@@ -830,10 +914,28 @@ def main() -> None:
         ("metal_sombre", (58, 58, 62), 0.09, False),
         ("cristal", (150, 196, 214), 0.14, False),
         ("cristal_clair", (196, 232, 244), 0.16, False),
+        # La « botte secrete » : un cristal BLANC, la ou la meth de Walter tire
+        # sur le bleu. Il faut qu'on les distingue d'un coup d'oeil dans la
+        # roue — c'est tout l'enjeu de la scene chez Tuco.
+        ("cristal_blanc", (232, 231, 226), 0.12, False),
+        ("cristal_blanc_vif", (250, 250, 248), 0.10, False),
         ("couverture", (96, 62, 46), 0.10, False),
         ("pages", (226, 218, 196), 0.06, True),
         ("feutre", (48, 46, 48), 0.08, False),
         ("feutre_sombre", (30, 28, 30), 0.08, False),
+        # --- la mission : le labo, et le QG de Tuco ---
+        ("verre_labo", (206, 224, 226), 0.07, False),
+        ("liquide_ambre", (196, 138, 44), 0.09, False),
+        ("liquide_vert", (96, 168, 92), 0.09, False),
+        ("bidon_rouge", (150, 44, 38), 0.11, False),
+        ("bidon_bleu", (54, 78, 128), 0.11, False),
+        ("inox", (170, 174, 178), 0.08, False),
+        ("lino", (118, 104, 88), 0.13, True),
+        ("bache", (86, 84, 78), 0.12, False),
+        ("cuir_sombre", (58, 40, 32), 0.10, False),
+        ("bureau_bois", (78, 48, 30), 0.10, True),
+        ("mur_qg", (62, 56, 50), 0.12, False),
+        ("planche_barricade", (92, 74, 54), 0.12, True),
     ]:
         ecrire_png(dossier / f"{nom}.png", t // 4, t // 4,
                    rendre(t // 4, t // 4, uni(base, grain, veine)))
@@ -851,10 +953,18 @@ def main() -> None:
                    rendre(t // 4, t // 4, uni(base, grain, veine)))
         faits.append(f"{nom}.png")
 
-    for nom, fn in [("panneau_stop", panneau_stop), ("cactus", cactus)]:
+    for nom, fn in [("panneau_stop", panneau_stop), ("cactus", cactus),
+                    ("paillasse", paillasse), ("store", store),
+                    ("lambris", planches((84, 52, 34))),
+                    ("latte_mur", planches((156, 146, 130), 0.11, 0.34))]:
         ecrire_png(dossier / f"{nom}.png", t // 2, t // 2,
                    rendre(t // 2, t // 2, fn))
         faits.append(f"{nom}.png")
+
+    # La fresque du QG reste en pleine resolution : c'est un mur entier vu de
+    # face depuis la rue, et c'est la premiere chose qu'on voit en arrivant.
+    ecrire_png(dossier / "graffiti.png", t, t, rendre(t, t, graffiti))
+    faits.append("graffiti.png")
 
     # Le panneau de direction et la fleche au sol restent en pleine resolution :
     # le premier porte du texte, la seconde une diagonale. Les deux se lisent

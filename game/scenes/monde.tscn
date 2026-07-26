@@ -45,6 +45,15 @@
 [ext_resource type="PackedScene" path="res://assets/decor/fleche_sol.glb" id="27_fleche"]
 [ext_resource type="PackedScene" path="res://assets/decor/panneau_desert.glb" id="28_panneau"]
 [ext_resource type="Script" path="res://systemes/hud.gd" id="21_hud"]
+[ext_resource type="Script" path="res://systemes/mission.gd" id="33_mission"]
+[ext_resource type="Script" path="res://systemes/bourse.gd" id="34_bourse"]
+[ext_resource type="Script" path="res://systemes/scenario.gd" id="35_scenario"]
+[ext_resource type="Script" path="res://systemes/tir.gd" id="36_tir"]
+[ext_resource type="Script" path="res://systemes/fin_de_partie.gd" id="37_fin"]
+[ext_resource type="Script" path="res://systemes/cachette.gd" id="38_cachette"]
+[ext_resource type="Script" path="res://systemes/point.gd" id="39_point"]
+[ext_resource type="PackedScene" path="res://scenes/mission1.tscn" id="40_mission1"]
+[ext_resource type="Texture2D" path="res://assets/images/argent.png" id="41_argent"]
 [ext_resource type="Script" path="res://systemes/foule.gd" id="22_foule"]
 
 [sub_resource type="ViewportTexture" id="tex_ecran"]
@@ -142,6 +151,8 @@ collision_mask = 7
 script = ExtResource("24_passage")
 cap_degres = 180.0
 exige_vehicule = true
+refus = "Il vous faut une voiture pour quitter la ville"
+zone = "camping"
 
 [node name="Forme" type="CollisionShape3D" parent="Rendu/Scene3D/VersDesert/Zone"]
 shape = SubResource("passage_forme")
@@ -199,6 +210,24 @@ lumiere_energie = 2.6
 ; tour. Le sens a ete MESURE, pas deduit : test_sens.gd applique une poussee
 ; et projette le deplacement. Avec le quart de tour oppose, elle partait vers
 ; -X, c'est-a-dire vers le bord de la carte a dix metres de la.
+; Les lieux de la mission 1 : le camping-car, le QG de Tuco et leurs habitants.
+; Ils vivent loin sur le meme plan, comme les interieurs de maison.
+[node name="Mission1" parent="Rendu/Scene3D" instance=ExtResource("40_mission1")]
+
+; LA CACHETTE, dans le salon de Walter. Une latte du mur descellee.
+;
+; Elle est posee ICI et pas dans mission1.tscn parce qu'elle appartient a un
+; decor qui existait avant la mission : l'interieur de la maison, a
+; (26, -20) + (-600, 600).
+[node name="LatteDescellee" type="Node3D" parent="Rendu/Scene3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -576.6, 1, 583.4)
+script = ExtResource("39_point")
+invite = "Cacher votre argent"
+evenement = "action:cachette"
+etape = "cacher"
+une_fois = false
+portee = 1.9
+
 [node name="Vehicule" parent="Rendu/Scene3D" instance=ExtResource("5_vehicule")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 17, 0.6, -7)
 
@@ -285,6 +314,9 @@ reglages = ExtResource("2_reglages")
 vehicule = NodePath("../../Scene3D/Vehicule")
 equipement = NodePath("../../../Equipement")
 controleur = NodePath("../../../Controleur")
+joueur = NodePath("../../Scene3D/Joueur")
+tir = NodePath("../../../Tir")
+icone_argent = ExtResource("41_argent")
 
 ; La roue des outils. Sous le fondu, pour qu'un passage de porte la recouvre
 ; si elle etait restee ouverte.
@@ -313,6 +345,28 @@ reglages = ExtResource("2_reglages")
 
 ; Le fondu de porte. Declare APRES l'invite, donc dessine par-dessus : pendant
 ; le noir, plus rien ne doit rester lisible a l'ecran.
+[node name="Cachette" type="Control" parent="Rendu/Interface"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("38_cachette")
+reglages = ExtResource("2_reglages")
+
+; L'ecran de fin est DERRIERE le fondu dans l'arbre, donc dessine par-dessus :
+; le voile de mort doit couvrir le jeu, y compris un fondu de porte en cours.
+[node name="FinDePartie" type="Control" parent="Rendu/Interface"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("37_fin")
+reglages = ExtResource("2_reglages")
+
 [node name="Fondu" type="ColorRect" parent="Rendu/Interface"]
 anchors_preset = 15
 anchor_right = 1.0
@@ -346,6 +400,29 @@ reglages = ExtResource("2_reglages")
 rendu = NodePath("..")
 ville = NodePath("../Rendu/Scene3D/Ville")
 
+; ------------------------------------------------------------- la mission 1
+;
+; Quatre noeuds, et ils se cherchent par GROUPE plutot que par chemin : la
+; mission et la bourse sont lues depuis le HUD, le scenario et la cachette,
+; et cinq chemins ecrits a la main se seraient contredits au premier
+; deplacement de noeud.
+
+[node name="Mission" type="Node" parent="."]
+script = ExtResource("33_mission")
+
+[node name="Bourse" type="Node" parent="."]
+script = ExtResource("34_bourse")
+
+[node name="Tir" type="Node" parent="."]
+script = ExtResource("36_tir")
+reglages = ExtResource("2_reglages")
+
+[node name="Scenario" type="Node" parent="."]
+script = ExtResource("35_scenario")
+mission = NodePath("../Mission")
+joueur = NodePath("../Rendu/Scene3D/Joueur")
+controleur = NodePath("../Controleur")
+
 [node name="Controleur" type="Node" parent="."]
 script = ExtResource("8_controleur")
 reglages = ExtResource("2_reglages")
@@ -360,7 +437,12 @@ dialogue = NodePath("../Dialogue")
 roue = NodePath("../Rendu/Interface/Roue")
 telephone = NodePath("../Rendu/Interface/Telephone")
 desert = NodePath("../Rendu/Scene3D/Desert")
-passages = [NodePath("../Rendu/Scene3D/VersDesert/Zone"), NodePath("../Rendu/Scene3D/Desert/RetourVille")]
+passages = [NodePath("../Rendu/Scene3D/VersDesert/Zone"), NodePath("../Rendu/Scene3D/Desert/RetourVille"), NodePath("../Rendu/Scene3D/Mission1/CampingLab/VersTuco"), NodePath("../Rendu/Scene3D/Mission1/QgExterieur/RetourCamping")]
+scenario = NodePath("../Scenario")
+tir = NodePath("../Tir")
+fin_de_partie = NodePath("../Rendu/Interface/FinDePartie")
+cachette = NodePath("../Rendu/Interface/Cachette")
+ecran = NodePath("../Affichage/Ecran")
 
 [node name="Affichage" type="CanvasLayer" parent="."]
 layer = -1

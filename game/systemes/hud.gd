@@ -14,10 +14,34 @@ extends Control
 @export var vehicule: NodePath
 @export var equipement: NodePath
 @export var controleur: NodePath
+@export var joueur: NodePath
+@export var tir: NodePath
+
+## L'icone du sac de billets, livree par Guillaume et detouree par
+## outils/detourer.py. Sans elle le montant s'affiche quand meme, precede d'un
+## dollar : une image manquante ne doit jamais faire disparaitre l'information.
+@export var icone_argent: Texture2D
 
 var _v: Vehicule
 var _eq: Equipement
 var _c: Node
+var _j: Joueur
+var _tir: Tir
+var _bourse: Bourse
+var _mission: Mission
+
+## Le montant AFFICHE, qui rattrape le montant reel. Voir trois cent mille
+## dollars apparaitre d'un coup ne se lit pas ; les voir defiler en une
+## seconde, si — et c'est la seule facon de sentir la somme.
+var _affiche: float = 0.0
+
+## Compte a rebours d'affichage de l'objectif, apres un changement d'etape.
+var _objectif: float = 0.0
+var _texte_objectif: String = ""
+
+## Rouge a l'ecran quand on prend un coup. C'est le seul retour immediat : une
+## barre qui descend en haut a gauche ne se voit pas quand on regarde devant.
+var _douleur: float = 0.0
 
 ## Compte a rebours d'affichage du nom de l'outil, en secondes. L'objet
 ## equipe se voit dans la main : le nom n'a d'interet qu'a l'instant du
@@ -34,10 +58,38 @@ func _ready() -> void:
 	_v = get_node_or_null(vehicule) as Vehicule
 	_eq = get_node_or_null(equipement) as Equipement
 	_c = get_node_or_null(controleur)
+	_j = get_node_or_null(joueur) as Joueur
+	_tir = get_node_or_null(tir) as Tir
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if _eq != null:
 		_eq.change.connect(_sur_changement_outil)
+	if _j != null:
+		_j.blesse.connect(_sur_blessure)
+	# La bourse et la mission sont retrouvees APRES la construction de la
+	# scene : elles se declarent dans leur groupe a leur propre _ready, qui
+	# peut passer apres celui-ci.
+	call_deferred("_brancher_la_mission")
 	set_process(true)
+
+
+func _brancher_la_mission() -> void:
+	_bourse = Bourse.courante(self)
+	_mission = Mission.courante(self)
+	if _bourse != null:
+		_affiche = float(_bourse.montant())
+	if _mission != null:
+		_mission.etape_changee.connect(_sur_etape)
+
+
+func _sur_etape(_index: int) -> void:
+	if _mission == null:
+		return
+	_texte_objectif = _mission.objectif()
+	_objectif = 0.0 if _texte_objectif == "" else 4.0
+
+
+func _sur_blessure(_restant: float) -> void:
+	_douleur = 1.0
 
 
 func _sur_changement_outil(i: int) -> void:
@@ -48,9 +100,20 @@ func _sur_changement_outil(i: int) -> void:
 func _process(delta: float) -> void:
 	if _annonce > 0.0:
 		_annonce = maxf(0.0, _annonce - delta)
+	if _objectif > 0.0:
+		_objectif = maxf(0.0, _objectif - delta)
+	if _douleur > 0.0:
+		_douleur = maxf(0.0, _douleur - delta * 1.6)
 	if _v != null:
 		var cible: float = absf(_v.vitesse_kmh())
 		_kmh = lerpf(_kmh, cible, clampf(delta * 12.0, 0.0, 1.0))
+	if _bourse != null:
+		var somme := float(_bourse.montant())
+		# Un rattrapage proportionnel a l'ECART, avec un plancher : sans le
+		# plancher, les derniers dollars mettent une eternite ; sans le
+		# proportionnel, trois cent mille prendraient une minute.
+		var pas := maxf(absf(somme - _affiche) * 3.0, 900.0) * delta
+		_affiche = move_toward(_affiche, somme, pas)
 	queue_redraw()
 
 
@@ -67,6 +130,10 @@ func _draw() -> void:
 
 	_version(police)
 	_bandeau(police)
+	_argent(police)
+	_sante()
+	_objectif_courant(police)
+	_reticule()
 
 	if _au_volant():
 		_compteur(police)
@@ -110,6 +177,73 @@ func _bandeau(police: Font) -> void:
 func _version(police: Font) -> void:
 	_ecrire(police, Version.texte(), Vector2(size.x - 6.0, 14.0), 9,
 			Color(0.72, 0.70, 0.64, 0.55), false, HORIZONTAL_ALIGNMENT_RIGHT)
+
+
+# L'argent, en haut a gauche, avec le sac de billets.
+#
+# Il reste affiche EN PERMANENCE, ce qui enfreint la regle du fichier comme le
+# fait la version. La raison la vaut aussi : toute la fin de la mission
+# consiste a surveiller combien on a sur soi, et une information qu'il faut
+# aller chercher dans un menu n'est pas une information.
+func _argent(police: Font) -> void:
+	if _bourse == null:
+		return
+	var x := 8.0
+	var y := 12.0
+	if icone_argent != null:
+		draw_texture(icone_argent, Vector2(x, y - 8.0))
+		x += icone_argent.get_width() + 4.0
+	_ecrire(police, Bourse.ecrire(roundi(_affiche)), Vector2(x, y + 6.0), 14,
+			Color(0.60, 0.82, 0.44), false)
+
+
+# La sante : une barre, et seulement quand elle n'est pas pleine.
+#
+# Une barre de vie constamment a l'ecran dans un jeu ou l'on passe des heures
+# a conduire est du bruit. Elle apparait au premier coup et ne repart plus,
+# ce qui est aussi une facon de dire que quelque chose a change.
+func _sante() -> void:
+	if _j == null or _j.pv >= 100.0:
+		return
+	var l := 92.0
+	var h := 5.0
+	var coin := Vector2(8.0, 26.0)
+	draw_rect(Rect2(coin, Vector2(l, h)), Color(0.043, 0.055, 0.086, 0.75))
+	var part := clampf(_j.pv / 100.0, 0.0, 1.0)
+	# Du vert au rouge en passant par l'ambre : la couleur dit l'urgence avant
+	# que la longueur ne se lise.
+	var teinte := Color(0.78, 0.26, 0.20).lerp(Color(0.55, 0.76, 0.36), part)
+	draw_rect(Rect2(coin, Vector2(l * part, h)), teinte)
+	draw_rect(Rect2(coin, Vector2(l, h)), Color(0.72, 0.70, 0.64, 0.55),
+			false, 1.0)
+
+
+# L'objectif, annonce quelques secondes a chaque changement d'etape. Ensuite il
+# vit dans le telephone : c'est la qu'on va le relire, et ca evite d'avoir un
+# texte colle en haut de l'ecran toute la partie.
+func _objectif_courant(police: Font) -> void:
+	if _objectif <= 0.0:
+		return
+	var a := clampf(_objectif / 1.2, 0.0, 1.0)
+	_ecrire(police, _texte_objectif, Vector2(size.x / 2.0, size.y - 84.0), 14,
+			Color(0.949, 0.925, 0.867, a), true)
+
+
+# Le reticule, et le voile rouge des blessures.
+#
+# Le reticule est une CROIX OUVERTE, pas un point : un point de un pixel
+# disparait sur un mur clair, et un cercle plein cache exactement ce qu'on
+# vise. Quatre traits laissent le centre libre.
+func _reticule() -> void:
+	if _douleur > 0.0:
+		draw_rect(Rect2(Vector2.ZERO, size),
+				Color(0.55, 0.06, 0.05, 0.34 * _douleur))
+	if _tir == null or not _tir.vise():
+		return
+	var c := size / 2.0
+	var couleur := Color(0.95, 0.93, 0.87, 0.85)
+	for d in [Vector2(1, 0), Vector2(-1, 0), Vector2(0, 1), Vector2(0, -1)]:
+		draw_line(c + d * 3.0, c + d * 8.0, couleur, 1.0)
 
 
 func _compteur(police: Font) -> void:

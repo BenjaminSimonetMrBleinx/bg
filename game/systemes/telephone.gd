@@ -15,7 +15,17 @@ extends Control
 ## Les etats se suivent dans l'ordre. Le clapet met un instant a s'ouvrir, la
 ## sonnerie dure, on parle, on raccroche : un menu qui apparaitrait
 ## instantanement et se fermerait sec n'aurait rien d'un telephone.
-enum Etat { RANGE, MENU, CONTACTS, SONNE, EN_LIGNE }
+enum Etat { RANGE, MENU, CONTACTS, SONNE, EN_LIGNE, MISSION }
+
+## Le menu « Mission » n'est pas dans donnees/telephone.json : il n'est pas
+## une liste de correspondants mais une VUE sur l'etat du jeu. On le pose ici,
+## en tete, parce que c'est ce qu'on vient chercher neuf fois sur dix.
+const ENTREE_MISSION := "Mission"
+
+## Combien de temps le telephone s'ouvre tout seul pour annoncer un objectif,
+## en secondes. Il sort, montre, et se referme — c'est ce que demande le
+## scenario, et c'est aussi ce qui evite d'interrompre le joueur.
+const ANNONCE := 3.2
 
 const FICHIER := "res://donnees/telephone.json"
 
@@ -62,7 +72,36 @@ func _charger() -> void:
 		return
 	_contacts = (lu as Dictionary).get("contacts", [])
 	_entrees = (lu as Dictionary).get("menu", ["Appeler"])
+	if not _entrees.has(ENTREE_MISSION):
+		_entrees.insert(0, ENTREE_MISSION)
 	print("TELEPHONE : %d contact(s)" % _contacts.size())
+
+
+## La mission a suivre. Facultative : sans elle le menu reste, et il est vide.
+func suivre(m: Mission) -> void:
+	_mission = m
+
+
+## Sort le telephone pour ANNONCER l'objectif courant, puis le range tout seul.
+## C'est ce que le scenario demande a chaque changement d'etape.
+func annoncer() -> void:
+	if _etat != Etat.RANGE:
+		return
+	_etat = Etat.MISSION
+	_annonce = ANNONCE
+	visible = true
+	if _son() != null:
+		_son().bruit("roue_ouvre")
+
+
+## Est-on en train de s'annoncer tout seul ? Le controleur ne bloque pas le
+## joueur pendant ce temps : une annonce qui immobilise trois secondes est une
+## punition, pas une information.
+func annonce_en_cours() -> bool:
+	return _annonce > 0.0
+
+var _mission: Mission
+var _annonce: float = 0.0
 
 
 func sorti() -> bool:
@@ -115,6 +154,11 @@ func _process(delta: float) -> void:
 	if _etat == Etat.RANGE and _ouverture <= 0.0:
 		visible = false
 
+	if _annonce > 0.0:
+		_annonce = maxf(0.0, _annonce - delta)
+		if _annonce == 0.0 and _etat == Etat.MISSION:
+			ranger()
+
 	if _attente > 0.0:
 		_attente = maxf(0.0, _attente - delta)
 		if _attente == 0.0 and _etat == Etat.SONNE:
@@ -132,6 +176,12 @@ func _process(delta: float) -> void:
 # aucune entree : un _unhandled_input y serait silencieusement mort. C'est le
 # piege qui avait rendu la roue des outils inutilisable, et il vaut ici aussi.
 func _naviguer() -> void:
+	# L'ecran de mission ne se navigue pas : il se lit, et on en sort.
+	if _etat == Etat.MISSION:
+		if _annonce <= 0.0 and Input.is_action_just_pressed("interagir"):
+			_etat = Etat.MENU
+			_selection = 0
+		return
 	if _etat != Etat.MENU and _etat != Etat.CONTACTS:
 		return
 
@@ -157,6 +207,9 @@ func _valider() -> void:
 	if _son() != null:
 		_son().bruit("roue_cran")
 	if _etat == Etat.MENU:
+		if str(_entrees[_selection]) == ENTREE_MISSION:
+			_etat = Etat.MISSION
+			return
 		_etat = Etat.CONTACTS
 		_selection = 0
 		return
@@ -204,6 +257,8 @@ func _draw() -> void:
 	var x := ecran.position.x + 5.0
 
 	match _etat:
+		Etat.MISSION:
+			_ecran_de_mission(police, ecran, x, y, encre)
 		Etat.SONNE:
 			draw_string(police, Vector2(x, y), "Appel...",
 					HORIZONTAL_ALIGNMENT_LEFT, -1, 10, encre)
@@ -234,6 +289,44 @@ func _draw() -> void:
 			draw_rect(Rect2(coin + Vector2(marge + float(c) * (t.x + 4.0),
 					marge + ecran.size.y + 7.0 + float(r) * (t.y + 4.0)), t),
 					Color(0.20, 0.21, 0.24, 0.95))
+
+
+# L'ecran de suivi. Ce qui est fait est BARRE d'une croix, ce qui reste est
+# pointe par un chevron.
+#
+# Une coche et une case vide auraient demande deux symboles distincts sur un
+# ecran vert de dix pixels de haut, ou deux glyphes fins se confondent. Une
+# croix pleine et un chevron ne se ressemblent pas, meme flous.
+func _ecran_de_mission(police: Font, ecran: Rect2, x: float, y: float,
+		encre: Color) -> void:
+	if _mission == null:
+		draw_string(police, Vector2(x, y), "Aucune mission",
+				HORIZONTAL_ALIGNMENT_LEFT, -1, 10, encre)
+		return
+
+	draw_string(police, Vector2(x, y), _mission.titre(),
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 10, encre)
+	# Un filet sous le titre : sans lui, la liste commence sans qu'on sache
+	# que c'en est une.
+	draw_line(Vector2(x, y + 3.0), Vector2(ecran.end.x - 5.0, y + 3.0),
+			Color(encre, 0.45), 1.0)
+
+	if _mission.finie():
+		draw_string(police, Vector2(x, y + 18.0), "Mission accomplie",
+				HORIZONTAL_ALIGNMENT_LEFT, -1, 11, encre)
+		return
+
+	# Les deux dernieres etapes faites, puis l'etape en cours. L'ecran fait
+	# quatre lignes : tout afficher demanderait de le faire defiler, et il n'y
+	# a pas de quoi lire quinze objectifs sur un telephone de 2008.
+	var faites := _mission.faites()
+	var ligne := y + 14.0
+	for i in range(maxi(0, faites.size() - 2), faites.size()):
+		draw_string(police, Vector2(x, ligne), "x " + str(faites[i]),
+				HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(encre, 0.55))
+		ligne += 11.0
+	draw_string(police, Vector2(x, ligne), "> " + _mission.objectif(),
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 10, encre)
 
 
 func _nom_de(cle: String) -> String:

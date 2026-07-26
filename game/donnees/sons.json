@@ -32,6 +32,16 @@
   "objet_chapeau": ["interface/item_hat.wav"],
   "objet_meth": ["interface/item_meth.wav"],
 
+  "gain_argent": ["mission/gain_argent.wav"],
+  "victoire": ["mission/victoire.wav"],
+  "coup_de_feu": [
+   "mission/coup_de_feu_01.wav",
+   "mission/coup_de_feu_02.wav",
+   "mission/coup_de_feu_03.wav"
+  ],
+  "fusillade": ["mission/fusillade.wav"],
+  "explosion": ["mission/explosion.wav"],
+
   "porte_ouvre": ["maison/ouvre_porte.wav"],
   "porte_ferme": ["maison/ferme_porte.wav"],
 

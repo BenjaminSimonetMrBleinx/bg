@@ -75,7 +75,13 @@ func _scenario() -> void:
 	_verifier(_tel.is_visible_in_tree(), "il est visible a l'ecran")
 
 	print("\n--- on navigue ---")
-	# Le menu principal n'a qu'une entree : valider entre dans les contacts.
+	# Le menu principal ouvre sur « Mission ». On descend d'un cran pour
+	# atteindre « Appeler », puis on valide : c'est LA le repertoire.
+	#
+	# Sans ce cran, le test validait la premiere entree et se retrouvait sur
+	# l'ecran de suivi de mission, ou rien ne sonne — et il concluait que le
+	# telephone ne passait plus d'appels.
+	await _presser("frein")
 	await _presser("interagir")
 	var avant := _tel.selection()
 	await _presser("frein")

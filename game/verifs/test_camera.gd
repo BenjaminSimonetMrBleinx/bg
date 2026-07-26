@@ -43,7 +43,14 @@ var _erreurs: Array[String] = []
 
 func _initialize() -> void:
 	var ps := ResourceLoader.load("res://scenes/monde.tscn") as PackedScene
-	root.add_child(ps.instantiate())
+	var monde := ps.instantiate()
+	# SANS LE SCENARIO. La mission fait sonner le telephone cinq secondes apres
+	# la sortie de chez Walter, et un appel entrant immobilise le personnage :
+	# ce test mesure des deplacements, et il les a tous mesures a zero.
+	var scenario := _trouver(monde, "Scenario")
+	if scenario != null:
+		scenario.free()
+	root.add_child(monde)
 
 
 func _process(_d: float) -> bool:

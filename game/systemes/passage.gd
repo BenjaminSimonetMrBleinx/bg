@@ -28,6 +28,17 @@ extends Area3D
 ## Ce qu'on affiche a pied quand le vehicule est exige.
 @export var refus: String = "Vous devez etre en voiture pour vous rendre ici"
 
+## Le nom du lieu ou l'on arrive, annonce a la mission. Vide = on ne dit rien,
+## ce qui est le cas des passages de retour : revenir en ville ne fait avancer
+## aucun objectif.
+@export var zone: String = ""
+
+## Ce passage n'existe qu'a partir de cette etape de la mission. C'est ce qui
+## empeche d'aller chez Tuco avant d'avoir la marchandise — et le refus
+## ci-dessous explique pourquoi, au lieu de laisser croire a un decor ferme.
+@export var etape_minimale: String = ""
+@export var refus_etape: String = ""
+
 
 func cap() -> float:
 	return deg_to_rad(cap_degres)

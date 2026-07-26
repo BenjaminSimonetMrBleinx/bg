@@ -16,6 +16,47 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.27.0 — La première mission
+
+> **Le jeu a un début, un milieu et une fin.** Quinze étapes, quatre nouveaux
+> décors, et de quoi tout rater.
+>
+> **Sors de chez toi et attends.** Un homme de Salamanca appelle. À partir de
+> là, le téléphone est ton carnet de mission : `T`, puis **Mission** — l'objectif
+> courant et les deux précédents. À chaque étape franchie il sort tout seul,
+> montre la suite, et se range.
+
+**Le déroulé.** Parler à Jesse, prendre la voiture, rejoindre le labo dans le
+désert, cuisiner la **botte secrète**, récupérer la marchandise, livrer Tuco,
+s'en sortir, rentrer, planquer l'argent.
+
+| Ce qui est nouveau | |
+|---|---|
+| **L'argent** | En haut à gauche, avec le sac de billets de Guillaume. On démarre avec 100 à 200 $ — tirés au sort — et Tuco en paie **300 000** |
+| **La vie** | Une barre, qui n'apparaît qu'au premier coup. Une balle en retire un quart |
+| **Le revolver** | Dans la boîte à gants du camping-car. **Clic droit vise, clic gauche tire.** La roue des outils est passée sur `Tab` seul |
+| **La mort** | Le temps ralentit, l'image se décolore, et **Walter s'écroule pour de bon** — un vrai ragdoll sur ses vingt-quatre os. Puis on recommence |
+| **La cachette** | Une latte du mur, chez Walter. On y règle le montant avec `W`/`S` |
+
+**Quatre décors** construits d'après tes références : l'intérieur du camping-car
+— un couloir, la paillasse, la verrerie, les bidons —, la rue du QG avec sa
+fresque, et le bureau de Tuco, lambrissé et calfeutré, éclairé par une seule
+lampe posée.
+
+**Ce qu'on peut essayer de casser, et qui est prévu :** tirer sur Jesse, sur
+Skyler, sur le garde à l'entrée, sur Tuco. Chercher à conduire le camping-car.
+Aller chez Tuco sans marchandise. Ressortir de chez soi avec trois cent mille
+dollars en poche. Ne rien faire pendant que Tuco s'énerve.
+
+**Ce qui manque, et qui viendra de Guillaume :**
+
+- **le son « this is not meth »** n'était pas dans les livraisons. La scène de
+  l'explosion joue un son de synthèse à sa place
+- **les coups de feu et l'explosion** sont eux aussi synthétisés — ils tiennent
+  la place, ils ne la méritent pas
+- **Tuco, le garde et les hommes de main** empruntent les corps des passants, en
+  attendant leurs modèles
+
 ## 0.26.0 — Sauter, s'accroupir, et emboutir pour de bon
 
 > **À essayer, trois choses.**

@@ -138,6 +138,28 @@ def meth(mats) -> int:
     return total
 
 
+def botte(mats) -> int:
+    """La « botte secrete » : un gros cristal blanc, isole, sans sachet.
+
+    Volontairement DIFFERENT de la meth — plus gros, plus clair, et nu au
+    creux de la main au lieu d'etre en poche. Toute la scene finale tient sur
+    le fait que Tuco croit reconnaitre l'un en voyant l'autre, mais il faut
+    que le joueur, lui, ne s'y trompe jamais.
+    """
+    total = 0
+    m = Maillage("Cristal", mats["cristal_blanc"])
+    m.boite(-0.030, -0.026, 0.0, 0.030, 0.026, 0.052)
+    m.boite(-0.020, -0.017, 0.050, 0.020, 0.017, 0.082)
+    total += m.finir()
+
+    e = Maillage("Eclats", mats["cristal_blanc_vif"])
+    for x, y, z, t in [(-0.022, 0.0, 0.030, 0.016), (0.024, 0.008, 0.018, 0.013),
+                       (0.004, -0.024, 0.044, 0.012)]:
+        e.boite(x - t / 2, y - t / 2, z - t / 2, x + t / 2, y + t / 2, z + t / 2)
+    total += e.finir()
+    return total
+
+
 def livre(mats) -> int:
     """« Feuilles d'herbe ». Une couverture et une tranche claire, ce qui
     suffit a lire un livre a cette distance."""
@@ -171,6 +193,7 @@ def chapeau(mats) -> int:
 OBJETS = {
     "arme": (arme, ["metal", "metal_sombre"]),
     "meth": (meth, ["cristal", "cristal_clair"]),
+    "botte": (botte, ["cristal_blanc", "cristal_blanc_vif"]),
     "livre": (livre, ["couverture", "pages"]),
     "chapeau": (chapeau, ["feutre", "feutre_sombre"]),
 }

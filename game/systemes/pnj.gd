@@ -22,12 +22,47 @@ var _cible: Node3D
 var _cap_repos: float = 0.0
 
 
+## Tous les PNJ sont dans ce groupe. C'est ainsi que le tir les trouve, sans
+## qu'aucun d'eux n'ait a porter de corps de collision : une balle teste la
+## distance du rayon a chaque torse, ce qui suffit largement a la resolution
+## du jeu et ne demande de toucher a aucune scene existante.
+const GROUPE := "cible"
+
+## Hauteur du torse au-dessus des pieds, en metres. C'est LA qu'on vise, pas
+## a l'origine du noeud qui est au sol : viser les pieds oblige a tirer par
+## terre pour toucher quelqu'un.
+const TORSE := 1.15
+
+## Rayon touchable, en metres. Genereux : le jeu se joue a la souris sur une
+## image de 512 pixels de large, ou un personnage a vingt metres fait huit
+## pixels. Exiger la precision au centimetre ne rendrait pas le tir difficile,
+## juste cassé.
+const LARGEUR := 0.45
+
+var abattu: bool = false
+
+
 func _ready() -> void:
 	_cap_repos = rotation.y
+	add_to_group(GROUPE)
 	if geometrie == null:
 		push_error("pnj %s : aucune geometrie" % cle)
 		return
 	add_child(geometrie.instantiate())
+
+
+## Le centre de la cible, en coordonnees du monde.
+func point_vise() -> Vector3:
+	return global_position + Vector3.UP * TORSE
+
+
+## Il prend une balle. On ne gere aucun point de vie : dans cette mission, tirer
+## sur quelqu'un declenche une scene, ce n'est jamais un echange de coups.
+func abattre() -> void:
+	if abattu:
+		return
+	abattu = true
+	set_process(false)
 
 
 ## Le joueur a surveiller. Passe par la maison, qui sait qui joue.
