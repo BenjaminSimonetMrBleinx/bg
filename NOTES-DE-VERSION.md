@@ -16,6 +16,38 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.30.0 — Le chapeau, le livre, et les objets qu'on voyait pas
+
+> **Le plus gros est invisible dans la liste : les objets qu'on tient étaient
+> rendus à un centième de leur taille.** Le revolver mesurait deux millimètres.
+> C'est réparé, donc tout ce qu'on équipe se voit enfin — et ça explique aussi
+> pourquoi le chapeau semblait ne pas se poser.
+
+**Le porkpie se porte.** Choisis-le dans la roue : Walter lève la main, le
+chapeau apparaît sur sa tête. Rechoisis-le, il l'enlève. Il reste en place
+pendant que tu tiens autre chose — un chapeau n'est pas un objet qu'on tient.
+C'est le modèle livré par Guillaume, pas la boîte de substitution.
+
+**Le livre se lit.** Une fois équipé, **F** quand rien d'autre n'est à portée :
+Walter le lève à hauteur de lecture, tourne une page, quatre secondes et demie.
+Bouger interrompt.
+
+**L'Aztek roule enfin nez en avant.** Elle était retournée. La cause remontait
+loin : la rotation demandée à l'import n'avait jamais été appliquée, et un
+redressement automatique la posait en plus sur le nez.
+
+**Walter ne se remonte plus les lunettes à travers la poitrine.** Son
+avant-bras passait dans le buste sur douze centimètres pour aller chercher ses
+montures. Le geste est refait, coude bas, bras à l'extérieur.
+
+À essayer : prends le chapeau chez toi, mets-le, va conduire avec. Et lis le
+livre dehors, puis avance en pleine lecture pour vérifier que ça coupe bien.
+
+**Pas encore fait**, et c'est annoncé : Jesse reste planté sans animation, et
+la décoration du camping-car (fioles, tubes, fumée) n'est pas commencée.
+
+---
+
 ## 0.29.0 — Le QG accessible, la nuit habitable, et l'Aztek
 
 > **Bloquant, corrigé.** On ne pouvait pas se rendre chez Tuco : la voiture
