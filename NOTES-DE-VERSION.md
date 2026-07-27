@@ -16,7 +16,7 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
-## 0.30.0 — Le chapeau, le livre, et les objets qu'on voyait pas
+## 0.30.0 — Le chapeau, le livre, Jesse, et les objets qu'on voyait pas
 
 > **Le plus gros est invisible dans la liste : les objets qu'on tient étaient
 > rendus à un centième de leur taille.** Le revolver mesurait deux millimètres.
@@ -43,8 +43,14 @@ montures. Le geste est refait, coude bas, bras à l'extérieur.
 À essayer : prends le chapeau chez toi, mets-le, va conduire avec. Et lis le
 livre dehors, puis avance en pleine lecture pour vérifier que ça coupe bien.
 
-**Pas encore fait**, et c'est annoncé : Jesse reste planté sans animation, et
-la décoration du camping-car (fioles, tubes, fumée) n'est pas commencée.
+**Jesse respire.** Il restait planté sans animation : ses clips avaient été
+refaits sur le mauvais squelette, au point que sa marche mesurait zéro mètre de
+foulée. Refabriqués sur le sien.
+
+**Le camping-car ressemble à un labo.** Fioles coniques, un condenseur au-dessus
+de la cuve, et surtout des **tuyaux** qui courent le long du couloir et
+descendent vers la paillasse et l'atelier — c'est ce qui relie les objets entre
+eux et ce qui manquait le plus. Un filet de vapeur monte de la cuve.
 
 ---
 

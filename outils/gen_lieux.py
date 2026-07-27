@@ -122,6 +122,41 @@ class Maillage:
                           0.5 + 0.5 * math.sin(math.tau * i / cotes))
                          for i in range(cotes)])
 
+    def cone(self, cx, cy, z0, z1, r0, r1, cotes=8) -> None:
+        """Un tronc de cone vertical. C'est la silhouette de la fiole conique.
+
+        Un cylindre et un cone se ressemblent sur le papier et pas du tout de
+        loin : a cette resolution, la seule chose qui distingue un labo d'un
+        rayon d'epicerie, ce sont les VERSANTS. Une paillasse de cylindres se
+        lit comme des boites de conserve.
+        """
+        for i in range(cotes):
+            a0 = math.tau * i / cotes
+            a1 = math.tau * (i + 1) / cotes
+            b0 = (cx + math.cos(a0) * r0, cy + math.sin(a0) * r0, z0)
+            b1 = (cx + math.cos(a1) * r0, cy + math.sin(a1) * r0, z0)
+            h1 = (cx + math.cos(a1) * r1, cy + math.sin(a1) * r1, z1)
+            h0 = (cx + math.cos(a0) * r1, cy + math.sin(a0) * r1, z1)
+            self.face([b0, b1, h1, h0],
+                      [(0, 0), (0.4, 0), (0.4, 0.6), (0, 0.6)])
+
+    def tuyau(self, cy0, cy1, cx, cz, rayon, cotes=6) -> None:
+        """Un tuyau HORIZONTAL, le long de l'axe du couloir.
+
+        Tout ce qui existait etait vertical — les cylindres montent depuis la
+        paillasse. Un labo clandestin, c'est d'abord des tuyaux qui relient des
+        choses entre elles : c'est ce qui manquait le plus, et ca ne coute que
+        six faces par metre.
+        """
+        for i in range(cotes):
+            a0 = math.tau * i / cotes
+            a1 = math.tau * (i + 1) / cotes
+            p0 = (cx + math.cos(a0) * rayon, cz + math.sin(a0) * rayon)
+            p1 = (cx + math.cos(a1) * rayon, cz + math.sin(a1) * rayon)
+            self.face([(p0[0], cy0, p0[1]), (p1[0], cy0, p1[1]),
+                       (p1[0], cy1, p1[1]), (p0[0], cy1, p0[1])],
+                      [(0, 0), (0.3, 0), (0.3, 1.0), (0, 1.0)])
+
     def finir(self) -> int:
         bmesh.ops.remove_doubles(self.bm, verts=self.bm.verts, dist=1e-4)
         self.bm.normal_update()
@@ -232,7 +267,33 @@ def campingcar_interieur(mats) -> int:
     # Deux ballons ronds poses a plat, qu'on lit comme des flacons.
     for y in (-5.6, -3.1):
         v.cylindre(-hx + 0.40, y, 0.94, 1.10, 0.13, 8)
+    # LES FIOLES CONIQUES. Le versant est ce qui fait le labo : une paillasse
+    # entierement verticale se lit comme un rayon de conserves.
+    for y in (-6.3, -4.9, -3.9, -2.4, -1.3):
+        v.cone(-hx + 0.33, y, 0.94, 1.16, 0.11, 0.035, 8)
+        v.cylindre(-hx + 0.33, y, 1.16, 1.26, 0.030, 6)
+    # Le CONDENSEUR au-dessus de l'atelier : un serpentin, approxime par des
+    # anneaux empiles. C'est l'objet le plus reconnaissable d'une cuisine, et
+    # il n'y en avait aucun.
+    for k in range(7):
+        v.tuyau(-4.35, -3.75, hx - 0.34 - 0.13 * (k % 2), 1.16 + k * 0.07,
+                0.026, 6)
     total += v.finir()
+
+    # LES TUYAUX. Deux courses le long du couloir, en hauteur, et des descentes
+    # vers la paillasse et vers l'atelier. C'est ce qui RELIE — un labo est fait
+    # d'appareils branches les uns aux autres, et sans ca on avait une
+    # collection d'objets poses cote a cote.
+    tu = Maillage("Tuyaux", mats["inox"])
+    tu.tuyau(-6.9, -0.7, -hx + 0.16, 1.94, 0.045, 6)
+    tu.tuyau(-6.9, -2.8, hx - 0.20, 2.02, 0.038, 6)
+    for y in (-6.4, -5.0, -3.2, -1.6):                      # descentes gauche
+        tu.cylindre(-hx + 0.16, y, 1.30, 1.94, 0.032, 6)
+    tu.cylindre(hx - 0.20, -4.2, 1.62, 2.02, 0.032, 6)      # vers l'atelier
+    tu.cylindre(hx - 0.20, -3.5, 1.44, 2.02, 0.028, 6)
+    # La traverse qui passe d'un bord a l'autre, au plafond.
+    tu.boite(-hx + 0.13, -4.28, 1.91, hx - 0.17, -4.12, 1.97)
+    total += tu.finir()
 
     liq = Maillage("Liquides", mats["liquide_ambre"])
     for k in range(6):
