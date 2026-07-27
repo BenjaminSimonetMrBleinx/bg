@@ -143,6 +143,14 @@
    ]
   },
 
+  "jesse_repos": {
+   "quoi": "Jesse devant le camping-car. Il doit RESPIRER, bras le long du corps. Bras en croix = pose en T, c'est-a-dire que son clip de repos n'a pas ete rebati sur SON squelette. Ses clips avaient ete recopies depuis Walter : la marche mesurait zero metre de foulee, ce qui se lit tout de suite ici.",
+   "fin": 90,
+   "etapes": [
+    { "image": 30, "camera": [872.6, 1.7, -799.4], "vise": [875.2, 1.1, -801.4] }
+   ]
+  },
+
   "walt_chapeau": {
    "quoi": "Le porkpie sur la tete, apres le geste. On le donne, on le choisit dans la roue, la main monte au crane et le chapeau apparait a mi-parcours. L'image est prise APRES le delai : on doit voir le chapeau pose, pas la main en route. Le don attend l'image 90 : la mission POSE l'inventaire a son demarrage, et tout ce qu'on donne avant est efface.",
    "fin": 320,
