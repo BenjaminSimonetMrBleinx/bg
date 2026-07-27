@@ -280,6 +280,33 @@ def sens_du_regard(arm) -> float:
     return math.atan2(avant.x, avant.y)
 
 
+def garder_son_clip(arm, nom_arm: str) -> str:
+    """Ne laisse que l'animation de CE personnage, et l'appelle « Repos ».
+
+    Chaque figurant sortait avec les HUIT clips du pack — un par armature du
+    fichier d'origine. Sept d'entre eux pilotent des os qui n'existent pas ici :
+    ils ne font rien, ils ne provoquent aucune erreur, et ils quadruplent le
+    poids du fichier. Le jeu, lui, cherche « Repos » et ne trouvait rien, donc
+    le figurant restait fige sur sa premiere image.
+
+    Le pack n'a AUCUNE marche — mesure, voir l'en-tete. Le seul clip disponible
+    est une attente debout : c'est donc un repos, et on le nomme comme tel.
+    """
+    sien = None
+    for action in list(bpy.data.actions):
+        if action.name.split("|")[0] == nom_arm:
+            sien = action
+        else:
+            bpy.data.actions.remove(action)
+    if sien is None:
+        return ""
+    sien.name = "Repos"
+    if arm.animation_data is None:
+        arm.animation_data_create()
+    arm.animation_data.action = sien
+    return sien.name
+
+
 def exporter(chemin: Path) -> None:
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.export_scene.gltf(
@@ -351,16 +378,27 @@ def main() -> None:
             arm.rotation_euler.z += angle
         bpy.context.view_layer.update()
 
+        clip = garder_son_clip(arm, nom_arm)
+
         fichier = sortie / ("%s%s.glb" % (a.prefixe, nom))
         exporter(fichier)
-        print("  %-24s %d os renommes, %.2f m (x%.3f)  -> %s"
-              % (nom, manques, voulue, facteur, fichier.name))
+        print("  %-24s %d os renommes, %.2f m (x%.3f), clip %s  -> %s"
+              % (nom, manques, voulue, facteur,
+                 clip if clip else "AUCUN", fichier.name))
 
     print("")
     print("  sortie   %s" % sortie)
     print("  ATTENTION : ces personnages n'ont PAS de marche. Le pack n'en")
     print("  contient aucune, et les rotations de Walter ne se recopient pas")
     print("  sur un Biped — voir l'en-tete de ce fichier.")
+    print("  Ils sont donc poses DEBOUT dans la rue, pas mis a marcher : un")
+    print("  personnage qui glisse en jouant une attente est pire que le")
+    print("  passant procedural qu'il remplacerait.")
+    print("")
+    print("  A FAIRE ENSUITE, apres l'export :")
+    print("    blender -b -P outils/mettre_a_l_echelle.py -- --fichier %s"
+          % sortie)
+    print("  L'echelle posee ici vit sur les OBJETS et ne survit pas au .glb.")
 
 
 if __name__ == "__main__":
