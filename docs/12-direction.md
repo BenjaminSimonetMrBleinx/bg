@@ -159,7 +159,13 @@ déclenche une enquête qui ne se referme pas.**
 
 ## 5. L'histoire
 
-Trois options, et je recommande la troisième.
+> **TRANCHÉ le 28 juillet 2026 : on suit la série, à 90 % au moins.** Le mode
+> histoire raconte Breaking Bad proprement. Ce qui suit garde les trois options
+> parce qu'elles expliquent le coût du choix retenu — et ce coût, il faut le
+> payer sciemment : **le joueur connaît déjà la fin.** Tout le travail consiste
+> donc à rendre le *chemin* intéressant, pas le dénouement.
+
+Trois options, et je recommandais la troisième.
 
 **A. Suivre la série.** Le joueur rejoue ce qu'il connaît. Confortable à
 écrire, mais on perd la surprise, et on se met en avant sur le terrain
@@ -205,6 +211,69 @@ quatre décors.
 | 7 | *La part du lion* | Tuco augmente sa part. Le puits se creuse |
 | 8 | *Le chapeau* | Première apparition d'Heisenberg. Débloque le porkpie |
 
+### Le choix, sans bifurcation
+
+Suivre la série à 90 % interdit de faire bifurquer l'intrigue. Le sentiment de
+choix, lui, ne demande pas de bifurcation — il demande que **le joueur ait eu
+quelque chose à décider, et qu'il le retrouve plus tard**.
+
+Quatre leviers, du moins cher au plus cher :
+
+**1. Choisir la MÉTHODE, jamais le résultat.** La mission se termine
+identiquement ; le chemin varie. Parler, payer, intimider, contourner. Chacun
+règle la même dette dans une monnaie différente — du temps, de l'argent, de la
+suspicion, une relation. C'est le levier le plus rentable : une mission, trois
+approches, zéro embranchement à écrire.
+
+**2. Un registre du monde, pas un arbre.** Les décisions n'écrivent pas
+l'histoire, elles écrivent l'**état du monde** dans lequel elle se déroule. Le
+dealer qu'on a épargné réapparaît comme contact ; celui qu'on a écrasé laisse
+un coin de rue vide et une rumeur. Aucun de ces états ne change une réplique de
+Tuco — tous changent la ville qu'on traverse pour aller le voir.
+
+**3. Un curseur Heisenberg.** Les réponses de dialogue ne changent pas l'issue,
+elles s'accumulent. Ce curseur ne débloque rien : il décide **comment on vous
+parle**. Le même événement, joué froidement ou platement, ne se raconte pas
+pareil. C'est exactement le sujet de la série, et ça coûte un flottant.
+
+**4. Le bilan de fin d'acte.** Le jeu ne demande jamais « es-tu sûr ». Mais à
+la fin de chaque acte, il **récapitule ce qu'on a choisi** : qui on a épargné,
+combien on a menti, ce qu'on a laissé filer. Rien n'est jugé. C'est le seul
+moment où le joueur voit l'homme qu'il est devenu — et c'est là que le
+sentiment de choix se paie, d'un coup, sans avoir rien coûté à écrire.
+
+**Les vrais embranchements vivent dans le secondaire**, où ils ne menacent
+rien. Une quête annexe peut se terminer de trois façons ; l'acte II commencera
+pareil.
+
+### La méthamphétamine progresse — et le jeu avec elle
+
+Idée retenue le 28 juillet 2026, et c'est la colonne vertébrale de la
+progression.
+
+Au début, on cuisine mal, avec de mauvais précurseurs, et on vend à de mauvais
+clients. Tout s'améliore ensemble : la matière première, la pureté, les
+acheteurs.
+
+| Palier | Où | Précurseur | Pureté | Qui achète | Ce qui change vraiment |
+|---|---|---|---|---|---|
+| **0** | camping-car | pseudoéphédrine de pharmacie | 60–70 % | consommateurs, dealers de rue | On est payé partiellement, en retard, ou volé. Beaucoup de clients, tous instables |
+| **1** | camping-car équipé | pseudo en volume, courses obligées | 75–85 % | dealers structurés, un revendeur par quartier | Moins de clients, plus fiables. La logistique devient le sujet |
+| **2** | labo fixe | méthylamine détournée | 92–96 % | distributeurs | Le volume explose. Le blanchiment devient obligatoire |
+| **3** | labo industriel | méthylamine en fût | 99,1 %, **bleue** | **un seul acheteur** | Plus rien à négocier. On dépend entièrement de lui |
+
+**Ce que ce tableau doit faire sentir, et c'est le point important :** monter en
+palier n'est pas seulement « gagner plus ». À chaque palier, **le jeu retire des
+options en même temps qu'il ajoute de l'argent**. On commence avec vingt
+clients minables et une liberté totale ; on finit avec un client unique et
+aucune. C'est le piège qui se referme, et c'est exactement la série.
+
+**Le risque à surveiller :** que la première heure paraisse une corvée qu'on
+subit en attendant mieux. La parade est de ne pas faire du palier 0 une version
+*dégradée* du jeu, mais une version *plus sale* — chaotique, imprévisible, avec
+des clients qui posent problème. Ce n'est pas moins intéressant, c'est
+autrement tendu. Le palier 3, lui, est propre, riche, et étouffant.
+
 ### Activités secondaires
 
 Elles doivent toutes nourrir un pilier, sinon ce sont des mini-jeux.
@@ -239,8 +308,9 @@ après et sera plus facile à concevoir une fois qu'on aura joué ces six-là.
 
 Elles changent le travail, pas le goût. Je ne les tranche pas seul.
 
-1. **L'histoire : option C ?** Le squelette de la série avec nos propres
-   épisodes, ou vraiment rejouer la série ?
+1. ~~L'histoire~~ — **tranché** : on suit la série à 90 %, et le sentiment de
+   choix passe par la méthode, le registre du monde, le curseur Heisenberg et
+   le bilan de fin d'acte.
 2. **La mort.** Que se passe-t-il quand Walter meurt ? Retour au dernier
    réveil, avec l'argent perdu ? Ou pas de mort du tout, seulement des
    arrestations et des dettes ?
