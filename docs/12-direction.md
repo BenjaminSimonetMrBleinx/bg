@@ -1,361 +1,335 @@
 # La direction du jeu
 
-**Proposition, pas décision.** Ce document dit ce que je ferais de ce jeu et
-pourquoi. Chaque section se discute ; les questions ouvertes sont regroupées à
-la fin.
+**Le socle.** Ce document et la note de direction qui l'accompagne décident de
+tout le reste. Mis à jour le 28 juillet 2026.
 
-État au 28 juillet 2026 : une ville, une conduite, un personnage complet, une
-mission jouable de bout en bout, quatre décors. Ce qui manque n'est pas du
-contenu — c'est **une raison de jouer une deuxième soirée**.
+Il est organisé selon l'ordre dans lequel on travaille :
 
----
-
-## 1. Ce que ce jeu n'est pas
-
-Il faut le dire avant de proposer, parce que c'est ce qui tranchera la moitié
-des arbitrages à venir.
-
-**Ce n'est pas un GTA.** GTA propose un fantasme d'impunité : on est un
-inconnu, sans adresse, sans obligations, et le monde encaisse. Breaking Bad
-propose exactement l'inverse — **un homme qui a une maison, une femme, un
-métier et un cancer**, et dont chaque gain restreint la marge de manœuvre.
-
-Le rapprochement avec Vice City est juste sur un point et un seul : la
-structure. Une ville, une progression par missions, des biens qu'on acquiert,
-une bande-son et une lumière. Mais les **verbes** ne peuvent pas être les
-mêmes. Dans Vice City, progresser veut dire tirer mieux. Ici, progresser doit
-vouloir dire **cuisiner mieux, vendre plus loin, et se cacher plus longtemps**.
-
-Le jour où l'on hésitera entre « ajouter une arme » et « ajouter une contrainte
-domestique », c'est la contrainte qui gagne. C'est ce qui fera la différence
-entre un mod GTA et un jeu Breaking Bad.
+| | |
+|---|---|
+| **1. La théorie** | Les règles qui gouvernent tout. Elles ne se discutent plus |
+| **2. Le cœur** | Ce sans quoi le jeu n'existe pas. C'est ce qu'on développe |
+| **3. La boîte à idées** | [14-boite-a-idees.md](14-boite-a-idees.md). On y pioche quand on en a marre du cœur |
+| **4. Le réglage** | Vient en dernier, une fois qu'on a joué |
 
 ---
 
-## 2. Les trois piliers
+# 1. La théorie
 
-Tout ce qui suit en découle. Si une idée n'alimente aucun des trois, elle
-attend.
+## Ce que le jeu raconte
 
-### Pilier 1 — L'argent est un compte à rebours, jamais un score
+> Un homme fabrique quelque chose de bon, et ce qu'il fabrique le mange.
 
-Il n'existe aujourd'hui aucune dépense obligatoire. Tant que c'est le cas,
-aucune mécanique ne prendra : gagner de l'argent n'a de saveur que si ne pas en
-gagner coûte quelque chose.
+Si une mécanique ne sert pas cette phrase, elle appartient à un autre jeu.
 
-**Le puits**, dans l'ordre d'apparition :
+## Ce n'est pas un GTA
 
-| Quand | Ce qui prélève | Effet si on ne paie pas |
+GTA propose un fantasme d'impunité : on est un inconnu, sans adresse, sans
+obligations, et le monde encaisse. Breaking Bad propose l'inverse — **un homme
+qui a une maison, une femme, un métier et un cancer**, et dont chaque gain
+réduit sa marge de manœuvre.
+
+On garde de Vice City la structure : une ville, des missions, des biens qu'on
+acquiert, une lumière. Mais pas ce qu'on y fait. Là-bas, progresser veut dire
+tirer mieux. Ici, progresser veut dire **cuisiner mieux, vendre plus loin, et
+se cacher plus longtemps**.
+
+> Le jour où l'on hésitera entre « ajouter une arme » et « ajouter une
+> contrainte domestique », c'est la contrainte qui gagne.
+
+## Les cinq règles
+
+**1. Aucun chiffre n'est montré au joueur.** Ni pureté, ni réputation, ni score
+familial. Tout se perçoit : la couleur du produit, le ton d'une réplique, la
+lumière d'une pièce, le fait que Walter Junior dise bonjour ou non. Un chiffre
+transforme un choix en optimisation, et le sentiment disparaît.
+
+**2. Un choix sans coût n'est pas un choix.** Si une option est meilleure sur
+tous les plans, il n'y a rien à décider. Chaque alternative échange quelque
+chose contre autre chose.
+
+**3. L'argent est un compte à rebours, pas un score.** Il doit être prélevé.
+Gagner n'a de saveur que si ne pas gagner coûte.
+
+**4. Monter retire des options.** À chaque palier, le jeu donne de l'argent et
+enlève de la liberté. C'est le piège qui se referme, et c'est le sujet.
+
+**5. Le ton ne bouge pas.** Lent, sale, provincial. Une explosion est un
+événement, pas une ponctuation.
+
+## Le rapport à la série
+
+**Trame parallèle, avec liberté sur l'histoire principale quand ça sert le
+jeu.** Les personnages, les lieux et le ton sont ceux de la série ; les
+événements sont les nôtres. On croise Tuco, Gus, Mike au moment où le jeu en a
+besoin, pas à l'épisode où la série les place.
+
+Ce qui ne bouge pas : ce qui définit un personnage. Gus ne s'emporte pas, Mike
+ne bavarde pas, Walt ne s'excuse pas longtemps.
+
+---
+
+# 2. Le cœur
+
+## La pureté : cinq paliers
+
+**Un labo, une couleur, un type de client.** Les trois avancent ensemble, et
+c'est la colonne vertébrale de toute la progression.
+
+| Palier | Laboratoire | Couleur | Qui achète | Ce qui change |
+|---|---|---|---|---|
+| 1 | **Camping-car** | Brun | La rue | Payé en retard, partiellement, ou volé. Beaucoup de clients, tous instables |
+| 2 | **Camping-car amélioré** | Ambré | Dealers de quartier | Moins de clients, plus fiables. La logistique devient le sujet |
+| 3 | **Atelier** | Clair | Revendeurs structurés | Le volume monte. Le blanchiment devient nécessaire |
+| 4 | **Maison désinsectisée** | Translucide | Distributeurs | On produit à la commande. Les délais deviennent une pression |
+| 5 | **Laboratoire de Gus** | **Bleue** | Un seul acheteur | Plus rien à négocier. On dépend entièrement de lui |
+
+Le joueur ne voit jamais de pourcentage : **il voit la couleur du cristal dans
+sa main**. Cinq textures, et la progression se remarque au lieu de se lire.
+
+## Cuisiner soi-même
+
+**Cuisiner de sa main rapporte plus qu'un employé** — en argent et surtout en
+réputation. C'est ce qui empêche le jeu de s'auto-gérer une fois qu'on a les
+moyens de déléguer.
+
+Déléguer reste possible et parfois nécessaire : on ne peut pas être partout, et
+une cuisine prend du temps qu'on n'a pas quand la famille attend. Le compromis
+est le sujet, pas la punition.
+
+## L'argent, et ce qui le prélève
+
+| Ce qui prélève | Quand | Si on ne paie pas |
 |---|---|---|
-| Dès le début | La facture médicale, tous les 7 jours, croissante | Une séance de chimiothérapie sautée : la barre de vie plafonne plus bas |
-| Acte 1 | La part de Tuco sur chaque vente | Il vient la chercher |
-| Acte 2 | Le loyer du labo, le blanchiment à taux fixe | L'argent sale ne peut plus être dépensé |
-| Acte 3 | Les silences qui s'achètent | Quelqu'un parle |
+| **Les frais de cancer** | Dès le début, périodique, **croissant** | Une séance sautée fait basculer d'un état de santé au suivant |
+| Le matériel et les précurseurs | Dès qu'on veut monter de palier | On reste au palier |
+| **Aider la famille** | Quand elle demande | Le lien familial se dégrade |
+| **L'héritage** | Tout du long | C'est l'objectif de Walt, et le seul qui ne s'achète pas d'un coup |
+| Le cosmétique | Quand on veut | Rien, et c'est le seul argent libre |
 
-Le premier suffit à lancer la machine. **Un entier et un compte à rebours.**
+**Le cancer est une mécanique, pas une cinématique.** Mais il ne doit pas être
+pénible : c'est un prélèvement régulier qui augmente, pas une jauge à
+surveiller. On le sent au portefeuille, pas dans un menu.
 
-### Pilier 2 — La pureté traverse tout
+## Le cancer
 
-Une statistique unique, de 0 à 99,1 %. Elle est produite par la cuisine, elle
-fixe le prix, elle décide qui accepte de traiter avec vous — **et elle vous
-identifie**.
+**Il ne tue pas, il coûte.** C'est la décision qui rend tout le reste possible :
+un compte à rebours mortel rendrait le jeu anxieux et punirait l'exploration —
+exactement ce qu'on ne veut pas. Le cancer n'est pas une jauge de vie, c'est
+**le carrefour où l'argent, la famille et le temps se rencontrent**.
 
-C'est le meilleur mécanisme que la série nous offre, parce qu'il est
-*contradictoire par construction* : plus votre produit est pur, plus il
-rapporte, et plus il porte votre signature. Le bleu, dans la série, n'est pas
-un détail esthétique — c'est une preuve.
+Il touche les trois piliers à la fois, et c'est pour ça qu'il vaut mieux qu'une
+mécanique isolée.
 
-> Monter en pureté, c'est gagner en argent et perdre en anonymat. Le joueur
-> doit sentir ce choix à chaque cuisine.
+### 1. Il prélève — de l'argent, et surtout du temps
 
-### Pilier 3 — Deux vies, et l'une empêche l'autre
+Le traitement se paie périodiquement, et **de plus en plus cher**. Mais le vrai
+coût n'est pas la facture : **une séance mange une demi-journée**. C'est une
+demi-journée qu'on n'a pas passée à cuisiner, et qu'on n'a pas passée avec son
+fils.
 
-Walter a une adresse. C'est notre avantage sur tous les jeux du genre, et il ne
-coûte presque rien à exploiter : **il faut rentrer**.
+C'est là que le cancer devient une mécanique et pas une ligne comptable : il ne
+prend pas de l'argent, il prend **le seul truc dont on manque vraiment**.
 
-Un rendez-vous manqué, une nuit dehors, une somme inexplicable sur la table de
-la cuisine — chacun alimente une **suspicion domestique**, distincte de la
-suspicion policière. Skyler n'appelle pas la police : elle pose des questions,
-puis elle ferme des portes. Perdre l'accès à sa propre maison est une sanction
-plus intéressante que mourir.
+### 2. Il change ce que Walt peut faire
 
----
+Trois états, jamais chiffrés, perçus dans le corps du personnage :
 
-## 3. La boucle
+| État | Ce qu'on remarque |
+|---|---|
+| **Rémission** | Rien. C'est le confort, et il est suspect |
+| **Sous traitement** | Il s'essouffle vite, il tousse — y compris au milieu d'une négociation |
+| **Rechute** | Le tremblement, il doit s'asseoir, certaines choses deviennent impossibles |
 
-```
-        ┌── cuisiner ──► pureté ──► prix ─┐
-        │                   │             │
-    matériel            signature      argent ──► le puits
-        ▲                   │             │
-        │                   ▼             ▼
-        └── acheter ◄── attention ◄── blanchir
-                       (DEA, Skyler)
-```
+Une quinte de toux qui coupe une réplique au mauvais moment est à la fois une
+contrainte de jeu et une scène. C'est le meilleur rapport entre les deux.
 
-Une soirée type, telle que je la vois :
+### 3. Il donne des permissions — et c'est le plus intéressant
 
-1. La facture tombe. On sait combien il manque et en combien de jours.
-2. On cuisine — trois à quatre minutes, tactile, avec un résultat chiffré.
-3. On charge la voiture, on choisit ses contacts sur la carte : **plus loin =
-   mieux payé et plus risqué**.
-4. On roule. C'est là que le jeu se joue vraiment — c'est notre meilleure
-   mécanique existante.
-5. On blanchit, on paie, on rentre avant que ça se remarque.
-6. Un imprévu par soirée, tiré du contexte : un contrôle, un témoin, un
-   concurrent, un appel de Jesse qui a fait une bêtise.
+**Le diagnostic est l'excuse de Walt.** C'est ce qui fait accepter à sa famille
+l'inexplicable, et dans la série il s'en sert en permanence.
 
-**Le premier jalon tient en une soirée de dev : un contact, une livraison, un
-compteur.** On saura tout de suite si le trajet est amusant ou ennuyeux, et
-c'est l'information la plus importante du projet.
+Mécaniquement : dans un dialogue, il peut **invoquer sa maladie** pour désamorcer
+une suspicion. Ça marche. Mais **la pitié est une ressource qui s'épuise**, et
+chaque usage déplace la relation familiale de l'affection vers le devoir.
 
----
+C'est ce qui rend le personnage insupportable, et donc juste.
 
-## 4. Les verbes
+### 4. Et la rémission retire l'excuse
 
-Ce que le joueur *fait*, par ordre de priorité de développement.
+**À la fin de l'acte II, le cancer entre en rémission.** La facture médicale
+disparaît.
 
-### Cuisiner — le geste central
+C'est le meilleur usage possible du cancer dans un jeu, et il n'est pas dans le
+compte à rebours : **c'est le moment où le compte à rebours s'arrête et où le
+joueur continue quand même.** L'argent n'a plus de justification. Le jeu ne dit
+rien, ne juge pas, n'affiche aucun message — il retire simplement une ligne de
+dépense, et laisse le joueur constater qu'il n'a pas envie de s'arrêter.
 
-Pas un puzzle. Une séquence courte et physique : régler une température, verser
-au bon moment, surveiller une couleur. Trois à cinq gestes, quatre minutes,
-**un score de pureté à la fin**. Elle doit être plaisante à refaire cinquante
-fois, donc courte, lisible et sans texte.
+Tout l'acte III se joue là-dessus.
 
-Ce qui la fait progresser : le matériel (verrerie, ventilation, source de
-précurseur), le lieu (camping-car → labo fixe), et l'aide de Jesse — qui
-travaille vite et sale, ou lentement et bien, selon comment on lui parle.
+### Ce que le cancer ne sera jamais
 
-### Conduire — déjà là, et c'est notre force
-
-La conduite existe et elle est réglée. Il ne manque qu'une raison de rouler
-longtemps. Les distances deviennent un coût, et le désert devient un choix :
-plus loin de tout, donc plus sûr, donc plus cher en temps.
-
-### Vendre — la carte comme interface
-
-Des contacts marqués sur la ville : une demande, un prix, une tolérance au
-risque, un quartier. Ils se débloquent, se fâchent, se font arrêter. Le
-territoire se lit sur la carte, pas dans un menu.
-
-### Se cacher — la mécanique la plus sous-exploitée du genre
-
-Les témoins (cône de perception, suspicion) sont le meilleur rapport
-effort/effet de la liste. Ce qui transforme un trajet en décision, ce n'est pas
-la police, c'est **quelqu'un qui vous regarde depuis un balcon**.
-
-Le chapeau entre ici : porté, il améliore les prix et la déférence, et il
-accélère la reconnaissance. Un booléen, deux multiplicateurs, et tout le thème
-de la série dans un compromis.
-
-### Tirer — le moins possible
-
-Le tir existe et doit rester rare, moche et décisif. Trois balles, pas de
-recharge tactique, pas de couverture. Dans la série, une arme sortie signifie
-qu'on a déjà perdu le contrôle. Le jeu doit le faire sentir : **tirer en ville
-déclenche une enquête qui ne se referme pas.**
+- une barre de vie qui remonte ;
+- un compte à rebours avant la mort ;
+- un événement aléatoire qui interrompt une mission.
 
 ---
 
-## 5. L'histoire
+## La famille
 
-> **TRANCHÉ le 28 juillet 2026 : trame parallèle à la série, avec liberté sur
-> l'histoire principale quand ça sert le jeu.** C'est l'option **C** ci-dessous.
+**Un lien familial qui se dégrade tout seul et devient de plus en plus dur à
+entretenir.** C'est le pilier qui rend l'argent tendu : chaque heure passée à
+travailler est une heure qui n'a pas été passée là-bas.
+
+Trois personnes, trois façons de le perdre :
+
+| | Ce qu'il attend | Comment on le perd |
+|---|---|---|
+| **Skyler** | Des explications, de la présence, des courses | Les absences, les mensonges qui ne tiennent pas, les sommes inexpliquées |
+| **Walter Junior** | De l'attention, pas de l'argent | L'indifférence. Il est le plus facile à garder et le plus triste à perdre |
+| **Hank** | Rien, et c'est le problème | Il est le danger. Trop proche, il voit. Trop loin, il enquête |
+
+**Comment le joueur le perçoit, sans chiffre :** le ton des répliques, si on
+vous adresse la parole en entrant, la lumière et le bruit de la maison, et le
+fait que le téléphone sonne pour une bonne ou une mauvaise raison.
+
+### Le travail de Walt
+
+**D'abord employé du lavage de voitures, puis propriétaire** — et le rachat est
+ce qui débloque le blanchiment sérieux. C'est aussi la meilleure humiliation
+que la série nous offre : au palier 1, Walter lave les voitures de ses propres
+élèves.
+
+### Jesse n'est pas une relation à entretenir
+
+**Jesse, c'est le boulot, la drogue et le deal.** Pas de score, pas de
+maintenance, pas de cadeaux à lui faire. Il est un partenaire de travail dont
+la fiabilité varie — et c'est déjà assez de gestion.
+
+*Cela répond à une question longtemps ouverte : Jesse n'est pas un compagnon
+permanent à choyer.*
+
+## Les appels et les choix en voiture
+
+**C'est la mécanique qui fait exister les deux vies à la fois**, et elle
+réutilise le téléphone qui existe déjà.
+
+Pendant un trajet de mission, le téléphone sonne. Skyler : *« il me faut des
+œufs. »* Walter est en route vers un rendez-vous dangereux. Il peut :
+
+- **s'arrêter les prendre** — il arrive en retard, et le retard a un prix ;
+- **répondre qu'il le fera** et ne pas le faire — le lien familial se dégrade ;
+- **ne pas décrocher** — pire.
+
+Aucune option n'est la bonne. C'est exactement la règle 2, appliquée à une
+boîte d'œufs, et c'est pour ça que ça marche : la banalité de la demande contre
+la gravité du rendez-vous.
+
+## Le chapeau
+
+**Coiffé, on est Heisenberg.** Les prix montent, on se fait moins marcher
+dessus — et on se fait reconnaître plus vite. Un booléen, deux multiplicateurs,
+et tout le thème de la série dans un compromis qu'on prend chaque fois qu'on
+sort de la voiture.
+
+## Ce qui débloque la suite
+
+Quatre conditions gouvernent l'avancement de l'histoire :
+
+1. **La qualité de la meth** — un seuil minimal ;
+2. **La réputation** ;
+3. **La famille**, entretenue ;
+4. **L'argent**.
+
+> **Réserve de conception, à trancher avant de coder.** Quatre prérequis
+> simultanés créent un mur : il suffit d'en négliger un pour être bloqué sans
+> savoir lequel, et sans chiffre affiché — règle 1 — le joueur ne peut même pas
+> le deviner.
 >
-> Les personnages, les lieux et le ton sont ceux de la série ; les événements
-> sont les nôtres. On croise Tuco, Gus, Mike **au moment où le jeu en a
-> besoin**, pas à l'épisode où la série les place — et on peut inventer un
-> client, un labo, une nuit entière, tant que la série aurait pu la contenir.
->
-> **Ce que ça nous évite :** être comparés défavorablement à une scène que tout
-> le monde connaît par cœur, et être enfermés dans un ordre d'événements qui
-> n'a pas été écrit pour un jeu.
->
-> **Ce que ça n'autorise pas :** contredire ce qui définit un personnage. Gus ne
-> s'emporte pas, Mike ne bavarde pas, Walt ne s'excuse pas longtemps. Et le ton
-> ne bouge pas — **lent, sale et provincial**. Une explosion reste un
-> événement, pas une ponctuation.
+> **Ce que je propose :** seule **la qualité** est un verrou dur. C'est la
+> colonne vertébrale, elle est visible dans la main, et on sait toujours
+> comment la faire monter. Les trois autres ne bloquent pas : elles décident de
+> **comment** le chapitre suivant s'ouvre — qui vous accueille, à quel prix,
+> avec quelle méfiance. On garde la tension sans le mur.
 
-Trois options, et c'est la troisième qui est retenue.
+## Les premières missions
 
-**A. Suivre la série.** Le joueur rejoue ce qu'il connaît. Confortable à
-écrire, mais on perd la surprise, et on se met en avant sur le terrain
-juridique le plus exposé.
+**Elles enseignent, et elles ont le droit d'être explicites.** Chacune installe
+un principe, une fois, clairement :
 
-**B. Histoire originale dans l'univers.** Liberté totale, mais on perd la
-reconnaissance — or c'est elle qui donne envie de lancer le jeu.
+| # | Ce qu'elle installe |
+|---|---|
+| 1 | La boucle complète en une fois — *existe déjà* |
+| 2 | L'argent sert à quelque chose : acheter du matériel |
+| 3 | La famille existe et elle attend |
+| 4 | Cuisiner soi-même, et voir la couleur changer |
+| 5 | Le premier appel qui tombe au mauvais moment |
 
-**C. Le squelette de la série, nos propres épisodes.** ← recommandé.
+Après ça, le jeu arrête d'expliquer.
 
-Les **ancres** sont celles que tout le monde reconnaît : le camping-car dans le
-désert, Tuco, le porkpie, le blanchiment par un commerce, la roulotte. Entre
-elles, **nos missions à nous**, qui n'existent pas dans la série. On garde la
-promesse et on garde la surprise.
+## Le choix, sans bifurcation
 
-### Découpage proposé, en trois actes
+Le cœur de l'histoire ne bouge pas. Le monde autour, si.
 
-**Acte I — Le camping-car.** On cuisine mal, on vend peu, on a peur. Tuco est
-le seul débouché et il est instable. Se termine quand Tuco devient un problème
+**On ne choisit jamais le résultat d'une mission, on choisit la méthode :**
+parler, payer, intimider, contourner. Chacune règle la même dette dans une
+monnaie différente — du temps, de l'argent, de la suspicion, une relation.
+
+Ce qui rend ça sensible tient en une phrase : **le monde s'en souvient à voix
+haute.** Le dealer qu'on a épargné réapparaît comme contact ; celui qu'on a
+écrasé laisse un coin de rue vide et une rumeur.
+
+Et à la fin de chaque acte, un **bilan** récapitule ce qu'on a choisi. Rien
+n'est jugé. C'est le seul moment où le joueur voit l'homme qu'il est devenu.
+
+## Les trois actes
+
+**I — Le camping-car.** On cuisine mal, on vend peu, on a peur. Tuco est le
+seul débouché et il est instable. Se termine quand Tuco devient un problème
 plutôt qu'une solution.
 
-**Acte II — Le laboratoire.** Volume, qualité, blanchiment. Le jeu s'ouvre :
-plusieurs quartiers, plusieurs contacts, une comptabilité. La DEA apparaît, non
-comme un ennemi qui tire, mais comme **une pression sur les délais**.
+**II — Le laboratoire.** Volume, qualité, blanchiment. Le jeu s'ouvre. La DEA
+apparaît — non comme un ennemi qui tire, mais comme une pression sur les
+délais.
 
-**Acte III — Heisenberg.** Le joueur est devenu la menace. Les mécaniques
-s'inversent : ce qu'on protégeait devient ce qu'on sacrifie. Fin ouverte, ou
-plusieurs fins selon ce qu'il reste de la maison.
+**III — Heisenberg.** Le joueur est devenu la menace. Ce qu'on protégeait
+devient ce qu'on sacrifie.
 
-### Missions principales de l'acte I
+---
 
-La mission 1 existe déjà et sert de patron : neuf temps, quinze objectifs,
-quatre décors.
+# 3. La boîte à idées
 
-| # | Titre | Ce qu'elle apprend au joueur |
+Elle vit dans [14-boite-a-idees.md](14-boite-a-idees.md), et on y pioche quand
+on veut. Y sont notamment : les contrôles routiers, l'écran de chargement à la
+tortue, les courses de nuit, la radio par quartier.
+
+---
+
+# 4. Ce qui reste ouvert
+
+- **La boucle de jeu**, volontairement au backlog. Produire/livrer/réinvestir,
+  mission après mission, ou territoire ? La pureté et le système de choix se
+  construisent sans cette réponse.
+- **La mort.** Retour au dernier réveil avec l'argent perdu, ou pas de mort du
+  tout — seulement des arrestations et des dettes ?
+- **Le temps.** Les jours passent-ils tout seuls, ou seulement quand on dort ?
+  Le premier crée de la pression, le second respecte le joueur.
+- **La violence.** Jusqu'où ? La série n'est pas pudique, mais un jeu où l'on
+  tire librement en ville n'est plus une adaptation.
+- **La musique.** Originale, libre de droits, ou pas de musique hors autoradio ?
+  Ça engage Guillaume sur plusieurs mois.
+
+---
+
+## Décidé, et daté
+
+| Quoi | Décision | Quand |
 |---|---|---|
-| 1 | *Un client impatient* ✅ | La boucle complète en une fois |
-| 2 | *Le fournisseur* | Acheter du matériel — l'argent sert à quelque chose |
-| 3 | *Une odeur de chien* | Un voisin remarque le camping-car : déplacer le labo |
-| 4 | *La leçon* | Cuisiner soi-même, avec un score. Introduit la pureté |
-| 5 | *Le concurrent* | Un dealer vend sur votre zone. Choix : négocier, écraser, ignorer |
-| 6 | *Rendez-vous à quinze heures* | Une obligation domestique pendant une livraison |
-| 7 | *La part du lion* | Tuco augmente sa part. Le puits se creuse |
-| 8 | *Le chapeau* | Première apparition d'Heisenberg. Débloque le porkpie |
-
-### Le choix, sans bifurcation
-
-**Léger mais réel, et sans impact sur le cœur de l'histoire** — c'est la
-contrainte posée le 28 juillet 2026, et elle est la bonne. Le sentiment de
-choix ne demande pas de bifurcation : il demande que **le joueur ait eu quelque
-chose à décider, et qu'il le retrouve plus tard**.
-
-Deux pièges valent d'être écrits, parce qu'ils annulent tout le reste :
-
-- **Jamais de jauge de moralité visible.** Dès qu'elle s'affiche, le joueur
-  optimise la jauge au lieu de choisir. On obtient l'inverse exact de ce qu'on
-  cherchait.
-- **Un choix sans coût n'est pas un choix.** Si une option est meilleure sur
-  tous les plans, il n'y a rien à décider. Chaque paire doit échanger quelque
-  chose contre autre chose.
-
-Quatre leviers, du moins cher au plus cher :
-
-**1. Choisir la MÉTHODE, jamais le résultat.** La mission se termine
-identiquement ; le chemin varie. Parler, payer, intimider, contourner. Chacun
-règle la même dette dans une monnaie différente — du temps, de l'argent, de la
-suspicion, une relation. C'est le levier le plus rentable : une mission, trois
-approches, zéro embranchement à écrire.
-
-**2. Un registre du monde, pas un arbre.** Les décisions n'écrivent pas
-l'histoire, elles écrivent l'**état du monde** dans lequel elle se déroule. Le
-dealer qu'on a épargné réapparaît comme contact ; celui qu'on a écrasé laisse
-un coin de rue vide et une rumeur. Aucun de ces états ne change une réplique de
-Tuco — tous changent la ville qu'on traverse pour aller le voir.
-
-**3. Un curseur Heisenberg.** Les réponses de dialogue ne changent pas l'issue,
-elles s'accumulent. Ce curseur ne débloque rien : il décide **comment on vous
-parle**. Le même événement, joué froidement ou platement, ne se raconte pas
-pareil. C'est exactement le sujet de la série, et ça coûte un flottant.
-
-**4. Le bilan de fin d'acte.** Le jeu ne demande jamais « es-tu sûr ». Mais à
-la fin de chaque acte, il **récapitule ce qu'on a choisi** : qui on a épargné,
-combien on a menti, ce qu'on a laissé filer. Rien n'est jugé. C'est le seul
-moment où le joueur voit l'homme qu'il est devenu — et c'est là que le
-sentiment de choix se paie, d'un coup, sans avoir rien coûté à écrire.
-
-**Les vrais embranchements vivent dans le secondaire**, où ils ne menacent
-rien. Une quête annexe peut se terminer de trois façons ; l'acte II commencera
-pareil.
-
-### La méthamphétamine progresse — et le jeu avec elle
-
-Idée retenue le 28 juillet 2026, et c'est la colonne vertébrale de la
-progression.
-
-Au début, on cuisine mal, avec de mauvais précurseurs, et on vend à de mauvais
-clients. Tout s'améliore ensemble : la matière première, la pureté, les
-acheteurs.
-
-| Palier | Où | Précurseur | Pureté | Qui achète | Ce qui change vraiment |
-|---|---|---|---|---|---|
-| **0** | camping-car | pseudoéphédrine de pharmacie | 60–70 % | consommateurs, dealers de rue | On est payé partiellement, en retard, ou volé. Beaucoup de clients, tous instables |
-| **1** | camping-car équipé | pseudo en volume, courses obligées | 75–85 % | dealers structurés, un revendeur par quartier | Moins de clients, plus fiables. La logistique devient le sujet |
-| **2** | labo fixe | méthylamine détournée | 92–96 % | distributeurs | Le volume explose. Le blanchiment devient obligatoire |
-| **3** | labo industriel | méthylamine en fût | 99,1 %, **bleue** | **un seul acheteur** | Plus rien à négocier. On dépend entièrement de lui |
-
-**Ce que ce tableau doit faire sentir, et c'est le point important :** monter en
-palier n'est pas seulement « gagner plus ». À chaque palier, **le jeu retire des
-options en même temps qu'il ajoute de l'argent**. On commence avec vingt
-clients minables et une liberté totale ; on finit avec un client unique et
-aucune. C'est le piège qui se referme, et c'est exactement la série.
-
-**Le risque à surveiller :** que la première heure paraisse une corvée qu'on
-subit en attendant mieux. La parade est de ne pas faire du palier 0 une version
-*dégradée* du jeu, mais une version *plus sale* — chaotique, imprévisible, avec
-des clients qui posent problème. Ce n'est pas moins intéressant, c'est
-autrement tendu. Le palier 3, lui, est propre, riche, et étouffant.
-
-### Activités secondaires
-
-Elles doivent toutes nourrir un pilier, sinon ce sont des mini-jeux.
-
-- **Les courses de nuit** dans le désert — la conduite pure, pour l'argent et
-  pour le plaisir de conduire.
-- **Le lavage** : un commerce à faire tourner, avec un plafond de blanchiment
-  qui augmente si on s'en occupe.
-- **La chasse au précurseur** : repérer, voler, ou acheter cher.
-- **Les photos** de lieux de la série — la collecte qui fait visiter la carte,
-  et la seule qui n'a pas besoin d'être justifiée par l'économie.
-- **Le ménage** : faire disparaître ce qui traîne avant une visite. Court,
-  tendu, sans combat.
-
----
-
-## 6. Ce que je ferais dans l'ordre
-
-1. **Une livraison, un contact, un compteur.** Une soirée. C'est le test.
-2. **Le puits** — la facture. Une demi-soirée.
-3. **La cuisine avec un score.** Deux à trois soirées.
-4. **Les témoins.** Deux soirées, le meilleur rapport effort/effet.
-5. **La carte des contacts.** Deux soirées.
-6. **Le chapeau porté qui change les prix.** Une demi-soirée.
-
-Six items, et le jeu est tendu. Le reste — police, réputation, acte II — vient
-après et sera plus facile à concevoir une fois qu'on aura joué ces six-là.
-
----
-
-## 7. Questions ouvertes
-
-Elles changent le travail, pas le goût. Je ne les tranche pas seul.
-
-### Tranché le 28 juillet 2026
-
-- **L'histoire** : trame parallèle, avec liberté sur l'histoire principale
-  quand ça sert le jeu. Le sentiment de choix passe par la méthode, le registre
-  du monde, le curseur Heisenberg et le bilan de fin d'acte.
-- **L'architecture du monde** : quartiers chargés à la volée dans un seul
-  repère de coordonnées. Voir [13-carte.md](13-carte.md).
-- **La progression** : la pureté est la colonne vertébrale, et chaque palier
-  retire des options en même temps qu'il ajoute de l'argent.
-
-### Au backlog, volontairement
-
-- **La boucle de jeu** — produire/livrer/réinvestir, mission après mission, ou
-  territoire. La pureté et le système de choix se construisent sans cette
-  réponse, et elle sera plus facile à trancher une fois qu'on aura joué « une
-  livraison, un contact, un compteur ».
-
-### Encore ouvertes
-
-1. **La mort.** Que se passe-t-il quand Walter meurt ? Retour au dernier
-   réveil, avec l'argent perdu ? Ou pas de mort du tout, seulement des
-   arrestations et des dettes ?
-2. **Le temps.** Est-ce que les jours passent tout seuls, ou seulement quand on
-   dort ? Le premier crée de la pression, le second respecte le joueur.
-3. **Jesse.** Compagnon présent en permanence, ou personnage qu'on appelle ?
-   Le second coûte dix fois moins cher et perd la moitié du sel.
-4. **La violence.** Jusqu'où va-t-on ? La série n'est pas pudique, mais un jeu
-   où l'on tire librement en ville n'est plus une adaptation.
-5. **La musique.** Originale, libre de droits, ou pas de musique du tout hors
-   autoradio ? Ça engage Guillaume sur plusieurs mois.
+| L'histoire | Trame parallèle, liberté quand ça sert le jeu | 28/07/2026 |
+| Le monde | Quartiers chargés à la volée, un seul repère — [13-carte.md](13-carte.md) | 28/07/2026 |
+| La progression | Cinq paliers : labo, couleur et client avancent ensemble | 28/07/2026 |
+| L'affichage | Aucun chiffre montré au joueur, jamais | 28/07/2026 |
+| Jesse | Partenaire de travail, pas une relation à entretenir | 28/07/2026 |
+| Le cancer | Il coûte du temps, pas de la vie. La rémission retire l'excuse | 28/07/2026 |
+| La méthode | Théorie → cœur → boîte à idées → réglage | 28/07/2026 |

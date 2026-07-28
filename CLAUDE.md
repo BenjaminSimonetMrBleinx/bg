@@ -23,6 +23,29 @@ la technique, et une chose qui tourne avant trois qui attendent.
 
 ---
 
+## La direction, en cinq règles
+
+Le détail vit dans [docs/12-direction.md](docs/12-direction.md), qui est le
+socle. Ces cinq-là décident de tout et se relisent avant de concevoir quoi que
+ce soit :
+
+1. **Aucun chiffre n'est montré au joueur.** Ni pureté, ni réputation, ni score
+   familial. Tout se perçoit — la couleur du produit, le ton d'une réplique, la
+   lumière d'une pièce. Un chiffre transforme un choix en optimisation.
+2. **Un choix sans coût n'est pas un choix.** Si une option est meilleure sur
+   tous les plans, il n'y a rien à décider.
+3. **L'argent est un compte à rebours, pas un score.** Il doit être prélevé.
+4. **Monter retire des options.** Chaque palier donne de l'argent et enlève de
+   la liberté.
+5. **Le ton ne bouge pas.** Lent, sale, provincial.
+
+**L'ordre de travail** — et il vaut aussi pour moi : *théorie → cœur → boîte à
+idées → réglage*. La [boîte à idées](docs/14-boite-a-idees.md) existe pour
+qu'on puisse souffler sans bricoler au hasard : on y pioche quand on en a marre
+du cœur, et une idée piochée doit tenir en une soirée ou deux.
+
+---
+
 ## Ce qui n'est pas négociable
 
 **On mesure le fichier PRODUIT, jamais la scène qui l'a produit.** C'est la
