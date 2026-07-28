@@ -104,6 +104,37 @@ jobs:
           Copy-Item NOTES-DE-VERSION.md build/
           Compress-Archive -Path build/* -DestinationPath "BG-$env:VERSION-windows.zip" -Force
 
+      - name: Le texte de la release
+        shell: pwsh
+        run: |
+          # SEULEMENT LA SECTION DE CETTE VERSION, pas tout le fichier.
+          #
+          # NOTES-DE-VERSION.md contient tout l'historique. Le coller en entier
+          # dans le corps de la release enterrait le bouton de telechargement
+          # sous cinq cents lignes : la section « Assets » de GitHub est en bas
+          # de page, et personne ne l'a trouvee.
+          #
+          # On extrait donc de « ## <version> » jusqu'au titre suivant, et on
+          # met le lien de telechargement EN PREMIER.
+          $notes = Get-Content NOTES-DE-VERSION.md -Raw
+          $motif = "(?ms)^## $([regex]::Escape($env:VERSION))\b.*?(?=^## |\z)"
+          $section = [regex]::Match($notes, $motif).Value.Trim()
+          if (-not $section) { $section = "Voir NOTES-DE-VERSION.md." }
+          $zip = "BG-$env:VERSION-windows.zip"
+          $lien = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/releases/download/v$env:VERSION/$zip"
+          @"
+## [Telecharger le jeu]($lien)
+
+Un zip, un exe dedans, double-clic. Rien a installer.
+
+Windows dira « editeur inconnu » : l'executable n'est pas signe.
+**Informations complementaires -> Executer quand meme.**
+
+---
+
+$section
+"@ | Set-Content release-body.md -Encoding UTF8
+
       - uses: actions/upload-artifact@v4
         with:
           name: BG-windows
@@ -114,5 +145,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: BG ${{ env.VERSION }}
-          body_path: NOTES-DE-VERSION.md
+          body_path: release-body.md
           files: BG-*.zip
