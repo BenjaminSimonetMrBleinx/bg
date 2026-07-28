@@ -44,10 +44,14 @@ def arguments() -> argparse.Namespace:
 
 
 def armature():
-    a = next((o for o in bpy.data.objects if o.type == "ARMATURE"), None)
-    if a is None:
-        raise SystemExit("aucun squelette dans le fichier")
-    return a
+    """Le squelette, ou None.
+
+    None est un cas NORMAL et pas une erreur : cet outil est enchaine derriere
+    l import pour tout modele, et la plupart n'ont pas de squelette. Une voiture
+    ou un chapeau sont deja a la bonne taille en sortie d import — c'est le
+    detour par l'objet armature qui pose probleme, et il n'existe pas ici.
+    """
+    return next((o for o in bpy.data.objects if o.type == "ARMATURE"), None)
 
 
 def hauteur_des_os(arm) -> float:
@@ -66,6 +70,9 @@ def traiter(chemin: Path, voulue: float) -> None:
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.gltf(filepath=str(chemin))
     arm = armature()
+    if arm is None:
+        print("  %-34s pas de squelette, rien a corriger" % chemin.name)
+        return
     avant = hauteur_des_os(arm)
     if avant <= 1e-6:
         raise SystemExit("%s : squelette sans hauteur mesurable" % chemin.name)

@@ -9,8 +9,10 @@
 ; personnage a 1,78 m, pose ses pieds a zero et le retourne — il arrivait face
 ; camera, donc marchait a reculons.
 ;
-; Le modele genere reste dans assets/personnages/walter.glb : il habille encore
-; les passants, en attendant que leurs propres modeles rigges arrivent.
+; Le corps genere reste dans assets/personnages/ : c'est lui qui habille les
+; passants — passant_a, passant_b, passant_c — en attendant qu'ils aient leur
+; propre modele rigge. walter.glb est sa version « Walter », gardee comme
+; reference du generateur ; le jeu ne s'en sert plus.
 
 [gd_scene load_steps=5 format=3 uid="uid://bgjoueur000001"]
 

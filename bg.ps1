@@ -8,6 +8,8 @@
     .\bg.ps1 generer        regenere tout : textures, ville, vehicule,
                             personnages, maisons, objets, decor
     .\bg.ps1 capture        rend une image hors ecran dans .tmp/
+    .\bg.ps1 integrer       met un modele livre aux normes du jeu et le pose
+                            dans game\assets. -Fichier, -Vers, -Hauteur
     .\bg.ps1 verif          verifie que le projet charge (headless)
     .\bg.ps1 exporter       fabrique build\BG.exe, jouable sans rien installer
     .\bg.ps1 nettoyer       vide .tmp et build (tout y est regenerable)
@@ -20,8 +22,16 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('jouer', 'editeur', 'generer', 'capture', 'verif', 'test', 'son', 'sons', 'reparer', 'exporter', 'nettoyer', 'voix', 'outils')]
+    [ValidateSet('jouer', 'editeur', 'generer', 'capture', 'integrer', 'verif', 'test', 'son', 'sons', 'reparer', 'exporter', 'nettoyer', 'voix', 'outils')]
     [string]$Commande = 'jouer',
+
+    # Pour 'integrer' : le modele livre, sa destination dans game\assets, et
+    # la hauteur voulue EN METRES. C est le seul chemin par lequel un modele
+    # entre dans le jeu — voir CLAUDE.md.
+    [string]$Fichier = '',
+    [string]$Vers = '',
+    [double]$Hauteur = 0.0,
+    [double]$Lacet = 0.0,
 
     [int]$Blocs = 2,
     [int]$Graine = 505,
@@ -308,6 +318,44 @@ switch ($Commande) {
             else { Write-Host "  rien produit" -ForegroundColor Red }
         }
         Write-Host "`n$($choisis.Count) vue(s) dans $dossier" -ForegroundColor Green
+    }
+
+    # INTEGRER UN MODELE LIVRE, et le seul chemin par lequel il entre.
+    #
+    # Les livraisons arrivent a des echelles, des orientations et des
+    # resolutions sans rapport les unes avec les autres — c est normal, et ca
+    # ne se corrige pas a la main. Un modele importe hors de cette chaine est
+    # une incoherence qui se decouvrira trois sessions plus tard, a l ecran.
+    #
+    # Deux passes, et la seconde n est pas redondante :
+    #   importer_modele      met a l echelle, pose au sol, oriente, texture
+    #   mettre_a_l_echelle   RELIT le fichier ecrit et corrige ce qui n a pas
+    #                        survecu a l export — l echelle d objet, notamment,
+    #                        que le glTF ne transporte pas
+    'integrer' {
+        Exiger $Blender 'Blender'
+        if (-not $Fichier) { throw "Il manque -Fichier. Exemple : .\bg.ps1 integrer -Fichier livraisons\modeles\x.glb -Vers game\assets\vehicules\x.glb -Hauteur 1.5" }
+        if (-not $Vers)    { throw "Il manque -Vers, la destination dans game\assets\." }
+        Push-Location $Racine
+        try {
+            Write-Host "`n--- integration de $(Split-Path $Fichier -Leaf) ---" -ForegroundColor Cyan
+            & $Blender -b -P outils/importer_modele.py -- `
+                --fichier $Fichier --sortie $Vers `
+                --hauteur $Hauteur --lacet $Lacet
+            if ($LASTEXITCODE -ne 0) { throw "l import a echoue" }
+
+            # La seconde passe ne sert que pour les modeles RIGGES : sans
+            # squelette elle n a rien a mesurer et le dit sans casser.
+            if ($Hauteur -gt 0) {
+                Write-Host "`n--- controle de la taille du fichier ecrit ---" -ForegroundColor Cyan
+                & $Blender -b -P outils/mettre_a_l_echelle.py -- `
+                    --fichier $Vers --hauteur $Hauteur 2>&1 |
+                    Select-String -Pattern 'hauteur voulue|->|ECHEC|squelette'
+            }
+            Write-Host "`nEt maintenant, la seule etape qui compte :" -ForegroundColor Yellow
+            Write-Host "  .\bg.ps1 capture -Scenario <une vue qui le montre>" -ForegroundColor Gray
+            Write-Host "Un modele qu on n a pas REGARDE n est pas integre." -ForegroundColor Gray
+        } finally { Pop-Location }
     }
 
     'verif' {

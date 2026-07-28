@@ -25,19 +25,34 @@ Ce qui existe aujourd'hui :
 | **Maisons** | Walter et Jesse, extérieur en ville et intérieur séparé, entrée par la porte avec fondu |
 | **Habitants** | Skyler et Jesse, qui se tournent vers le joueur et parlent |
 | **Dialogue** | Piloté par `game/donnees/dialogues.json`, conversations tournantes |
-| **Outils** | Roue à quatre objets — revolver, cristal, livre, porkpie — visibles dans la main |
-| **Affichage** | Compteur au volant, nom de l'outil équipé |
-| **Tests** | **10 suites automatiques**, `.\bg.ps1 test` |
+| **Outils** | Roue à cinq objets — revolver, cristal, botte secrète, livre, porkpie. Le chapeau se **porte**, le livre se **lit** |
+| **Affichage** | Portrait, vie et argent en un bloc, compteur au volant, téléphone avec jauge de mission |
+| **Tests** | **27 suites automatiques**, `.\bg.ps1 test -Suite <nom>` |
+| **Contrôle visuel** | **32 scénarios de capture**, `.\bg.ps1 capture -Scenario <nom>` |
 
 **La première mission est jouable de bout en bout** — neuf temps, quinze
 objectifs, quatre décors. Voir [NOTES-DE-VERSION.md](NOTES-DE-VERSION.md).
 
-Ce qui n'existe pas encore : une deuxième mission, la police, le jour.
+Ce qui n'existe pas encore : une deuxième mission, la police, l'économie.
 
 **La question ouverte** reste [`docs/00-questions.md`](docs/00-questions.md), blocs A, B, C et
 F. Rien de ce qui a été fait n'en dépendait. La suite, si.
 
-## Jouer
+## Jouer — sans rien installer
+
+**[→ Télécharger la dernière version](https://github.com/BenjaminSimonetMrBleinx/bg/releases/latest)**
+
+Un `.zip`, un `.exe` dedans, double-clic. Pas de Godot, pas de Blender, pas de
+Python, pas de compte, rien à cloner. C'est ce qu'il faut à quelqu'un qui veut
+juste essayer le jeu.
+
+Windows affichera un avertissement « éditeur inconnu » : l'exécutable n'est pas
+signé, et le faire signer coûte plus cher que le jeu ne vaut. **Informations
+complémentaires → Exécuter quand même.**
+
+## Jouer depuis les sources
+
+Pour ceux qui développent ou qui livrent des assets.
 
 ```powershell
 .\go.ps1
@@ -45,6 +60,10 @@ F. Rien de ce qui a été fait n'en dépendait. La suite, si.
 
 Installe ce qui manque, récupère le travail de l'autre, envoie le tien, lance le jeu — en
 sautant chaque étape inutile. Ou double-clic sur `JOUER.bat`.
+
+**C'est ce chemin qui demande la chaîne d'outils complète** — Git, Git LFS, Godot, Blender,
+Python, ffmpeg. `installer.ps1` s'en occupe, mais ça reste un téléchargement de plusieurs
+gigaoctets. Personne ne devrait passer par là pour jouer vingt minutes.
 
 **Tu démarres sur le trottoir devant chez Walter.** Sa porte est éclairée à deux pas, celle
 de Jesse vingt mètres plus loin, la voiture est garée le long de la rue.
@@ -93,6 +112,8 @@ Le mode d'emploi complet : [`docs/09-communiquer.md`](docs/09-communiquer.md).
 
 | Document | Contenu |
 |---|---|
+| [`CLAUDE.md`](CLAUDE.md) | **Comment on travaille.** Ce qui n'est pas négociable, ce qu'il faut refuser, le rituel de fin de session |
+| [`docs/11-pieges.md`](docs/11-pieges.md) | **Ce que le projet a appris en se trompant.** Seize pièges qui ne préviennent pas |
 | [`docs/05-demarrage.md`](docs/05-demarrage.md) | **Machine neuve : commence ici.** |
 | [`docs/07-ajouter-du-contenu.md`](docs/07-ajouter-du-contenu.md) | **Écrire des dialogues, créer un personnage — sans coder.** |
 | [`docs/06-travailler-a-deux.md`](docs/06-travailler-a-deux.md) | Qui fait quoi, qui tranche quoi, et pourquoi personne n'attend personne |
@@ -110,11 +131,11 @@ Le mode d'emploi complet : [`docs/09-communiquer.md`](docs/09-communiquer.md).
 .\bg.ps1 jouer       # lance le jeu
 .\bg.ps1 editeur     # ouvre l editeur Godot (pour regler reglages.tres)
 .\bg.ps1 generer     # regenere TOUT : textures, ville, vehicule, personnages, maisons, objets
-.\bg.ps1 test            # les 14 suites
-.\bg.ps1 test -Modifies  # seulement celles concernees par ce que tu as change
-.\bg.ps1 test -Suite camera   # celles dont le nom contient "camera"
+.\bg.ps1 test -Suite camera   # LA suite nommee. C est le mode a utiliser
+.\bg.ps1 test            # les 27 suites — reserve aux grosses releases
 .\bg.ps1 verif       # le projet charge-t-il
 .\bg.ps1 capture     # rend une image hors ecran dans .tmp/
+.\bg.ps1 integrer    # met un modele livre aux normes et le pose dans game\assets
 .\bg.ps1 exporter    # fabrique build\BG.exe, jouable sans rien installer
 .\bg.ps1 sons        # controle le format des fichiers audio (-Corriger pour convertir)
 .\bg.ps1 son         # diagnostic complet quand le jeu est muet
@@ -130,12 +151,18 @@ fichier. Le cache reste alors faussé et le réimport normal n'y change rien.
 `generer` accepte `-Blocs 4 -Graine 1234` pour changer la taille et le tirage de la ville,
 et `-Moment jour` pour basculer en journée.
 
-**`test -Modifies` est le mode à utiliser avant chaque commit.** Il demande à git ce qui a
-bougé et ne rejoue que les suites concernées — chaque suite déclare les fichiers qu'elle
-couvre, dans `bg.ps1`. Toucher `scenes/monde.tscn`, `reglages.tres` ou `project.godot`
-relance tout : ce sont les trois fichiers que chaque suite charge.
+**Tester coûte du temps qu'on ne passe pas à livrer.** Le jeu est petit ; la suite nommée
+suffit pendant l'itération, et `couvre` dans `bg.ps1` dit laquelle couvre quel fichier.
 
-La totale reste à jouer avant de livrer, et après un `generer`.
+`test -Modifies` demande à git ce qui a bougé — mais **il n'est pas ciblé sur ce projet** :
+toucher `monde.tscn`, `controleur.gd`, `reglages.tres` ou `project.godot` relance les 27
+suites, et c'est presque toujours le cas. La totale est réservée aux grosses releases et à
+l'après-`generer`.
+
+`integrer` est le **seul** chemin par lequel un modèle livré entre dans le jeu : il le met
+à l'échelle, le pose au sol, l'oriente, puis **relit le fichier écrit** pour vérifier que
+tout a survécu à l'export. Voir [`CLAUDE.md`](CLAUDE.md) et
+[`docs/11-pieges.md`](docs/11-pieges.md).
 
 Pour envoyer son travail :
 

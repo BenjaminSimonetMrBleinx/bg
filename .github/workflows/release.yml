@@ -1,0 +1,118 @@
+# Fabrique BG.exe et le publie en release GitHub.
+#
+# POURQUOI CE FICHIER EXISTE.
+#
+# Un ami a qui l'on ouvre le depot n'a aucune raison d'installer Godot,
+# Blender, Python, ffmpeg et git-lfs pour jouer vingt minutes. Il l'a fait, et
+# c'est notre faute : rien ne lui proposait autre chose.
+#
+# Desormais, POUSSER UNE ETIQUETTE SUFFIT :
+#
+#     git tag v0.31.0 && git push origin v0.31.0
+#
+# GitHub fabrique l'executable et l'attache a une release. Celui qui veut jouer
+# telecharge un fichier, double-clique, et c'est tout. Rien a installer, rien a
+# cloner, pas de compte.
+#
+# L'export tourne sur un runner Windows parce que la cible EST Windows. Godot
+# sait exporter d'une plateforme vers une autre, mais le modele d'export
+# Windows produit alors un binaire qu'aucun de nous ne pourrait tester avant
+# publication.
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+  # Bouton manuel dans l'onglet Actions : utile pour verifier que la chaine
+  # marche encore sans avoir a inventer une version.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  GODOT: "4.7.1"
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Les modeles et les sons sont dans Git LFS. Sans cette ligne, le
+          # depot arrive avec des fichiers texte de quelques octets a la place
+          # des assets, et l'export produit un jeu vide — sans erreur.
+          lfs: true
+
+      - name: Godot et ses modeles d'export
+        shell: pwsh
+        run: |
+          $base = "https://github.com/godotengine/godot/releases/download/$env:GODOT-stable"
+          Invoke-WebRequest "$base/Godot_v$env:GODOT-stable_win64.exe.zip" -OutFile godot.zip
+          Expand-Archive godot.zip -DestinationPath godot
+          Invoke-WebRequest "$base/Godot_v$env:GODOT-stable_export_templates.tpz" -OutFile tpl.tpz
+          Expand-Archive tpl.tpz -DestinationPath tpl
+          $cible = "$env:APPDATA\Godot\export_templates\$env:GODOT.stable"
+          New-Item -ItemType Directory -Force -Path $cible | Out-Null
+          Copy-Item tpl\templates\* -Destination $cible -Recurse -Force
+
+      - name: Numero de version
+        shell: pwsh
+        run: |
+          # La version vit dans project.godot, et nulle part ailleurs. On la
+          # LIT plutot que de la deduire de l'etiquette : si les deux
+          # divergent, c'est le jeu qui a raison, et on veut le savoir.
+          $v = (Select-String -Path game/project.godot -Pattern '^config/version="(.+)"').Matches[0].Groups[1].Value
+          "VERSION=$v" >> $env:GITHUB_ENV
+          $sha = "$env:GITHUB_SHA".Substring(0, 7)
+          @{ version = $v; build = $sha } | ConvertTo-Json |
+            Set-Content game/donnees/version.json -Encoding UTF8
+
+      - name: Import des ressources
+        shell: pwsh
+        run: |
+          # Un premier lancement sans fenetre construit le cache d'import.
+          # Sans lui, l'export part d'un projet dont Godot n'a jamais lu les
+          # assets et sort un jeu sans textures.
+          $godot = (Get-ChildItem godot -Filter "*_console.exe" -Recurse |
+                    Select-Object -First 1).FullName
+          if (-not $godot) {
+            $godot = (Get-ChildItem godot -Filter "*.exe" -Recurse |
+                      Select-Object -First 1).FullName
+          }
+          "GODOT_EXE=$godot" >> $env:GITHUB_ENV
+          & $godot --headless --path game --import
+        continue-on-error: true
+
+      - name: Export Windows
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path build | Out-Null
+          & $env:GODOT_EXE --headless --path game --export-release "Windows"
+          if (-not (Test-Path build/BG.exe)) {
+            throw "l export n a rien produit"
+          }
+          $mo = [math]::Round((Get-Item build/BG.exe).Length / 1MB, 1)
+          Write-Host "BG.exe : $mo Mo, version $env:VERSION"
+
+      - name: L archive a telecharger
+        shell: pwsh
+        run: |
+          # On joint aussi les notes de version : celui qui telecharge doit
+          # savoir ce qu'il peut essayer sans avoir a ouvrir le depot.
+          Copy-Item NOTES-DE-VERSION.md build/
+          Compress-Archive -Path build/* -DestinationPath "BG-$env:VERSION-windows.zip" -Force
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BG-windows
+          path: BG-*.zip
+
+      - name: Publier la release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: BG ${{ env.VERSION }}
+          body_path: NOTES-DE-VERSION.md
+          files: BG-*.zip
