@@ -48,8 +48,15 @@ transforme un choix en optimisation, et le sentiment disparaît.
 tous les plans, il n'y a rien à décider. Chaque alternative échange quelque
 chose contre autre chose.
 
-**3. L'argent est un compte à rebours, pas un score.** Il doit être prélevé.
-Gagner n'a de saveur que si ne pas gagner coûte.
+**3. L'argent n'est jamais confortable.** Au premier acte parce qu'il en
+manque. Ensuite parce qu'il y en a trop pour qu'on puisse s'en servir : il faut
+le blanchir, le cacher, l'expliquer.
+
+*Cette règle a été reformulée le 28/07/2026. Elle disait « l'argent est un
+compte à rebours », ce qui devenait faux dès que les gains de la drogue
+dépassent les frais médicaux — c'est-à-dire très vite, et c'est voulu. La
+rareté ne peut pas porter tout le jeu ; le plafond de blanchiment prend le
+relais.*
 
 **4. Monter retire des options.** À chaque palier, le jeu donne de l'argent et
 enlève de la liberté. C'est le piège qui se referme, et c'est le sujet.
@@ -144,7 +151,21 @@ Trois états, jamais chiffrés, perçus dans le corps du personnage :
 Une quinte de toux qui coupe une réplique au mauvais moment est à la fois une
 contrainte de jeu et une scène. C'est le meilleur rapport entre les deux.
 
-### 3. Il donne des permissions — et c'est le plus intéressant
+### 3. Le prétexte est dépassé avant d'être retiré
+
+**Les premières missions servent à payer le traitement**, et c'est le seul
+objectif qu'on donne au joueur. Puis le jeu montre qu'on peut gagner beaucoup
+plus : vers la fin de l'acte I, **une seule livraison rapporte davantage qu'une
+année de soins**.
+
+Personne ne le commente. L'objectif médical n'est pas remplacé, il est
+simplement dépassé — et le joueur continue de cuisiner pour une raison qu'il ne
+formule plus.
+
+C'est le premier des deux moments où le jeu retire à Walt sa justification.
+La rémission sera le second.
+
+### 4. Il donne des permissions — et c'est le plus intéressant
 
 **Le diagnostic est l'excuse de Walt.** C'est ce qui fait accepter à sa famille
 l'inexplicable, et dans la série il s'en sert en permanence.
@@ -155,7 +176,7 @@ chaque usage déplace la relation familiale de l'affection vers le devoir.
 
 C'est ce qui rend le personnage insupportable, et donc juste.
 
-### 4. Et la rémission retire l'excuse
+### 5. Et la rémission retire l'excuse
 
 **À la fin de l'acte II, le cancer entre en rémission.** La facture médicale
 disparaît.
@@ -306,7 +327,50 @@ tortue, les courses de nuit, la radio par quartier.
 
 ---
 
-# 4. Ce qui reste ouvert
+# 4. Ce qui ne tient pas encore
+
+**Trois trous dans ce qui précède.** Les nommer coûte moins cher que de les
+découvrir en codant.
+
+### Le temps n'est pas décidé, et tout en dépend
+
+La famille se dégrade avec le temps. Une séance de chimiothérapie occupe une
+demi-journée. Une cuisine prend des heures. Les livraisons ont des délais.
+
+**Ces quatre mécaniques supposent une horloge**, et on n'a pas décidé si les
+journées passent toutes seules ou seulement quand Walt dort. Ce n'est plus une
+question de détail : c'est un préalable.
+
+> **À trancher en premier, avant d'écrire la moindre ligne du cœur.**
+
+### L'argent est un chiffre, et la règle 1 l'interdit
+
+La règle dit qu'aucun chiffre n'est affiché. Mais le jeu montre déjà un compte
+en dollars, et une facture d'hôpital porte un montant.
+
+**L'exception est volontaire, et il faut l'écrire :** l'argent se compte, tout
+le reste se perçoit. Un billet est un objet du monde ; la réputation n'en est
+pas un.
+
+### Le dernier acte enlève tout et n'ajoute rien
+
+Au cinquième palier il n'y a plus qu'un acheteur et plus rien à négocier. C'est
+juste pour l'histoire et **dangereux pour le jeu** : la fin risque d'être la
+partie la moins intéressante à jouer.
+
+Ce que l'acte III retire en liberté commerciale, il doit le rendre en
+**menace** — Hank qui se rapproche, Gus qui exige, la famille qui se referme.
+Sinon on aura conçu un piège parfait dans lequel il n'y a rien à faire.
+
+### Et une définition qui manque
+
+**La réputation** est citée comme récompense (cuisiner soi-même) et comme
+condition (débloquer la suite), mais elle n'est définie nulle part. Il faut
+dire ce qu'elle est et comment on la perçoit, sinon c'est un système fantôme.
+
+---
+
+# 5. Ce qui reste ouvert
 
 - **La boucle de jeu**, volontairement au backlog. Produire/livrer/réinvestir,
   mission après mission, ou territoire ? La pureté et le système de choix se
