@@ -112,6 +112,8 @@ Le mode d'emploi complet : [`docs/09-communiquer.md`](docs/09-communiquer.md).
 
 | Document | Contenu |
 |---|---|
+| [`docs/12-direction.md`](docs/12-direction.md) | **Où va ce jeu.** Piliers, boucle, verbes, histoire, missions — et les questions ouvertes |
+| [`docs/13-carte.md`](docs/13-carte.md) | **La carte.** Trois architectures, une maquette chiffrée d'Albuquerque |
 | [`CLAUDE.md`](CLAUDE.md) | **Comment on travaille.** Ce qui n'est pas négociable, ce qu'il faut refuser, le rituel de fin de session |
 | [`docs/11-pieges.md`](docs/11-pieges.md) | **Ce que le projet a appris en se trompant.** Seize pièges qui ne préviennent pas |
 | [`docs/05-demarrage.md`](docs/05-demarrage.md) | **Machine neuve : commence ici.** |
