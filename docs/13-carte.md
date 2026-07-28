@@ -1,7 +1,19 @@
 # La carte
 
-**Proposition.** Trois architectures possibles, une recommandation, et une
-maquette chiffrée d'Albuquerque pour ce jeu.
+Trois architectures étudiées, une **arrêtée le 28/07/2026**, et une maquette
+chiffrée d'Albuquerque pour ce jeu.
+
+> **Décidé.** Architecture **C — quartiers chargés à la volée dans un seul
+> repère de coordonnées**. Un quartier en mémoire à la fois, un fondu court aux
+> jonctions. C'est ce que le désert fait déjà : la carte généralise un
+> mécanisme éprouvé au lieu d'en écrire un nouveau.
+>
+> **Décidé.** Trame parallèle à la série, avec liberté sur l'histoire
+> principale quand ça sert le jeu — voir
+> [12-direction-du-jeu.md](12-direction-du-jeu.md).
+>
+> **Ouvert.** La boucle de jeu. Elle décidera de la densité des commerces et du
+> nombre de points de vente, donc une partie du § 3 attend cette réponse.
 
 ---
 
@@ -50,7 +62,7 @@ hypothétique.**
 **Verdict** : pas maintenant. À reconsidérer le jour où l'acte II demandera
 vraiment quatre quartiers distincts et peuplés.
 
-### C. Continent + zones — ← recommandé
+### C. Quartiers chargés à la volée — ← **ARRÊTÉ**
 
 Une **ville continue**, plus des **lieux séparés** qu'on rejoint par une route
 et un chargement court : le désert, l'entrepôt, le ranch, la casse.
@@ -68,6 +80,15 @@ artistique, avec ce brouillard, ce n'était de toute façon pas possible.
 
 **Verdict** : c'est l'architecture du jeu. Elle n'interdit rien : le jour où
 l'on voudra fondre deux zones, il suffira de retirer un `Passage`.
+
+**Ce que ça implique concrètement**, et c'est plus petit qu'il n'y paraît. On
+n'écrit pas un système de streaming. On garde **un seul repère de coordonnées**
+— celui qui place déjà le désert à (900, 0, −900) — et on charge ou décharge
+des **sous-arbres** selon la distance au joueur. `desert.gd` cesse d'être un
+cas particulier et devient le premier client d'un gestionnaire qui en gère
+cinq. Le fondu et le `Passage` existent déjà.
+
+**Le premier chantier est donc une généralisation, pas une construction.**
 
 ---
 
@@ -164,7 +185,22 @@ et cette réponse-là ne se déduit pas, elle se conduit.
 
 ---
 
-## 6. Questions ouvertes
+## 6. La règle de construction
+
+**Un quartier n'est construit que lorsqu'une mission a besoin d'y être.**
+
+On a déjà un désert magnifique où l'on ne fait presque rien. Il ne faut pas en
+construire quatre autres. L'ordre qui en découle :
+
+1. **Généraliser le désert** en gestionnaire de quartiers — aucun contenu
+   nouveau, la ville et le désert deviennent les quartiers 1 et 2 ;
+2. **Les Hauteurs**, parce que la maison de Walt existe déjà et n'a pas de rue ;
+3. **Rio Sud**, quand le labo aura besoin d'un entrepôt ;
+4. **Le reste**, quand la menace aura un visage.
+
+---
+
+## 7. Questions ouvertes
 
 1. **La taille.** Est-ce qu'on vise 1,1 km de côté, ou est-ce qu'on commence à
    450 m — 8 × 8 îlots — et on agrandit quand la carte est trop petite ?
@@ -175,3 +211,6 @@ et cette réponse-là ne se déduit pas, elle se conduit.
 4. **Les intérieurs.** Combien de bâtiments doivent s'ouvrir ? Chaque intérieur
    est une scène à construire ; en ouvrir cinq bien vaut mieux qu'en suggérer
    cinquante.
+5. **La nuit par quartier.** L'état des vitres est cuit dans les textures. Cinq
+   quartiers × deux moments = dix jeux de textures, ou un mécanisme. À poser
+   quand le deuxième quartier arrivera, pas avant.

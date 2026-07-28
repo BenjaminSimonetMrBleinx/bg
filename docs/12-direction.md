@@ -159,13 +159,24 @@ déclenche une enquête qui ne se referme pas.**
 
 ## 5. L'histoire
 
-> **TRANCHÉ le 28 juillet 2026 : on suit la série, à 90 % au moins.** Le mode
-> histoire raconte Breaking Bad proprement. Ce qui suit garde les trois options
-> parce qu'elles expliquent le coût du choix retenu — et ce coût, il faut le
-> payer sciemment : **le joueur connaît déjà la fin.** Tout le travail consiste
-> donc à rendre le *chemin* intéressant, pas le dénouement.
+> **TRANCHÉ le 28 juillet 2026 : trame parallèle à la série, avec liberté sur
+> l'histoire principale quand ça sert le jeu.** C'est l'option **C** ci-dessous.
+>
+> Les personnages, les lieux et le ton sont ceux de la série ; les événements
+> sont les nôtres. On croise Tuco, Gus, Mike **au moment où le jeu en a
+> besoin**, pas à l'épisode où la série les place — et on peut inventer un
+> client, un labo, une nuit entière, tant que la série aurait pu la contenir.
+>
+> **Ce que ça nous évite :** être comparés défavorablement à une scène que tout
+> le monde connaît par cœur, et être enfermés dans un ordre d'événements qui
+> n'a pas été écrit pour un jeu.
+>
+> **Ce que ça n'autorise pas :** contredire ce qui définit un personnage. Gus ne
+> s'emporte pas, Mike ne bavarde pas, Walt ne s'excuse pas longtemps. Et le ton
+> ne bouge pas — **lent, sale et provincial**. Une explosion reste un
+> événement, pas une ponctuation.
 
-Trois options, et je recommandais la troisième.
+Trois options, et c'est la troisième qui est retenue.
 
 **A. Suivre la série.** Le joueur rejoue ce qu'il connaît. Confortable à
 écrire, mais on perd la surprise, et on se met en avant sur le terrain
@@ -213,9 +224,19 @@ quatre décors.
 
 ### Le choix, sans bifurcation
 
-Suivre la série à 90 % interdit de faire bifurquer l'intrigue. Le sentiment de
-choix, lui, ne demande pas de bifurcation — il demande que **le joueur ait eu
-quelque chose à décider, et qu'il le retrouve plus tard**.
+**Léger mais réel, et sans impact sur le cœur de l'histoire** — c'est la
+contrainte posée le 28 juillet 2026, et elle est la bonne. Le sentiment de
+choix ne demande pas de bifurcation : il demande que **le joueur ait eu quelque
+chose à décider, et qu'il le retrouve plus tard**.
+
+Deux pièges valent d'être écrits, parce qu'ils annulent tout le reste :
+
+- **Jamais de jauge de moralité visible.** Dès qu'elle s'affiche, le joueur
+  optimise la jauge au lieu de choisir. On obtient l'inverse exact de ce qu'on
+  cherchait.
+- **Un choix sans coût n'est pas un choix.** Si une option est meilleure sur
+  tous les plans, il n'y a rien à décider. Chaque paire doit échanger quelque
+  chose contre autre chose.
 
 Quatre leviers, du moins cher au plus cher :
 
@@ -308,17 +329,33 @@ après et sera plus facile à concevoir une fois qu'on aura joué ces six-là.
 
 Elles changent le travail, pas le goût. Je ne les tranche pas seul.
 
-1. ~~L'histoire~~ — **tranché** : on suit la série à 90 %, et le sentiment de
-   choix passe par la méthode, le registre du monde, le curseur Heisenberg et
-   le bilan de fin d'acte.
-2. **La mort.** Que se passe-t-il quand Walter meurt ? Retour au dernier
+### Tranché le 28 juillet 2026
+
+- **L'histoire** : trame parallèle, avec liberté sur l'histoire principale
+  quand ça sert le jeu. Le sentiment de choix passe par la méthode, le registre
+  du monde, le curseur Heisenberg et le bilan de fin d'acte.
+- **L'architecture du monde** : quartiers chargés à la volée dans un seul
+  repère de coordonnées. Voir [13-carte.md](13-carte.md).
+- **La progression** : la pureté est la colonne vertébrale, et chaque palier
+  retire des options en même temps qu'il ajoute de l'argent.
+
+### Au backlog, volontairement
+
+- **La boucle de jeu** — produire/livrer/réinvestir, mission après mission, ou
+  territoire. La pureté et le système de choix se construisent sans cette
+  réponse, et elle sera plus facile à trancher une fois qu'on aura joué « une
+  livraison, un contact, un compteur ».
+
+### Encore ouvertes
+
+1. **La mort.** Que se passe-t-il quand Walter meurt ? Retour au dernier
    réveil, avec l'argent perdu ? Ou pas de mort du tout, seulement des
    arrestations et des dettes ?
-3. **Le temps.** Est-ce que les jours passent tout seuls, ou seulement quand on
+2. **Le temps.** Est-ce que les jours passent tout seuls, ou seulement quand on
    dort ? Le premier crée de la pression, le second respecte le joueur.
-4. **Jesse.** Compagnon présent en permanence, ou personnage qu'on appelle ?
+3. **Jesse.** Compagnon présent en permanence, ou personnage qu'on appelle ?
    Le second coûte dix fois moins cher et perd la moitié du sel.
-5. **La violence.** Jusqu'où va-t-on ? La série n'est pas pudique, mais un jeu
+4. **La violence.** Jusqu'où va-t-on ? La série n'est pas pudique, mais un jeu
    où l'on tire librement en ville n'est plus une adaptation.
-6. **La musique.** Originale, libre de droits, ou pas de musique du tout hors
+5. **La musique.** Originale, libre de droits, ou pas de musique du tout hors
    autoradio ? Ça engage Guillaume sur plusieurs mois.
