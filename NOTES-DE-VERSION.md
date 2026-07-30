@@ -16,6 +16,24 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.34.0 — La ville n'est plus posée au milieu de nulle part
+
+> **Il y a des montagnes.** Les Sandia, au nord et à l'ouest, dans la brume.
+> Avant, le regard ne rencontrait jamais rien et la plaine paraissait infinie.
+
+**La ville se dilue au lieu de s'arrêter net.** La dernière rangée d'îlots est
+maintenant faite de terrains vagues, de maisons isolées et de parkings : on sent
+qu'on sort de la ville au lieu de tomber d'une falaise d'immeubles dans le sable.
+
+**Deux routes quittent la ville** — une vers le nord, une vers l'est — avec
+leurs poteaux électriques qui filent vers l'horizon. Elles ne mènent nulle part
+et disparaissent dans la brume, c'est voulu : elles disent qu'il y a un ailleurs.
+
+À essayer : sors de la ville par le nord et roule jusqu'à ce que la route
+s'arrête. C'est la vue qui a le plus changé.
+
+---
+
 ## 0.33.0 — Les quartiers, les pavillons et les centres commerciaux
 
 > **La ville a maintenant trois quartiers**, en bandes du nord au sud. Roule

@@ -294,6 +294,26 @@ def arbre(mats) -> int:
     return total + f.finir()
 
 
+def poteau(mats) -> int:
+    """Poteau electrique en bois, modele americain.
+
+    C'est la silhouette la plus caracteristique d'une route de l'ouest, et
+    surtout c'est ce qui DONNE L'ECHELLE : une plaine sans rien de vertical n'a
+    pas de taille, et la ville parait posee sur une table. Alignes le long
+    d'une route qui part, ils font toute la profondeur.
+
+    Pas de cables. Un cable est un cylindre de quelques centimetres tendu sur
+    trente metres : invisible a distance, et couteux a modeliser proprement.
+    """
+    m = Maillage("Poteau", mats["bois_banc"])
+    m.prisme(0, 0, 0.0, 8.4, 0.15, 0.11, 6, 4.0)
+    # La traverse, et les deux isolateurs qui la coiffent.
+    m.boite(-1.15, -0.07, 7.55, 1.15, 0.07, 7.72, 1.0)
+    for sx in (-0.86, 0.86):
+        m.boite(sx - 0.07, -0.07, 7.72, sx + 0.07, 0.07, 7.94, 1.0)
+    return m.finir()
+
+
 def climatiseur(mats) -> int:
     """Bloc de climatisation. Sur un toit-terrasse plat, c'est la seule chose
     qui empeche la maison de ressembler a une boite."""
@@ -316,6 +336,7 @@ OBJETS = {
     "borne": (borne, ["rouge_borne"]),
     "cactus": (saguaro, ["cactus"]),
     "arbre": (arbre, ["bois_banc", "herbe"]),
+    "poteau": (poteau, ["bois_banc"]),
     "climatiseur": (climatiseur, ["metal", "metal_sombre"]),
     "panneau_desert": (panneau_direction("panneau_desert"),
                        ["metal_sombre", "panneau_desert"]),

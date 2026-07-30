@@ -114,6 +114,13 @@ QUARTIERS = {
                 ("strip_mall", 10), ("parc", 6)],
 }
 
+# LA FRANGE : la derniere rangee d'ilots, quel que soit son quartier.
+#
+# Presque pas de bati. C'est ce qui fait qu'on sent la ville se terminer au
+# lieu de tomber d'une falaise d'immeubles dans le sable.
+FRANGE = [("terrain_vague", 38), ("pavillonnaire", 24), ("parking", 16),
+          ("bati", 12), ("strip_mall", 6), ("parc", 4)]
+
 # Largeur d'une place de stationnement et profondeur d'une rangee, en metres.
 # La texture de parking porte UNE place : ces deux nombres sont donc aussi la
 # taille de sa tuile, et une ligne mal placee se corrige ici.
@@ -494,7 +501,7 @@ def plan_des_ilots(n: int, graine: int) -> dict:
             if (bx, by) == (0, 0):
                 plan[(bx, by)] = ("bati", quartier)
                 continue
-            table = QUARTIERS[quartier]
+            table = FRANGE if est_frange(bx, by, n) else QUARTIERS[quartier]
             total = sum(poids for _, poids in table)
             local = random.Random((graine * 7919) ^ (bx * 131 + by * 17))
             seuil = local.uniform(0.0, total)
@@ -506,6 +513,26 @@ def plan_des_ilots(n: int, graine: int) -> dict:
                     break
             plan[(bx, by)] = (choisi, quartier)
     return plan
+
+
+def est_frange(bx: int, by: int, n: int) -> bool:
+    """Cet ilot est-il sur le bord de la ville ?
+
+    UNE VILLE NE S'ARRETE PAS A UNE RUE. La grille se terminait net : des
+    immeubles de quatre etages, puis du sable jusqu'a l'horizon. Aucune ville
+    ne fait ca — elle se dilue en terrains vagues, en maisons isolees et en
+    parkings avant de rendre les armes.
+
+    Les quatre ilots du coin de depart sont EXCLUS : la partie commence
+    devant chez Walter, et clairsemer son quartier ferait commencer le jeu au
+    bout du monde. C'est exactement l'erreur des maisons posees dans le desert,
+    payee une fois.
+    """
+    if n < 4:
+        return False
+    if bx < 2 and by < 2:
+        return False
+    return bx == 0 or by == 0 or bx == n - 1 or by == n - 1
 
 
 def quartier_de(bx: int, n: int) -> str:
@@ -942,6 +969,115 @@ def graphe_des_rues(n: int) -> dict:
     }
 
 
+def montagnes(m: Maillage, etendue: float, rng: random.Random) -> None:
+    """Les cretes autour de la ville.
+
+    POURQUOI ELLES SONT A TROIS CENTS METRES, ET PAS A DEUX KILOMETRES.
+    On voit a 340 m de jour — c'est le reglage de brume, et il fait le look.
+    Une montagne posee a sa vraie distance serait donc integralement mangee par
+    la brume, c'est-a-dire invisible. Posee au BORD de la brume, elle apparait
+    delavee, sans contour net, exactement comme une montagne lointaine. C'est
+    une triche, c'est celle des jeux de l'epoque, et elle est indetectable.
+
+    UN RIDEAU, PAS UN VOLUME. Chaque crete est une bande verticale tournee vers
+    la ville. Un relief modelise couterait cent fois plus pour une silhouette
+    identique a cette distance et dans cette brume. Deux rangs decales donnent
+    la seule chose qui manque a un rideau : de la profondeur quand on longe.
+
+    Le cote du desert reste OUVERT. C'est par la qu'on part chez Tuco, et une
+    route qui file vers l'horizon vaut mieux que n'importe quel decor.
+    """
+    # DEUX COTES SEULEMENT, ET C'EST UNE CONTRAINTE, PAS UN GOUT.
+    #
+    # La zone du desert — le camping-car, le QG de Tuco — est posee dans LE
+    # MEME REPERE, a (900, -900), et elle occupe un carre de 460 m. Une crete
+    # a l'est tombait donc en plein dedans : deux murs de roche au milieu de la
+    # carte du desert, invisibles depuis la ville et infranchissables une fois
+    # la-bas.
+    #
+    # C'est aussi le bon choix de fond : le sud-est est le cote par lequel on
+    # QUITTE la ville. Une route qui file vers l'horizon degage vaut mieux que
+    # n'importe quel relief, et Albuquerque a ses montagnes d'un seul cote.
+    recul = 300.0
+    for rang, (ecart, bas, amplitude) in enumerate(
+            ((recul, 26.0, 34.0), (recul + 120.0, 48.0, 62.0))):
+        for cote in ("nord", "ouest"):
+            segments = 26
+            longueur = etendue + 2.0 * ecart
+            hauteurs = [bas + rng.uniform(0.0, amplitude)
+                        for _ in range(segments + 1)]
+            # Les extremites redescendent : une crete qui se termine a pic sur
+            # le vide se lit comme un mur, pas comme une montagne.
+            hauteurs[0] = bas * 0.35
+            hauteurs[-1] = bas * 0.35
+            for k in range(segments):
+                p0 = -ecart + longueur * k / segments
+                p1 = -ecart + longueur * (k + 1) / segments
+                h0, h1 = hauteurs[k], hauteurs[k + 1]
+                if cote == "nord":
+                    # y NEGATIF : la ville occupe y de 0 a etendue, donc le
+                    # dehors de ce cote-la est en dessous de zero. Pose a
+                    # +ecart, la crete tombait en plein centre-ville — un mur
+                    # de roche de soixante metres au milieu des immeubles.
+                    a = (p0, -ecart, 0.0)
+                    b = (p1, -ecart, 0.0)
+                    c = (p1, -ecart, h1)
+                    d = (p0, -ecart, h0)
+                elif cote == "est":
+                    a = (etendue + ecart, p0, 0.0)
+                    b = (etendue + ecart, p1, 0.0)
+                    c = (etendue + ecart, p1, h1)
+                    d = (etendue + ecart, p0, h0)
+                else:
+                    a = (-ecart, p1, 0.0)
+                    b = (-ecart, p0, 0.0)
+                    c = (-ecart, p0, h1)
+                    d = (-ecart, p1, h0)
+                lu = abs(p1 - p0) / 60.0
+                m.face([a, b, c, d],
+                       [(0, 0), (lu, 0), (lu, h1 / 90.0), (0, h0 / 90.0)])
+
+
+def routes_sortantes(m: dict, n: int, etendue: float) -> list[dict]:
+    """Deux chaussees qui quittent la grille et se perdent dans la brume.
+
+    La ville s'arretait NET : la derniere rue, puis du sable jusqu'a l'horizon.
+    Une route qui continue coute trois quadrilateres et dit la seule chose
+    qu'on veut dire — qu'il y a un ailleurs. Personne n'ira jamais au bout ;
+    elle disparait dans la brume bien avant.
+    """
+    longueur = 260.0
+    axe = TROTTOIR + ROUTE / 2.0
+    milieu = (n // 2) * PAS + axe
+    objets: list[dict] = []
+
+    # Vers le nord, depuis la rue du milieu.
+    chaussee(m["route"], milieu - ROUTE / 2.0, -longueur,
+             milieu + ROUTE / 2.0, 0.0, "y")
+    # Vers l'est, depuis l'autre rue du milieu.
+    chaussee(m["route"], etendue, milieu - ROUTE / 2.0,
+             etendue + longueur, milieu + ROUTE / 2.0, "x")
+
+    # Les poteaux electriques le long de la route sortante. C'est la ligne
+    # d'horizon la plus caracteristique de l'ouest americain, et c'est aussi ce
+    # qui donne l'echelle : sans rien de vertical, une plaine n'a pas de taille.
+    for k in range(8):
+        avance = 16.0 + k * 32.0
+        objets.append({
+            "type": "poteau",
+            "pos": [round(milieu + ROUTE / 2.0 + 3.6, 2), 0.0,
+                    round(avance, 2)],
+            "angle": 0.0,
+        })
+        objets.append({
+            "type": "poteau",
+            "pos": [round(etendue + avance, 2), 0.0,
+                    round(-(milieu + ROUTE / 2.0 + 3.6), 2)],
+            "angle": round(math.pi / 2.0, 3),
+        })
+    return objets
+
+
 def cactus_du_desert(etendue: float, rng: random.Random,
                      combien: int = 70) -> list[dict]:
     """Seme des cactus autour de la ville.
@@ -951,7 +1087,7 @@ def cactus_du_desert(etendue: float, rng: random.Random,
     rendre une echelle et une profondeur.
     """
     objets: list[dict] = []
-    bande = 75.0
+    bande = 165.0
     essais = 0
     while len(objets) < combien and essais < combien * 20:
         essais += 1
@@ -971,7 +1107,7 @@ def cactus_du_desert(etendue: float, rng: random.Random,
 def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
     noms = ["route", "asphalte", "trottoir", "desert", "lampes",
             "herbe", "parking", "crepi", "toit", "porte", "fenetre_maison",
-            "bardage"] + FACADES
+            "bardage", "montagne"] + FACADES
     m = {nom: Maillage(nom, mats[nom]) for nom in noms}
 
     etendue = n * BLOC + (n + 1) * COULOIR
@@ -1183,9 +1319,25 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
         lampadaire(m["lampes"], lx, ly, vx, vy)
 
     # --- desert tout autour, pour que la ville ne flotte pas dans le vide ---
-    marge = 220.0
-    dalle(m["desert"], -marge, -marge, etendue + marge, etendue + marge,
+    # LE SOL EST ASYMETRIQUE, et pour la meme raison que les cretes.
+    #
+    # Il doit porter les montagnes — 300 m, second rang a 420 — sinon elles
+    # flottent au-dessus du vide. Mais du cote du desert il ne doit PAS
+    # atteindre la zone de Tuco, posee a (900, -900) sur 460 m de cote : deux
+    # sols superposes a cinq centimetres l'un de l'autre papillonnent des qu'on
+    # les regarde de biais.
+    #
+    # 180 m de ce cote-la laissent 17 m de marge avant le bord de la zone. Ce
+    # n'est pas beaucoup, et c'est volontairement calcule plutot que choisi :
+    # si la zone du desert bouge, ce nombre est celui qu'il faut revoir.
+    # Les deux cretes sont du cote NEGATIF des deux axes (nord = y negatif,
+    # ouest = x negatif) : c'est la que le sol doit s'etendre. Du cote positif,
+    # ou se trouve la zone du desert, il s'arrete court sur les deux axes.
+    large, court = 520.0, 180.0
+    dalle(m["desert"], -large, -large, etendue + court, etendue + court,
           -0.05, TUILE_DESERT)
+    montagnes(m["montagne"], etendue, rng)
+    decor += routes_sortantes(m, n, etendue)
 
     decor += cactus_du_desert(etendue, rng)
 
@@ -1240,7 +1392,7 @@ def main() -> None:
 
     noms = ["route", "asphalte", "trottoir", "desert",
             "herbe", "parking", "crepi", "toit", "porte", "fenetre_maison",
-            "bardage"] + FACADES
+            "bardage", "montagne"] + FACADES
     mats = {nom: materiau(nom, textures) for nom in noms}
     mats["lampes"] = mats["trottoir"]
 

@@ -28,9 +28,20 @@ var _n := 0
 var _debut_ms := 0
 var _chargement_ms := 0
 var _fps: Array[float] = []
+var _heure: float = -1.0
 
 
 func _initialize() -> void:
+	# L'HEURE SE POSE EN LIGNE DE COMMANDE, et ce n'est pas un confort.
+	#
+	#   godot --path game --script res://verifs/diag_ville.gd -- --heure 22
+	#
+	# De jour les lampadaires sont MASQUES, donc ils ne coutent rien : mesurer
+	# a midi une ville de deux mille lampadaires ne mesure pas les lampadaires.
+	# Le pire cas de ce jeu est la nuit, et c'est celui qu'il faut relever.
+	for i in OS.get_cmdline_user_args().size() - 1:
+		if OS.get_cmdline_user_args()[i] == "--heure":
+			_heure = float(OS.get_cmdline_user_args()[i + 1])
 	_debut_ms = Time.get_ticks_msec()
 	var ps := ResourceLoader.load("res://scenes/monde.tscn") as PackedScene
 	_monde = ps.instantiate()
@@ -43,6 +54,13 @@ func _initialize() -> void:
 
 func _process(_d: float) -> bool:
 	_n += 1
+	# L'heure se pose APRES le demarrage du scenario, pas avant : il applique
+	# l'heure de depart de la mission sur sa premiere image differee, et il
+	# ecraserait la notre sans rien dire.
+	if _n == 20 and _heure >= 0.0:
+		var t := root.get_tree().get_first_node_in_group(Temps.GROUPE) as Temps
+		if t != null:
+			t.regler(_heure)
 	if _n > CHAUFFE:
 		_fps.append(Engine.get_frames_per_second())
 	if _n < CHAUFFE + MESURE:
@@ -80,6 +98,7 @@ func _rapport() -> void:
 
 	print("")
 	print("--- la ville ---")
+	print("  heure            %05.2f h" % Reglages.heure)
 	print("  etendue          %.0f m de cote" % etendue)
 	print("  lampadaires      %d" % lampes)
 	print("  decor            %d elements" % decor)

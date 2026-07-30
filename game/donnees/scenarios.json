@@ -54,6 +54,24 @@
     { "image": 20, "appeler": "Temps", "methode": "regler", "argument": 13 }
    ]
   },
+  "horizon": {
+   "quoi": "Le bord nord de la ville, vu depuis la derniere rue. Ce qu'on regarde : est-ce qu'il y a quelque chose a l'horizon, et est-ce que la ville se DILUE — terrains vagues, pavillons isoles — au lieu de s'arreter net sur du sable.",
+   "fin": 70,
+   "etapes": [
+    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
+    {"image": 30, "camera": [237, 52.0, -290], "vise": [237, 30.0, 60]}
+   ]
+  },
+
+  "route_sortante": {
+   "quoi": "La route qui quitte la ville vers le nord, avec ses poteaux electriques. Ce qu'on regarde : est-ce qu'elle donne l'impression qu'il y a un ailleurs, et est-ce que les poteaux donnent l'echelle de la plaine.",
+   "fin": 70,
+   "etapes": [
+    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
+    {"image": 30, "camera": [231, 3.4, 24], "vise": [237, 4.0, 190]}
+   ]
+  },
+
   "ilot_pavillonnaire": {
    "quoi": "Une rue de pavillons, dans les Hauteurs. Ce qu'on regarde : est-ce que ca se lit comme un quartier ou l'on HABITE — allees, boites aux lettres, gravier — et pas comme douze boites alignees. C'est le quartier de Walt, et celui ou le soupcon montera le plus vite le jour ou les temoins existeront.",
    "fin": 70,

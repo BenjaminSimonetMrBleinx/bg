@@ -119,6 +119,26 @@ def desert(u: float, v: float):
     return (r, r * 0.86, r * 0.68)
 
 
+def montagne(u: float, v: float):
+    """La roche des Sandia, vue de tres loin.
+
+    ELLE N'A PAS BESOIN D'ETRE DETAILLEE, ET ELLE NE DOIT PAS L'ETRE. La crete
+    est a trois cents metres, donc au bord de la brume : ce qu'on en voit est
+    une silhouette delavee. Une texture de rocher fouillee y serait invisible
+    et couterait le meme prix.
+
+    Ce qui compte est le DEGRADE vertical — sombre en bas, clair vers les
+    cretes. C'est lui qui donne le volume qu'une silhouette plate n'a pas.
+    """
+    n = hache(int(u * 90), int(v * 90))
+    strate = hache(int(v * 14) + 5, 3)
+    g = 66 + v * 46 + n * 10 + strate * 12
+    # Le violet des montagnes d'Albuquerque au soleil couchant, tire vers le
+    # brun le reste du temps. Le bleu reste au-dessus du vert : sans ca, la
+    # roche vire au kaki et ressemble a une colline irlandaise.
+    return (g * 1.02, g * 0.86, g * 0.88)
+
+
 def herbe(u: float, v: float):
     """Pelouse de parc. Tuilable.
 
@@ -973,6 +993,9 @@ def main() -> None:
 
     ecrire_png(dossier / "herbe.png", t, t, rendre(t, t, herbe))
     faits.append("herbe.png")
+
+    ecrire_png(dossier / "montagne.png", t, t, rendre(t, t, montagne))
+    faits.append("montagne.png")
 
     ecrire_png(dossier / "parking.png", t, t, rendre(t, t, parking))
     faits.append("parking.png")
