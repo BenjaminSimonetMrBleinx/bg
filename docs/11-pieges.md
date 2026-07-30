@@ -181,7 +181,30 @@ réattribuée, les écritures partent dans le vide, sans erreur.
 
 ---
 
-## 16. Un état différé n'est pas un état absent
+## 16. Un here-string PowerShell ne tient pas dans un bloc YAML
+
+PowerShell exige que le `"@` de fermeture soit en **colonne zéro**. Un bloc
+YAML `run: |` se termine dès qu'une ligne revient en colonne zéro. Les deux
+règles s'excluent.
+
+Le fichier de workflow devenait invalide, et GitHub échouait **en zéro seconde
+sur chaque push**, y compris ceux qui n'avaient rien à voir avec une release —
+donc un mail d'échec à chaque commit.
+
+**La parade.** Un tableau de chaînes joint par `-join "`n"`, indenté comme le
+reste. Et une vérification locale avant de pousser :
+
+```powershell
+python -c "import yaml,io; yaml.safe_load(io.open('.github/workflows/release.yml',encoding='utf-8'))"
+```
+
+**Ce que ça rappelle :** un workflow ne se teste pas en le poussant. Un fichier
+de configuration qui n'est validé que par le serveur distant est un fichier
+qu'on écrit à l'aveugle.
+
+---
+
+## 17. Un état différé n'est pas un état absent
 
 Le chapeau bascule au milieu du geste, une demi-seconde après le choix. Un test
 qui mesure tout de suite trouve l'objet **précédent** encore visible et conclut

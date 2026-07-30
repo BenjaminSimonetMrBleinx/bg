@@ -90,6 +90,7 @@ C'est le seul point de synchronisation nécessaire.
 
 | Quoi | Où | Pourquoi |
 |---|---|---|
+| **Ce qu'on fait, et dans quel ordre** | **GitHub Issues** | Ça se coche, ça se commente depuis le téléphone, et ça ne se perd pas |
 | Décisions ouvertes | [`00-questions.md`](00-questions.md) | Elles y restent. Une conversation se perd. |
 | Ce qui s'est passé, ce qu'on a appris | [`JOURNAL.md`](JOURNAL.md) | Quatre lignes par session suffisent |
 | Specs d'assets | [`03-conventions-assets.md`](03-conventions-assets.md) | Une seule source, pas un message |
@@ -97,6 +98,33 @@ C'est le seul point de synchronisation nécessaire.
 
 La règle : **si une information doit survivre à la conversation, elle va dans
 le dépôt.** Sinon elle sera redemandée dans trois semaines.
+
+### Les issues, et à quoi chaque forme sert
+
+Le plan complet vit dans l'**issue épinglée #22** — comment on fonctionne, qui
+fournit quoi, et le chemin jusqu'à la fin du jeu. Il n'est pas recopié ici :
+deux copies d'un plan divergent au premier changement.
+
+| | Ce que c'est | On la ferme |
+|---|---|---|
+| **Chantier** (`chantier`) | Un grand morceau du jeu — la pureté, la famille, la ville. Il porte le *pourquoi* et une liste à cocher | Presque jamais |
+| **Ticket** | Une chose livrable en une ou deux soirées. S'il en demande dix, c'est un chantier déguisé | À la livraison |
+| **Retour de test** (`bug`) | Ce qui a gêné quelqu'un en jouant | Quand c'est réparé et vérifié par celui qui l'a signalé |
+
+Deux règles qui font gagner du temps : **les jalons sont les actes** du jeu, et
+**une issue sans image n'est pas prête** — si on ne sait pas dire quelle capture
+montrerait la chose terminée, elle n'est pas prête à être codée.
+
+### Guillaume écrit les missions
+
+Une issue par mission, et le formulaire est dans **#37**. On y répond en
+français, sans toucher à un seul fichier du jeu : ce qu'elle installe, où et à
+quelle heure elle commence, le déroulé étape par étape, **ce qu'elle coûte au
+joueur**, ce qu'il faut fabriquer, et quelle image la montre.
+
+La question qui compte est celle du coût. Une mission où le joueur ne perd
+rien — ni temps, ni argent, ni relation, ni discrétion — est une course de
+relais, pas une mission.
 
 ---
 
