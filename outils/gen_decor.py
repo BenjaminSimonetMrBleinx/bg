@@ -269,6 +269,31 @@ def saguaro(mats) -> int:
     return m.finir()
 
 
+def arbre(mats) -> int:
+    """Un arbre de parc. Tronc et deux etages de feuillage.
+
+    PAS DE PLANS CROISES, PAS D'ALPHA. La facon habituelle de faire un arbre a
+    ce budget est deux quadrilateres croises portant une texture de feuillage
+    decoupee — mais la decoupe demande de la transparence, et la transparence
+    demande un tri par profondeur que le rendu du projet n'a pas. Deux prismes
+    superposes coutent le meme prix, ne trient rien, et donnent une silhouette
+    qui tient de dos comme de face.
+
+    Trente-six faces. C'est le double d'un cactus, pour un objet qui sera pose
+    par dizaines dans un parc : c'est le budget qu'on peut mettre.
+    """
+    m = Maillage("Tronc", mats["bois_banc"])
+    m.prisme(0, 0, 0.0, 2.05, 0.16, 0.13, 6, 1.2)
+    total = m.finir()
+    f = Maillage("Feuillage", mats["herbe"])
+    # Deux etages plutot qu'un : une seule masse fait un champignon, et la
+    # cassure entre les deux est ce qui se lit comme des branches a vingt
+    # metres.
+    f.prisme(0, 0, 1.70, 3.15, 1.35, 1.05, 8, 2.4)
+    f.prisme(0, 0, 3.05, 4.10, 0.95, 0.20, 8, 2.4)
+    return total + f.finir()
+
+
 def climatiseur(mats) -> int:
     """Bloc de climatisation. Sur un toit-terrasse plat, c'est la seule chose
     qui empeche la maison de ressembler a une boite."""
@@ -290,6 +315,7 @@ OBJETS = {
     "panneau": (panneau, ["metal_sombre", "panneau_stop"]),
     "borne": (borne, ["rouge_borne"]),
     "cactus": (saguaro, ["cactus"]),
+    "arbre": (arbre, ["bois_banc", "herbe"]),
     "climatiseur": (climatiseur, ["metal", "metal_sombre"]),
     "panneau_desert": (panneau_direction("panneau_desert"),
                        ["metal_sombre", "panneau_desert"]),

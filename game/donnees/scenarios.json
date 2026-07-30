@@ -54,6 +54,33 @@
     { "image": 20, "appeler": "Temps", "methode": "regler", "argument": 13 }
    ]
   },
+  "ilot_parc": {
+   "quoi": "Un parc, vu du trottoir. Ce qu'on regarde : est-ce que les allees se lisent comme des chemins, est-ce que les arbres tiennent debout a cette distance, et est-ce que la pelouse ne jure pas avec le desert d'a cote.",
+   "fin": 70,
+   "etapes": [
+    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
+    {"image": 30, "camera": [122, 6.5, -94], "vise": [151, 1.2, -94]}
+   ]
+  },
+
+  "ilot_parking": {
+   "quoi": "Un parking, vu de trois quarts en hauteur. Ce qu'on regarde : est-ce que les lignes tombent sous les voitures, et est-ce que les rangees se lisent.",
+   "fin": 70,
+   "etapes": [
+    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
+    {"image": 30, "camera": [8, 12.0, -228], "vise": [37, 0.5, -262]}
+   ]
+  },
+
+  "ilot_terrain_vague": {
+   "quoi": "Un terrain vague. Ce qu'on regarde : est-ce qu'il se lit comme un terrain a l'abandon plutot que comme une parcelle ou le generateur a oublie de poser des immeubles.",
+   "fin": 70,
+   "etapes": [
+    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
+    {"image": 30, "camera": [52, 5.5, -288], "vise": [94, 1.0, -322]}
+   ]
+  },
+
   "porche_nuit": {
    "quoi": "La facade de Walter a 22 h, MONDE CHARGE DE JOUR. C'est la vue qui montre le correctif du 30/07/2026 : la lumiere de porche n'etait pas creee quand le monde chargeait en journee, donc la maison restait une silhouette noire toute la nuit suivante. Si la porte n'est pas eclairee ici, le porche a cesse de suivre l'heure.",
    "fin": 100,

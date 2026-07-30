@@ -66,6 +66,38 @@ ESPACEMENT_LAMPES = 20.0
 FACADES = ["facade_a", "facade_b", "facade_c", "facade_d"]
 HAUTEURS = [4.6, 5.8, 7.1, 8.4, 9.7, 11.2]
 
+# LES TYPES D'ILOT, ET POURQUOI ILS EXISTENT.
+#
+# Le generateur ne savait construire qu'une chose : quatre rangees d'immeubles
+# autour d'une cour. Soixante-quatre fois. Une grille parfaite se lit comme un
+# tableur, et surtout aucune mission ne peut donner rendez-vous « au terrain
+# vague » s'il n'y en a pas un seul.
+#
+# Le tirage est PONDERE et il penche lourdement vers le bati : un parc tous les
+# deux ilots ne serait plus un parc, ce serait une banlieue. La rarete est ce
+# qui rend un lieu reperable — et se reperer sans carte est tout l'enjeu.
+#
+# Ce que chacun apporte au JEU, pas au decor :
+#   parc            le seul endroit traversable a pied et pas en voiture
+#   terrain_vague   pas de fenetres, donc pas de temoins
+#   parking         de la place, des vehicules, et une sortie de secours
+TYPES_ILOT = [
+    ("bati", 66),
+    ("terrain_vague", 13),
+    ("parc", 11),
+    ("parking", 10),
+]
+
+# Largeur d'une place de stationnement et profondeur d'une rangee, en metres.
+# La texture de parking porte UNE place : ces deux nombres sont donc aussi la
+# taille de sa tuile, et une ligne mal placee se corrige ici.
+PLACE_LARGEUR = 2.75
+PLACE_PROFONDEUR = 5.0
+
+# Largeur des allees d'un parc. En dessous de deux metres on ne les lit plus
+# comme des chemins mais comme des joints entre deux pelouses.
+ALLEE = 2.4
+
 # Parcelles laissees vides, ou l'on pose ensuite des batiments faits main.
 # Un tuple par cote d'ilot : (ilot_x, ilot_y, cote).
 #
@@ -229,6 +261,20 @@ def dalle(m: Maillage, x0, y0, x1, y1, z, tuile) -> None:
         [(x0, y0, z), (x1, y0, z), (x1, y1, z), (x0, y1, z)],
         [(x0 / tuile, y0 / tuile), (x1 / tuile, y0 / tuile),
          (x1 / tuile, y1 / tuile), (x0 / tuile, y1 / tuile)],
+    )
+
+
+def dalle_uv(m: Maillage, x0, y0, x1, y1, z, tu, tv) -> None:
+    """Comme dalle(), mais avec une tuile differente dans chaque sens.
+
+    Le parking en a besoin : sa texture porte une place, large de 2,75 m et
+    profonde de 5. Avec une tuile carree, les lignes se repeteraient aussi dans
+    l'autre sens et on obtiendrait un damier au lieu de rangees.
+    """
+    m.face(
+        [(x0, y0, z), (x1, y0, z), (x1, y1, z), (x0, y1, z)],
+        [(x0 / tu, y0 / tv), (x1 / tu, y0 / tv),
+         (x1 / tu, y1 / tv), (x0 / tu, y1 / tv)],
     )
 
 
@@ -400,6 +446,185 @@ def pietons_de_cote(ox: float, oy: float, cote: str,
     return trajets
 
 
+def plan_des_ilots(n: int, graine: int) -> dict:
+    """Le type de chaque ilot, decide AVANT tout le reste.
+
+    CHAQUE ILOT A SON PROPRE TIRAGE, DERIVE DE SA POSITION. C'est ce qui rend
+    le plan de la ville stable : avec un generateur aleatoire partage, changer
+    le nombre de voitures d'un parking decale toute la suite du flux et
+    REDISTRIBUE la carte entiere. Constate le 30/07/2026 — une capture cadree
+    sur un terrain vague s'est retrouvee nez a nez avec un immeuble, sans que
+    rien de ce qui concerne les terrains vagues ait bouge.
+
+    Consequence pratique : les vues de `scenarios.json` gardent leur sujet, et
+    une meme graine donne la meme ville d'une version a l'autre.
+    """
+    total = sum(poids for _, poids in TYPES_ILOT)
+    plan = {}
+    for bx in range(n):
+        for by in range(n):
+            # L'ilot (0, 0) reste bati quoi qu'il arrive : il porte les maisons
+            # de Walter et de Jesse, et la partie commence devant.
+            if (bx, by) == (0, 0):
+                plan[(bx, by)] = "bati"
+                continue
+            local = random.Random((graine * 7919) ^ (bx * 131 + by * 17))
+            seuil = local.uniform(0.0, total)
+            plan[(bx, by)] = TYPES_ILOT[0][0]
+            for nom, poids in TYPES_ILOT:
+                seuil -= poids
+                if seuil <= 0.0:
+                    plan[(bx, by)] = nom
+                    break
+    return plan
+
+
+def parcelle_parc(m: dict, ox: float, oy: float,
+                  rng: random.Random) -> list[dict]:
+    """Un parc : pelouse, deux allees en croix, des arbres, des bancs.
+
+    LES ALLEES SE CROISENT AU MILIEU, ET C'EST LE POINT. Un parc sans chemin
+    est une pelouse : on le contourne. Avec une croix, il devient un RACCOURCI
+    entre deux rues — le seul endroit de la ville qu'on traverse a pied et pas
+    en voiture, ce qui donne une raison de descendre de voiture.
+    """
+    dalle(m["herbe"], ox, oy, ox + BLOC, oy + BLOC, 0.03, 4.0)
+
+    milieu_x = ox + BLOC / 2.0
+    milieu_y = oy + BLOC / 2.0
+    # Les allees montent a 0,05 : au meme niveau que la pelouse, le moteur ne
+    # sait pas laquelle afficher et l'image papillonne selon l'angle.
+    dalle(m["trottoir"], ox, milieu_y - ALLEE / 2.0,
+          ox + BLOC, milieu_y + ALLEE / 2.0, 0.05, TUILE_SOL)
+    dalle(m["trottoir"], milieu_x - ALLEE / 2.0, oy,
+          milieu_x + ALLEE / 2.0, oy + BLOC, 0.05, TUILE_SOL)
+
+    objets: list[dict] = []
+    for _ in range(26):
+        x = rng.uniform(ox + 2.0, ox + BLOC - 2.0)
+        y = rng.uniform(oy + 2.0, oy + BLOC - 2.0)
+        # Rien dans une allee : un arbre plante au milieu du chemin annule
+        # l'interet du chemin.
+        if abs(x - milieu_x) < ALLEE or abs(y - milieu_y) < ALLEE:
+            continue
+        objets.append({
+            "type": "arbre",
+            "pos": [round(x, 2), 0.03, round(-y, 2)],
+            "angle": round(rng.uniform(0.0, 6.28), 3),
+        })
+
+    # Les bancs regardent l'allee, poses le long de la branche est-ouest.
+    for k in range(4):
+        x = ox + BLOC * (0.18 + 0.21 * k)
+        cote = 1.0 if k % 2 == 0 else -1.0
+        objets.append({
+            "type": "banc",
+            "pos": [round(x, 2), 0.05,
+                    round(-(milieu_y + cote * (ALLEE / 2.0 + 0.7)), 2)],
+            "angle": round(0.0 if cote > 0 else math.pi, 3),
+        })
+    return objets
+
+
+def parcelle_terrain_vague(m: dict, ox: float, oy: float,
+                           rng: random.Random) -> list[dict]:
+    """Un terrain vague : de la terre, quelques bennes, rien qui regarde.
+
+    C'est le seul endroit de la ville SANS FENETRE. Le jour ou les temoins
+    existeront, ce sera la difference entre faire une chose ici et la faire
+    dans une rue pavillonnaire — et c'est pour ca qu'il vaut la peine d'etre
+    construit maintenant, avant meme qu'ils existent.
+    """
+    dalle(m["desert"], ox, oy, ox + BLOC, oy + BLOC, 0.03, TUILE_SOL)
+
+    # LA CLOTURE, ET POURQUOI ELLE N'EST PAS DECORATIVE.
+    #
+    # Sans elle, la capture montre exactement ce qu'on ne veut pas : une
+    # parcelle ou le generateur a oublie de poser des immeubles. C'est le
+    # grillage qui dit « ce terrain appartient a quelqu'un, et il est vide » —
+    # la difference entre un lieu et un trou.
+    #
+    # Poteaux et lisses, pas de maille. Un grillage se fait normalement avec
+    # une texture decoupee, donc de la transparence, donc un tri par
+    # profondeur que ce rendu n'a pas. A vingt metres, deux lisses horizontales
+    # donnent la meme lecture.
+    poteau = 0.055
+    for long_axe, fixe in (("x", oy), ("x", oy + BLOC),
+                           ("y", ox), ("y", ox + BLOC)):
+        debut = ox if long_axe == "x" else oy
+        # Une ouverture par cote : un terrain entierement ceint est un decor
+        # qu'on longe, alors qu'on doit pouvoir y entrer.
+        trou = debut + BLOC * 0.5
+        k = 0.0
+        while k < BLOC:
+            p = debut + k
+            k += 5.0
+            if abs(p - trou) < 4.0:
+                continue
+            if long_axe == "x":
+                boite(m["trottoir"], p - poteau, fixe - poteau,
+                      p + poteau, fixe + poteau, 0.0, 1.9, 1.0, 1.9)
+            else:
+                boite(m["trottoir"], fixe - poteau, p - poteau,
+                      fixe + poteau, p + poteau, 0.0, 1.9, 1.0, 1.9)
+        for hauteur in (0.85, 1.78):
+            a, b = debut, debut + BLOC
+            if long_axe == "x":
+                boite(m["trottoir"], a, fixe - 0.03, trou - 4.0, fixe + 0.03,
+                      hauteur, hauteur + 0.06, 2.0, 1.0)
+                boite(m["trottoir"], trou + 4.0, fixe - 0.03, b, fixe + 0.03,
+                      hauteur, hauteur + 0.06, 2.0, 1.0)
+            else:
+                boite(m["trottoir"], fixe - 0.03, a, fixe + 0.03, trou - 4.0,
+                      hauteur, hauteur + 0.06, 2.0, 1.0)
+                boite(m["trottoir"], fixe - 0.03, trou + 4.0, fixe + 0.03, b,
+                      hauteur, hauteur + 0.06, 2.0, 1.0)
+
+    objets: list[dict] = []
+    for _ in range(9):
+        x = rng.uniform(ox + 3.0, ox + BLOC - 3.0)
+        y = rng.uniform(oy + 3.0, oy + BLOC - 3.0)
+        objets.append({
+            "type": tirer(rng, [("benne", 34), ("poubelle", 30),
+                                ("cactus", 22), ("borne", 14)]),
+            "pos": [round(x, 2), 0.03, round(-y, 2)],
+            "angle": round(rng.uniform(0.0, 6.28), 3),
+        })
+    return objets
+
+
+def parcelle_parking(m: dict, ox: float, oy: float,
+                     rng: random.Random) -> list[dict]:
+    """Un parking : de l'asphalte marque, et des voitures rangees.
+
+    Les places sont dans la TEXTURE, pas en geometrie — une place peinte
+    coute alors zero face, et un parking de cent places coute exactement ce que
+    coute un parking vide. Voir parking() dans gen_textures.py.
+    """
+    dalle_uv(m["parking"], ox, oy, ox + BLOC, oy + BLOC, 0.03,
+             PLACE_LARGEUR, PLACE_PROFONDEUR)
+
+    objets: list[dict] = []
+    rangees = int(BLOC / PLACE_PROFONDEUR)
+    places = int(BLOC / PLACE_LARGEUR)
+    for r in range(rangees):
+        # Les voitures d'une rangee se garent toutes du meme cote de la ligne,
+        # et une rangee sur deux regarde l'autre sens : c'est ce qui fait lire
+        # des allees de circulation entre elles.
+        cap = math.pi / 2.0 if r % 2 == 0 else -math.pi / 2.0
+        y = oy + (r + 0.5) * PLACE_PROFONDEUR
+        for p in range(places):
+            if rng.random() > 0.34:
+                continue
+            x = ox + (p + 0.5) * PLACE_LARGEUR
+            objets.append({
+                "type": "garee_" + tirer(rng, MODELES_GAREES),
+                "pos": [round(x, 2), 0.03, round(-y, 2)],
+                "angle": round(cap + rng.uniform(-0.04, 0.04), 3),
+            })
+    return objets
+
+
 def graphe_des_rues(n: int) -> dict:
     """Le reseau routier : des carrefours, et des troncons entre eux.
 
@@ -490,8 +715,9 @@ def cactus_du_desert(etendue: float, rng: random.Random,
     return objets
 
 
-def construire(n: int, rng: random.Random, mats: dict) -> dict:
-    noms = ["route", "asphalte", "trottoir", "desert", "lampes"] + FACADES
+def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
+    noms = ["route", "asphalte", "trottoir", "desert", "lampes",
+            "herbe", "parking"] + FACADES
     m = {nom: Maillage(nom, mats[nom]) for nom in noms}
 
     etendue = n * BLOC + (n + 1) * COULOIR
@@ -507,6 +733,8 @@ def construire(n: int, rng: random.Random, mats: dict) -> dict:
     # a la main dans la scene, qui se perimaient au premier changement de
     # gabarit.
     lieux: list[dict] = []
+    types: dict[str, int] = {}
+    plan = plan_des_ilots(n, graine)
 
     # --- chaussees et carrefours -------------------------------------------
     # Corridor k : [k*PAS, k*PAS + COULOIR]. Chaussee au centre : +TROTTOIR.
@@ -566,6 +794,47 @@ def construire(n: int, rng: random.Random, mats: dict) -> dict:
             ]:
                 nu, nv = lg / TUILE_SOL, H_TROTTOIR / TUILE_SOL
                 m["trottoir"].face(pts, [(0, 0), (nu, 0), (nu, nv), (0, nv)])
+
+            # LE TYPE DE L'ILOT. L'ilot (0, 0) reste bati quoi qu'il arrive :
+            # c'est celui qui porte les maisons de Walter et de Jesse, et le
+            # point de depart de la partie donne dessus.
+            type_ilot = plan[(bx, by)]
+            types[type_ilot] = types.get(type_ilot, 0) + 1
+
+            if type_ilot != "bati":
+                # Les rues autour existent toujours : trottoirs, lampadaires,
+                # stationnement et passants ne dependent pas de ce qu'il y a
+                # derriere. Seul le CONTENU de la parcelle change.
+                for cote in ("sud", "nord", "ouest", "est"):
+                    decor += voitures_de_cote(ox, oy, cote, rng)
+                    pietons += pietons_de_cote(ox, oy, cote, rng)
+                    if type_ilot == "terrain_vague":
+                        decor += mobilier_de_cote(ox, oy, cote, rng)
+                if type_ilot == "parc":
+                    decor += parcelle_parc(m, ox, oy, rng)
+                elif type_ilot == "terrain_vague":
+                    decor += parcelle_terrain_vague(m, ox, oy, rng)
+                else:
+                    decor += parcelle_parking(m, ox, oy, rng)
+                # Un lieu NOMME par parcelle : c'est ce qui permettra a une
+                # mission de dire « rendez-vous au terrain vague » sans que
+                # personne recopie des coordonnees.
+                lieux.append({
+                    "nom": "%s_%d_%d" % (type_ilot, bx, by),
+                    "pos": [round(ox + BLOC / 2.0, 3), 0.0,
+                            round(-(oy + BLOC / 2.0), 3)],
+                    "cap": 0.0,
+                })
+                nb = max(2, int(BLOC / ESPACEMENT_LAMPES))
+                for k in range(nb):
+                    f = (k + 0.5) / nb
+                    lampes += [
+                        (x0 + f * (x1 - x0), y0 + 0.9, 0.0, -1.0),
+                        (x0 + f * (x1 - x0), y1 - 0.9, 0.0, 1.0),
+                        (x0 + 0.9, y0 + f * (y1 - y0), -1.0, 0.0),
+                        (x1 - 0.9, y0 + f * (y1 - y0), 1.0, 0.0),
+                    ]
+                continue
 
             # cour interieure, en terre
             dalle(m["desert"], ox + BATI, oy + BATI,
@@ -692,7 +961,7 @@ def construire(n: int, rng: random.Random, mats: dict) -> dict:
 
     return {"etendue": etendue, "lampes": lampes, "decor": decor,
             "pietons": pietons, "lieux": lieux, "graphe": graphe_des_rues(n),
-            "faces": faces}
+            "faces": faces, "types": types}
 
 
 def main() -> None:
@@ -706,11 +975,12 @@ def main() -> None:
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
 
-    noms = ["route", "asphalte", "trottoir", "desert"] + FACADES
+    noms = ["route", "asphalte", "trottoir", "desert",
+            "herbe", "parking"] + FACADES
     mats = {nom: materiau(nom, textures) for nom in noms}
     mats["lampes"] = mats["trottoir"]
 
-    info = construire(a.blocs, rng, mats)
+    info = construire(a.blocs, rng, mats, a.seed)
 
     sortie = Path(a.sortie)
     if not sortie.is_absolute():
@@ -761,6 +1031,8 @@ def main() -> None:
 
     print("")
     print(f"ville      {a.blocs} x {a.blocs} ilots, {info['etendue']:.0f} m de cote")
+    print(f"ilots      " + ", ".join(f"{n} {t}"
+                                     for t, n in sorted(info["types"].items())))
     print(f"graine     {a.seed}")
     print(f"lampes     {len(info['lampes'])}")
     print(f"pietons    {len(info['pietons'])}")

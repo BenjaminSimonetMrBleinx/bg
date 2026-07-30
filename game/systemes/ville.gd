@@ -34,7 +34,10 @@ const VEHICULES := "res://assets/vehicules/%s.glb"
 ##
 ## Les voitures garees en font partie, evidemment — mais par leur PREFIXE, pas
 ## par leur nom : il y a cinq modeles, et il y en aura d'autres.
-const SOLIDES := ["benne", "banc", "cactus", "panneau"]
+## L'arbre en fait partie : il est plante au milieu d'un parc, la ou l'on
+## marche, et un arbre qu'on traverse est bien plus visible qu'une poubelle
+## qu'on traverse — on ne s'attend pas a passer au travers d'un tronc.
+const SOLIDES := ["benne", "banc", "cactus", "panneau", "arbre"]
 
 const SOLIDES_PREFIXES := ["garee_"]
 

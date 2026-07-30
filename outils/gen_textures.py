@@ -119,6 +119,43 @@ def desert(u: float, v: float):
     return (r, r * 0.86, r * 0.68)
 
 
+def herbe(u: float, v: float):
+    """Pelouse de parc. Tuilable.
+
+    VERTE MAIS PAS ANGLAISE. Albuquerque est a deux mille metres dans un
+    desert : une pelouse y est arrosee, jaunie par endroits, et jamais du vert
+    saturé d'un gazon de banlieue anglaise. Une pelouse trop verte est la
+    premiere chose qui sonne faux dans une ville du Nouveau-Mexique.
+    """
+    n = hache(int(u * 210), int(v * 210))
+    touffe = hache(int(u * 26) + 13, int(v * 26) + 5)
+    g = 96 + n * 22 + touffe * 26
+    return (g * 0.66, g * 0.84, g * 0.40)
+
+
+def parking(u: float, v: float):
+    """Asphalte marque d'une ligne de stationnement.
+
+    La ligne est DANS la texture, pas en geometrie. Un parking de quarante
+    places demanderait quarante quadrilateres peints ; ici la texture se repete
+    une fois par place et le sol reste une seule face. C'est ce que faisaient
+    les jeux de l'epoque, et c'est aussi ce qui rend le nombre de places
+    gratuit.
+
+    La ligne s'arrete avant le bord en v : une place de parking est ouverte du
+    cote ou l'on entre.
+    """
+    n = hache(int(u * 260), int(v * 260))
+    g = 41 + n * 13
+    if u < 0.055 and v < 0.84:
+        # Peinture usee : elle laisse passer l'asphalte par endroits, sinon la
+        # ligne est un trait parfait qu'aucun parking n'a jamais eu.
+        usure = hache(int(u * 90) + 3, int(v * 90) + 61)
+        c = 132 + n * 26 - usure * 34
+        return (c, c, c * 0.95)
+    return (g, g + 1, g + 6)
+
+
 def trottoir(u: float, v: float):
     """Dalles jointoyees, tuilable dans les deux sens."""
     n = hache(int(u * 190), int(v * 190))
@@ -933,6 +970,12 @@ def main() -> None:
     ecrire_png(dossier / "trottoir.png", t // 2, t // 2,
                rendre(t // 2, t // 2, trottoir))
     faits.append("trottoir.png")
+
+    ecrire_png(dossier / "herbe.png", t, t, rendre(t, t, herbe))
+    faits.append("herbe.png")
+
+    ecrire_png(dossier / "parking.png", t, t, rendre(t, t, parking))
+    faits.append("parking.png")
 
     for i, (nom, couleur) in enumerate(FACADES.items()):
         # La couleur de base est TOUJOURS celle du jour, quel que soit --moment.
