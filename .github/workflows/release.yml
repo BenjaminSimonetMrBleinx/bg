@@ -122,18 +122,25 @@ jobs:
           if (-not $section) { $section = "Voir NOTES-DE-VERSION.md." }
           $zip = "BG-$env:VERSION-windows.zip"
           $lien = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/releases/download/v$env:VERSION/$zip"
-          @"
-## [Telecharger le jeu]($lien)
-
-Un zip, un exe dedans, double-clic. Rien a installer.
-
-Windows dira « editeur inconnu » : l'executable n'est pas signe.
-**Informations complementaires -> Executer quand meme.**
-
----
-
-$section
-"@ | Set-Content release-body.md -Encoding UTF8
+          # PAS DE HERE-STRING ICI, et c'est une contrainte reelle : PowerShell
+          # exige que le « "@ » de fermeture soit en colonne zero, alors qu'un
+          # bloc YAML « run: | » se termine des qu'une ligne revient en colonne
+          # zero. Les deux regles s'excluent. Le fichier devenait invalide, et
+          # GitHub echouait en zero seconde sur CHAQUE push, y compris ceux qui
+          # n'avaient rien a voir avec une release.
+          $corps = @(
+            "## [Telecharger le jeu (Windows)]($lien)",
+            "",
+            "Un zip, un exe dedans, double-clic. Rien a installer.",
+            "",
+            "Windows dira « editeur inconnu » : l'executable n'est pas signe.",
+            "**Informations complementaires -> Executer quand meme.**",
+            "",
+            "---",
+            "",
+            $section
+          )
+          $corps -join "`n" | Set-Content release-body.md -Encoding UTF8
 
       - uses: actions/upload-artifact@v4
         with:
