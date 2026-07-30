@@ -16,6 +16,28 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.32.0 — La ville n'est plus soixante-quatre fois le même îlot
+
+> **Trois nouveaux types de parcelle**, tirés au sort sur toute la carte : des
+> **parcs**, des **terrains vagues** et des **parkings**. Sur 64 îlots, ça fait
+> aujourd'hui 50 bâtis, 6 parkings, 5 terrains vagues et 3 parcs.
+
+**Le parc se traverse à pied.** Deux allées en croix, des arbres, des bancs.
+C'est le seul endroit de la ville où passer à pied est plus court qu'en
+voiture — descends de voiture et coupe à travers, c'est fait pour.
+
+**Le terrain vague est clôturé**, avec une ouverture de chaque côté. Pas une
+fenêtre, donc personne pour regarder : le jour où les témoins existeront, ce
+sera l'endroit où faire ce qu'on ne fait pas ailleurs.
+
+**Le parking** a ses places peintes et ses rangées qui se font face.
+
+À essayer : roule jusqu'à en croiser un de chaque, et dis-moi si ça suffit à
+ne plus avoir l'impression de tourner en rond. Si ça manque encore, c'est le
+nombre de types qu'il faut monter, pas leur fréquence.
+
+---
+
 ## 0.31.0 — Le temps passe, et la ville fait treize fois sa taille
 
 > **La ville est passée de 131 à 473 mètres de côté** — 64 îlots au lieu de 4.
