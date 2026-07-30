@@ -142,9 +142,22 @@ walkthrough court : ce que ça fait, où c'est, pourquoi comme ça.
 
 1. `livraisons/` rangé, `.tmp/` vidé de ce qui n'est pas régénérable.
 2. Un bump si quelque chose de jouable a changé, avec sa note de version.
-3. **Relire ce fichier et [docs/11-pieges.md](docs/11-pieges.md)** : est-ce
+3. **Une entrée dans [docs/JOURNAL.md](docs/JOURNAL.md)** : début, fin, ce
+   qu'on voulait, ce qu'on a livré, les surprises, et où on reprend. Les
+   surprises sont le cœur — c'est ce qu'on relit dans trois semaines.
+4. **Relire ce fichier et [docs/11-pieges.md](docs/11-pieges.md)** : est-ce
    qu'un piège nouveau est apparu ? une règle s'est-elle révélée fausse ?
-4. Le bilan : effort, apprentissages, ressenti.
+5. Le bilan : effort, apprentissages, ressenti.
+
+## Les tickets
+
+Trois familles d'étiquettes : **ce que c'est** (🔨 chantier, ✅ à faire,
+🐛 bug, 💡 idée), **qui doit agir** (⌨️ code, 🎨 Guillaume, 🎮 Benjamin), et
+**quand** (🔥 maintenant, 🧊 plus tard).
+
+Chaque ticket **commence par une ligne qui dit à qui il appartient**. Personne
+ne doit avoir à lire un ticket en entier pour savoir s'il l'attend. Les titres
+portent leurs accents ; la règle « pas d'accents » ne vaut que pour le code.
 
 Un piège qui n'est pas écrit sera repayé au prix fort. Les quatre plus chers de
 ce projet ont tous été payés deux fois.

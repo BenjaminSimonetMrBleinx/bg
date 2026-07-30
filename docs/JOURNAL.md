@@ -1,7 +1,97 @@
 # Journal
 
-Une entrée par session. Quatre lignes suffisent. La ligne « surprise » est la plus
-utile des quatre : c'est celle qu'on relit dans trois semaines.
+**Une entrée par session, avec son début et sa fin.** Chaque entrée dit quatre
+choses et pas une de plus : ce qu'on voulait, ce qu'on a livré, ce qu'on a
+appris, et où on reprend.
+
+La ligne « surprise » est la plus utile des quatre : c'est celle qu'on relit
+dans trois semaines, et c'est elle qui évite de repayer un piège.
+
+Le détail technique vit dans les messages de commit ; ce qu'on peut essayer,
+dans `NOTES-DE-VERSION.md` ; ce qui reste à faire, dans les tickets. Ici, on
+raconte la session.
+
+---
+
+## Session du 30 au 31 juillet 2026 — de 0.30.0 à 0.35.0
+
+**Début** : 30/07 en fin de journée, sur `v0.30.0`, dépôt propre.
+**Fin** : 31/07 au petit matin, sur `v0.35.0`, sept commits, rien de poussé.
+
+### Ce qu'on voulait
+
+Reprendre le projet après trois jours d'arrêt, et avancer sur la carte — « je
+veux avancer sur la carte, c'est le plan pour ce soir ».
+
+### Ce qu'on a livré
+
+| Version | Quoi |
+|---|---|
+| **0.31.0** | Le temps passe (une heure de jeu par minute), une mission peut imposer son heure, la ville passe de 131 à 473 m |
+| **0.32.0** | Trois types d'îlot : parc, terrain vague, parking |
+| **0.33.0** | Trois quartiers en bandes, le pavillonnaire et le strip mall |
+| **0.34.0** | Un horizon (les Sandia), une frange clairsemée en bordure, deux routes qui quittent la ville |
+| **0.35.0** | Le désert prend du relief : mesas, arroyo, fossé de la mission 1 |
+
+Hors jeu : les quinze missions et les trois ressources rangées en documents
+(`docs/15-missions.md`), le formulaire d'écriture de mission, une feuille de
+route complète sur GitHub, et les tickets repris de fond en comble —
+étiquettes, titres, et une première ligne qui dit à qui chaque ticket appartient.
+
+### Les surprises, et ce qu'elles ont coûté
+
+**La ville de 473 m tournait à 6 images/seconde, et la géométrie n'y était pour
+rien.** Ni les 1 682 décors, ni les 512 lampadaires, ni les douze mille faces :
+en retirant les seuls passants on remontait à 55. Le générateur en écrivait un
+par côté d'îlot — 255 au lieu de 15. **La règle qui en sort : ce qui est écrit
+par îlot ET vivant à chaque image finira par tuer le jeu.** La foule a
+maintenant un effectif fixe, comme le trafic.
+
+**Trois défauts sont tombés en branchant la foule sur le graphe des rues**, et
+le premier dormait depuis six versions : `pieton.gd` calculait l'arrivée depuis
+la direction inverse du tronçon, donc les passants traversaient la chaussée en
+diagonale. Personne ne l'avait vu parce que `foule.gd` construisait le graphe
+**sans jamais poser personne dessus**. Le code mort ne se teste pas.
+
+**Le tirage des types d'îlot partageait son flux aléatoire avec le reste du
+générateur.** Changer la densité d'un parking redistribuait la carte entière :
+une capture cadrée sur un terrain vague s'est retrouvée nez à nez avec un
+immeuble. Chaque îlot tire maintenant depuis sa propre position.
+
+**Un mur de roche en plein centre-ville**, puis deux autres au milieu de la
+carte du désert : les crêtes ont été posées du mauvais côté d'un axe, puis du
+bon côté mais dans la zone d'une autre carte. Les deux se voyaient sur la
+première image et sur aucun test.
+
+**J'ai documenté un muret en parpaing que je n'avais pas écrit.** Trouvé en
+regardant la capture. La règle du projet — on mesure le fichier produit, jamais
+l'intention — vaut aussi pour les commentaires.
+
+**Une piste qui serpente reprend tout ce qui était posé en supposant une piste
+droite.** Le camping-car s'est retrouvé garé sur la chaussée, et le fossé
+comblé par le nivellement de la route. Les deux se calculent maintenant à
+partir d'elle, et le générateur publie ses lieux au lieu que le jeu en garde
+des copies.
+
+### Ce qu'on a mesuré, et qui servira
+
+| | 8×8 (473 m) | 16×16 (929 m) |
+|---|---|---|
+| Images/seconde, de jour | 55 | 57 |
+| Images/seconde, de nuit | — | 55 |
+| Mémoire | 117 Mo | 258 Mo |
+| Nœuds | 11 900 | 27 600 |
+
+Quatre fois la surface ne coûte rien. Ce qui coûte, c'est ce qui bouge. Et
+quinze fois la ville actuelle tout chargé en même temps ne tiendra pas — d'où
+le gestionnaire de zones, à écrire quand la troisième zone arrivera.
+
+### Où on reprend
+
+Le désert est en pause à mi-chemin : il a son relief et ses lieux, il lui
+manque de quoi jouer la mission 1. Ensuite, au choix : finir le désert, ou
+attaquer le puits économique (#20), qui est ce qui répondra vraiment au « ça
+fait un peu vide ».
 
 ---
 
