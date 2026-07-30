@@ -16,6 +16,31 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.33.0 — Les quartiers, les pavillons et les centres commerciaux
+
+> **La ville a maintenant trois quartiers**, en bandes du nord au sud. Roule
+> d'ouest en est et tu changes de monde deux fois, sans qu'aucun panneau ne te
+> le dise.
+
+**Les Hauteurs**, à l'ouest — c'est là que tu commences. Des pavillons, leurs
+allées, leurs boîtes aux lettres, leurs murets en parpaing et leurs jardins en
+gravier. Des parcs. C'est le quartier de Walt, et le jour où quelqu'un
+regardera par la fenêtre, c'est ici que ça coûtera le plus cher.
+
+**Le Centre** — les immeubles, les parkings, et des **centres commerciaux de
+bord de route** : un bâtiment bas au fond, son auvent, ses vitrines, et le
+parking sur la rue. C'est le motif d'Albuquerque, celui de Los Pollos et du
+lavage de voitures.
+
+**Rio Sud**, à l'est — l'industrie et les terrains vagues. Peu de monde, et
+personne pour regarder.
+
+À essayer : pars de chez Walt et roule vers l'est en ligne droite jusqu'au bout
+de la carte. Dis-moi à quel moment tu sens que tu as changé de quartier — si ça
+n'arrive jamais, c'est le contraste entre les trois qu'il faut monter.
+
+---
+
 ## 0.32.0 — La ville n'est plus soixante-quatre fois le même îlot
 
 > **Trois nouveaux types de parcelle**, tirés au sort sur toute la carte : des

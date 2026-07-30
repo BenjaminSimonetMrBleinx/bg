@@ -54,6 +54,24 @@
     { "image": 20, "appeler": "Temps", "methode": "regler", "argument": 13 }
    ]
   },
+  "ilot_pavillonnaire": {
+   "quoi": "Une rue de pavillons, dans les Hauteurs. Ce qu'on regarde : est-ce que ca se lit comme un quartier ou l'on HABITE — allees, boites aux lettres, gravier — et pas comme douze boites alignees. C'est le quartier de Walt, et celui ou le soupcon montera le plus vite le jour ou les temoins existeront.",
+   "fin": 70,
+   "etapes": [
+    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
+    {"image": 30, "camera": [24, 4.2, -66], "vise": [40, 1.6, -80]}
+   ]
+  },
+
+  "ilot_strip_mall": {
+   "quoi": "Un centre commercial de bord de route, dans le Centre. Ce qu'on regarde : le batiment est-il bien AU FOND avec son parking sur la rue — l'inverse d'un centre-ville — et l'auvent se lit-il comme une devanture plutot que comme un hangar.",
+   "fin": 70,
+   "etapes": [
+    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
+    {"image": 30, "camera": [138, 6.0, -62], "vise": [155, 2.0, -100]}
+   ]
+  },
+
   "ilot_parc": {
    "quoi": "Un parc, vu du trottoir. Ce qu'on regarde : est-ce que les allees se lisent comme des chemins, est-ce que les arbres tiennent debout a cette distance, et est-ce que la pelouse ne jure pas avec le desert d'a cote.",
    "fin": 70,

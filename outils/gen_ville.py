@@ -88,6 +88,32 @@ TYPES_ILOT = [
     ("parking", 10),
 ]
 
+# LES QUARTIERS, ET POURQUOI ILS SONT ARRIVES AVEC LES PAVILLONS.
+#
+# Les trois premiers types — parc, terrain vague, parking — se tirent tres bien
+# au hasard : un parc entre deux immeubles est un parc, et un parking aussi. Un
+# ilot de pavillons coince entre deux tours, non. Il faut qu'il ait des voisins.
+#
+# La carte se decoupe donc en trois bandes nord-sud, comme le prevoit
+# docs/13-carte.md, et chacune tire dans SA table. C'est ce qui fait qu'on sait
+# ou l'on est sans qu'aucun panneau ne le dise — et se reperer sans carte est
+# tout l'enjeu.
+#
+#   HAUTEURS   a l'ouest, la ou commence la partie. Walter y habite : des
+#              pavillons, des arbres, des temoins a chaque fenetre
+#   CENTRE     le commerce et la densite : des immeubles, des parkings, des
+#              centres commerciaux de bord de route
+#   RIO SUD    l'industrie et la nuit : des terrains vagues, peu de monde,
+#              personne pour regarder
+QUARTIERS = {
+    "hauteurs": [("pavillonnaire", 44), ("bati", 24), ("parc", 18),
+                 ("parking", 8), ("terrain_vague", 6)],
+    "centre": [("bati", 56), ("parking", 16), ("strip_mall", 14),
+               ("parc", 8), ("terrain_vague", 6)],
+    "rio_sud": [("bati", 38), ("terrain_vague", 30), ("parking", 16),
+                ("strip_mall", 10), ("parc", 6)],
+}
+
 # Largeur d'une place de stationnement et profondeur d'une rangee, en metres.
 # La texture de parking porte UNE place : ces deux nombres sont donc aussi la
 # taille de sa tuile, et une ligne mal placee se corrige ici.
@@ -459,24 +485,47 @@ def plan_des_ilots(n: int, graine: int) -> dict:
     Consequence pratique : les vues de `scenarios.json` gardent leur sujet, et
     une meme graine donne la meme ville d'une version a l'autre.
     """
-    total = sum(poids for _, poids in TYPES_ILOT)
     plan = {}
     for bx in range(n):
         for by in range(n):
+            quartier = quartier_de(bx, n)
             # L'ilot (0, 0) reste bati quoi qu'il arrive : il porte les maisons
             # de Walter et de Jesse, et la partie commence devant.
             if (bx, by) == (0, 0):
-                plan[(bx, by)] = "bati"
+                plan[(bx, by)] = ("bati", quartier)
                 continue
+            table = QUARTIERS[quartier]
+            total = sum(poids for _, poids in table)
             local = random.Random((graine * 7919) ^ (bx * 131 + by * 17))
             seuil = local.uniform(0.0, total)
-            plan[(bx, by)] = TYPES_ILOT[0][0]
-            for nom, poids in TYPES_ILOT:
+            choisi = table[0][0]
+            for nom, poids in table:
                 seuil -= poids
                 if seuil <= 0.0:
-                    plan[(bx, by)] = nom
+                    choisi = nom
                     break
+            plan[(bx, by)] = (choisi, quartier)
     return plan
+
+
+def quartier_de(bx: int, n: int) -> str:
+    """Le quartier d'une colonne d'ilots.
+
+    Decoupage en bandes NORD-SUD, et pas en damier : une ville se traverse, et
+    ce qui doit changer est ce qu'on voit en roulant tout droit. Un damier de
+    quartiers donnerait un changement d'ambiance a chaque carrefour, c'est-a-
+    dire aucun.
+
+    Les Hauteurs sont a l'OUEST, la ou commence la partie — Walter part de chez
+    lui, dans son quartier.
+    """
+    if n <= 2:
+        return "hauteurs"
+    if bx < max(1, n // 3):
+        return "hauteurs"
+    if bx < max(2, (2 * n) // 3):
+        return "centre"
+    return "rio_sud"
 
 
 def parcelle_parc(m: dict, ox: float, oy: float,
@@ -625,6 +674,210 @@ def parcelle_parking(m: dict, ox: float, oy: float,
     return objets
 
 
+def maisonnette(m: dict, x0: float, y0: float, largeur: float, profondeur: float,
+                cote: str, rng: random.Random) -> None:
+    """Un pavillon : un corps, un toit debordant, une porte, deux fenetres.
+
+    CE N'EST PAS LA MAISON DE WALTER. Celle-la est un modele a part, avec un
+    interieur ou l'on entre. Ici on fabrique du VOISINAGE : ce qui doit se lire
+    a trente metres depuis une voiture, et rien de plus. Quatorze faces.
+
+    Le toit DEBORDE de trente centimetres. C'est le detail qui separe une
+    maison d'une boite : sans avancee, le mur et le toit se rejoignent sur une
+    arete nette qu'aucune construction n'a.
+    """
+    h = rng.uniform(2.8, 3.3)
+    x1, y1 = x0 + largeur, y0 + profondeur
+    boite(m["crepi"], x0, y0, x1, y1, 0.0, h, 3.2, 3.0)
+    d = 0.3
+    boite(m["toit"], x0 - d, y0 - d, x1 + d, y1 + d, h, h + 0.22, 3.0, 3.0)
+
+    # La facade qui donne sur la rue. Porte et fenetres sont des faces POSEES
+    # DEVANT le mur, a un centimetre : une ouverture creusee dans la geometrie
+    # couterait dix fois plus cher pour un resultat identique a cette distance.
+    e = 0.01
+    if cote in ("sud", "nord"):
+        yf = (y0 - e) if cote == "sud" else (y1 + e)
+        sens = -1.0 if cote == "sud" else 1.0
+        cx = x0 + largeur * 0.5
+        m["porte"].face(
+            [(cx - 0.45, yf, 0.0), (cx + 0.45, yf, 0.0),
+             (cx + 0.45, yf, 2.05), (cx - 0.45, yf, 2.05)][::int(sens)],
+            [(0, 0), (1, 0), (1, 1), (0, 1)])
+        for k in (0.18, 0.82):
+            fx = x0 + largeur * k
+            m["fenetre_maison"].face(
+                [(fx - 0.62, yf, 1.05), (fx + 0.62, yf, 1.05),
+                 (fx + 0.62, yf, 2.15), (fx - 0.62, yf, 2.15)][::int(sens)],
+                [(0, 0), (1, 0), (1, 1), (0, 1)])
+    else:
+        xf = (x0 - e) if cote == "ouest" else (x1 + e)
+        sens = 1.0 if cote == "ouest" else -1.0
+        cy = y0 + profondeur * 0.5
+        m["porte"].face(
+            [(xf, cy - 0.45, 0.0), (xf, cy + 0.45, 0.0),
+             (xf, cy + 0.45, 2.05), (xf, cy - 0.45, 2.05)][::int(sens)],
+            [(0, 0), (1, 0), (1, 1), (0, 1)])
+        for k in (0.18, 0.82):
+            fy = y0 + profondeur * k
+            m["fenetre_maison"].face(
+                [(xf, fy - 0.62, 1.05), (xf, fy + 0.62, 1.05),
+                 (xf, fy + 0.62, 2.15), (xf, fy - 0.62, 2.15)][::int(sens)],
+                [(0, 0), (1, 0), (1, 1), (0, 1)])
+
+
+def parcelle_pavillonnaire(m: dict, ox: float, oy: float,
+                           rng: random.Random) -> list[dict]:
+    """Un ilot de pavillons : douze maisons, leurs allees, leurs murets.
+
+    C'EST LE QUARTIER DE WALT, ET DONC CELUI DES TEMOINS. Une rue pavillonnaire
+    est l'endroit ou l'on ne peut rien faire discretement : des fenetres
+    partout, personne dans la rue, et tout le monde connait la voiture du
+    voisin. Le jour ou le soupcon existera, c'est ici qu'il montera le plus vite
+    — et c'est pour ca que ce type d'ilot vaut plus qu'un decor.
+
+    LE MURET EN PARPAING est l'element le plus caracteristique du Nouveau-
+    Mexique et il ne coute rien : sans lui, la rue est une rue de banlieue
+    generique ; avec lui, elle est americaine et sud-ouest.
+    """
+    # Le sol est du GRAVIER, pas de la pelouse. Une pelouse verte devant chaque
+    # maison d'Albuquerque sonne faux : la ville est a deux cents millimetres
+    # de pluie par an, et les jardins y sont mineraux.
+    dalle(m["desert"], ox, oy, ox + BLOC, oy + BLOC, 0.03, TUILE_SOL)
+
+    largeur, profondeur, recul = 9.0, 7.5, 3.4
+    objets: list[dict] = []
+    # Les percees du muret, un intervalle par allee et par cote. On les
+    # collecte en posant les maisons, et on batit le mur APRES : un muret
+    # construit d'abord se ferait traverser par chaque allee.
+    percees: dict[str, list[tuple[float, float]]] = {
+        "sud": [], "nord": [], "ouest": [], "est": []}
+    for cote in ("sud", "nord", "ouest", "est"):
+        for k in range(3):
+            depart = 2.0 + k * 12.3
+            if cote == "sud":
+                x0, y0 = ox + depart, oy + recul
+            elif cote == "nord":
+                x0, y0 = ox + depart, oy + BLOC - recul - profondeur
+            elif cote == "ouest":
+                x0, y0 = ox + recul, oy + depart
+            else:
+                x0, y0 = ox + BLOC - recul - profondeur, oy + depart
+            lg = largeur if cote in ("sud", "nord") else profondeur
+            pf = profondeur if cote in ("sud", "nord") else largeur
+            maisonnette(m, x0, y0, lg, pf, cote, rng)
+
+            # L'ALLEE. Elle relie la maison au trottoir, et c'est elle qui
+            # designe l'entree : sans allee, douze maisons alignees sur du
+            # gravier ne montrent pas ou l'on rentre.
+            if cote == "sud":
+                a = x0 + lg * 0.62
+                dalle(m["asphalte"], a, oy, a + 2.8, y0, 0.04, TUILE_ROUTE)
+            elif cote == "nord":
+                a = x0 + lg * 0.62
+                dalle(m["asphalte"], a, y0 + pf, a + 2.8, oy + BLOC, 0.04,
+                      TUILE_ROUTE)
+            elif cote == "ouest":
+                a = y0 + pf * 0.62
+                dalle(m["asphalte"], ox, a, x0, a + 2.8, 0.04, TUILE_ROUTE)
+            else:
+                a = y0 + pf * 0.62
+                dalle(m["asphalte"], x0 + lg, a, ox + BLOC, a + 2.8, 0.04,
+                      TUILE_ROUTE)
+            percees[cote].append((a - 0.4, a + 3.2))
+
+            objets.append({
+                "type": "boite_lettres",
+                "pos": [round(x0 + lg * 0.5, 2), 0.03,
+                        round(-(y0 + pf * 0.5), 2)],
+                "angle": round(CAPS[cote], 3),
+            })
+
+    # LE MURET EN PARPAING, bati en dernier, entre les allees.
+    #
+    # C'est l'element le plus caracteristique du Nouveau-Mexique et il ne coute
+    # presque rien : sans lui, la rue est une banlieue generique ; avec lui,
+    # elle est americaine et sud-ouest. Un metre trente, jamais plus : au-dela
+    # on ne voit plus les maisons depuis la voiture, et c'est tout ce qu'on
+    # vient chercher ici.
+    ep, haut = 0.16, 1.32
+    for cote, (fixe, sens) in (("sud", (oy, "x")), ("nord", (oy + BLOC, "x")),
+                               ("ouest", (ox, "y")), ("est", (ox + BLOC, "y"))):
+        debut = ox if sens == "x" else oy
+        bornes = sorted(percees[cote])
+        curseur = debut
+        for a, b in bornes + [(debut + BLOC, debut + BLOC)]:
+            if a - curseur > 0.6:
+                if sens == "x":
+                    boite(m["crepi"], curseur, fixe - ep / 2.0, a,
+                          fixe + ep / 2.0, 0.0, haut, 2.4, 1.4)
+                else:
+                    boite(m["crepi"], fixe - ep / 2.0, curseur,
+                          fixe + ep / 2.0, a, 0.0, haut, 2.4, 1.4)
+            curseur = max(curseur, b)
+    return objets
+
+
+def parcelle_strip_mall(m: dict, ox: float, oy: float,
+                        rng: random.Random) -> list[dict]:
+    """Un centre commercial de bord de route : un batiment bas en L, un auvent,
+    et un grand parking devant.
+
+    C'EST LE MOTIF D'ALBUQUERQUE. Los Pollos Hermanos en est un, le lavage de
+    voitures en est un, et la moitie des commerces de la serie aussi. Un
+    batiment bas pose au FOND de la parcelle avec son parking sur la rue :
+    l'inverse exact d'un centre-ville, et ce qui fait qu'on lit une ville
+    americaine de l'ouest plutot qu'une ville generique.
+    """
+    profond = 11.0
+    dalle_uv(m["parking"], ox, oy, ox + BLOC, oy + BLOC - profond, 0.03,
+             PLACE_LARGEUR, PLACE_PROFONDEUR)
+
+    y0 = oy + BLOC - profond
+    boite(m["bardage"], ox + 1.0, y0, ox + BLOC - 1.0, oy + BLOC, 0.0, 4.6,
+          4.0, 4.6)
+    # L'AUVENT. Une bande qui court sur toute la facade, a hauteur d'homme et
+    # demi. C'est ce qui distingue un commerce d'un hangar, et c'est aussi ce
+    # qui porte l'ombre sur la devanture.
+    boite(m["toit"], ox + 0.4, y0 - 2.6, ox + BLOC - 0.4, y0 + 0.2, 3.15, 3.45,
+          4.0, 1.0)
+    for k in range(5):
+        px = ox + 3.0 + k * (BLOC - 6.0) / 4.0
+        boite(m["trottoir"], px - 0.09, y0 - 2.5, px + 0.09, y0 - 2.32, 0.0,
+              3.15, 1.0, 3.0)
+    # Les vitrines : des faces posees devant le bardage, sous l'auvent.
+    for k in range(4):
+        vx = ox + 3.0 + k * (BLOC - 6.0) / 4.0
+        m["fenetre_maison"].face(
+            [(vx + 0.6, y0 - 0.01, 0.6), (vx + 7.0, y0 - 0.01, 0.6),
+             (vx + 7.0, y0 - 0.01, 2.9), (vx + 0.6, y0 - 0.01, 2.9)][::-1],
+            [(0, 0), (2.4, 0), (2.4, 1), (0, 1)])
+
+    objets: list[dict] = []
+    rangees = int((BLOC - profond) / PLACE_PROFONDEUR)
+    places = int(BLOC / PLACE_LARGEUR)
+    for r in range(rangees):
+        cap = math.pi / 2.0 if r % 2 == 0 else -math.pi / 2.0
+        y = oy + (r + 0.5) * PLACE_PROFONDEUR
+        for p in range(places):
+            if rng.random() > 0.3:
+                continue
+            objets.append({
+                "type": "garee_" + tirer(rng, MODELES_GAREES),
+                "pos": [round(ox + (p + 0.5) * PLACE_LARGEUR, 2), 0.03,
+                        round(-y, 2)],
+                "angle": round(cap + rng.uniform(-0.04, 0.04), 3),
+            })
+    # L'enseigne, plantee au bord de la rue : c'est ce qu'on voit avant le
+    # batiment, et de bien plus loin.
+    objets.append({
+        "type": "panneau",
+        "pos": [round(ox + 4.0, 2), 0.03, round(-(oy + 1.5), 2)],
+        "angle": 0.0,
+    })
+    return objets
+
+
 def graphe_des_rues(n: int) -> dict:
     """Le reseau routier : des carrefours, et des troncons entre eux.
 
@@ -717,7 +970,8 @@ def cactus_du_desert(etendue: float, rng: random.Random,
 
 def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
     noms = ["route", "asphalte", "trottoir", "desert", "lampes",
-            "herbe", "parking"] + FACADES
+            "herbe", "parking", "crepi", "toit", "porte", "fenetre_maison",
+            "bardage"] + FACADES
     m = {nom: Maillage(nom, mats[nom]) for nom in noms}
 
     etendue = n * BLOC + (n + 1) * COULOIR
@@ -798,7 +1052,7 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
             # LE TYPE DE L'ILOT. L'ilot (0, 0) reste bati quoi qu'il arrive :
             # c'est celui qui porte les maisons de Walter et de Jesse, et le
             # point de depart de la partie donne dessus.
-            type_ilot = plan[(bx, by)]
+            type_ilot, quartier = plan[(bx, by)]
             types[type_ilot] = types.get(type_ilot, 0) + 1
 
             if type_ilot != "bati":
@@ -814,6 +1068,10 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
                     decor += parcelle_parc(m, ox, oy, rng)
                 elif type_ilot == "terrain_vague":
                     decor += parcelle_terrain_vague(m, ox, oy, rng)
+                elif type_ilot == "pavillonnaire":
+                    decor += parcelle_pavillonnaire(m, ox, oy, rng)
+                elif type_ilot == "strip_mall":
+                    decor += parcelle_strip_mall(m, ox, oy, rng)
                 else:
                     decor += parcelle_parking(m, ox, oy, rng)
                 # Un lieu NOMME par parcelle : c'est ce qui permettra a une
@@ -824,6 +1082,7 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
                     "pos": [round(ox + BLOC / 2.0, 3), 0.0,
                             round(-(oy + BLOC / 2.0), 3)],
                     "cap": 0.0,
+                    "quartier": quartier,
                 })
                 nb = max(2, int(BLOC / ESPACEMENT_LAMPES))
                 for k in range(nb):
@@ -961,7 +1220,11 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
 
     return {"etendue": etendue, "lampes": lampes, "decor": decor,
             "pietons": pietons, "lieux": lieux, "graphe": graphe_des_rues(n),
-            "faces": faces, "types": types}
+            "faces": faces, "types": types,
+            "quartiers": {quartier_de(bx, n): [
+                round(COULOIR + bx * PAS - COULOIR / 2.0, 1),
+                round(COULOIR + bx * PAS + BLOC + COULOIR / 2.0, 1)]
+                for bx in range(n)}}
 
 
 def main() -> None:
@@ -976,7 +1239,8 @@ def main() -> None:
     bpy.ops.wm.read_factory_settings(use_empty=True)
 
     noms = ["route", "asphalte", "trottoir", "desert",
-            "herbe", "parking"] + FACADES
+            "herbe", "parking", "crepi", "toit", "porte", "fenetre_maison",
+            "bardage"] + FACADES
     mats = {nom: materiau(nom, textures) for nom in noms}
     mats["lampes"] = mats["trottoir"]
 
