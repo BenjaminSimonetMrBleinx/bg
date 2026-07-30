@@ -58,6 +58,17 @@ défendue pour en sortir.
 
 ---
 
+
+## Micro-scènes et clins d'œil
+
+Des scènes d'une minute, souvent sans mécanique. Elles viennent de la session
+missions du 31/07/2026 et sont volontairement laissées en vrac : chacune tient
+en une soirée, aucune n'a besoin d'être défendue.
+
+Le bacon en chiffres sur l'assiette d'anniversaire · Hank et ses minéraux (« c'est des *minéraux*, Marie ») · la Schraderbräu à goûter poliment · Badger qui raconte son scénario de Star Trek pendant un trajet · Skinny Pete au piano, très bien · le distributeur d'essuie-mains de l'hôpital · le violet de Marie et ses petits vols · l'ours en peluche rose dans une piscine, jamais expliqué · Los Pollos Hermanos comme vrai restaurant où l'on peut manger · la cassette de karaoké de Gale à trouver dans son appartement (lié à la mission 14) · le chapeau acheté en magasin, en cinématique, sans un mot · la tarentule dans le bocal (liée à la mission 12).
+
+---
+
 ## Comment on s'en sert
 
 1. On y jette une idée sans la discuter, dès qu'elle passe.

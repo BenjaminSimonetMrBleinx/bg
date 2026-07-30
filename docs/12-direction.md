@@ -44,6 +44,14 @@ familial. Tout se perçoit : la couleur du produit, le ton d'une réplique, la
 lumière d'une pièce, le fait que Walter Junior dise bonjour ou non. Un chiffre
 transforme un choix en optimisation, et le sentiment disparaît.
 
+
+> **Exception temporaire, actée le 31/07/2026.** Les points de réputation et de
+> vie perso sont **affichés** pendant le développement, comme l'argent l'est
+> déjà. On ne sait pas régler ce qu'on ne voit pas, et les valeurs de ce
+> document sont des ordres de grandeur. La formule à retenir : *pour l'instant
+> tout se compte ; à terme, seul l'argent se comptera.* La règle 1 reste
+> l'objectif, pas l'état.
+
 **2. Un choix sans coût n'est pas un choix.** Si une option est meilleure sur
 tous les plans, il n'y a rien à décider. Chaque alternative échange quelque
 chose contre autre chose.
@@ -128,15 +136,18 @@ exactement ce qu'on ne veut pas. Le cancer n'est pas une jauge de vie, c'est
 Il touche les trois piliers à la fois, et c'est pour ça qu'il vaut mieux qu'une
 mécanique isolée.
 
-### 1. Il prélève — de l'argent, et surtout du temps
+### 1. Il prélève de l'argent, et il rend de la vie perso
 
-Le traitement se paie périodiquement, et **de plus en plus cher**. Mais le vrai
-coût n'est pas la facture : **une séance mange une demi-journée**. C'est une
-demi-journée qu'on n'a pas passée à cuisiner, et qu'on n'a pas passée avec son
-fils.
+Le traitement se paie périodiquement, et **de plus en plus cher** à chaque
+palier. En échange il rapporte **de la vie perso, au meilleur taux du jeu** :
+l'hôpital est le seul endroit où l'on convertit de l'argent en vie perso.
 
-C'est là que le cancer devient une mécanique et pas une ligne comptable : il ne
-prend pas de l'argent, il prend **le seul truc dont on manque vraiment**.
+*Reformulé le 31/07/2026.* La version du 28 disait que le vrai coût n'était pas
+la facture mais la demi-journée mangée par une séance. C'est tombé avec la
+décision de **repousser le temps** : aucune mécanique ne doit en dépendre pour
+l'instant. Ce qui reste est plus simple à jouer et vise le même endroit — voir
+[Les trois ressources](#les-trois-ressources) ci-dessus, et surtout ce que la
+rémission retire.
 
 ### 2. Il change ce que Walt peut faire
 
@@ -194,6 +205,58 @@ Tout l'acte III se joue là-dessus.
 - une barre de vie qui remonte ;
 - un compte à rebours avant la mort ;
 - un événement aléatoire qui interrompt une mission.
+
+---
+
+## Les trois ressources
+
+*Arrêté le 31/07/2026, en même temps que les quinze missions —
+[15-missions.md](15-missions.md). C'est ce qui donne enfin une définition à la
+réputation, citée deux fois par ce document et définie nulle part.*
+
+### Les trois valeurs
+
+| Ressource | Nature | Se gagne | Se perd | Se dépense |
+|---|---|---|---|---|
+| **Argent** | Monnaie | Ventes, missions, salaire | Achats, traitements | **Oui — la seule** |
+| **Réputation** | Score (« Heisenberg ») | Cuisiner soi-même, vendre, tenir tête, le chapeau | Rare (déléguer, reculer) | Non |
+| **Vie perso** | Score (« Walter White ») | Présence familiale, honnêteté relative, **traitement du cancer** | Rare (absences graves, mensonges découverts) | Non |
+
+- **Seul l'argent se dépense, et uniquement dans les missions** (matériel, améliorations, traitement, mises de départ).
+- **Réputation et vie perso sont des scores** : ils se gagnent et se perdent (rarement) dans les missions et les activités, mais ne se consomment jamais.
+- **Le cancer fait partie de la vie perso.** Le soigner rapporte des points de vie perso : l'hôpital est le seul endroit où l'on convertit de l'argent en vie perso. Le traitement doit être la **source de vie perso la plus efficace du jeu** — ainsi, à la rémission, le joueur perd sa meilleure boucle de gain, et le constat du socle (« il n'a plus de raison de continuer, et il continue ») devient une expérience mécanique vécue, pas seulement un moment d'histoire.
+
+### Les portes
+
+Les missions histoire s'ouvrent par **seuils**, jamais par dépense : « réputation ≥ X » débloque sans rien consommer. La ressource-porte varie d'une mission à l'autre pour forcer le joueur à jouer les trois boucles sans le lui dire. Aucun blocage définitif possible : tout progrès est acquis, au pire on farme.
+
+### Les trois formes de choix dans les missions
+
+1. **Le bon choix** — une option clairement meilleure, qui récompense la lecture de la situation (ex. : voir le morceau d'assiette manquant).
+2. **Les bons choix multiples** — plusieurs options valables qui paient dans des monnaies différentes (argent vs vie perso). Le joueur décide implicitement ce qu'il veut gagner ; rien ne l'annonce, il le découvre au gain.
+3. **Le choix à perte** — quoi qu'on choisisse, une jauge baisse. **Rare, réservé aux finales.** C'est sa rareté qui le fait marquer.
+
+### Les boucles hors missions (monde ouvert)
+
+| Boucle | Rapporte | Garde-fou anti-farm |
+|---|---|---|
+| Cuisiner + vendre | Argent + réputation | Les composants coûtent ; les spots de vente s'usent ; incident chimique possible (voir annexe « La fournée qui tourne mal ») |
+| Repas, devoirs, sorties avec Junior | Vie perso | Rendement décroissant dans la même journée |
+| Hôpital / traitement | Vie perso (le meilleur taux du jeu) | Coûte de l'argent, de plus en plus cher par palier |
+| Le lavage auto (avant rachat) | Argent, peu | Volontairement lent : c'est le taux horaire de la vie honnête |
+| Petits contrats / livraisons pour Jesse | Argent | Moins rentable que cuisiner soi-même (règle du socle) |
+| Blanchiment hebdomadaire (après rachat du lavage, palier 3) | Convertit argent sale → propre | Prend du temps, plafonné par semaine |
+
+### Règle d'équilibrage
+
+Comme rien ne se dépense (hors argent), **éviter l'inflation** : les seuils des portes montent plus vite que les gains faciles. Les gains de réputation d'un palier sont calibrés pour ouvrir le palier suivant *si* on joue les missions du palier ; le farm comble l'écart mais ne permet jamais de sauter un palier.
+
+**Ce que ça change pour le cancer.** Il ne prend plus « du temps » comme
+l'écrivait la version du 28/07 : **le soigner rapporte de la vie perso**, et
+c'est le meilleur taux du jeu. La conséquence est la même et elle est plus
+forte, parce qu'elle se joue au lieu de se raconter : **à la rémission, le
+joueur perd sa meilleure boucle de gain.** Il n'a plus de raison de continuer,
+et il continue quand même.
 
 ---
 
