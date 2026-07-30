@@ -16,6 +16,21 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.35.0 — Le désert devient un lieu
+
+> **Il y a du relief.** Des mesas à flancs raides — les seuls repères de la
+> zone, on se dirige par elles — un **arroyo** (le lit d'un torrent à sec) que
+> la piste traverse en plongeant, et un **fossé** contre la piste : c'est là
+> que le camping-car sortira de la route à la mission 1.
+
+**La piste serpente** au lieu d'aller tout droit. Une ligne droite dans une
+plaine, on en voit la fin dès le départ et on ne tourne jamais le volant.
+
+À essayer : va au désert et suis la piste jusqu'au bout sans couper. Le passage
+de l'arroyo est le seul endroit où tu ne vois pas ce qui arrive.
+
+---
+
 ## 0.34.0 — La ville n'est plus posée au milieu de nulle part
 
 > **Il y a des montagnes.** Les Sandia, au nord et à l'ouest, dans la brume.

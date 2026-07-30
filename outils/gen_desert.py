@@ -28,6 +28,7 @@ Convention : comme partout ailleurs, construit pose au sol, avant vers -Y.
 from __future__ import annotations
 
 import argparse
+import json
 import math
 import random
 import sys
@@ -47,11 +48,19 @@ CENTRE = (900.0, -900.0)
 # c'est justement au-dela que commence le rien.
 COTE = 460.0             # cote du terrain, en metres
 
-# Ou le jeu pose le camping-car, en coordonnees du TERRAIN (Blender : x, y).
-# Duplique de systemes/desert.gd, qui l'instancie — le generateur ne peut pas
-# lire un script Godot. Les deux doivent bouger ensemble ; s'ils divergent, un
-# cactus repousse dans le vehicule.
-CAMPING_CAR = (-23.0, -96.0)
+# Ou le jeu pose le camping-car et ou s'ouvre la mission 1 — en ORDONNEE
+# seulement. L'abscisse se calcule a partir de la piste, qui serpente : les
+# deux etaient ecrits en dur du temps ou elle etait droite, et la premiere
+# courbe les a repris tous les deux dessous. Un camping-car gare au milieu de
+# la route, et un fosse comble par le nivellement de la piste.
+CAMPING_CAR_Y = -96.0
+CAMPING_CAR_ECART = 26.0     # a l'ecart de la piste, cote est
+FOSSE_Y = -132.0
+FOSSE_ECART = 21.0
+
+# Ou l'on arrive en venant de la ville. Sur la piste, forcement : c'est par
+# elle qu'on entre. Duplique cote jeu par desert.gd, qui prefere ce fichier.
+ARRIVEE_Y = -150.0
 TUILE_SABLE = 12.0       # la texture de sable se repete tous les 12 m
 PISTE = 6.0              # DEMI-largeur de la piste : elle fait donc 12 m
 Z_PISTE = 0.012
@@ -142,34 +151,174 @@ class Maillage:
 # ------------------------------------------------------------------- le terrain
 
 
-def terrain(mats, graine: int) -> int:
-    """Le sol, la piste, et un relief tres bas.
+# LE RELIEF DU DESERT, ET POURQUOI IL A CHANGE.
+#
+# Le terrain etait une grille de vingt par vingt avec des bosses d'un metre.
+# C'etait ce qu'il fallait quand le desert n'etait qu'un decor a traverser : on
+# arrivait, on regardait le camping-car, on repartait.
+#
+# Le palier 1 en fait un LIEU. La mission 1 s'ouvre sur le camping-car dans un
+# fosse, il faut trois objets a ramasser autour, une piste par laquelle sortir,
+# et le joueur doit pouvoir se reperer dans la panique. Un plateau parfaitement
+# plat ne permet aucune des quatre : on n'y cache rien, et surtout on n'y sait
+# jamais ou l'on est.
+#
+# D'ou trois formes, et pas une de plus :
+#
+#   LES MESAS      des plateaux a flancs raides. Ce sont les seuls reperes du
+#                  desert : on se dirige par eux, comme on se dirige en ville
+#                  par les enseignes
+#   L'ARROYO       le lit d'un torrent a sec, qui traverse d'est en ouest. La
+#                  piste y plonge, et c'est le seul endroit ou l'on ne voit pas
+#                  arriver ce qui vient
+#   LE FOSSE       une cuvette contre la piste. C'est la que le camping-car
+#                  s'encastre a la mission 1
+#
+# Les mesas sont a flanc RAIDE et non en pente douce, et c'est une decision de
+# jeu : une colline se monte en voiture, un plateau non. Ce qui est derriere
+# reste derriere tant qu'on ne l'a pas contourne.
 
-    Le sol n'est pas un seul quadrilatere : une grille de vingt par vingt, dont
-    les sommets montent un peu. C'est presque gratuit — quatre cents faces — et
-    ca suffit a enlever l'impression de patinoire qu'un plan parfait donne
-    toujours, meme texture."""
+MESAS = [
+    # (x, y, rayon, hauteur)
+    (-152.0, 118.0, 44.0, 13.5),
+    (138.0, -34.0, 33.0, 9.0),
+    (-88.0, -178.0, 26.0, 6.5),
+]
+
+# L'arroyo : sa position en y, sa demi-largeur, sa profondeur.
+ARROYO_Y = 46.0
+ARROYO_LARGE = 15.0
+ARROYO_FOND = 2.8
+
+# Le fosse de la mission 1 : contre la piste, cote est.
+FOSSE_RAYON = 15.0
+FOSSE_FOND = 2.3
+
+
+def piste_x(y: float) -> float:
+    """De combien la piste s'ecarte de l'axe, a cette hauteur.
+
+    ELLE SERPENTE, et ce n'est pas cosmetique. Une ligne droite dans une plaine
+    donne un couloir : on voit sa fin des le depart, on ne tourne jamais le
+    volant, et le desert entier se resume au ruban. Deux courbes tres douces
+    suffisent a ce qu'on decouvre la suite en avancant.
+    """
+    return 26.0 * math.sin(y / 95.0)
+
+
+def piste_z(y: float) -> float:
+    """Le profil vertical de la piste : plate, sauf quand elle passe l'arroyo."""
+    return -ARROYO_FOND * 0.82 * math.exp(-((y - ARROYO_Y) / 26.0) ** 2)
+
+
+def _mesa(x: float, y: float) -> float:
+    h = 0.0
+    for cx, cy, rayon, haut in MESAS:
+        d = math.hypot(x - cx, y - cy)
+        if d <= rayon:
+            h = max(h, haut)
+        elif d < rayon * 1.22:
+            # Le talus. Court : c'est ce qui fait la falaise plutot que la
+            # colline.
+            t = 1.0 - (d - rayon) / (rayon * 0.22)
+            h = max(h, haut * t * t)
+    return h
+
+
+def _arroyo(x: float, y: float) -> float:
+    # Le lit MEANDRE. Un fosse rectiligne se lit comme une tranchee creusee a
+    # la pelleteuse ; l'eau, elle, ne va jamais droit.
+    centre = ARROYO_Y + 22.0 * math.sin(x / 78.0)
+    d = abs(y - centre)
+    if d >= ARROYO_LARGE:
+        return 0.0
+    return -ARROYO_FOND * math.cos(d / ARROYO_LARGE * math.pi / 2.0) ** 2
+
+
+def fosse_xy() -> tuple[float, float]:
+    """Le fosse, JUSTE A COTE de la piste et jamais dessous.
+
+    C'est la que le camping-car sort de la route a la mission 1 : assez pres
+    pour qu'on comprenne d'un regard ce qui s'est passe, assez loin pour que le
+    nivellement de la piste ne comble pas la cuvette."""
+    return (piste_x(FOSSE_Y) + FOSSE_ECART, FOSSE_Y)
+
+
+def camping_car_xy() -> tuple[float, float]:
+    return (piste_x(CAMPING_CAR_Y) + CAMPING_CAR_ECART, CAMPING_CAR_Y)
+
+
+def _fosse(x: float, y: float) -> float:
+    fx, fy = fosse_xy()
+    d = math.hypot(x - fx, y - fy)
+    if d >= FOSSE_RAYON:
+        return 0.0
+    return -FOSSE_FOND * math.cos(d / FOSSE_RAYON * math.pi / 2.0) ** 2
+
+
+def hauteur_du_sol(x: float, y: float, rng_bruit) -> float:
+    """L'altitude du terrain en ce point. C'est LA fonction de reference : le
+    placement des cactus et des lieux la relit, plutot que de supposer zero."""
+    demi = COTE / 2.0
+    # Bord du terrain rigoureusement plat : une bosse a la limite du maillage
+    # ferait apparaitre le vide en dessous.
+    if abs(x) > demi - 0.5 or abs(y) > demi - 0.5:
+        return 0.0
+
+    h = _mesa(x, y) + _arroyo(x, y) + _fosse(x, y)
+    # Les dunes : du bruit doux par-dessus, jamais sur les plateaux.
+    h += rng_bruit(x, y) * 1.3
+
+    # LA PISTE IMPOSE SON PROFIL. On mélange vers elle a l'approche plutot que
+    # de la poser sur le terrain : une bande d'asphalte qui suit des bosses
+    # d'un metre fait sauter la voiture, et une bande plate posee sur un
+    # terrain bossu laisse voir le vide en dessous.
+    d = abs(x - piste_x(y))
+    emprise = PISTE + 9.0
+    if d < emprise:
+        t = 1.0 if d < PISTE + 1.0 else 1.0 - (d - PISTE - 1.0) / (emprise - PISTE - 1.0)
+        h = h * (1.0 - t) + piste_z(y) * t
+    return h
+
+
+def bruit_de_dunes(graine: int):
+    """Un bruit lisse et REPETABLE, tire une fois et interpole.
+
+    Il est fabrique a part parce que DEUX choses doivent lire le meme sol : le
+    terrain qui le sculpte, et les cactus qui se posent dessus. Un cactus qui
+    relirait un autre bruit flotterait ou s'enterrerait, et ca ne se verrait
+    que sur une capture rapprochee.
+    """
     rng = random.Random(graine)
-    m = Maillage("Sol", mats["desert"])
+    cote_bruit = 26
+    bruit = [[rng.uniform(-1.0, 1.0) for _ in range(cote_bruit + 1)]
+             for _ in range(cote_bruit + 1)]
 
-    n = 20
+    def dunes(x: float, y: float) -> float:
+        u = (x + COTE / 2.0) / COTE * cote_bruit
+        v = (y + COTE / 2.0) / COTE * cote_bruit
+        i, j = int(u), int(v)
+        i = max(0, min(cote_bruit - 1, i))
+        j = max(0, min(cote_bruit - 1, j))
+        fu, fv = u - i, v - j
+        a = bruit[i][j] * (1 - fu) + bruit[i + 1][j] * fu
+        b = bruit[i][j + 1] * (1 - fu) + bruit[i + 1][j + 1] * fu
+        return a * (1 - fv) + b * fv
+
+    return dunes
+
+
+def terrain(mats, dunes) -> tuple[int, dict]:
+    """Le sol, la piste, le relief — et les lieux qu'ils definissent."""
+    m = Maillage("Sol", mats["desert"])
+    # Cent mailles de cote : 4,6 m par cellule. A vingt, une mesa n'avait que
+    # deux cellules de flanc et ressemblait a une pyramide.
+    n = 100
     pas = COTE / n
     demi = COTE / 2.0
 
-    def hauteur(i: int, j: int) -> float:
-        # Bord du terrain rigoureusement plat : une bosse a la limite du
-        # maillage ferait apparaitre le vide en dessous.
-        if i in (0, n) or j in (0, n):
-            return 0.0
-        x = -demi + i * pas
-        y = -demi + j * pas
-        # La piste reste plate, sinon la voiture saute sur une route.
-        if abs(x) < PISTE:
-            return 0.0
-        loin = min(abs(x) - PISTE, 40.0) / 40.0
-        return (rng.random() - 0.35) * 1.1 * loin
-
-    grille = [[hauteur(i, j) for j in range(n + 1)] for i in range(n + 1)]
+    grille = [[hauteur_du_sol(-demi + i * pas, -demi + j * pas, dunes)
+               for j in range(n + 1)] for i in range(n + 1)]
     for i in range(n):
         for j in range(n):
             x0, y0 = -demi + i * pas, -demi + j * pas
@@ -184,17 +333,48 @@ def terrain(mats, graine: int) -> int:
 
     # La piste : une bande d'asphalte fatigue qui traverse du nord au sud.
     # C'est par la qu'on arrive, et c'est ce qui donne une direction a un
-    # espace qui n'en a aucune.
+    # espace qui n'en a aucune. Elle suit maintenant sa propre courbe et son
+    # propre profil — voir piste_x() et piste_z().
     p = Maillage("Piste", mats["asphalte"])
-    p.face([(-PISTE, -demi, Z_PISTE), (PISTE, -demi, Z_PISTE),
-            (PISTE, demi, Z_PISTE), (-PISTE, demi, Z_PISTE)],
-           [(0, 0), (PISTE * 2 / 5.0, 0),
-            (PISTE * 2 / 5.0, COTE / 5.0), (0, COTE / 5.0)])
+    segments = 92
+    for k in range(segments):
+        ya = -demi + COTE * k / segments
+        yb = -demi + COTE * (k + 1) / segments
+        xa, xb = piste_x(ya), piste_x(yb)
+        za, zb = piste_z(ya) + Z_PISTE, piste_z(yb) + Z_PISTE
+        va, vb = (ya + demi) / 5.0, (yb + demi) / 5.0
+        p.face([(xa - PISTE, ya, za), (xa + PISTE, ya, za),
+                (xb + PISTE, yb, zb), (xb - PISTE, yb, zb)],
+               [(0, va), (PISTE * 2 / 5.0, va),
+                (PISTE * 2 / 5.0, vb), (0, vb)])
     total += p.finir()
-    return total
+
+    # LES LIEUX. Le generateur SAIT ou sont les choses — il les creuse. Il les
+    # publie donc, au lieu que desert.gd en garde des copies : le fichier le
+    # disait lui-meme en tete de CAMPING_CAR, « les deux doivent bouger
+    # ensemble ; s'ils divergent, un cactus repousse dans le vehicule ».
+    # Publies en coordonnees GODOT, pas Blender : (x, y, z) blender devient
+    # (x, z, -y). C'est le jeu qui les lit, il n'a pas a faire la conversion —
+    # et une conversion faite a deux endroits finit toujours par diverger.
+    def godot(lx: float, ly: float, lz: float | None = None) -> list:
+        z = hauteur_du_sol(lx, ly, dunes) if lz is None else lz
+        return [round(lx, 2), round(z, 2), round(-ly, 2)]
+
+    lieux = {
+        "camping_car": godot(*camping_car_xy()),
+        "fosse": godot(*fosse_xy()),
+        "arroyo_piste": godot(piste_x(ARROYO_Y), ARROYO_Y, piste_z(ARROYO_Y)),
+        # Legerement au-dessus du sol : on y depose un vehicule, et le poser
+        # pile sur la surface le fait naitre en intersection avec elle.
+        "arrivee": godot(piste_x(ARRIVEE_Y), ARRIVEE_Y,
+                         piste_z(ARRIVEE_Y) + 0.4),
+    }
+    for k, (cx, cy, rayon, haut) in enumerate(MESAS):
+        lieux["mesa_%d" % (k + 1)] = godot(cx, cy, haut)
+    return total, lieux
 
 
-def cactus(mats, graine: int) -> int:
+def cactus(mats, graine: int, dunes) -> int:
     """Des saguaros semes autour de la piste.
 
     Cuits dans le terrain plutot qu'instancies comme le mobilier urbain : ils
@@ -207,23 +387,31 @@ def cactus(mats, graine: int) -> int:
         x = rng.uniform(-COTE / 2 + 12, COTE / 2 - 12)
         y = rng.uniform(-COTE / 2 + 12, COTE / 2 - 12)
         # Jamais sur la piste, ni assez pres pour qu'on les percute en roulant.
-        if abs(x) < PISTE + 3.5:
+        if abs(x - piste_x(y)) < PISTE + 3.5:
             continue
         # Ni sur le camping-car. Le generateur du terrain ne sait pas qu'un
         # objet sera pose ici — c'est le jeu qui l'instancie — donc la reserve
         # est declaree en dur. Un saguaro traversait la cellule de part en
         # part, et ca ne se voyait que sur une capture rapprochee.
-        if (x - CAMPING_CAR[0]) ** 2 + (y - CAMPING_CAR[1]) ** 2 < 8.0 ** 2:
+        cx, cy = camping_car_xy()
+        if (x - cx) ** 2 + (y - cy) ** 2 < 9.0 ** 2:
+            continue
+        # Ni au fond de l'arroyo : c'est un lit de torrent, ce qui y pousse est
+        # emporte a la premiere pluie. Le vide y sert le lieu — c'est le seul
+        # endroit degage du desert.
+        z = hauteur_du_sol(x, y, dunes)
+        if z < -0.9:
             continue
         h = rng.uniform(2.2, 4.4)
-        m.prisme(x, y, 0.0, h, 0.26, 0.20, 6, 1.0)
+        m.prisme(x, y, z, z + h, 0.26, 0.20, 6, 1.0)
         # Un bras sur deux, coude vers le haut : c'est la silhouette qui fait
         # le saguaro, pas le nombre de bras.
         if rng.random() < 0.55:
             s = 1.0 if rng.random() < 0.5 else -1.0
-            m.boite(x + s * 0.2, y - 0.12, h * 0.52,
-                    x + s * 0.78, y + 0.12, h * 0.52 + 0.24)
-            m.prisme(x + s * 0.66, y, h * 0.52, h * 0.86, 0.17, 0.14, 6, 1.0)
+            m.boite(x + s * 0.2, y - 0.12, z + h * 0.52,
+                    x + s * 0.78, y + 0.12, z + h * 0.52 + 0.24)
+            m.prisme(x + s * 0.66, y, z + h * 0.52, z + h * 0.86,
+                     0.17, 0.14, 6, 1.0)
         poses += 1
         if poses >= 70:
             break
@@ -293,9 +481,16 @@ def main() -> None:
         sortie = racine / sortie
     sortie.mkdir(parents=True, exist_ok=True)
 
+    lieux: dict = {}
+    dunes = bruit_de_dunes(a.seed)
+
+    def batir_desert(mats):
+        nonlocal lieux
+        faces, lieux = terrain(mats, dunes)
+        return faces + cactus(mats, a.seed, dunes)
+
     for nom, besoins, batir in [
-        ("desert", ["desert", "asphalte", "cactus"],
-         lambda mats: terrain(mats, a.seed) + cactus(mats, a.seed)),
+        ("desert", ["desert", "asphalte", "cactus"], batir_desert),
         ("camping_car", ["camping_car", "vitre", "pneu"], camping_car),
     ]:
         bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -314,6 +509,15 @@ def main() -> None:
         )
         print("desert %-14s %4d faces  -> %s" % (nom, faces, fichier.name))
 
+    # LES LIEUX, en donnees. desert.gd les relit au lieu d'en garder des
+    # copies : l'en-tete de CAMPING_CAR prevenait deja que les deux devaient
+    # bouger ensemble, et qu'un cactus repousserait dans le vehicule sinon.
+    fiche = sortie / "desert_lieux.json"
+    fiche.write_text(json.dumps({"cote": COTE, "lieux": lieux}, indent=1),
+                     encoding="utf-8")
+    for nom, pos in sorted(lieux.items()):
+        print("  lieu %-14s %s" % (nom, pos))
+    print("lieux      %s" % fiche.name)
     print("centre du desert : (%.0f, %.0f)" % CENTRE)
     print("sortie     %s" % sortie)
 

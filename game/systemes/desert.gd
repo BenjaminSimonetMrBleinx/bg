@@ -34,8 +34,42 @@ const CAP_ARRIVEE := 0.0
 
 ## Le camping-car, a l'ecart de la piste. C'est le seul point de repere de la
 ## zone : trop loin il ne se voit pas, trop pres il bouche la route.
+##
+## CETTE VALEUR EST UN SECOURS, PAS LA SOURCE. La position vraie est publiee
+## par le generateur dans desert_lieux.json, parce que lui seul sait ou passe
+## la piste — elle serpente, et deux constantes recopiees a la main se sont
+## retrouvees AU MILIEU de la chaussee a la premiere courbe. On ne garde
+## celle-ci que pour un terrain jamais regenere.
 const CAMPING_CAR := Vector3(-23.0, 0.0, 96.0)
 const CAP_CAMPING_CAR := 108.0
+
+## Les lieux publies par outils/gen_desert.py : le camping-car, le fosse de la
+## mission 1, les mesas, le passage de l'arroyo.
+const LIEUX := "res://assets/desert/desert_lieux.json"
+
+var _lieux: Dictionary = {}
+
+
+## Un lieu du desert, en coordonnees du MONDE. Vector3.INF si inconnu — les
+## missions demandent par nom et ne recopient jamais de coordonnees.
+func lieu(nom: String) -> Vector3:
+	if not _lieux.has(nom):
+		return Vector3.INF
+	var p: Array = _lieux[nom]
+	return global_position + Vector3(float(p[0]), float(p[1]), float(p[2]))
+
+
+func _charger_les_lieux() -> void:
+	if not FileAccess.file_exists(LIEUX):
+		push_warning("desert : %s absent, positions de secours. Regenerer : "
+				% LIEUX + "blender -b -P outils/gen_desert.py")
+		return
+	var lu: Variant = JSON.parse_string(FileAccess.get_file_as_string(LIEUX))
+	if typeof(lu) != TYPE_DICTIONARY:
+		push_error("desert : %s illisible" % LIEUX)
+		return
+	_lieux = (lu as Dictionary).get("lieux", {})
+	print("desert : %d lieu(x) nomme(s)" % _lieux.size())
 
 
 func _ready() -> void:
@@ -47,10 +81,15 @@ func _ready() -> void:
 	add_child(sol)
 	_ajouter_collisions(sol)
 
+	_charger_les_lieux()
+
 	if camping_car != null:
 		var cc := camping_car.instantiate() as Node3D
 		cc.name = "CampingCar"
-		cc.position = CAMPING_CAR
+		# La position publiee l'emporte : elle tient compte du relief et de la
+		# courbe de la piste, que la constante ignore.
+		var pose := lieu("camping_car")
+		cc.position = (pose - global_position) if pose != Vector3.INF else CAMPING_CAR
 		cc.rotation.y = deg_to_rad(CAP_CAMPING_CAR)
 		add_child(cc)
 		_encaisser(cc)
@@ -63,7 +102,11 @@ func _ready() -> void:
 	# La fleche du retour pointe vers la ville, donc vers +Z : un demi-tour par
 	# rapport a celle de l'aller. Elle est le seul indice qu'on peut repartir —
 	# sans elle, la zone est un cul-de-sac et on cherche la sortie.
-	_poser("fleche_sol", ARRIVEE + Vector3(0.0, -0.4, 6.0), 180.0)
+	# Fleche et panneau se posent RELATIVEMENT au point d'arrivee reel, pas a
+	# la constante : la piste serpente, et l'ancienne arrivee ecrite en dur
+	# tombait vingt-six metres a cote de la chaussee.
+	var ici := arrivee() - global_position
+	_poser("fleche_sol", ici + Vector3(0.0, -0.4, 6.0), 180.0)
 	# Le panneau se pose A COTE de la piste, pas dessus : la piste fait douze
 	# metres de large, un panneau plante a six metres de son axe est encore
 	# dedans, et on le prend en roulant.
@@ -71,7 +114,7 @@ func _ready() -> void:
 	# Il annonce ALBUQUERQUE, pas DESERT. C'est le panneau du RETOUR, pose sur
 	# le point d'arrivee : il dit ou mene la route qu'il signale, et il disait
 	# donc au joueur deja dans le desert qu'il allait au desert.
-	_poser("panneau_albuquerque", ARRIVEE + Vector3(10.5, -0.4, 9.0), 0.0)
+	_poser("panneau_albuquerque", ici + Vector3(10.5, -0.4, 9.0), 0.0)
 
 
 # Meme dispositif que pour la ville : les collisions sont fabriquees a la
@@ -158,7 +201,8 @@ func _poser(type: String, ou: Vector3, angle: float) -> void:
 ## plutot que de porter une copie : deux coordonnees ecrites a deux endroits
 ## finissent toujours par diverger, et celle-ci depose le joueur dans le vide.
 func arrivee() -> Vector3:
-	return global_position + ARRIVEE
+	var pose := lieu("arrivee")
+	return pose if pose != Vector3.INF else global_position + ARRIVEE
 
 
 func cap_arrivee() -> float:

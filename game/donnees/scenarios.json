@@ -54,6 +54,33 @@
     { "image": 20, "appeler": "Temps", "methode": "regler", "argument": 13 }
    ]
   },
+  "desert_arrivee": {
+   "quoi": "L'arrivee au desert, vue depuis la piste. Ce qu'on regarde : est-ce qu'on a de quoi se REPERER — les mesas — et est-ce que la piste donne envie de la suivre au lieu d'etre un ruban droit.",
+   "fin": 80,
+   "etapes": [
+    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 10},
+    {"image": 30, "camera": [874, 9.0, -736], "vise": [880, 3.0, -800]}
+   ]
+  },
+
+  "desert_arroyo": {
+   "quoi": "Le passage de l'arroyo : le lit du torrent a sec, et la piste qui y plonge. Ce qu'on regarde : est-ce que la depression se lit, et est-ce que la piste descend franchement sans faire sauter la voiture.",
+   "fin": 80,
+   "etapes": [
+    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 10},
+    {"image": 30, "camera": [938, 5.0, -972], "vise": [913, -1.5, -946]}
+   ]
+  },
+
+  "desert_fosse": {
+   "quoi": "Le fosse de la mission 1, ou le camping-car sort de la route. Ce qu'on regarde : est-ce que la cuvette se voit depuis la piste, et est-ce qu'on comprend d'un regard qu'un vehicule a quitte la chaussee ici.",
+   "fin": 80,
+   "etapes": [
+    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 10},
+    {"image": 30, "camera": [872, 6.0, -742], "vise": [895, -1.5, -768]}
+   ]
+  },
+
   "horizon": {
    "quoi": "Le bord nord de la ville, vu depuis la derniere rue. Ce qu'on regarde : est-ce qu'il y a quelque chose a l'horizon, et est-ce que la ville se DILUE — terrains vagues, pavillons isoles — au lieu de s'arreter net sur du sable.",
    "fin": 70,
