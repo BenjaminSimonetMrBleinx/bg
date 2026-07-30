@@ -42,6 +42,26 @@ var noeuds: Array = []
 var voisins: Dictionary = {}
 var ecart: float = 7.0            # du milieu de la chaussee au milieu du trottoir
 
+## De combien on s'ecarte du centre d'un carrefour avant que le trottoir
+## commence. Sur le carrefour lui-meme il n'y a pas de trottoir : c'est un
+## carre d'asphalte, et un passant pose la se tient sur la chaussee.
+var retrait: float = 8.5
+
+## Le cote de la ville, en metres. Sert a une seule chose, et elle se voit :
+## les rues du POURTOUR n'ont de trottoir que du cote interieur, l'autre donne
+## sur le desert. Sans cette borne, un passant sur huit marche dans le sable le
+## long de la derniere rue. Zero = on ne sait pas, on ne corrige rien.
+var etendue: float = 0.0
+
+## Distance reellement MARCHEE, en metres, depuis la creation.
+##
+## Elle existe pour le test, et pour une raison qui n'est pas cosmetique :
+## comparer deux positions ne dit plus si quelqu'un avance depuis que la foule
+## se recycle autour du joueur. Une teleportation compte cent metres qu'aucune
+## jambe n'a faits, et un passant coince contre une poubelle passerait pour le
+## plus actif de la rue.
+var parcouru: float = 0.0
+
 var _de: int = -1
 var _vers: int = -1
 
@@ -66,26 +86,59 @@ func _ready() -> void:
 ## Pose le passant sur le graphe, entre deux carrefours. Sans appel a cette
 ## methode il retombe sur l'aller-retour entre depart et arrivee.
 func sur_le_graphe(tous: Array, liens: Dictionary, de: int, vers: int,
-		largeur: float) -> void:
+		largeur: float, recul: float = 8.5) -> void:
 	noeuds = tous
 	voisins = liens
 	ecart = largeur
+	retrait = recul
 	_de = de
 	_vers = vers
-	depart = _sur_le_trottoir(_de, _vers)
-	arrivee = _sur_le_trottoir(_vers, _de)
+	depart = _bord(_de, _vers, false)
+	arrivee = _bord(_de, _vers, true)
 	_vers_arrivee = true
 
 
 # Le trottoir est a l'ECART de l'axe de la rue, et du bon cote : celui de
 # droite dans le sens de marche. Sans ce choix de cote, deux passants en sens
 # inverse se traversent au milieu de la chaussee.
-func _sur_le_trottoir(i: int, autre: int) -> Vector3:
-	var a := _noeud(i)
-	var b := _noeud(autre)
-	var direction := (b - a).normalized()
+#
+# LES DEUX BOUTS SE CALCULENT DEPUIS LA MEME DIRECTION, et c'est tout l'objet
+# de cette fonction. La version precedente demandait le depart au troncon
+# a->b et l'arrivee au troncon b->a : la droite de l'un est la gauche de
+# l'autre, donc le passant partait du trottoir de droite et visait celui d'en
+# face. Il traversait la chaussee en diagonale a chaque troncon, ce que
+# personne n'a vu pendant six versions parce que foule.gd construisait le
+# graphe sans jamais poser les passants dessus. Mesure du 30/07/2026 : 14
+# passants sur 16 se tenaient a 0,01 m, la hauteur de la chaussee.
+func _bord(a: int, b: int, au_bout: bool) -> Vector3:
+	var pa := _noeud(a)
+	var pb := _noeud(b)
+	var direction := (pb - pa).normalized()
 	var droite := Vector3(-direction.z, 0.0, direction.x)
-	return a + droite * ecart + Vector3(0.0, 0.2, 0.0)
+	# Ecarte de l'axe, ET recule du carrefour : le trottoir ne commence qu'a la
+	# sortie du croisement. Le bout de troncon s'arrete de meme avant le
+	# carrefour suivant — c'est la que le passant tourne, et c'est la qu'un
+	# pieton s'arrete avant de traverser.
+	var base := (pb - direction * retrait) if au_bout else (pa + direction * retrait)
+	# Le trottoir de droite, SAUF s'il n'y en a pas de ce cote — alors celui de
+	# gauche. C'est le cas des rues du pourtour, dont le cote exterieur donne
+	# sur le desert.
+	if not _dans_la_ville(base + droite * ecart):
+		droite = -droite
+	return base + droite * ecart + Vector3(0.0, 0.2, 0.0)
+
+
+# La marge est le RETRAIT, pas zero. La ville va bien de 0 a son etendue, mais
+# les trois premiers metres de la rue du pourtour sont du sable : les trottoirs
+# appartiennent aux ilots, et il n'y a pas d'ilot au-dela du dernier. Tester
+# contre le bord exact laissait donc deux passants sur seize marcher dans le
+# desert le long de la derniere rue, ce qui est precisement le defaut qu'on
+# voulait corriger.
+func _dans_la_ville(p: Vector3) -> bool:
+	if etendue <= 0.0:
+		return true
+	return (p.x >= retrait and p.x <= etendue - retrait
+			and p.z <= -retrait and p.z >= -(etendue - retrait))
 
 
 func _noeud(i: int) -> Vector3:
@@ -106,7 +159,7 @@ func _choisir_la_suite() -> void:
 	_de = _vers
 	_vers = suite[randi() % suite.size()]
 	depart = global_position
-	arrivee = _sur_le_trottoir(_vers, _de)
+	arrivee = _bord(_de, _vers, true)
 	_vers_arrivee = true
 
 
@@ -135,6 +188,7 @@ func _physics_process(delta: float) -> void:
 	velocity.z = lerpf(velocity.z, voulu.z * vitesse, k)
 
 	move_and_slide()
+	parcouru += Vector2(velocity.x, velocity.z).length() * delta
 
 	if voulu.length_squared() > 0.01:
 		rotation.y = rotate_toward(rotation.y, Joueur.lacet_vers(voulu),

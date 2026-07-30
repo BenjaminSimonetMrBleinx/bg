@@ -12,9 +12,10 @@
 # separe, que le jeu monte et descend — voir facade_vitres() dans
 # outils/gen_textures.py.
 #
-# L'heure est FIGEE par defaut : reglages.temps_vitesse vaut zero. Un cycle qui
-# tourne pendant qu'on regle un curseur rend le reglage impossible a juger. On
-# le met en marche quand on veut voir le cycle, pas pour travailler.
+# L'heure AVANCE, depuis le 30/07/2026. Elle etait figee — temps_vitesse a zero
+# — parce qu'un cycle qui tourne pendant qu'on regle un curseur rend le reglage
+# impossible a juger. C'etait vrai tant qu'on reglait ; ca ne l'est plus depuis
+# qu'on joue. Le curseur reste, et le remettre a zero fige tout comme avant.
 class_name Temps
 extends Node
 
@@ -24,6 +25,16 @@ signal change(heure: float)
 ## Nom du groupe par lequel les autres systemes nous trouvent, comme pour
 ## l'audio. Aucun NodePath a cabler : un systeme qui veut l'heure la demande.
 const GROUPE := "temps"
+
+## Le groupe de CEUX QUI ECOUTENT. Ils recoivent heure_changee(nuit) a chaque
+## rafraichissement, ou nuit va de 0 (plein jour) a 1 (nuit noire).
+##
+## Il existe parce que le rendu et la ville ne sont plus les seuls concernes :
+## une lumiere de porche et des phares dependent aussi de l'heure, et ils sont
+## instancies en cours de partie — une maison qu'on charge, une voiture dans
+## laquelle on monte. Un NodePath par consommateur aurait demande de les cabler
+## dans la scene, ce qu'on ne peut pas faire pour ce qui n'existe pas encore.
+const ECOUTE := "heure_ecoute"
 
 ## En dessous de ce pas, en heures, on ne refait pas l'environnement. Refaire
 ## le ciel, le brouillard et le soleil a chaque image pour un centieme d'heure
@@ -99,5 +110,10 @@ func _appliquer(force: bool) -> void:
 			_ville.call("eclairer_fenetres", nuit)
 		if _ville.has_method("allumer_lampes"):
 			_ville.call("allumer_lampes", nuit)
+
+	# Tous les autres : maisons, vehicules, et ce qui viendra. call_group ne
+	# rale pas sur un noeud qui n'a pas la methode, mais il ne rale pas non plus
+	# quand PERSONNE ne l'a — d'ou le test qui compte les ecoutants.
+	get_tree().call_group(ECOUTE, "heure_changee", nuit)
 
 	change.emit(Reglages.heure)

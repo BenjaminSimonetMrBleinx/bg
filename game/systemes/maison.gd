@@ -38,9 +38,11 @@ var _sortie: Node3D
 var _habitant: Node3D
 var _racine_int: Node3D
 var _pnj: Pnj
+var _porche: OmniLight3D
 
 
 func _ready() -> void:
+	add_to_group(Temps.ECOUTE)
 	_poser_exterieur()
 	_poser_interieur()
 
@@ -60,21 +62,43 @@ func _poser_exterieur() -> void:
 
 	_poser_jardin()
 
-	# De jour, pas de lumiere de porche : elle existait pour rendre la facade
-	# lisible dans le noir, et en plein soleil elle ne ferait que baver.
-	if Reglages.est_jour():
-		return
-
+	# LA LUMIERE DE PORCHE EST TOUJOURS CREEE, ET MASQUEE DE JOUR.
+	#
+	# Elle ne l'etait pas : de jour, on sortait de _poser_exterieur() sans la
+	# fabriquer. Ca tenait tant que l'heure ne bougeait plus apres le
+	# chargement — mais le soir tombe maintenant pendant qu'on joue, et une
+	# maison chargee a midi serait restee noire toute la nuit. C'est meme le
+	# defaut precis qui interdisait a une mission de choisir son heure.
+	#
+	# Un noeud invisible n'est pas rendu : masquer coute ce que couterait ne pas
+	# exister, exactement comme pour les lampadaires de la ville.
+	#
 	# Accrochee au seuil plutot qu'a une position ecrite en dur : la maison
 	# peut changer de taille, la lumiere reste au-dessus de la porte.
-	var porche := OmniLight3D.new()
-	porche.name = "Porche"
-	porche.position = _seuil.position + Vector3(0.0, 2.35, -0.85)
-	porche.light_color = porche_couleur
-	porche.light_energy = porche_energie
-	porche.omni_range = porche_portee
-	porche.omni_attenuation = 1.5
-	add_child(porche)
+	_porche = OmniLight3D.new()
+	_porche.name = "Porche"
+	_porche.position = _seuil.position + Vector3(0.0, 2.35, -0.85)
+	_porche.light_color = porche_couleur
+	_porche.light_energy = porche_energie
+	_porche.omni_range = porche_portee
+	_porche.omni_attenuation = 1.5
+	add_child(_porche)
+	heure_changee(Reglages.nuit_part())
+
+
+## L'heure a change : le porche suit. De 0 (plein jour, eteint et masque) a
+## 1 (nuit noire).
+##
+## Il s'allume PLUS TOT que la nuit n'arrive, comme les lampadaires : on allume
+## sa lumiere de porche au crepuscule, pas quand il fait noir. Le facteur trois
+## est le meme que celui de la ville — deux eclairages exterieurs qui ne
+## s'allument pas ensemble se voient d'un bout a l'autre de la rue.
+func heure_changee(nuit: float) -> void:
+	if _porche == null:
+		return
+	var f := clampf(nuit * 3.0, 0.0, 1.0)
+	_porche.visible = f > 0.01
+	_porche.light_energy = porche_energie * f
 
 
 func _poser_interieur() -> void:

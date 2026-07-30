@@ -54,6 +54,59 @@ func _scenario() -> void:
 		quit(1)
 		return
 
+	# L'HEURE POSEE AU LANCEMENT. Elle vient de la mission quand la mission en
+	# impose une, sinon du monde. On compare a ce que la mission DIT, pas a une
+	# heure ecrite ici : le jour ou la mission 1 se jouera a l'aube, ce test
+	# doit suivre sans qu'on y touche.
+	print("\n--- l'heure du lancement ---")
+	var mission := _trouver(_monde, "Mission")
+	if mission != null and mission.has_method("heure_de_depart"):
+		var voulue: float = mission.call("heure_de_depart")
+		if voulue >= 0.0:
+			_verifier(absf(Reglages.heure - voulue) < 0.5,
+					"la mission impose %05.2f h, le monde est a %05.2f h"
+							% [voulue, Reglages.heure])
+		else:
+			print("       la mission n'impose aucune heure")
+
+	# L'HORLOGE AVANCE-T-ELLE ? Elle a ete figee pendant tout le developpement
+	# des couleurs, et la remettre a zero est un geste d'une seconde : ce test
+	# est la pour que ca ne parte pas en livraison.
+	print("\n--- l'horloge avance ---")
+	var vitesse: float = _temps.reglages.temps_vitesse
+	_verifier(vitesse > 0.0, "temps_vitesse vaut %.3f h/s" % vitesse)
+	if vitesse > 0.0:
+		_temps.regler(8.0)
+		_temps._process(10.0)
+		var attendu := 8.0 + vitesse * 10.0
+		_verifier(absf(Reglages.heure - attendu) < 0.001,
+				"dix secondes font %.2f h : %05.2f -> %05.2f h"
+						% [vitesse * 10.0, 8.0, Reglages.heure])
+		# Le tour complet en minutes, pour qu'il soit ECRIT quelque part et
+		# qu'on voie tout de suite si quelqu'un l'a multiplie par dix.
+		print("       une journee complete en %.0f minutes" % (24.0 / vitesse / 60.0))
+
+	# LA LUMIERE DE PORCHE. Elle n'etait pas creee du tout quand le monde
+	# chargeait de jour : une maison chargee a midi restait noire toute la nuit,
+	# et c'est ce qui interdisait a une mission de choisir son heure.
+	print("\n--- le porche suit l'heure ---")
+	var maison := _trouver(_monde, "MaisonWalter")
+	if maison == null:
+		maison = _premiere_maison(_monde)
+	if maison == null:
+		_verifier(false, "aucune maison trouvee dans la scene")
+	else:
+		var porche := maison.get_node_or_null("Porche") as OmniLight3D
+		_verifier(porche != null,
+				"la maison '%s' a une lumiere de porche" % maison.name)
+		if porche != null:
+			_temps.regler(13.0)
+			_verifier(not porche.visible,
+					"a midi elle est eteinte (energie %.2f)" % porche.light_energy)
+			_temps.regler(23.0)
+			_verifier(porche.visible and porche.light_energy > 0.0,
+					"a 23 h elle eclaire (energie %.2f)" % porche.light_energy)
+
 	print("\n--- la part de nuit suit l'heure ---")
 	for cas in [[13.0, 0.0], [12.0, 0.0], [22.0, 1.0], [3.0, 1.0], [0.0, 1.0]]:
 		Reglages.heure = cas[0]
@@ -166,6 +219,16 @@ func _premier_materiau_emissif(n: Node) -> BaseMaterial3D:
 					return m
 	for e in n.get_children():
 		var t := _premier_materiau_emissif(e)
+		if t != null:
+			return t
+	return null
+
+
+func _premiere_maison(n: Node) -> Node:
+	if n is Maison:
+		return n
+	for e in n.get_children():
+		var t := _premiere_maison(e)
 		if t != null:
 			return t
 	return null

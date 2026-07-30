@@ -54,6 +54,15 @@
     { "image": 20, "appeler": "Temps", "methode": "regler", "argument": 13 }
    ]
   },
+  "porche_nuit": {
+   "quoi": "La facade de Walter a 22 h, MONDE CHARGE DE JOUR. C'est la vue qui montre le correctif du 30/07/2026 : la lumiere de porche n'etait pas creee quand le monde chargeait en journee, donc la maison restait une silhouette noire toute la nuit suivante. Si la porte n'est pas eclairee ici, le porche a cesse de suivre l'heure.",
+   "fin": 100,
+   "etapes": [
+    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 22},
+    {"image": 30, "camera": [26, 3.2, -2], "vise": [26, 1.4, -14]}
+   ]
+  },
+
   "h19_crepuscule": {
    "quoi": "Le crepuscule : soleil rouge, fenetres qui commencent a s'allumer.",
    "fin": 90,

@@ -70,6 +70,7 @@ var _sourd: int = 0
 
 
 func _ready() -> void:
+	add_to_group(Temps.ECOUTE)
 	if reglages == null:
 		push_error("vehicule : aucune ressource Reglages assignee")
 		set_physics_process(false)
@@ -364,6 +365,21 @@ func eteindre_phares() -> void:
 
 func basculer_phares() -> void:
 	_allumes = not _allumes
+	_appliquer_phares()
+
+
+## L'heure a change. Le conducteur a peut-etre allume ses phares en plein jour
+## — c'est son droit, ils ne se voyaient simplement pas ; il ne doit pas avoir a
+## les rallumer a la tombee de la nuit pour qu'ils apparaissent enfin.
+##
+## On ne les allume JAMAIS tout seuls : _allumes ne bouge pas ici. Une voiture
+## garee dont les phares s'allument au crepuscule eclaire la rue pendant que le
+## joueur marche a cote, et personne ne comprend d'ou ca vient.
+func heure_changee(_nuit: float) -> void:
+	_appliquer_phares()
+
+
+func _appliquer_phares() -> void:
 	for p in _phares:
 		# De jour ils ne servent a rien et se voient : un cone de lumiere en
 		# plein soleil est le detail qui trahit une scene de nuit eclaircie a

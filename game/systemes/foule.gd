@@ -1,14 +1,32 @@
 # Les passants de la rue.
 #
-# Ils sont fabriques ici plutot que poses dans la scene : leurs trajets
-# viennent du generateur de ville, en meme temps que les lampadaires et le
-# mobilier. Une ville regeneree avec une autre graine repeuple ses trottoirs
-# toute seule.
+# Ils sont fabriques ici plutot que poses dans la scene : leurs apparences et
+# leurs allures viennent du generateur de ville, en meme temps que les
+# lampadaires et le mobilier. Une ville regeneree avec une autre graine
+# repeuple ses trottoirs toute seule.
 #
 # Chaque passant est un CharacterBody3D monte a la volee — capsule, maillage,
 # script. Une scene .tscn par modele de passant aurait impose d'en creer une
 # nouvelle a chaque personnage ajoute au generateur, pour trois lignes de
 # difference.
+#
+# LEUR NOMBRE NE DEPEND PAS DE LA TAILLE DE LA VILLE, ET C'EST LE POINT.
+#
+# Il en dependait : le generateur ecrivait un trajet par cote d'ilot, donc
+# quinze passants sur quatre ilots et deux cent cinquante-cinq sur soixante-
+# quatre. Mesure du 30/07/2026, ville de 473 m de cote :
+#
+#     avec les 255 passants     6 images/seconde
+#     sans les passants        55 images/seconde
+#
+# Tout le reste — 512 lampadaires, 1682 elements de decor, 408 voitures garees,
+# douze mille faces — ne coutait rien. Un passant coute 0,6 ms par image a lui
+# seul : capsule physique, glissement contre le decor, et une demarche calculee
+# os par os.
+#
+# On en garde donc un NOMBRE FIXE, comme le trafic, et on les recycle autour du
+# joueur. Une foule ne se juge pas au total : elle se juge a ce qu'on voit dans
+# la rue ou l'on est, et personne ne comptera jamais ceux d'en face.
 class_name Foule
 extends Node3D
 
@@ -21,6 +39,36 @@ const MODELE := "res://assets/personnages/%s.glb"
 ## maillage, il doit occuper la meme place.
 const TAILLE := 1.78
 const RAYON := 0.28
+
+## Combien de passants existent en meme temps, quelle que soit la surface de la
+## ville. Seize : c'est ce que la ville de quatre ilots portait avant, et elle
+## tournait a 57 images/seconde.
+@export_range(0, 120, 1) var combien: int = 16
+
+## Au-dela de cette distance de la camera, un passant est recycle : on le
+## replace sur une rue proche au lieu de le laisser marcher pour personne.
+##
+## Un passant reapparait entre la moitie de cette distance et elle : jamais
+## sous le nez du joueur, jamais si loin qu'il faille attendre pour en croiser
+## un. De jour on voit a 340 m, donc un recyclage a 95 m est theoriquement
+## visible — a cette distance un homme fait quatre pixels de haut sur un rendu
+## de 512, et c'est un cout qu'on accepte pour dix fois la fluidite.
+@export_range(20.0, 400.0, 5.0) var portee: float = 95.0
+
+## Combien de fois par seconde on regarde qui est trop loin. Une fois suffit :
+## a la vitesse d'une voiture on parcourt quinze metres dans l'intervalle, et
+## la portee en garde quarante-sept d'avance.
+const RYTHME := 1.0
+
+var _passants: Array[Pieton] = []
+var _noeuds: Array = []
+var _voisins: Dictionary = {}
+var _ecart: float = 7.0
+var _retrait: float = 8.5
+var _etendue: float = 0.0
+var _aretes: Array = []
+var _rng := RandomNumberGenerator.new()
+var _depuis: float = 0.0
 
 
 func _ready() -> void:
@@ -36,23 +84,31 @@ func _ready() -> void:
 	var routes: Array = data.get("pietons", [])
 	if routes.is_empty():
 		return
+	_etendue = float(data.get("etendue", 0.0))
 
 	# Le graphe des rues, s'il existe. Les passants le suivent au lieu de faire
 	# un aller-retour sur leur segment : ils tournent aux carrefours et ne
 	# repassent plus au meme endroit. Voir l'en-tete de pieton.gd.
 	var graphe: Dictionary = data.get("graphe", {})
-	var noeuds: Array = graphe.get("noeuds", [])
-	var aretes: Array = graphe.get("aretes", [])
-	var voisins := {}
-	for i in noeuds.size():
-		voisins[i] = []
-	for a in aretes:
-		voisins[int(a[0])].append(int(a[1]))
-		voisins[int(a[1])].append(int(a[0]))
+	_noeuds = graphe.get("noeuds", [])
+	_aretes = graphe.get("aretes", [])
+	_ecart = float(graphe.get("ecart_trottoir", 7.0))
+	_retrait = float(graphe.get("retrait_carrefour", 8.5))
+	for i in _noeuds.size():
+		_voisins[i] = []
+	for a in _aretes:
+		_voisins[int(a[0])].append(int(a[1]))
+		_voisins[int(a[1])].append(int(a[0]))
+
+	_rng.seed = 20082010          # les annees de la serie, et une graine stable
 
 	var modeles := {}
 	var poses := 0
-	for route in routes:
+	for i in mini(combien, routes.size()):
+		# Les trajets du generateur ne servent plus a placer : ils servent a
+		# VARIER. On y pioche une apparence et une allure, et le placement se
+		# fait sur le graphe, autour du joueur.
+		var route: Dictionary = routes[_rng.randi() % routes.size()]
 		var nom := str(route.get("modele", "passant_a"))
 		if not modeles.has(nom):
 			var chemin := MODELE % nom
@@ -62,10 +118,125 @@ func _ready() -> void:
 			push_error("foule : %s introuvable. Regenerer : " % (MODELE % nom)
 					+ "blender -b -P outils/gen_personnage.py -- --nom tous")
 			continue
-		_poser(modeles[nom], route, poses)
+		var p := _poser(modeles[nom], route, poses)
+		_passants.append(p)
 		poses += 1
 
-	print("foule : %d passant(s), %d modeles" % [poses, modeles.size()])
+	# Le premier placement se fait DIFFERE. La camera n'a pas encore pris sa
+	# position au premier _ready du monde : tout le monde serait ne autour de
+	# l'origine, c'est-a-dire au coin sud-ouest de la ville.
+	call_deferred("_repartir")
+	print("foule : %d passant(s), %d modeles, %d carrefours"
+			% [poses, modeles.size(), _noeuds.size()])
+
+
+func _process(delta: float) -> void:
+	_depuis += delta
+	if _depuis < RYTHME:
+		return
+	_depuis = 0.0
+	_recycler()
+
+
+## Tous les passants, pour les tests. Une foule qui ne bouge pas ressemble
+## exactement a une foule qui n'existe pas.
+func passants() -> Array[Pieton]:
+	return _passants
+
+
+# LE POINT DE VUE, PAS LE JOUEUR.
+#
+# On suit la camera et non le personnage : au volant, le joueur est desactive
+# et sa capsule retiree du monde physique — sa position n'est plus celle de ce
+# qu'on regarde. Une foule accrochee a lui resterait garee devant la maison
+# pendant qu'on traverse la ville.
+func _oeil() -> Vector3:
+	var cam := get_viewport().get_camera_3d()
+	return cam.global_position if cam != null else Vector3.ZERO
+
+
+func _recycler() -> void:
+	if _aretes.is_empty() or _passants.is_empty():
+		return
+	var oeil := _oeil()
+	var loin: Array[Pieton] = []
+	for p in _passants:
+		if oeil.distance_to(p.global_position) > portee:
+			loin.append(p)
+	if loin.is_empty():
+		return
+	# La liste des rues acceptables se calcule UNE FOIS pour tout le tour, pas
+	# une fois par passant : c'est la meme liste, et cinq cents distances
+	# recalculees seize fois par seconde finiraient par se voir.
+	# Aucune rue a portee : ON NE FAIT RIEN, et c'est le cas le plus frequent
+	# du jeu. Le joueur passe son temps dans un salon, dans le camping-car ou
+	# au desert — tous poses a des centaines de metres de la ville, dans le
+	# meme repere. Y ramener la foule entasserait seize passants sur le seul
+	# troncon le moins loin, et ils s'y pietineraient jusqu'a ce qu'on ressorte.
+	# Les laisser marcher ou ils sont ne coute rien : personne ne les voit.
+	var proches := _rues_proches(oeil)
+	if proches.is_empty():
+		return
+	for p in loin:
+		_replacer(p, proches)
+
+
+# Le premier placement. Si le joueur commence hors de la ville — c'est le cas
+# de la mission 1, qui s'ouvre dans le salon de Walter — on laisse les passants
+# sur les trajets du generateur, qui sont de vrais bouts de trottoir. Ils se
+# regrouperont autour de lui a la seconde ou il mettra le nez dehors.
+func _repartir() -> void:
+	var proches := _rues_proches(_oeil())
+	if proches.is_empty():
+		return
+	for p in _passants:
+		_replacer(p, proches)
+
+
+# LES RUES OU L'ON PEUT REAPPARAITRE : ni sous le nez du joueur, ni hors de vue.
+#
+# La premiere version tirait vingt troncons au hasard et gardait le premier qui
+# tombait dans la couronne, sinon le dernier tire. Elle ratait souvent : sur
+# une ville de cinq cent quarante troncons, la couronne n'en contient que deux
+# ou trois pour cent, donc deux recyclages sur trois reposaient le passant
+# n'IMPORTE OU — souvent a trois cents metres, donc immediatement trop loin,
+# donc recycle a nouveau la seconde suivante. La foule passait son temps a se
+# teleporter : mesure du test, 199 m parcourus par passant en quelques
+# secondes, pour une marche a 1,3 m/s.
+#
+# On parcourt donc la liste en entier. Cinq cent quarante distances une fois
+# par seconde ne se mesurent pas.
+func _rues_proches(oeil: Vector3) -> Array:
+	var mini_d := portee * 0.5
+	var dans_la_couronne: Array = []
+	for a in _aretes:
+		var d := oeil.distance_to(_point(int(a[0])))
+		if d >= mini_d and d <= portee:
+			dans_la_couronne.append(a)
+	return dans_la_couronne
+
+
+# Repose un passant sur une rue proche du point de vue. On tire au sort parmi
+# les troncons plutot que de prendre le plus proche : sinon les seize se
+# retrouvent tous dans la meme rue.
+func _replacer(p: Pieton, proches: Array) -> void:
+	if proches.is_empty():
+		return
+	var choisie: Array = proches[_rng.randi() % proches.size()]
+	var de := int(choisie[0])
+	var vers := int(choisie[1])
+	if _rng.randf() < 0.5:
+		var t := de
+		de = vers
+		vers = t
+	p.etendue = _etendue
+	p.sur_le_graphe(_noeuds, _voisins, de, vers, _ecart, _retrait)
+	p.global_position = p.depart
+
+
+func _point(i: int) -> Vector3:
+	var v: Array = _noeuds[i]
+	return Vector3(float(v[0]), float(v[1]), float(v[2]))
 
 
 func _poser(modele: PackedScene, route: Dictionary, index: int) -> Pieton:

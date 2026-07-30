@@ -35,6 +35,17 @@
  "depart": {
   "argent_min": 100,
   "argent_max": 200,
+  "heure": 9.0,
+  "_note_heure": [
+   "L'HEURE A LAQUELLE LA MISSION COMMENCE, de 0 a 24. Retirer la ligne laisse",
+   "le monde a l'heure ou il a ete charge.",
+   "",
+   "Neuf heures : Walter part de chez lui apres le depart du bus scolaire, et",
+   "il fait grand jour pour tout le premier trajet. Le temps avance ensuite",
+   "tout seul — une heure de jeu par minute reelle — donc la nuit peut tomber",
+   "avant la fin si on traine, et c'est voulu : c'est le seul moyen qu'une",
+   "mission ait une duree qui se sente."
+  ],
   "objets": [],
   "_note_objets": [
    "L'inventaire du DEBUT : VIDE. Walter part de chez lui les mains dans les",

@@ -332,16 +332,29 @@ tortue, les courses de nuit, la radio par quartier.
 **Trois trous dans ce qui précède.** Les nommer coûte moins cher que de les
 découvrir en codant.
 
-### Le temps n'est pas décidé, et tout en dépend
+### ~~Le temps n'est pas décidé~~ — tranché le 30/07/2026
 
-La famille se dégrade avec le temps. Une séance de chimiothérapie occupe une
-demi-journée. Une cuisine prend des heures. Les livraisons ont des délais.
+**Les journées passent toutes seules**, à raison d'une heure de jeu par minute
+réelle : une journée complète en vingt-six minutes. Le réglage est
+`temps_vitesse` dans `reglages.tres`, et le remettre à zéro fige l'heure comme
+avant — c'est ce qu'on fait pour régler des couleurs, pas pour jouer.
 
-**Ces quatre mécaniques supposent une horloge**, et on n'a pas décidé si les
-journées passent toutes seules ou seulement quand Walt dort. Ce n'est plus une
-question de détail : c'est un préalable.
+**Une mission peut imposer son heure de départ.** Un rendez-vous à trois heures
+du matin en est un à trois heures du matin, pas une fois sur deux : la clé
+`depart.heure` du fichier de mission pose le monde à l'heure dite. Sans elle,
+on garde l'heure courante.
 
-> **À trancher en premier, avant d'écrire la moindre ligne du cœur.**
+*Pourquoi ce rythme.* Plus vite — un GTA de l'époque tournait autour de huit
+minutes par journée — le ciel change de couleur pendant qu'on traverse un
+quartier et la nuit tombe trois fois dans une mission. Plus lent, le temps
+cesse d'être une contrainte, et une séance de chimiothérapie qui coûte une
+demi-journée ne coûte plus rien.
+
+*Ce que ça a demandé, et qui n'était pas gratuit :* trois choses étaient
+décidées à la construction du monde et n'en bougeaient plus — les vitres
+allumées, la lumière de porche, les phares. Les trois suivent maintenant
+l'heure. Sans ça, poser midi après coup donnait un ciel de plein jour au-dessus
+d'une façade à porche allumé.
 
 ### L'argent est un chiffre, et la règle 1 l'interdit
 
@@ -377,8 +390,6 @@ dire ce qu'elle est et comment on la perçoit, sinon c'est un système fantôme.
   construisent sans cette réponse.
 - **La mort.** Retour au dernier réveil avec l'argent perdu, ou pas de mort du
   tout — seulement des arrestations et des dettes ?
-- **Le temps.** Les jours passent-ils tout seuls, ou seulement quand on dort ?
-  Le premier crée de la pression, le second respecte le joueur.
 - **La violence.** Jusqu'où ? La série n'est pas pudique, mais un jeu où l'on
   tire librement en ville n'est plus une adaptation.
 - **La musique.** Originale, libre de droits, ou pas de musique hors autoradio ?
@@ -397,3 +408,4 @@ dire ce qu'elle est et comment on la perçoit, sinon c'est un système fantôme.
 | Jesse | Partenaire de travail, pas une relation à entretenir | 28/07/2026 |
 | Le cancer | Il coûte du temps, pas de la vie. La rémission retire l'excuse | 28/07/2026 |
 | La méthode | Théorie → cœur → boîte à idées → réglage | 28/07/2026 |
+| Le temps | Les journées passent seules, 1 h de jeu par minute. Une mission peut imposer son heure | 30/07/2026 |

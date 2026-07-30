@@ -111,11 +111,14 @@ func _son() -> Audio:
 
 func _commencer() -> void:
 	_bourse = Bourse.courante(self)
-	# Retenue AVANT tout : c'est l'heure ou le monde a ete construit, et donc
-	# la seule a laquelle on puisse revenir sans le reconstruire.
+	# Retenue AVANT tout : c'est l'heure du monde au chargement, celle sur
+	# laquelle on retombe si la mission n'en impose aucune.
 	_heure_de_depart = Reglages.heure
 	if _mission == null:
 		return
+	var voulue := _mission.heure_de_depart()
+	if voulue >= 0.0:
+		_heure_de_depart = voulue
 	if _telephone != null:
 		_telephone.suivre(_mission)
 	_mission.etape_changee.connect(_sur_etape)
@@ -147,20 +150,23 @@ func _installer() -> void:
 	_rendre_jesse_a_sa_maison()
 
 
-## L'HEURE DU LANCEMENT N'EST PAS FORCEE ICI.
+## L'HEURE DU LANCEMENT, ET POURQUOI ELLE SE FORCE MAINTENANT.
 ##
-## Elle est cuite dans le monde : les vitres allumees sont une texture, la
-## lumiere de porche est creee ou non a la construction de la maison, et les
-## phares sont poses au chargement du vehicule. Poser 12 h 30 apres coup donnait
-## un ciel de midi au-dessus d'une facade a lumiere de porche allumee — le
-## defaut exact que le cycle jour/nuit avait ete ecrit pour supprimer.
+## Elle ne pouvait pas l'etre. Trois choses etaient decidees a la construction
+## du monde et n'en bougeaient plus : les vitres allumees, peintes dans la
+## texture de facade ; la lumiere de porche, creee ou non selon l'heure ; les
+## phares. Poser 12 h 30 apres coup donnait un ciel de midi au-dessus d'une
+## facade a porche allume — le defaut exact que le cycle avait ete ecrit pour
+## supprimer.
 ##
-## Le depart en journee se decide donc AVANT, dans donnees/monde.json :
+## Les trois ont ete reprises depuis : les vitres sont un masque d'emission que
+## le jeu module, le porche est cree puis masque, les phares suivent l'heure.
+## Une mission peut donc dire l'heure a laquelle elle se joue, et le monde s'y
+## pose — voir Mission.heure_de_depart().
 ##
-##     .\bg.ps1 generer -Moment jour
-##
-## Ce qui est retenu ici, c'est l'heure trouvee au chargement, pour pouvoir y
-## revenir quand on recommence la mission apres etre passe par le desert.
+## Ce qui est retenu ici, c'est l'heure effectivement posee au lancement, pour
+## pouvoir y revenir quand on recommence la mission apres etre passe par le
+## desert.
 var _heure_de_depart: float = -1.0
 
 

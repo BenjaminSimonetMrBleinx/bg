@@ -95,7 +95,15 @@ func _process(_d: float) -> bool:
 
 	for i in _foule.get_child_count():
 		var p := _foule.get_child(i) as Node3D
-		var d := _avant[i].distance_to(p.global_position)
+		# ON MESURE CE QUI A ETE MARCHE, PAS L'ECART ENTRE DEUX POSITIONS.
+		#
+		# La foule se recycle autour du joueur depuis le 30/07/2026 : un passant
+		# trop loin est repose sur une rue proche. Comparer deux positions
+		# compterait ce saut comme cent metres de marche, et un passant coince
+		# contre une poubelle juste apres avoir ete replace passerait pour le
+		# plus actif de la rue.
+		var d: float = (p as Pieton).parcouru if p is Pieton \
+				else _avant[i].distance_to(p.global_position)
 		parcours += d
 		if d < 0.4:
 			immobiles += 1

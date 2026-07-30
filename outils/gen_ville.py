@@ -450,6 +450,17 @@ def graphe_des_rues(n: int) -> dict:
         # Le milieu du trottoir, pour les pietons : entre les lampadaires cote
         # bordure et le mobilier cote facade.
         "ecart_trottoir": round(ROUTE / 2.0 + TROTTOIR / 2.0, 3),
+        # DE COMBIEN ON S'ECARTE DU CARREFOUR AVANT QUE LE TROTTOIR EXISTE.
+        #
+        # Un carrefour est un carre d'asphalte de ROUTE de cote : le trottoir
+        # s'y interrompt, c'est le passage clouté. Un pieton pose a l'ecart
+        # perpendiculaire du CENTRE d'un carrefour se retrouve donc sur la
+        # chaussee, pas sur un trottoir — mesure du 30/07/2026 : quatorze
+        # passants sur seize se tenaient a 0,01 m, la hauteur de la chaussee.
+        #
+        # Le trottoir commence a la demi-largeur du couloir. C'est aussi ou
+        # s'arrete le carre d'asphalte, donc la valeur n'est pas approchee.
+        "retrait_carrefour": round(COULOIR / 2.0, 3),
     }
 
 

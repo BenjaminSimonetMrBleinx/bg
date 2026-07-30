@@ -566,13 +566,20 @@ extends Resource
 
 @export_group("Temps")
 
-## Combien d'heures de jeu passent par seconde reelle. A zero, l'heure est
-## figee — c'est le reglage par defaut, parce qu'un cycle qui tourne pendant
-## qu'on regle un autre curseur rend tout reglage impossible a juger.
+## Combien d'heures de jeu passent par seconde reelle.
 ##
-## 0.05 fait une journee complete en huit minutes, ce qui est le rythme d'un
-## GTA de l'epoque.
-@export_range(0.0, 1.0, 0.005) var temps_vitesse: float = 0.0
+## 0.015 : une heure de jeu par minute reelle, donc une journee complete en
+## vingt-six minutes. C'est le rythme retenu le 30/07/2026, et il vient d'un
+## arbitrage a deux bouts. Plus vite — un GTA de l'epoque tournait autour de
+## huit minutes par journee — le ciel change de couleur pendant qu'on traverse
+## un quartier, et la nuit tombe trois fois dans une mission. Plus lent, le
+## temps cesse d'etre une contrainte : une seance de chimiotherapie qui coute
+## une demi-journee ne coute plus rien si la journee ne finit jamais.
+##
+## A zero, l'heure est FIGEE. C'etait le defaut tant qu'on reglait les
+## couleurs — un cycle qui tourne pendant qu'on bouge un curseur rend le
+## reglage impossible a juger. Le remettre a zero rend cet etat-la.
+@export_range(0.0, 1.0, 0.005) var temps_vitesse: float = 0.015
 
 @export_group("Jour")
 

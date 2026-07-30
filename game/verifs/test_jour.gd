@@ -60,7 +60,9 @@ func _process(_d: float) -> bool:
 	print("       lampadaires allumes : %d" % n_lampes)
 	print("       soleil              : %s" % ("oui" if soleil != null else "non"))
 	print("       phares visibles     : %s" % ("oui" if phare != null and phare.visible else "non"))
-	print("       lumiere de porche   : %s" % ("oui" if porche != null else "non"))
+	var porche_eclaire: bool = porche != null and (porche as OmniLight3D).visible
+	print("       lumiere de porche   : %s" % ("allumee" if porche_eclaire
+			else ("masquee" if porche != null else "absente")))
 
 	# Ce que ce test verifie a CHANGE avec le cycle continu, et l'ancienne
 	# formulation etait devenue fausse.
@@ -74,17 +76,24 @@ func _process(_d: float) -> bool:
 	# Meme chose pour le soleil : detruit la nuit auparavant, il reste
 	# maintenant, energie nulle. Un noeud qu'on detruit et recree ne peut pas
 	# s'animer, et l'aube n'aurait ete qu'un interrupteur.
+	#
+	# ET MEME CHOSE POUR LE PORCHE, depuis le 30/07/2026. Il n'etait pas cree
+	# de jour : une maison chargee a midi restait donc noire toute la nuit
+	# suivante. On verifie maintenant qu'il EXISTE toujours et qu'il est
+	# MASQUE — la formulation « il ne doit pas exister » etait exactement ce
+	# qui rendait le defaut acceptable.
 	var eclairent: bool = lampes != null and (lampes as Node3D).visible
 	if jour:
 		_verifier(not eclairent, "les lampadaires sont eteints de jour")
 		_verifier(soleil != null and soleil.visible, "le soleil est la")
 		_verifier(phare != null and not phare.visible, "les phares sont eteints")
-		_verifier(porche == null, "pas de lumiere de porche de jour")
+		_verifier(porche != null and not porche_eclaire,
+				"la lumiere de porche existe et ne donne pas de jour")
 	else:
 		_verifier(n_lampes > 0 and eclairent, "les lampadaires sont allumes")
 		_verifier(soleil == null or not soleil.visible,
 				"le soleil ne donne plus la nuit")
-		_verifier(porche != null, "la porte est eclairee")
+		_verifier(porche_eclaire, "la porte est eclairee")
 
 	# Le brouillard ne doit jamais avaler tout le ciel de jour : a 1, on
 	# obtient un aplat gris pale au lieu du bleu d'Albuquerque.

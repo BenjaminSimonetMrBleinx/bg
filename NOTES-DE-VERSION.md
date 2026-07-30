@@ -16,6 +16,37 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.31.0 — Le temps passe, et la ville fait treize fois sa taille
+
+> **La ville est passée de 131 à 473 mètres de côté** — 64 îlots au lieu de 4.
+> À essayer en premier : sortir de chez Walter, prendre la voiture et rouler
+> tout droit sans tourner. Ça dure maintenant plus de dix secondes.
+
+**Les journées passent.** Une heure de jeu par minute réelle, donc une journée
+complète en vingt-six minutes. Le soleil descend pendant qu'on joue, les
+lampadaires s'allument au crépuscule, les fenêtres s'éclairent, les lumières de
+porche aussi. Si tu veux figer l'heure pour regarder quelque chose : menu pause,
+réglage « Vitesse du temps », à zéro.
+
+**La mission commence à neuf heures du matin**, quelle que soit l'heure à
+laquelle le monde a été fabriqué. Une mission peut désormais imposer son heure —
+un rendez-vous de nuit se jouera de nuit.
+
+**La maison de Walter ne reste plus noire la nuit.** Sa lumière de porche
+n'était fabriquée que si le monde démarrait de nuit : en partant de jour, la
+façade restait une silhouette noire jusqu'au matin.
+
+**Les passants marchent sur les trottoirs et tournent aux carrefours.** Ils
+faisaient un aller-retour sur vingt-cinq mètres, toujours le même. Ils suivent
+maintenant les rues — et ils sont seize en permanence autour de toi, où que tu
+sois, au lieu d'être répartis dans toute la ville.
+
+> **Si ça rame, c'est ici qu'il faut regarder.** La ville seize fois plus grande
+> tourne au même prix qu'avant sur ma machine (55 images/seconde), mais c'est le
+> premier changement capable de faire tomber une machine plus modeste. Dis-le.
+
+---
+
 ## 0.30.0 — Le chapeau, le livre, Jesse, et les objets qu'on voyait pas
 
 > **Le plus gros est invisible dans la liste : les objets qu'on tient étaient

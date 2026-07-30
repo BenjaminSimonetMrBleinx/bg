@@ -156,6 +156,21 @@ func objets_de_depart() -> Array:
 	return (_donnees.get("depart", {}) as Dictionary).get("objets", [])
 
 
+## L'heure a laquelle la mission commence, de 0 a 24. NEGATIF si elle n'en
+## impose aucune — et c'est le cas par defaut.
+##
+## Une mission qui se joue de nuit ne peut pas se contenter d'esperer qu'il
+## fasse nuit : l'heure avance maintenant toute seule, donc lancer la meme
+## mission deux fois donnerait deux ambiances, et un rendez-vous a trois heures
+## du matin se jouerait a midi une fois sur deux. Elle le DIT, et le monde se
+## pose a cette heure-la.
+func heure_de_depart() -> float:
+	var d: Dictionary = _donnees.get("depart", {})
+	if not d.has("heure"):
+		return -1.0
+	return clampf(float(d["heure"]), 0.0, 24.0)
+
+
 func montant_de_la_vente() -> int:
 	return int((_donnees.get("vente", {}) as Dictionary).get("montant", 0))
 
