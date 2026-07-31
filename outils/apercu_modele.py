@@ -32,6 +32,8 @@ def arguments() -> argparse.Namespace:
     ap.add_argument("--clip", default="")
     ap.add_argument("--image", type=int, default=1)
     ap.add_argument("--sortie", default=".tmp/apercu.png")
+    ap.add_argument("--os-auto", dest="os_auto", action="store_true",
+                    help="FBX : laisse Blender reorienter les os (Biped)")
     ap.add_argument("--repos", action="store_true",
                     help="force le squelette a sa pose de repos")
     ap.add_argument("--cap", type=float, default=35.0,
@@ -102,7 +104,17 @@ def main() -> None:
     sortie.parent.mkdir(parents=True, exist_ok=True)
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
-    bpy.ops.import_scene.gltf(filepath=str(fichier))
+    # Le pack d'origine est en FBX, le jeu en glTF. Pouvoir regarder les deux
+    # avec le meme outil est ce qui permet de dire LEQUEL des deux est casse.
+    if fichier.suffix.lower() == ".fbx":
+        # AUTOMATIC_BONE_ORIENTATION : le reglage qui decide tout sur un rig
+        # 3ds Max Biped. Sans lui, Blender garde les axes d'os du FBX et la
+        # liaison du maillage part en pointes des qu'une animation joue.
+        bpy.ops.import_scene.fbx(filepath=str(fichier),
+                                 automatic_bone_orientation=a.os_auto,
+                                 ignore_leaf_bones=True)
+    else:
+        bpy.ops.import_scene.gltf(filepath=str(fichier))
     objets = list(bpy.data.objects)
 
     arm = next((o for o in objets if o.type == "ARMATURE"), None)
