@@ -154,6 +154,7 @@ func _ready() -> void:
 			return
 
 	_fondu = get_node_or_null(fondu) as ColorRect
+	call_deferred("_depart_de_developpement")
 	_audio = get_node_or_null(audio) as Audio
 	_dialogue = get_node_or_null(dialogue) as Dialogue
 	_roue = get_node_or_null(roue) as Roue
@@ -226,6 +227,45 @@ func _ready() -> void:
 	var r := Ragdoll.new()
 	if r.preparer(_j):
 		_ragdoll = r
+
+# UN RACCOURCI DE DEVELOPPEMENT : on demarre ailleurs qu'au debut.
+#
+#     .g.ps1 jouer -Ou banc
+#
+# Sert a regarder quelque chose sans refaire le trajet a chaque essai. Le banc
+# graphique est au desert, a neuf cents metres : y aller en voiture prend une
+# minute, et on le fait vingt fois dans une soiree de reglage.
+#
+# Ca ne change RIEN a une partie normale : sans l'argument, ce code ne
+# s'execute pas.
+const DEPARTS := {
+	"banc": {"pos": Vector3(825.0, 0.6, -896.0), "cap": 180.0},
+	"desert": {"pos": Vector3(874.0, 0.6, -750.0), "cap": 0.0},
+}
+
+
+func _depart_de_developpement() -> void:
+	var args := OS.get_cmdline_user_args()
+	var ou := ""
+	for i in args.size() - 1:
+		if args[i] == "--ou":
+			ou = args[i + 1]
+	if ou == "" or _j == null:
+		return
+	if not DEPARTS.has(ou):
+		push_warning("controleur : depart '%s' inconnu (%s)"
+				% [ou, ", ".join(DEPARTS.keys())])
+		return
+	var d: Dictionary = DEPARTS[ou]
+	sortir_du_batiment()
+	_j.global_position = d["pos"]
+	_j.velocity = Vector3.ZERO
+	_j.rotation.y = deg_to_rad(float(d["cap"]))
+	var cam := get_viewport().get_camera_3d()
+	if cam != null and cam.has_method("recaler"):
+		cam.call("recaler")
+	print("controleur : depart de developpement '%s'" % ou)
+
 
 
 # La souris est lue ICI, et pas dans la camera.

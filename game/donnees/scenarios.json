@@ -54,6 +54,42 @@
     { "image": 20, "appeler": "Temps", "methode": "regler", "argument": 13 }
    ]
   },
+  "banc_ensemble": {
+   "quoi": "Le banc de comparaison graphique, les trois niveaux dans le meme cadre. De gauche a droite : 1 ce que la ville pose aujourd'hui, 2 la silhouette enrichie, 3 le detail de pres. C'est la vue qui repond a « est-ce que ca vaut le coup ».",
+   "fin": 70,
+   "etapes": [
+    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 10.5},
+    {"image": 30, "camera": [826, 9.5, -880], "vise": [826, 2.0, -915]}
+   ]
+  },
+
+  "banc_niveau_1": {
+   "quoi": "Niveau 1 de pres : la maison et la voiture telles que le jeu les pose aujourd'hui. Boites, toit plat, portes peintes sur le mur.",
+   "fin": 70,
+   "etapes": [
+    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 10.5},
+    {"image": 30, "camera": [800, 3.2, -906], "vise": [809, 1.6, -917]}
+   ]
+  },
+
+  "banc_niveau_2": {
+   "quoi": "Niveau 2 de pres : toit a deux pentes, auvent, cheminee, encadrements — et une carrosserie construite par sections au lieu de boites empilees.",
+   "fin": 70,
+   "etapes": [
+    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 10.5},
+    {"image": 30, "camera": [817, 3.2, -906], "vise": [826, 1.6, -917]}
+   ]
+  },
+
+  "banc_niveau_3": {
+   "quoi": "Niveau 3 de pres : volets, gouttiere, appuis, climatiseur, antenne, et une voiture a calandre, jantes et poignees.",
+   "fin": 70,
+   "etapes": [
+    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 10.5},
+    {"image": 30, "camera": [834, 3.2, -906], "vise": [843, 1.6, -917]}
+   ]
+  },
+
   "desert_arrivee": {
    "quoi": "L'arrivee au desert, vue depuis la piste. Ce qu'on regarde : est-ce qu'on a de quoi se REPERER — les mesas — et est-ce que la piste donne envie de la suivre au lieu d'etre un ruban droit.",
    "fin": 80,

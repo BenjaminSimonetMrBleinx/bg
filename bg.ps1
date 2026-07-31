@@ -34,6 +34,10 @@ param(
     [double]$Lacet = 0.0,
 
     [int]$Blocs = 2,
+
+    # Ou deposer le joueur au lancement : 'banc', 'desert'. Voir DEPARTS dans
+    # systemes/controleur.gd.
+    [string]$Ou = '',
     [int]$Graine = 505,
     [string]$Couleur = 'voiture_aztek',
 
@@ -236,7 +240,11 @@ switch ($Commande) {
         Exiger $Godot 'Godot'
         Set-Build
         Initialize-Projet
-        & $Godot --path $Projet
+        # -Ou depose le joueur ailleurs qu au point de depart. Raccourci de
+        # developpement : aller regarder quelque chose a l autre bout de la
+        # carte vingt fois dans une soiree coute une minute a chaque fois.
+        if ($Ou) { & $Godot --path $Projet -- --ou $Ou }
+        else     { & $Godot --path $Projet }
     }
 
     'editeur' {

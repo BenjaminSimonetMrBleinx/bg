@@ -146,6 +146,83 @@ def affiche(base, graine: int):
     return fn
 
 
+# ---------------------------------------------------------- banc graphique
+#
+# Les textures du banc de comparaison. Elles sont en 256 px la ou le jeu est en
+# 128 : c'est la moitie de ce qui separe le niveau 1 du niveau 3, l'autre
+# moitie etant la geometrie. Voir outils/gen_banc_graphique.py.
+
+
+def banc_mur(u: float, v: float):
+    """Bardage horizontal + crepi, avec salissures.
+
+    CE QUI FAIT LA DIFFERENCE A CETTE RESOLUTION, ce n'est pas le detail fin —
+    il disparait au filtrage — ce sont les VARIATIONS LENTES : une lame plus
+    sombre par-ci, une trainee sous une fenetre, un bas de mur plus sale. Elles
+    survivent au flou et donnent du volume a un aplat.
+    """
+    lame = int(v * 22) % 2
+    n = hache(int(u * 300), int(v * 300))
+    grand = hache(int(u * 9), int(v * 9))
+    joint = 1.0 if (v * 22) % 1.0 > 0.10 else 0.82
+    g = (176 + n * 12 + grand * 20 - lame * 8) * joint
+    # Le bas du mur prend la poussiere : dix pour cent de plus bas en bas.
+    sale = 1.0 - max(0.0, (0.22 - v)) * 0.55
+    return (g * 0.99 * sale, g * 0.90 * sale, g * 0.74 * sale)
+
+
+def banc_toit(u: float, v: float):
+    """Bardeaux d'asphalte, en quinconce."""
+    rangee = int(v * 26)
+    decal = 0.5 if rangee % 2 else 0.0
+    bord = 1.0 if ((v * 26) % 1.0) > 0.14 else 0.72
+    fente = 1.0 if (((u * 18) + decal) % 1.0) > 0.06 else 0.78
+    n = hache(int(u * 260), int(v * 260))
+    g = (86 + n * 22) * bord * fente
+    return (g, g * 0.98, g * 0.94)
+
+
+def banc_carrosserie(base):
+    """Tole peinte : degrade vertical, ligne de caisse, grain fin.
+
+    Une carrosserie unie se lit comme du carton. Ce qui la fait ressembler a de
+    la peinture, c'est le DEGRADE — plus clair vers le haut, ou le ciel se
+    reflete — et une ligne de caisse plus sombre a mi-hauteur.
+    """
+    r, g, b = base
+    def fn(u: float, v: float):
+        n = hache(int(u * 340), int(v * 340))
+        ciel = 0.82 + v * 0.34
+        ligne = 0.88 if 0.46 < v < 0.50 else 1.0
+        k = ciel * ligne
+        return (r * k + n * 6, g * k + n * 6, b * k + n * 6)
+    return fn
+
+
+def banc_vitre(u: float, v: float):
+    """Vitrage teinte, avec le reflet oblique du ciel."""
+    n = hache(int(u * 200), int(v * 200))
+    reflet = 1.0 + max(0.0, 0.55 - abs(u - v)) * 0.9
+    g = (74 + n * 10) * reflet
+    return (g * 0.86, g * 0.95, g * 1.05)
+
+
+def banc_jante(u: float, v: float):
+    """Jante a cinq branches, peinte dans la texture."""
+    import math as _m
+    dx, dy = u - 0.5, v - 0.5
+    d = _m.hypot(dx, dy)
+    a = _m.atan2(dy, dx)
+    n = hache(int(u * 240), int(v * 240))
+    if d > 0.47:
+        return (28 + n * 8, 28 + n * 8, 30 + n * 8)          # pneu
+    if d < 0.13:
+        return (150 + n * 14, 152 + n * 14, 156 + n * 14)    # moyeu
+    branche = _m.cos(a * 5.0) > 0.35
+    g = (168 if branche else 96) + n * 16
+    return (g, g + 2, g + 6)
+
+
 def montagne(u: float, v: float):
     """La roche des Sandia, vue de tres loin.
 
@@ -1023,6 +1100,19 @@ def main() -> None:
 
     ecrire_png(dossier / "montagne.png", t, t, rendre(t, t, montagne))
     faits.append("montagne.png")
+
+    # --- le banc graphique : 256 px, deux fois le jeu ---
+    d = t * 2
+    for nom, fn in [("banc_mur", banc_mur), ("banc_toit", banc_toit),
+                    ("banc_vitre", banc_vitre), ("banc_jante", banc_jante)]:
+        ecrire_png(dossier / f"{nom}.png", d, d, rendre(d, d, fn))
+        faits.append(f"{nom}.png")
+    for nom, base in [("banc_tole_bleue", (54, 78, 128)),
+                      ("banc_tole_rouge", (146, 52, 44)),
+                      ("banc_tole_creme", (196, 186, 156))]:
+        ecrire_png(dossier / f"{nom}.png", d, d,
+                   rendre(d, d, banc_carrosserie(base)))
+        faits.append(f"{nom}.png")
 
     for k, base in enumerate(AFFICHES):
         ecrire_png(dossier / f"affiche_{k}.png", t, t, rendre(t, t, affiche(base, k)))

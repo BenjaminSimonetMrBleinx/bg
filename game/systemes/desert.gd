@@ -51,6 +51,47 @@ var _lieux: Dictionary = {}
 var _decor: Array = []
 
 
+## LE BANC DE COMPARAISON GRAPHIQUE, s'il a ete genere.
+##
+## Trois maisons et trois voitures, trois niveaux de detail, alignes a l'ecart
+## de la piste. On y va, on tourne autour, on decide. « Plus beau » ne se
+## discute pas dans le vide.
+##
+## Le fichier est FACULTATIF : absent, rien ne se pose et rien ne rale. C'est
+## un banc d'essai, pas du contenu — le jour ou le niveau est choisi, on le
+## supprime et le desert ne s'en apercoit pas.
+const BANC := "res://assets/decor/banc_graphique.json"
+
+
+func _poser_banc() -> void:
+	if not FileAccess.file_exists(BANC):
+		return
+	var lu: Variant = JSON.parse_string(FileAccess.get_file_as_string(BANC))
+	if typeof(lu) != TYPE_DICTIONARY:
+		return
+	var liste: Array = (lu as Dictionary).get("decor", [])
+	if liste.is_empty():
+		return
+	var parent := Node3D.new()
+	parent.name = "BancGraphique"
+	add_child(parent)
+	for entree in liste:
+		var type := str(entree.get("type", ""))
+		var chemin: String = DECOR % type
+		if not ResourceLoader.exists(chemin):
+			push_error("desert : %s introuvable. Regenerer : " % chemin
+					+ "blender -b -P outils/gen_banc_graphique.py")
+			continue
+		var n := (ResourceLoader.load(chemin) as PackedScene).instantiate() as Node3D
+		var p: Array = entree["pos"]
+		n.position = Vector3(float(p[0]), float(p[1]), float(p[2]))
+		n.rotation.y = float(entree.get("angle", 0.0))
+		n.name = type
+		parent.add_child(n)
+		_ajouter_collisions(n)
+	print("desert : banc graphique, %d modele(s)" % parent.get_child_count())
+
+
 # LE DECOR DU DESERT, INSTANCIE ET NON CUIT.
 #
 # Les cactus sont dans le maillage du terrain : ils y etaient avant que la zone
@@ -124,6 +165,7 @@ func _ready() -> void:
 
 	_charger_les_lieux()
 	_poser_decor()
+	_poser_banc()
 
 	if camping_car != null:
 		var cc := camping_car.instantiate() as Node3D
