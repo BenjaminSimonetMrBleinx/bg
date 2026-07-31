@@ -113,6 +113,11 @@ func _physics_process(delta: float) -> void:
 	if _rayon != null:
 		_rayon.force_raycast_update()
 		libre = not _rayon.is_colliding()
+	# Percutee, elle laisse passer : c'est ce qui fait que le joueur gagne le
+	# choc au lieu d'etre balade par un corps cinematique.
+	if _bouscule > 0.0:
+		_bouscule -= delta
+		libre = false
 	allure = vitesse if libre else 0.0
 
 	_avance += allure * delta / _longueur
@@ -143,6 +148,23 @@ func _choisir_la_suite() -> void:
 
 ## Installe le detecteur d'obstacle. Fait apres coup parce que sa longueur
 ## depend de ce qu'on est : une voiture regarde plus loin qu'un passant.
+## On vient de se faire percuter par le joueur : on rend la main.
+##
+## La voiture s'arrete et s'ecarte lateralement de quelques dizaines de
+## centimetres, le temps que l'autre passe. Elle ne cherche PAS a eviter — il
+## n'y a aucune intelligence ici, et il n'en faut pas : ce qu'on veut est que
+## le joueur ne soit plus repousse par une masse infinie.
+func bousculer(_sens: Vector3) -> void:
+	_bouscule = BOUSCULE_DUREE
+
+
+## Combien de temps une voiture percutee reste a l'arret, en secondes. Assez
+## pour qu'on se degage, pas assez pour qu'elle ait l'air en panne.
+const BOUSCULE_DUREE := 2.2
+
+var _bouscule: float = 0.0
+
+
 func poser_le_regard(portee: float, masque: int) -> void:
 	garde = portee
 	_rayon = RayCast3D.new()

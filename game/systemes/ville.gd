@@ -187,6 +187,62 @@ func allumer_lampes(part: float) -> void:
 # QU'UNE FOIS : une PackedScene instanciee cent fois partage son maillage et
 # sa texture, alors qu'un ResourceLoader.load par exemplaire les rechargerait
 # a chaque appel et ferait de cent poubelles cent fois leur cout.
+# UNE VOITURE GAREE DEVIENT UN CORPS QU'ON PEUT POUSSER.
+#
+# Elle etait traversable : SOLIDES_PREFIXES existait et n'etait lu nulle part.
+# On lui donne donc un corps — mais pas un corps statique, qui en ferait un
+# bloc de beton : un RigidBody3D GELE, gratuit tant qu'il dort, et qu'un choc
+# reveille. Voir systemes/garee.gd.
+#
+# La forme est une BOITE, jamais un calque de la carrosserie. La lecon est
+# ecrite en toutes lettres dans desert.gd a propos du camping-car : sur un
+# vehicule dont la tole a des creux — passage de roue, renfoncement de portiere
+# — la capsule du joueur se glisse dedans et il ne reste plus qu'a recharger.
+#
+# L'encombrement est MESURE sur le maillage, jamais recopie : il y a cinq
+# modeles de voitures et il y en aura d'autres.
+func _encaisser(n: Node3D, parent: Node3D) -> void:
+	var boite := AABB()
+	var premier := true
+	for mi in _maillages(n):
+		if mi.mesh == null:
+			continue
+		var locale := n.global_transform.affine_inverse() * mi.global_transform
+		var part := locale * mi.mesh.get_aabb()
+		boite = part if premier else boite.merge(part)
+		premier = false
+	if premier:
+		return
+
+	var corps := VoitureGaree.new()
+	corps.name = n.name
+	corps.transform = n.transform
+	var forme := CollisionShape3D.new()
+	var caisse := BoxShape3D.new()
+	# Legerement rentree : deux voitures garees a l'arret dont les boites se
+	# touchent se repoussent des le premier reveil, et la file entiere part en
+	# vagues le long du trottoir.
+	caisse.size = boite.size * 0.96
+	forme.shape = caisse
+	forme.position = boite.get_center()
+	corps.add_child(forme)
+
+	# Le maillage passe SOUS le corps rigide : c'est lui qui bouge desormais.
+	parent.remove_child(n)
+	n.transform = Transform3D.IDENTITY
+	corps.add_child(n)
+	parent.add_child(corps)
+
+
+func _maillages(n: Node) -> Array[MeshInstance3D]:
+	var trouves: Array[MeshInstance3D] = []
+	if n is MeshInstance3D:
+		trouves.append(n as MeshInstance3D)
+	for e in n.get_children():
+		trouves.append_array(_maillages(e))
+	return trouves
+
+
 func _poser_decor() -> void:
 	if not FileAccess.file_exists(lampes_json):
 		return
@@ -222,10 +278,12 @@ func _poser_decor() -> void:
 		# devient illisible et on ne peut plus dire ce qui a ete pose.
 		n.name = "%s_%03d" % [type, parent.get_child_count()]
 		parent.add_child(n)
-		# La voiture garee porte deja son corps statique : lui en fabriquer
-		# un second par maillage doublerait la collision et la ferait vibrer.
 		if type in SOLIDES:
 			_ajouter_collisions(n)
+		for prefixe in SOLIDES_PREFIXES:
+			if type.begins_with(prefixe):
+				_encaisser(n, parent)
+				break
 
 	if not manquants.is_empty():
 		push_error("ville : decor introuvable (%s). Regenerer : "

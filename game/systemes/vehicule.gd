@@ -71,6 +71,11 @@ var _sourd: int = 0
 
 func _ready() -> void:
 	add_to_group(Temps.ECOUTE)
+	# On ecoute les contacts, sinon get_colliding_bodies() renvoie toujours une
+	# liste vide et rien de ce qu'on percute ne peut ceder. Quatre suffisent :
+	# on ne tape jamais cinq choses a la fois, et chaque contact rapporte coute.
+	contact_monitor = true
+	max_contacts_reported = 4
 	if reglages == null:
 		push_error("vehicule : aucune ressource Reglages assignee")
 		set_physics_process(false)
@@ -160,6 +165,35 @@ func _physics_process(delta: float) -> void:
 	_ecouter_les_chocs(delta)
 
 
+# CE QU'ON PERCUTE DOIT CEDER, PAS L'INVERSE.
+#
+# Benjamin, apres essai : « si on percute une voiture on doit plutot gagner le
+# choc, actuellement on se fait pas mal balader. » C'etait exact et c'etait
+# mecanique : les voitures qui roulent sont des corps CINEMATIQUES, donc de
+# masse infinie du point de vue du moteur. Une deux-chevaux animee a la main
+# repousse une berline de deux tonnes sans ralentir d'un kilometre/heure.
+#
+# On ne les rend pas dynamiques pour autant — une circulation en physique
+# complete est l'endroit precis ou les projets a deux meurent, c'est ecrit dans
+# l'en-tete de trafic.gd. On leur demande simplement de RENDRE LA MAIN : la
+# voiture percutee s'ecarte et s'arrete quelques secondes, celle qui est garee
+# se reveille et se fait pousser pour de vrai.
+#
+# Le joueur garde son elan dans les deux cas, et c'est tout ce qu'on voulait.
+func _bousculer_ce_qu_on_a_touche(av: Vector2, perdue: float) -> void:
+	if not contact_monitor:
+		return
+	# L'impulsion suit le sens de marche AVANT le choc, pas la vitesse restante
+	# — apres l'impact, celle-ci pointe deja n'importe ou.
+	var sens := Vector3(av.x, 0.0, av.y).normalized()
+	var force := mass * clampf(perdue, 0.0, 14.0) * 0.55
+	for corps in get_colliding_bodies():
+		if corps is VoitureGaree:
+			(corps as VoitureGaree).reveiller(sens * force, global_position)
+		elif corps.has_method("bousculer"):
+			corps.call("bousculer", sens)
+
+
 # On MESURE la decelaration, on n'ecoute pas les contacts.
 #
 # Une voiture touche le sol a chaque image et frotte un trottoir sans arret :
@@ -170,6 +204,8 @@ func _physics_process(delta: float) -> void:
 # Le detour a un autre merite : ca marche contre n'importe quoi, y compris ce
 # qui n'a pas de corps physique propre — la geometrie de la ville est un seul
 # maillage de collision.
+
+
 func _ecouter_les_chocs(delta: float) -> void:
 	_repos_choc = maxf(0.0, _repos_choc - delta)
 
@@ -199,6 +235,7 @@ func _ecouter_les_chocs(delta: float) -> void:
 		return
 
 	_repos_choc = reglages.choc_repos
+	_bousculer_ce_qu_on_a_touche(av, perdue)
 	choc.emit(perdue)
 	if _son() == null:
 		return
