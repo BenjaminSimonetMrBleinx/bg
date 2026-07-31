@@ -16,6 +16,38 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.36.0 — Les voitures garées existent enfin, et la rue se remplit
+
+> **On ne traverse plus les voitures à l'arrêt.** Elles n'avaient aucune
+> collision — quatre cents voitures dans les rues, et on passait au travers de
+> chacune. Et quand tu en percutes une maintenant, **c'est toi qui gagnes** :
+> elle se fait pousser, elle glisse, elle se repose de travers.
+
+**Les voitures qui roulent ne te baladent plus.** Elles te repoussaient comme
+un mur : elles s'arrêtent et te laissent passer.
+
+**Six objets nouveaux dans les rues** : cabine téléphonique, distributeur de
+journaux, abri de bus, table de pique-nique, buissons, et des panneaux
+publicitaires en sortie de ville. Plus des poubelles et des bennes **repeintes**
+— trois cents poubelles identiques, ça se voyait.
+
+**Il y a du monde.** Vingt-six passants au lieu de seize, plus près, et placés
+devant toi plutôt que n'importe où autour : ils marchent vers toi au lieu de te
+tourner le dos. Avant, on pouvait traverser trois rues sans croiser personne.
+
+**Le désert a des rochers**, serrés au pied des mesas — et **son ambiance
+sonore**, celle que tu avais livrée le 27 et qui n'avait jamais été branchée.
+
+À essayer : roule dans une file de voitures garées et pousse-les. Puis va au
+désert, et écoute la différence quand tu arrives.
+
+> **Pas fait, et je le dis :** les passants sont toujours les bonshommes en
+> boîtes. Les vrais figurants sont importés et le jeu sait les animer, mais le
+> report de la démarche de Walter sur leur squelette produit un corps disloqué.
+> Le détail est dans le ticket #16.
+
+---
+
 ## 0.35.0 — Le désert devient un lieu
 
 > **Il y a du relief.** Des mesas à flancs raides — les seuls repères de la

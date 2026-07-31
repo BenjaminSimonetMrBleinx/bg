@@ -71,7 +71,17 @@ func _process(_d: float) -> bool:
 		_c.call("_monter")
 		# En plein desert : aucun trottoir, aucun mobilier, rien a heurter.
 		# Un test de trajectoire qui percute quelque chose mesure la collision.
-		_v.global_position = Vector3(-60.0, 0.6, 60.0)
+		# LE CIRCUIT EST HORS DE TOUT, ET IL DOIT LE RESTER.
+		#
+		# Il roulait a soixante metres du coin de la ville. Le 31/07/2026 la
+		# bande de cactus semee autour de la ville est passee de 75 a 165 m :
+		# le circuit s'est retrouve dedans, la voiture a tape un saguaro au
+		# bout de dix-sept metres, et le test a annonce « 0 km/h » sans qu'une
+		# seule ligne de conduite ait change.
+		#
+		# On se met donc au-dela de tout ce que le generateur seme, et on note
+		# pourquoi : le prochain qui elargit une bande cherchera ici.
+		_v.global_position = Vector3(-260.0, 0.6, 60.0)
 		_v.linear_velocity = Vector3.ZERO
 		_v.angular_velocity = Vector3.ZERO
 		_depart = _v.global_position

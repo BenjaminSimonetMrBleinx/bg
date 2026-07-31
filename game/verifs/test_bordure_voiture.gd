@@ -37,6 +37,26 @@ func _initialize() -> void:
 	root.add_child(_monde)
 
 
+# Retire les voitures a l'arret autour d'un point. Rend le nombre retire, pour
+# que le journal du test dise ce qu'il a change au monde avant de mesurer.
+func _degager_les_garees(centre: Vector3, rayon: float) -> int:
+	var retirees := 0
+	for n in _tous(_monde):
+		if n is VoitureGaree and (n as Node3D).global_position.distance_to(centre) < rayon:
+			n.queue_free()
+			retirees += 1
+	if retirees > 0:
+		print("       %d voiture(s) garee(s) degagee(s) du circuit" % retirees)
+	return retirees
+
+
+func _tous(n: Node) -> Array[Node]:
+	var liste: Array[Node] = [n]
+	for e in n.get_children():
+		liste.append_array(_tous(e))
+	return liste
+
+
 func _verifier(ok: bool, message: String) -> void:
 	if ok:
 		print("  ok   " + message)
@@ -68,6 +88,17 @@ func _scenario() -> void:
 	await _attendre(10)
 
 	print("\n--- on longe le bord en derivant vers lui ---")
+	# ON DEGAGE LES VOITURES GAREES DU CIRCUIT.
+	#
+	# Depuis le 31/07/2026 elles ont un corps physique — avant, on les
+	# traversait. Le circuit longe un trottoir, c'est-a-dire exactement la
+	# ou elles se garent : la voiture d'essai en percutait une avant meme
+	# d'atteindre la bordure.
+	#
+	# Ce test mesure LE FRANCHISSEMENT D'UNE BORDURE. Ce qui est gare le long
+	# n'est pas son sujet, et le degager est plus honnete que de deplacer le
+	# circuit jusqu'a tomber par hasard sur une place vide.
+	_degager_les_garees(Vector3(9.0, 0.45, -20.0), 30.0)
 	_vehicule.global_position = Vector3(9.0, 0.45, -20.0)
 	_vehicule.rotation = Vector3(0.0, deg_to_rad(-8.0), 0.0)
 	_vehicule.linear_velocity = Vector3.ZERO
