@@ -65,7 +65,17 @@ var parcouru: float = 0.0
 var _de: int = -1
 var _vers: int = -1
 
-var _silhouette: Silhouette
+## LA MARCHE, EN DEUX IMPLEMENTATIONS, comme pour le joueur.
+##
+##   - Demarche   pour un modele a squelette, qui porte ses propres clips
+##   - Silhouette pour un maillage segmente, anime par du code
+##
+## Les deux exposent avancer(vitesse, delta). Le passant prend la premiere qui
+## veut de lui : un figurant du pack a un squelette et un AnimationPlayer, les
+## boites generees n'ont ni l'un ni l'autre. C'est le meme choix que fait
+## joueur.gd depuis que Walter est passe au squelette — et c'etait la
+## condition pour que les vrais modeles entrent dans la rue.
+var _marche: RefCounted
 var _vers_arrivee: bool = true
 var _attente: float = 0.0
 var _gravite: float = ProjectSettings.get_setting("physics/3d/default_gravity", 14.0)
@@ -76,8 +86,13 @@ func _ready() -> void:
 		push_error("pieton : aucune ressource Reglages assignee")
 		set_physics_process(false)
 		return
-	_silhouette = Silhouette.new(reglages)
-	_silhouette.recenser(self)
+	var d := Demarche.new(reglages)
+	if d.recenser(self):
+		_marche = d
+	else:
+		var sil := Silhouette.new(reglages)
+		sil.recenser(self)
+		_marche = sil
 	# Chacun demarre a un moment different de son trajet, sinon toute la rue
 	# fait demi-tour en meme temps.
 	_attente = randf() * pause
@@ -194,4 +209,5 @@ func _physics_process(delta: float) -> void:
 		rotation.y = rotate_toward(rotation.y, Joueur.lacet_vers(voulu),
 				reglages.marche_rotation * delta)
 
-	_silhouette.avancer(Vector2(velocity.x, velocity.z).length(), delta)
+	if _marche != null:
+		_marche.avancer(Vector2(velocity.x, velocity.z).length(), delta)

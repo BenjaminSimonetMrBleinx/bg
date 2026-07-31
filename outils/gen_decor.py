@@ -314,6 +314,176 @@ def poteau(mats) -> int:
     return m.finir()
 
 
+def cabine_telephone(mats) -> int:
+    """Une cabine telephonique, modele americain : un demi-abri sur pied.
+
+    Pas la boite rouge anglaise fermee — celle-la n'existe pas ici. Le modele
+    americain est un panneau arriere, deux joues courtes et une casquette, et
+    c'est aussi ce qui coute le moins de faces.
+
+    Elle vaut plus que son encombrement : c'est un objet de 2008 qu'on ne voit
+    plus nulle part, et Breaking Bad s'en sert. Le jour ou une mission demandera
+    un appel qu'on ne peut pas passer depuis son propre telephone, elle sera
+    deja dans la rue.
+    """
+    m = Maillage("Cabine", mats["metal_sombre"])
+    m.boite(-0.52, 0.28, 0.0, 0.52, 0.40, 2.35, 1.4)      # dos
+    for sx in (-0.52, 0.40):
+        m.boite(sx, -0.30, 0.0, sx + 0.12, 0.40, 2.35, 1.4)  # joues
+    m.boite(-0.62, -0.42, 2.35, 0.62, 0.50, 2.52, 1.4)    # casquette
+    total = m.finir()
+    v = Maillage("Vitrage", mats["verre_cabine"])
+    for sx in (-0.40, 0.28):
+        v.boite(sx, -0.28, 0.95, sx + 0.12, 0.26, 2.25, 1.0)
+    total += v.finir()
+    a = Maillage("Appareil", mats["metal"])
+    a.boite(-0.22, 0.16, 1.05, 0.22, 0.30, 1.62, 0.6)
+    return total + a.finir()
+
+
+def distributeur_journaux(mats) -> int:
+    """Le distributeur de journaux a piece, sur son pied.
+
+    Trois fois rien — une boite sur un tube — mais c'est un des objets les plus
+    caracteristiques d'un trottoir americain, et il n'existe nulle part
+    ailleurs. Ce sont ces details-la qui font qu'une rue generee cesse d'etre
+    n'importe quelle rue.
+    """
+    p = Maillage("Pied", mats["metal_sombre"])
+    p.boite(-0.05, -0.05, 0.0, 0.05, 0.05, 0.62)
+    total = p.finir()
+    c = Maillage("Caisson", mats["journal_boite"])
+    c.boite(-0.28, -0.22, 0.62, 0.28, 0.22, 1.34, 0.8)
+    total += c.finir()
+    f = Maillage("Vitre", mats["verre_cabine"])
+    f.boite(-0.22, -0.24, 0.86, 0.22, -0.21, 1.26, 0.5)
+    return total + f.finir()
+
+
+def abri_bus(mats) -> int:
+    """Un abri de bus : quatre pieds, un toit, une paroi, un banc.
+
+    Il DESIGNE un endroit. Une rue generee n'a aucune raison qu'on s'y arrete ;
+    un abri dit « ici, des gens attendent », et c'est le genre de lieu ou une
+    mission peut donner rendez-vous sans avoir a construire quoi que ce soit.
+    """
+    m = Maillage("Structure", mats["metal_sombre"])
+    for sx in (-1.55, 1.45):
+        for sy in (-0.62, 0.52):
+            m.boite(sx, sy, 0.0, sx + 0.10, sy + 0.10, 2.32)
+    m.boite(-1.60, -0.68, 2.32, 1.60, 0.68, 2.44, 2.0)
+    total = m.finir()
+    v = Maillage("Paroi", mats["verre_cabine"])
+    v.boite(-1.58, 0.56, 0.35, 1.58, 0.60, 2.28, 2.0)
+    total += v.finir()
+    t = Maillage("Toile", mats["toile_abri"])
+    t.boite(-1.62, -0.72, 2.44, 1.62, 0.72, 2.50, 2.0)
+    total += t.finir()
+    b = Maillage("Banc", mats["bois_banc"])
+    b.boite(-1.30, 0.10, 0.44, 1.30, 0.52, 0.52, 0.8)
+    for sx in (-1.20, 1.05):
+        b.boite(sx, 0.16, 0.0, sx + 0.14, 0.46, 0.44)
+    return total + b.finir()
+
+
+def table_picnic(mats) -> int:
+    """Table de pique-nique de parc, plateau et deux bancs d'un seul tenant."""
+    m = Maillage("Table", mats["bois_banc"])
+    for k in range(3):
+        y = -0.34 + k * 0.34
+        m.boite(-0.90, y - 0.15, 0.72, 0.90, y + 0.15, 0.79, 0.7)
+    for sy in (-0.78, 0.48):
+        for k in range(2):
+            y = sy + k * 0.15
+            m.boite(-0.90, y - 0.07, 0.42, 0.90, y + 0.07, 0.48, 0.7)
+    total = m.finir()
+    p = Maillage("Pietement", mats["metal_sombre"])
+    for sx in (-0.72, 0.62):
+        p.boite(sx, -0.08, 0.0, sx + 0.10, 0.08, 0.72)
+        p.boite(sx, -0.86, 0.40, sx + 0.10, 0.70, 0.46)
+    return total + p.finir()
+
+
+def buisson(mats) -> int:
+    """Une touffe basse. Deux prismes ecrases, et rien de plus.
+
+    Elle sert a une chose : casser le sol nu. Une pelouse rigoureusement vide
+    entre deux arbres se lit comme un tapis, et trois buissons suffisent a lui
+    rendre une texture qu'aucune image ne donnera.
+    """
+    m = Maillage("Buisson", mats["herbe"])
+    m.prisme(0, 0, 0.0, 0.72, 0.62, 0.44, 7, 1.6)
+    m.prisme(0.22, 0.14, 0.0, 0.48, 0.36, 0.20, 6, 1.2)
+    return m.finir()
+
+
+def panneau_pub(texture: str):
+    """Fabrique un panneau publicitaire portant CETTE affiche."""
+    def batir(mats) -> int:
+        p = Maillage("Mats", mats["metal_sombre"])
+        for sx in (-1.35, 1.15):
+            p.prisme(sx, 0, 0.0, 4.10, 0.11, 0.09, 6, 3.0)
+        p.boite(-1.90, -0.10, 3.95, 1.90, 0.10, 4.15, 2.0)
+        total = p.finir()
+        a = Maillage("Affiche", mats[texture])
+        # Recto seulement, plus un dos sombre : une affiche imprimee des deux
+        # cotes n'existe pas, et on la voit toujours arriver de face en roulant.
+        a.face([(-1.95, -0.06, 4.15), (1.95, -0.06, 4.15),
+                (1.95, -0.06, 6.35), (-1.95, -0.06, 6.35)],
+               [(0, 0), (1, 0), (1, 1), (0, 1)])
+        total += a.finir()
+        d = Maillage("Dos", mats["metal_sombre"])
+        d.boite(-1.95, -0.06, 4.15, 1.95, 0.04, 6.35, 3.0)
+        return total + d.finir()
+    return batir
+
+
+def poubelle_teintee(matiere: str):
+    """La meme poubelle, dans une autre couleur."""
+    def batir(mats) -> int:
+        m = Maillage("Poubelle", mats[matiere])
+        m.prisme(0, 0, 0.0, 0.86, 0.28, 0.31, 8, 0.9)
+        total = m.finir()
+        c = Maillage("Couvercle", mats["metal_sombre"])
+        c.prisme(0, 0, 0.86, 0.93, 0.33, 0.30, 8, 0.9)
+        return total + c.finir()
+    return batir
+
+
+def benne_teintee(matiere: str):
+    """La meme benne, dans une autre couleur."""
+    def batir(mats) -> int:
+        m = Maillage("Benne", mats[matiere])
+        m.boite(-0.95, -0.62, 0.10, 0.95, 0.62, 1.05, 1.2)
+        total = m.finir()
+        c = Maillage("Couvercle", mats["metal_sombre"])
+        c.face([(-0.98, -0.66, 1.05), (0.98, -0.66, 1.05),
+                (0.98, 0.66, 1.22), (-0.98, 0.66, 1.22)],
+               [(0, 0), (1.6, 0), (1.6, 1.1), (0, 1.1)])
+        total += c.finir()
+        p = Maillage("Pieds", mats["metal_sombre"])
+        for sx in (-0.78, 0.78):
+            for sy in (-0.48, 0.48):
+                p.boite(sx - 0.06, sy - 0.06, 0.0, sx + 0.06, sy + 0.06, 0.12)
+        return total + p.finir()
+    return batir
+
+
+def rocher(mats) -> int:
+    """Un bloc de gres, pose au pied des mesas et le long de la piste.
+
+    Trois prismes ecrases et decales, sans aucune symetrie : un rocher
+    symetrique se lit comme un objet fabrique, et c'est exactement ce qu'on
+    veut cacher. Ils servent a une chose que le desert n'avait pas — quelque
+    chose derriere quoi passer, et de quoi mesurer les distances.
+    """
+    m = Maillage("Rocher", mats["montagne"])
+    m.prisme(0.0, 0.0, 0.0, 1.15, 1.35, 0.95, 7, 2.0)
+    m.prisme(0.85, 0.35, 0.0, 0.72, 0.78, 0.52, 6, 1.6)
+    m.prisme(-0.45, 0.62, 0.0, 0.48, 0.55, 0.34, 5, 1.4)
+    return m.finir()
+
+
 def climatiseur(mats) -> int:
     """Bloc de climatisation. Sur un toit-terrasse plat, c'est la seule chose
     qui empeche la maison de ressembler a une boite."""
@@ -337,6 +507,32 @@ OBJETS = {
     "cactus": (saguaro, ["cactus"]),
     "arbre": (arbre, ["bois_banc", "herbe"]),
     "poteau": (poteau, ["bois_banc"]),
+    # --- le mobilier de trottoir, ajoute le 31/07/2026 ---
+    "cabine_telephone": (cabine_telephone,
+                         ["metal_sombre", "verre_cabine", "metal"]),
+    "distributeur_journaux": (distributeur_journaux,
+                              ["metal_sombre", "journal_boite", "verre_cabine"]),
+    "abri_bus": (abri_bus,
+                 ["metal_sombre", "verre_cabine", "toile_abri", "bois_banc"]),
+    "table_picnic": (table_picnic, ["bois_banc", "metal_sombre"]),
+    "buisson": (buisson, ["herbe"]),
+    "rocher": (rocher, ["montagne"]),
+    "panneau_pub_0": (panneau_pub("affiche_0"), ["metal_sombre", "affiche_0"]),
+    "panneau_pub_1": (panneau_pub("affiche_1"), ["metal_sombre", "affiche_1"]),
+    "panneau_pub_2": (panneau_pub("affiche_2"), ["metal_sombre", "affiche_2"]),
+    # --- les memes objets, repeints ---
+    #
+    # Trois cents poubelles identiques se lisent comme un copier-coller. Une
+    # variante de couleur coute une texture de 32 pixels et une entree ici ;
+    # c'est le rapport le plus favorable de tout le decor.
+    "poubelle_bleue": (poubelle_teintee("plastique_bleu"),
+                       ["plastique_bleu", "metal_sombre"]),
+    "poubelle_grise": (poubelle_teintee("plastique_gris"),
+                       ["plastique_gris", "metal_sombre"]),
+    "benne_verte": (benne_teintee("rouille_verte"),
+                    ["rouille_verte", "metal_sombre"]),
+    "benne_bleue": (benne_teintee("rouille_bleue"),
+                    ["rouille_bleue", "metal_sombre"]),
     "climatiseur": (climatiseur, ["metal", "metal_sombre"]),
     "panneau_desert": (panneau_direction("panneau_desert"),
                        ["metal_sombre", "panneau_desert"]),

@@ -41,9 +41,17 @@ const TAILLE := 1.78
 const RAYON := 0.28
 
 ## Combien de passants existent en meme temps, quelle que soit la surface de la
-## ville. Seize : c'est ce que la ville de quatre ilots portait avant, et elle
-## tournait a 57 images/seconde.
-@export_range(0, 120, 1) var combien: int = 16
+## ville.
+##
+## Seize suffisaient a peupler quatre ilots. Repartis dans un anneau de
+## quatre-vingt-quinze metres autour du joueur, ils devenaient INVISIBLES :
+## trois captures de rue d'affilee n'en montraient pas un seul. Une foule qu'on
+## ne croise jamais coute le meme prix qu'une foule qu'on croise.
+##
+## Vingt-six, dans un rayon plus court et devant soi de preference. Le cout est
+## mesure a chaque changement — c'est le systeme qui a deja fait tomber la ville
+## a six images par seconde.
+@export_range(0, 120, 1) var combien: int = 26
 
 ## Au-dela de cette distance de la camera, un passant est recycle : on le
 ## replace sur une rue proche au lieu de le laisser marcher pour personne.
@@ -53,7 +61,7 @@ const RAYON := 0.28
 ## un. De jour on voit a 340 m, donc un recyclage a 95 m est theoriquement
 ## visible — a cette distance un homme fait quatre pixels de haut sur un rendu
 ## de 512, et c'est un cout qu'on accepte pour dix fois la fluidite.
-@export_range(20.0, 400.0, 5.0) var portee: float = 95.0
+@export_range(20.0, 400.0, 5.0) var portee: float = 62.0
 
 ## Combien de fois par seconde on regarde qui est trop loin. Une fois suffit :
 ## a la vitesse d'une voiture on parcourt quinze metres dans l'intervalle, et
@@ -207,13 +215,49 @@ func _repartir() -> void:
 # On parcourt donc la liste en entier. Cinq cent quarante distances une fois
 # par seconde ne se mesurent pas.
 func _rues_proches(oeil: Vector3) -> Array:
-	var mini_d := portee * 0.5
-	var dans_la_couronne: Array = []
+	# ON MESURE LA DISTANCE A LA RUE, PAS AU CARREFOUR.
+	#
+	# La premiere version comparait la distance aux extremites du troncon. Les
+	# carrefours sont a cinquante-sept metres les uns des autres : une rue qui
+	# passe a dix metres devant le joueur n'etait donc pas candidate si ses deux
+	# bouts etaient loin. Mesure du 31/07/2026, camera posee dans une rue :
+	# DEUX rues d'accueil pour vingt-six passants, tous entasses hors du champ.
+	var cam := get_viewport().get_camera_3d()
+	var devant := -cam.global_transform.basis.z if cam != null else Vector3.ZERO
+	devant.y = 0.0
+	devant = devant.normalized()
+
+	var vues: Array = []
+	var autres: Array = []
 	for a in _aretes:
-		var d := oeil.distance_to(_point(int(a[0])))
-		if d >= mini_d and d <= portee:
-			dans_la_couronne.append(a)
-	return dans_la_couronne
+		var p0 := _point(int(a[0]))
+		var p1 := _point(int(a[1]))
+		if _distance_au_troncon(oeil, p0, p1) > portee:
+			continue
+		# DEVANT SOI D'ABORD. Un passant repose derriere le joueur ne sera
+		# jamais vu : il marchera cinquante metres dans son dos, puis sera
+		# recycle. A effectif egal, ne peupler que ce qu'on regarde double ce
+		# qu'on croise.
+		var vers := (p0 + p1) * 0.5 - oeil
+		vers.y = 0.0
+		if devant != Vector3.ZERO and vers.normalized().dot(devant) > -0.15:
+			vues.append(a)
+		else:
+			autres.append(a)
+	# Les rues de dos servent de repli : au fond d'une impasse, tout est
+	# derriere, et mieux vaut un passant mal place que pas de passant.
+	return vues if not vues.is_empty() else autres
+
+
+## La distance d'un point au SEGMENT, pas a la droite qui le porte : une rue a
+## deux bouts, et au-dela on est dans la rue d'a cote.
+static func _distance_au_troncon(p: Vector3, a: Vector3, b: Vector3) -> float:
+	var ab := b - a
+	var l2 := ab.length_squared()
+	if l2 < 0.001:
+		return p.distance_to(a)
+	var t := clampf((p - a).dot(ab) / l2, 0.0, 1.0)
+	return p.distance_to(a + ab * t)
 
 
 # Repose un passant sur une rue proche du point de vue. On tire au sort parmi
@@ -225,7 +269,11 @@ func _replacer(p: Pieton, proches: Array) -> void:
 	var choisie: Array = proches[_rng.randi() % proches.size()]
 	var de := int(choisie[0])
 	var vers := int(choisie[1])
-	if _rng.randf() < 0.5:
+	# On part du bout le PLUS ELOIGNE du point de vue, donc on marche vers le
+	# joueur. Deux gains pour la meme ligne : personne n'apparait sous son nez,
+	# et on croise des visages plutot que des dos.
+	var oeil := _oeil()
+	if oeil.distance_to(_point(de)) < oeil.distance_to(_point(vers)):
 		var t := de
 		de = vers
 		vers = t

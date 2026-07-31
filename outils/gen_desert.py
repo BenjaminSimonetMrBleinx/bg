@@ -374,6 +374,55 @@ def terrain(mats, dunes) -> tuple[int, dict]:
     return total, lieux
 
 
+def rochers(graine: int, dunes) -> list:
+    """Ou poser les blocs de gres. Des DONNEES, pas de la geometrie.
+
+    Les cactus, eux, sont cuits dans le terrain — ils y etaient avant qu'on ait
+    un fichier de placement pour le desert. Les rochers arrivent apres et
+    passent par desert_lieux.json, comme le mobilier de la ville : un rocher
+    instancie cent fois partage son maillage, un rocher cuit cent fois pese
+    cent fois.
+
+    Ils se serrent au PIED DES MESAS. C'est la que l'eboulis se depose dans la
+    vraie vie, et surtout c'est ce qui adoucit le raccord entre un flanc raide
+    et un sol plat — sans eux, la mesa a l'air posee sur le desert.
+    """
+    rng = random.Random(graine + 311)
+    poses = []
+    for _ in range(1400):
+        if len(poses) >= 90:
+            break
+        # Deux tiers au pied d'une mesa, un tiers disperses : le desert nu a
+        # besoin de quelques reperes intermediaires, pas seulement de tas.
+        if rng.random() < 0.66:
+            cx, cy, rayon, _h = MESAS[rng.randrange(len(MESAS))]
+            angle = rng.uniform(0.0, math.tau)
+            d = rayon * rng.uniform(1.18, 1.75)
+            x, y = cx + math.cos(angle) * d, cy + math.sin(angle) * d
+        else:
+            x = rng.uniform(-COTE / 2 + 14, COTE / 2 - 14)
+            y = rng.uniform(-COTE / 2 + 14, COTE / 2 - 14)
+        if abs(x) > COTE / 2 - 10 or abs(y) > COTE / 2 - 10:
+            continue
+        # Jamais sur la piste — on roule dessus — ni sur le camping-car.
+        if abs(x - piste_x(y)) < PISTE + 5.0:
+            continue
+        cx2, cy2 = camping_car_xy()
+        if (x - cx2) ** 2 + (y - cy2) ** 2 < 12.0 ** 2:
+            continue
+        z = hauteur_du_sol(x, y, dunes)
+        poses.append({
+            "type": "rocher",
+            # Enfonce de quinze centimetres : un bloc pose pile sur la surface
+            # laisse voir un lisere de sol sous lui des qu'on le regarde de
+            # biais, et il a l'air de flotter.
+            "pos": [round(x, 2), round(z - 0.15, 2), round(-y, 2)],
+            "angle": round(rng.uniform(0.0, 6.28), 3),
+            "echelle": round(rng.uniform(0.55, 2.10), 2),
+        })
+    return poses
+
+
 def cactus(mats, graine: int, dunes) -> int:
     """Des saguaros semes autour de la piste.
 
@@ -513,7 +562,8 @@ def main() -> None:
     # copies : l'en-tete de CAMPING_CAR prevenait deja que les deux devaient
     # bouger ensemble, et qu'un cactus repousserait dans le vehicule sinon.
     fiche = sortie / "desert_lieux.json"
-    fiche.write_text(json.dumps({"cote": COTE, "lieux": lieux}, indent=1),
+    fiche.write_text(json.dumps({"cote": COTE, "lieux": lieux,
+                                 "decor": rochers(a.seed, dunes)}, indent=1),
                      encoding="utf-8")
     for nom, pos in sorted(lieux.items()):
         print("  lieu %-14s %s" % (nom, pos))

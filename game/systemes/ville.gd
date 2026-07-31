@@ -37,9 +37,17 @@ const VEHICULES := "res://assets/vehicules/%s.glb"
 ## L'arbre en fait partie : il est plante au milieu d'un parc, la ou l'on
 ## marche, et un arbre qu'on traverse est bien plus visible qu'une poubelle
 ## qu'on traverse — on ne s'attend pas a passer au travers d'un tronc.
-const SOLIDES := ["benne", "banc", "cactus", "panneau", "arbre"]
+const SOLIDES := ["benne", "benne_verte", "benne_bleue", "banc", "cactus",
+		"panneau", "arbre", "abri_bus", "cabine_telephone", "table_picnic",
+		"distributeur_journaux"]
 
 const SOLIDES_PREFIXES := ["garee_"]
+
+## Ce qui est solide mais n'est pas un vehicule : on lui fabrique une collision
+## calquee sur sa geometrie, pas une caisse. Un panneau publicitaire est deux
+## mats et un cadre — une boite engloberait le vide entre les pieds, et on
+## buterait a trois metres du panneau sans rien voir devant soi.
+const SOLIDES_PREFIXES_DECOR := ["panneau_pub"]
 
 
 ## Les materiaux de facade qui portent un masque de fenetres allumees. On les
@@ -283,6 +291,10 @@ func _poser_decor() -> void:
 		for prefixe in SOLIDES_PREFIXES:
 			if type.begins_with(prefixe):
 				_encaisser(n, parent)
+				break
+		for prefixe in SOLIDES_PREFIXES_DECOR:
+			if type.begins_with(prefixe):
+				_ajouter_collisions(n)
 				break
 
 	if not manquants.is_empty():

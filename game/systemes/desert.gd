@@ -48,6 +48,46 @@ const CAP_CAMPING_CAR := 108.0
 const LIEUX := "res://assets/desert/desert_lieux.json"
 
 var _lieux: Dictionary = {}
+var _decor: Array = []
+
+
+# LE DECOR DU DESERT, INSTANCIE ET NON CUIT.
+#
+# Les cactus sont dans le maillage du terrain : ils y etaient avant que la zone
+# ait un fichier de placement. Les rochers arrivent apres et passent par les
+# donnees, comme le mobilier de la ville — quatre-vingt-dix blocs qui partagent
+# un maillage au lieu de quatre-vingt-dix fois ses faces.
+func _poser_decor() -> void:
+	if _decor.is_empty():
+		return
+	var parent := Node3D.new()
+	parent.name = "Decor"
+	add_child(parent)
+	var modeles := {}
+	for entree in _decor:
+		var type := str(entree.get("type", ""))
+		if not modeles.has(type):
+			var chemin: String = DECOR % type
+			modeles[type] = (ResourceLoader.load(chemin) as PackedScene
+					if ResourceLoader.exists(chemin) else null)
+		if modeles[type] == null:
+			push_error("desert : %s introuvable" % (DECOR % type))
+			continue
+		var n := (modeles[type] as PackedScene).instantiate() as Node3D
+		var p: Array = entree["pos"]
+		n.position = Vector3(float(p[0]), float(p[1]), float(p[2]))
+		n.rotation.y = float(entree.get("angle", 0.0))
+		# L'echelle varie d'un bloc a l'autre : le meme rocher pose vingt fois a
+		# la meme taille se reconnait immediatement, et le desert se met a
+		# ressembler a un damier.
+		var e := float(entree.get("echelle", 1.0))
+		n.scale = Vector3(e, e, e)
+		n.name = "%s_%03d" % [type, parent.get_child_count()]
+		parent.add_child(n)
+		# Un rocher est solide : on ne traverse pas un bloc de gres, et c'est
+		# aussi ce qui en fait un abri.
+		_ajouter_collisions(n)
+	print("desert : %d element(s) de decor" % parent.get_child_count())
 
 
 ## Un lieu du desert, en coordonnees du MONDE. Vector3.INF si inconnu — les
@@ -69,6 +109,7 @@ func _charger_les_lieux() -> void:
 		push_error("desert : %s illisible" % LIEUX)
 		return
 	_lieux = (lu as Dictionary).get("lieux", {})
+	_decor = (lu as Dictionary).get("decor", [])
 	print("desert : %d lieu(x) nomme(s)" % _lieux.size())
 
 
@@ -82,6 +123,7 @@ func _ready() -> void:
 	_ajouter_collisions(sol)
 
 	_charger_les_lieux()
+	_poser_decor()
 
 	if camping_car != null:
 		var cc := camping_car.instantiate() as Node3D

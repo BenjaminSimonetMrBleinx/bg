@@ -117,6 +117,34 @@
    ]
   },
 
+  "figurant": {
+   "quoi": "UN passant, pose devant l'objectif. C'est la seule facon de juger un modele de foule : courir apres l'un d'eux en capture ne marche pas, ils sont recycles. Ce qu'on regarde : est-ce que le corps tient — pas de membre etire a l'infini, pas de vrille — et est-ce que la demarche reportee de Walter lui va.",
+   "fin": 260,
+   "etapes": [
+    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
+    {"image": 40, "placer": "Passant_00", "pos": [30, 0.3, -8.5], "cap": 90},
+    {"image": 44, "camera": [33.2, 1.2, -8.5], "vise": [30, 0.95, -8.5]}
+   ]
+  },
+
+  "passants": {
+   "quoi": "Les passants sur un trottoir, de pres. Ce qu'on regarde : est-ce que ce sont bien les figurants du pack et pas des boites, est-ce qu'ils MARCHENT — la demarche de Walter leur a ete reportee, leur pack n'en avait aucune — et est-ce qu'ils se tiennent droit sans jambes en helice.",
+   "fin": 420,
+   "etapes": [
+    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
+    {"image": 30, "camera": [65.5, 1.8, -36], "vise": [65.5, 1.5, -110]}
+   ]
+  },
+
+  "mobilier_rue": {
+   "quoi": "Le nouveau mobilier de trottoir : cabine telephonique, distributeur de journaux, abri de bus, poubelles repeintes. Ce qu'on regarde : est-ce que la rue a cesse d'etre une repetition de la meme poubelle.",
+   "fin": 80,
+   "etapes": [
+    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
+    {"image": 30, "camera": [58, 2.4, -7], "vise": [104, 1.1, -2]}
+   ]
+  },
+
   "ilot_parc": {
    "quoi": "Un parc, vu du trottoir. Ce qu'on regarde : est-ce que les allees se lisent comme des chemins, est-ce que les arbres tiennent debout a cette distance, et est-ce que la pelouse ne jure pas avec le desert d'a cote.",
    "fin": 70,

@@ -119,6 +119,33 @@ def desert(u: float, v: float):
     return (r, r * 0.86, r * 0.68)
 
 
+# Les fonds des panneaux publicitaires. Trois suffisent : au-dela on ne les
+# distingue plus, et une ville n'a de toute facon que quelques annonceurs.
+AFFICHES = [(196, 62, 48), (44, 88, 148), (214, 172, 52)]
+
+
+def affiche(base, graine: int):
+    """Un panneau publicitaire, vu de la rue.
+
+    AUCUN TEXTE, ET C'EST VOULU. A la resolution du jeu, une accroche ecrite
+    serait un pate illisible ; ce qu'on lit d'une affiche a trente metres, ce
+    sont des aplats et un bandeau. On peint donc la COMPOSITION d'une affiche
+    plutot que son contenu — et ca reste lisible de face comme de biais.
+    """
+    def fn(u: float, v: float):
+        n = hache(int(u * 120) + graine * 7, int(v * 120))
+        r, g, b = base
+        # Le bandeau du bas, plus clair : c'est la ou vit le numero de
+        # telephone sur toutes les affiches du monde.
+        if v < 0.22:
+            return (232 - n * 14, 228 - n * 14, 220 - n * 12)
+        # Un bloc plus sombre a droite, qui tient lieu d'image.
+        if u > 0.55 and 0.30 < v < 0.88:
+            return (r * 0.62 + n * 12, g * 0.62 + n * 12, b * 0.62 + n * 12)
+        return (r + n * 16, g + n * 16, b + n * 16)
+    return fn
+
+
 def montagne(u: float, v: float):
     """La roche des Sandia, vue de tres loin.
 
@@ -997,6 +1024,10 @@ def main() -> None:
     ecrire_png(dossier / "montagne.png", t, t, rendre(t, t, montagne))
     faits.append("montagne.png")
 
+    for k, base in enumerate(AFFICHES):
+        ecrire_png(dossier / f"affiche_{k}.png", t, t, rendre(t, t, affiche(base, k)))
+        faits.append(f"affiche_{k}.png")
+
     ecrire_png(dossier / "parking.png", t, t, rendre(t, t, parking))
     faits.append("parking.png")
 
@@ -1087,6 +1118,19 @@ def main() -> None:
         ("bois_banc", (112, 76, 46), 0.12, True),
         ("rouge_borne", (156, 44, 36), 0.10, False),
         ("beton", (128, 124, 116), 0.09, False),
+        # LES VARIANTES DE COULEUR. Le meme objet, repeint.
+        #
+        # Trois cents poubelles rigoureusement identiques se lisent comme un
+        # copier-coller, et c'est ce qu'on voit en premier dans une rue
+        # generee. Une teinte differente coute une texture de 32 pixels et
+        # casse la repetition mieux que n'importe quel objet supplementaire.
+        ("plastique_bleu", (44, 58, 92), 0.10, False),
+        ("plastique_gris", (78, 80, 80), 0.10, False),
+        ("rouille_verte", (58, 84, 56), 0.14, False),
+        ("rouille_bleue", (48, 66, 96), 0.14, False),
+        ("toile_abri", (62, 70, 78), 0.10, False),
+        ("verre_cabine", (128, 158, 164), 0.06, False),
+        ("journal_boite", (156, 60, 44), 0.10, False),
     ]:
         ecrire_png(dossier / f"{nom}.png", t // 4, t // 4,
                    rendre(t // 4, t // 4, uni(base, grain, veine)))

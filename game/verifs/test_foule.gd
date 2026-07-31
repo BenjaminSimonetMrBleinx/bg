@@ -46,6 +46,15 @@ func _trouver(n: Node, nom: String) -> Node:
 	return null
 
 
+func _maillages(n: Node) -> Array[MeshInstance3D]:
+	var trouves: Array[MeshInstance3D] = []
+	if n is MeshInstance3D:
+		trouves.append(n as MeshInstance3D)
+	for e in n.get_children():
+		trouves.append_array(_maillages(e))
+	return trouves
+
+
 func _sur_chaussee(v: float) -> bool:
 	var dans := fposmod(v, PAS)
 	return dans > TROTTOIR and dans < TROTTOIR + ROUTE
@@ -67,18 +76,34 @@ func _process(_d: float) -> bool:
 		print("--- les passants ---")
 		_verifier(n > 0, "%d passant(s) crees" % n)
 
+		# LE CORPS ET LA DEMARCHE, SANS RIEN SUPPOSER DU MODELE.
+		#
+		# Ce test cherchait un noeud nomme « Bassin » et un autre nomme « Tete ».
+		# C'etait juste tant que les passants etaient des boites assemblees ;
+		# depuis qu'ils sont les figurants du pack, ce sont des maillages a
+		# squelette et ces noms n'existent plus. Le test tombait au rouge alors
+		# que la rue etait plus belle qu'avant.
+		#
+		# On verifie donc ce qui compte vraiment et qui vaut pour les deux : il y
+		# a quelque chose a voir, et il y a de quoi l'animer.
 		var modeles := {}
+		var sans_demarche := 0
 		for p in _foule.get_children():
 			_avant.append((p as Node3D).global_position)
-			# Le maillage doit etre la : un passant sans segments marche
-			# quand meme, invisible, et rien ne le signale.
-			_verifier(p.find_child("Bassin", true, false) != null,
-					"%s a bien un corps" % p.name)
-			var tete := p.find_child("Tete", true, false) as MeshInstance3D
-			if tete != null and tete.mesh != null and tete.mesh.get_surface_count() > 0:
-				modeles[tete.mesh.surface_get_material(0).resource_name] = true
+			var maillages := _maillages(p)
+			_verifier(not maillages.is_empty(), "%s a bien un corps" % p.name)
+			# Un squelette avec ses clips, ou des segments animes par le code.
+			# Sans l'un des deux, le passant traverse la rue en glissant.
+			var anime: bool = p.find_child("AnimationPlayer", true, false) != null 					or p.find_child("Bassin", true, false) != null
+			if not anime:
+				sans_demarche += 1
+			for mi in maillages:
+				if mi.mesh != null:
+					modeles[mi.mesh.get_rid()] = true
+		_verifier(sans_demarche == 0,
+				"tous savent marcher (%d sans demarche)" % sans_demarche)
 		_verifier(modeles.size() >= 2,
-				"%d apparences differentes dans la rue" % modeles.size())
+				"%d maillage(s) different(s) dans la rue" % modeles.size())
 
 		_etape = 1
 		_n = 0

@@ -152,8 +152,11 @@ CAPS = {"sud": 0.0, "nord": math.pi, "ouest": math.pi / 2, "est": -math.pi / 2}
 # Le tirage est pondere : une rue est faite de poubelles et de bornes, pas
 # d'un echantillonnage equitable du catalogue.
 MOBILIER = [
-    ("poubelle", 34), ("borne", 20), ("banc", 14),
-    ("benne", 10), ("cactus", 8),
+    ("poubelle", 20), ("poubelle_bleue", 7), ("poubelle_grise", 6),
+    ("borne", 15), ("banc", 9),
+    ("benne", 4), ("benne_verte", 3), ("benne_bleue", 3),
+    ("cactus", 6), ("buisson", 7),
+    ("distributeur_journaux", 6), ("cabine_telephone", 3), ("abri_bus", 2),
 ]
 
 # Ecart moyen entre deux elements le long d'un trottoir, en metres.
@@ -184,6 +187,34 @@ PROBA_PLACE_OCCUPEE = 0.55
 # silhouettes qui bougent en donnent plus qu'une centaine d'immobiles.
 PIETONS_PAR_COTE = 1
 LONGUEUR_TRAJET = 26.0
+
+# LES MODELES DE PASSANTS.
+#
+# Ce sont les figurants du pack, pas les boites generees. Les boites ont servi
+# tant qu'on n'avait rien : elles marchaient — silhouette.gd les anime segment
+# par segment — mais elles se lisaient comme des boites.
+#
+# Les figurants ont un squelette, donc ils passent par demarche.gd comme
+# Walter. Leur pack n'avait AUCUNE marche : celle de Walter leur a ete reportee
+# par outils/retarget_figurants.py, en passant par l'espace monde.
+#
+# Le tirage est pondere : une rue ordinaire est faite de gens ordinaires. Un
+# medecin en blouse et une policiere sont rares, et c'est ce qui fait qu'on les
+# remarque quand ils passent.
+# ETAT AU 31/07/2026 : CE SONT ENCORE LES BOITES.
+#
+# Les figurants du pack sont importes, propres, et le jeu sait les animer
+# depuis que pieton.gd choisit entre un squelette et des segments — mais leur
+# pack n'a AUCUNE marche, et le report de celle de Walter ne tient pas encore
+# debout. Verifie a l'image : le corps se disloque, membres en etoile. Voir
+# outils/retarget_figurants.py et le ticket #16.
+#
+# On garde donc les boites, qui marchent correctement. Un passant en boite qui
+# marche vaut mieux qu'un beau modele disloque, et la bascule ne demandera que
+# de rouvrir cette liste.
+MODELES_PASSANTS = [
+    ("passant_a", 34), ("passant_b", 33), ("passant_c", 33),
+]
 
 
 # ------------------------------------------------------------------ utilitaires
@@ -474,7 +505,7 @@ def pietons_de_cote(ox: float, oy: float, cote: str,
             "depart": [round(p1[0], 2), 0.2, round(-p1[1], 2)],
             "arrivee": [round(p2[0], 2), 0.2, round(-p2[1], 2)],
             "allure": round(rng.uniform(0.55, 0.95), 2),
-            "modele": rng.choice(["passant_a", "passant_b", "passant_c"]),
+            "modele": tirer(rng, MODELES_PASSANTS),
         })
     return trajets
 
@@ -589,6 +620,27 @@ def parcelle_parc(m: dict, ox: float, oy: float,
             "angle": round(rng.uniform(0.0, 6.28), 3),
         })
 
+    # Des tables de pique-nique et des buissons. Un parc qui n'a que des arbres
+    # et des bancs se lit comme un decor ; ce qui le rend habite, ce sont les
+    # choses qui servent a s'y installer.
+    for k in range(3):
+        objets.append({
+            "type": "table_picnic",
+            "pos": [round(ox + BLOC * (0.24 + 0.26 * k), 2), 0.03,
+                    round(-(oy + BLOC * (0.72 if k % 2 else 0.24)), 2)],
+            "angle": round(rng.uniform(0.0, 6.28), 3),
+        })
+    for _ in range(14):
+        x = rng.uniform(ox + 2.5, ox + BLOC - 2.5)
+        y = rng.uniform(oy + 2.5, oy + BLOC - 2.5)
+        if abs(x - milieu_x) < ALLEE or abs(y - milieu_y) < ALLEE:
+            continue
+        objets.append({
+            "type": "buisson",
+            "pos": [round(x, 2), 0.03, round(-y, 2)],
+            "angle": round(rng.uniform(0.0, 6.28), 3),
+        })
+
     # Les bancs regardent l'allee, poses le long de la branche est-ouest.
     for k in range(4):
         x = ox + BLOC * (0.18 + 0.21 * k)
@@ -657,12 +709,13 @@ def parcelle_terrain_vague(m: dict, ox: float, oy: float,
                       hauteur, hauteur + 0.06, 2.0, 1.0)
 
     objets: list[dict] = []
-    for _ in range(9):
+    for _ in range(11):
         x = rng.uniform(ox + 3.0, ox + BLOC - 3.0)
         y = rng.uniform(oy + 3.0, oy + BLOC - 3.0)
         objets.append({
-            "type": tirer(rng, [("benne", 34), ("poubelle", 30),
-                                ("cactus", 22), ("borne", 14)]),
+            "type": tirer(rng, [("benne", 20), ("benne_verte", 12),
+                                ("benne_bleue", 10), ("poubelle", 18),
+                                ("cactus", 20), ("buisson", 12), ("borne", 8)]),
             "pos": [round(x, 2), 0.03, round(-y, 2)],
             "angle": round(rng.uniform(0.0, 6.28), 3),
         })
@@ -1061,6 +1114,24 @@ def routes_sortantes(m: dict, n: int, etendue: float) -> list[dict]:
     # Les poteaux electriques le long de la route sortante. C'est la ligne
     # d'horizon la plus caracteristique de l'ouest americain, et c'est aussi ce
     # qui donne l'echelle : sans rien de vertical, une plaine n'a pas de taille.
+    # Deux panneaux publicitaires en sortie de ville. C'est ce qu'on voit en
+    # dernier en partant et en premier en revenant, et ca porte tres loin :
+    # six metres de haut se lisent bien au-dela du mobilier de trottoir.
+    for k, (px, pz, angle) in enumerate((
+            (milieu - ROUTE / 2.0 - 9.0, 62.0, 0.0),
+            (milieu + ROUTE / 2.0 + 9.5, 148.0, math.pi))):
+        objets.append({
+            "type": "panneau_pub_%d" % (k % 3),
+            "pos": [round(px, 2), 0.0, round(pz, 2)],
+            "angle": round(angle, 3),
+        })
+    objets.append({
+        "type": "panneau_pub_2",
+        "pos": [round(etendue + 96.0, 2), 0.0,
+                round(-(milieu - ROUTE / 2.0 - 9.0), 2)],
+        "angle": round(-math.pi / 2.0, 3),
+    })
+
     for k in range(8):
         avance = 16.0 + k * 32.0
         objets.append({
