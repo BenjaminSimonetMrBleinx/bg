@@ -742,6 +742,190 @@ def voiture_3(mats) -> int:
     return total + pneus.finir(lisse=True) + jantes.finir()
 
 
+# --------------------------------------------------- la maison realiste
+#
+# CE QUI FAIT « MINECRAFT », ET CE QUI LE DEFAIT.
+#
+# Retour de Benjamin : « tes modeles sont tres cubiques, ca fait presque
+# Minecraft. » C'est exact, et la cause n'est pas le nombre de faces — c'est
+# que TOUT EST DANS LE MEME PLAN. Une porte et des fenetres peintes sur une
+# face plate ne portent aucune ombre : il ne reste qu'un cube colorie.
+#
+# Quatre remedes, dans l'ordre de ce qu'ils rapportent :
+#
+#   1. CREUSER LES OUVERTURES. Une fenetre en retrait de douze centimetres
+#      fabrique quatre bandes d'ombre qui suivent le soleil. C'est le poste
+#      le plus rentable de tout ce fichier.
+#   2. CASSER LE VOLUME. Une maison n'est pas une boite : c'est un corps
+#      principal, une aile de garage EN AVANT, une entree EN RETRAIT. Trois
+#      profondeurs suffisent a supprimer la silhouette de cube.
+#   3. HABILLER LES ARETES. Un bandeau de soubassement, un linteau, un appui
+#      de fenetre, une planche de rive sous le toit : chacun est une arete de
+#      plus qui accroche la lumiere la ou il n'y avait qu'un aplat.
+#   4. MEUBLER LE SOL. Gravier, arbustes, allee, boite aux lettres. Un
+#      batiment pose sur un plan nu a toujours l'air pose.
+
+
+def mur_perce(m, p0, p1, z0, z1, ouvertures, tuile=2.6) -> None:
+    """Un mur plein, avec de VRAIS trous.
+
+    p0 et p1 sont les deux extremites du mur au sol, en (x, y). Les ouvertures
+    sont donnees en (debut, fin) le long du mur et (bas, haut) en hauteur.
+
+    On decoupe le mur en cellules sur une grille formee par les bords des
+    ouvertures, et on saute les cellules qui tombent dedans. C'est la methode
+    la plus simple qui donne un trou VRAI — pas un rectangle peint — et elle
+    marche quel que soit le nombre d'ouvertures.
+    """
+    import math as _m
+    dx, dy = p1[0] - p0[0], p1[1] - p0[1]
+    longueur = _m.hypot(dx, dy)
+    ux, uy = dx / longueur, dy / longueur
+
+    def point(t, z):
+        return (p0[0] + ux * t, p0[1] + uy * t, z)
+
+    coupes_t = sorted({0.0, longueur} | {o[0] for o in ouvertures}
+                      | {o[1] for o in ouvertures})
+    coupes_z = sorted({z0, z1} | {o[2] for o in ouvertures}
+                      | {o[3] for o in ouvertures})
+    for i in range(len(coupes_t) - 1):
+        for j in range(len(coupes_z) - 1):
+            ta, tb = coupes_t[i], coupes_t[i + 1]
+            za, zb = coupes_z[j], coupes_z[j + 1]
+            if tb - ta < 1e-4 or zb - za < 1e-4:
+                continue
+            dedans = any(o[0] - 1e-4 <= ta and tb <= o[1] + 1e-4
+                         and o[2] - 1e-4 <= za and zb <= o[3] + 1e-4
+                         for o in ouvertures)
+            if dedans:
+                continue
+            m.face([point(ta, za), point(tb, za), point(tb, zb), point(ta, zb)],
+                   [(ta / tuile, za / tuile), (tb / tuile, za / tuile),
+                    (tb / tuile, zb / tuile), (ta / tuile, zb / tuile)])
+
+
+def embrasure(m, vitre, p0, p1, t0, t1, z0, z1, profondeur, normale) -> None:
+    """Les quatre retours d'une ouverture creusee, plus son fond.
+
+    C'EST CE QUI FABRIQUE L'OMBRE. Sans ces quatre bandes, une fenetre est un
+    trou noir dans un mur plat ; avec elles, elle a une epaisseur, un rebord
+    qui prend le soleil et un cote qui reste dans l'ombre. Le meme mur passe
+    de « cube colorie » a « facade ».
+    """
+    import math as _m
+    dx, dy = p1[0] - p0[0], p1[1] - p0[1]
+    longueur = _m.hypot(dx, dy)
+    ux, uy = dx / longueur, dy / longueur
+    nx, ny = normale
+
+    def pt(t, z, prof):
+        return (p0[0] + ux * t + nx * prof, p0[1] + uy * t + ny * prof, z)
+
+    d = -profondeur
+    # tableaux lateraux
+    m.face([pt(t0, z0, 0), pt(t0, z0, d), pt(t0, z1, d), pt(t0, z1, 0)],
+           [(0, 0), (0.4, 0), (0.4, 1), (0, 1)])
+    m.face([pt(t1, z0, d), pt(t1, z0, 0), pt(t1, z1, 0), pt(t1, z1, d)],
+           [(0, 0), (0.4, 0), (0.4, 1), (0, 1)])
+    # linteau et appui
+    m.face([pt(t0, z1, 0), pt(t0, z1, d), pt(t1, z1, d), pt(t1, z1, 0)],
+           [(0, 0), (0.4, 0), (0.4, 1), (0, 1)])
+    m.face([pt(t0, z0, d), pt(t0, z0, 0), pt(t1, z0, 0), pt(t1, z0, d)],
+           [(0, 0), (0.4, 0), (0.4, 1), (0, 1)])
+    # le fond : vitre ou porte
+    vitre.face([pt(t0, z0, d), pt(t1, z0, d), pt(t1, z1, d), pt(t0, z1, d)],
+               [(0, 0), (1, 0), (1, 1), (0, 1)])
+
+
+def maison_realiste(mats) -> int:
+    """Une maison d'Albuquerque, ouvertures creusees et volume casse.
+
+    Trois profondeurs : le corps principal, l'aile de garage EN AVANT de
+    quatre-vingts centimetres, l'entree EN RETRAIT de soixante. Toutes les
+    ouvertures sont de vrais trous, en retrait de douze a quinze centimetres.
+    """
+    # --- le corps principal -------------------------------------------------
+    LG, PF, H = 11.0, 8.0, 2.75
+    corps = Maillage("Corps", mats["banc_mur"])
+    vitre = Maillage("Vitres", mats["banc_vitre"])
+    porte = Maillage("Portes", mats["porte"])
+
+    # La facade rue : deux fenetres creusees et l'entree en retrait.
+    mur_perce(corps, (0.0, 0.0), (LG, 0.0), 0.0, H,
+              [(1.1, 2.9, 1.02, 2.18), (4.2, 6.0, 1.02, 2.18)])
+    for t0, t1 in ((1.1, 2.9), (4.2, 6.0)):
+        embrasure(corps, vitre, (0.0, 0.0), (LG, 0.0), t0, t1, 1.02, 2.18,
+                  0.14, (0.0, -1.0))
+    # Les trois autres murs, pleins.
+    mur_perce(corps, (LG, 0.0), (LG, PF), 0.0, H, [])
+    mur_perce(corps, (LG, PF), (0.0, PF), 0.0, H, [(3.0, 4.6, 1.10, 2.10)])
+    embrasure(corps, vitre, (LG, PF), (0.0, PF), 3.0, 4.6, 1.10, 2.10,
+              0.14, (0.0, 1.0))
+    mur_perce(corps, (0.0, PF), (0.0, 0.0), 0.0, H, [])
+
+    # --- l'aile de garage, EN AVANT ----------------------------------------
+    GX, GL, GP = LG, 6.4, 6.6
+    mur_perce(corps, (GX, -0.8), (GX + GL, -0.8), 0.0, H,
+              [(0.7, 5.7, 0.0, 2.24)])
+    embrasure(corps, porte, (GX, -0.8), (GX + GL, -0.8), 0.7, 5.7, 0.0, 2.24,
+              0.18, (0.0, -1.0))
+    mur_perce(corps, (GX + GL, -0.8), (GX + GL, GP), 0.0, H, [])
+    mur_perce(corps, (GX + GL, GP), (GX, GP), 0.0, H, [])
+    mur_perce(corps, (GX, GP), (GX, -0.8), 0.0, H, [])
+
+    # --- l'entree, EN RETRAIT ----------------------------------------------
+    EX = 7.4
+    mur_perce(corps, (EX, 0.9), (EX + 2.6, 0.9), 0.0, H,
+              [(0.7, 1.8, 0.0, 2.10)])
+    embrasure(corps, porte, (EX, 0.9), (EX + 2.6, 0.9), 0.7, 1.8, 0.0, 2.10,
+              0.10, (0.0, -1.0))
+    for x in (EX, EX + 2.6):                       # les joues du renfoncement
+        mur_perce(corps, (x, 0.0), (x, 0.9), 0.0, H, [])
+    total = corps.finir()
+
+    # --- le toit : croupe, debord, planche de rive --------------------------
+    toit = Maillage("Toit", mats["banc_toit"])
+    rive = Maillage("Rive", mats["banc_mur"])
+    for x0, y0, x1, y1 in ((0.0, 0.0, LG, PF), (GX, -0.8, GX + GL, GP)):
+        d = 0.42
+        fx0, fy0, fx1, fy1 = x0 - d, y0 - d, x1 + d, y1 + d
+        ht = H + 1.15
+        a = (x0 + (x1 - x0) * 0.30, (y0 + y1) / 2.0, ht)
+        b = (x0 + (x1 - x0) * 0.70, (y0 + y1) / 2.0, ht)
+        toit.face([(fx0, fy0, H), (fx1, fy0, H), b, a],
+                  [(0, 0), (3.4, 0), (2.4, 1.5), (1.0, 1.5)])
+        toit.face([(fx1, fy1, H), (fx0, fy1, H), a, b],
+                  [(0, 0), (3.4, 0), (2.4, 1.5), (1.0, 1.5)])
+        toit.face([(fx1, fy0, H), (fx1, fy1, H), b],
+                  [(0, 0), (2.2, 0), (1.1, 1.3)])
+        toit.face([(fx0, fy1, H), (fx0, fy0, H), a],
+                  [(0, 0), (2.2, 0), (1.1, 1.3)])
+        # LA PLANCHE DE RIVE : la tranche du toit, sous le debord. Sans elle
+        # le toit est une feuille de papier posee sur les murs.
+        rive.boite(fx0, fy0 - 0.02, H - 0.16, fx1, fy0 + 0.06, H, 3.0)
+        rive.boite(fx0, fy1 - 0.06, H - 0.16, fx1, fy1 + 0.02, H, 3.0)
+        rive.boite(fx0 - 0.02, fy0, H - 0.16, fx0 + 0.06, fy1, H, 3.0)
+        rive.boite(fx1 - 0.06, fy0, H - 0.16, fx1 + 0.02, fy1, H, 3.0)
+    total += toit.finir() + rive.finir()
+
+    # --- l'habillage : soubassement, appuis, cheminee ----------------------
+    hab = Maillage("Habillage", mats["banc_mur"])
+    hab.boite(-0.06, -0.06, 0.0, LG + 0.06, PF + 0.06, 0.30, 3.0)
+    hab.boite(GX - 0.06, -0.86, 0.0, GX + GL + 0.06, GP + 0.06, 0.30, 3.0)
+    for t0, t1 in ((1.1, 2.9), (4.2, 6.0)):        # appuis de fenetre
+        hab.boite(t0 - 0.10, -0.12, 0.90, t1 + 0.10, 0.04, 1.02, 1.0)
+    hab.boite(2.4, 5.6, H + 0.4, 3.2, 6.4, H + 1.9, 1.0)          # cheminee
+    total += hab.finir()
+
+    m2 = Maillage("Metal", mats["metal_sombre"])
+    for x in (5.6, 8.4):                            # aerateurs de toit
+        m2.prisme(x, PF * 0.55, H + 0.62, H + 0.86, 0.16, 0.14, 8, 1.0)
+    total += m2.finir()
+
+    return total + vitre.finir() + porte.finir()
+
+
 # --------------------------------------------------------------------- sortie
 
 
@@ -751,6 +935,8 @@ MODELES = [
                                  "porte", "metal_sombre", "metal"]),
     ("banc_maison_3", maison_3, ["banc_mur", "banc_toit", "banc_vitre",
                                  "porte", "metal_sombre", "metal"]),
+    ("banc_maison_4", maison_realiste, ["banc_mur", "banc_toit", "banc_vitre",
+                                        "porte", "metal_sombre"]),
     ("banc_voiture_1", voiture_1, ["banc_tole_bleue", "pneu"]),
     ("banc_voiture_2", voiture_2, ["banc_tole_bleue", "banc_vitre",
                                    "banc_jante", "pneu", "metal_sombre",
@@ -793,7 +979,9 @@ def main() -> None:
         print("banc %-18s %4d faces  -> %s" % (nom, faces, fichier.name))
 
     fiche = sortie / "banc_graphique.json"
-    objets = []
+    objets = [{"type": "banc_maison_4",
+               "pos": [PLACEMENT["origine"][0] + 3 * ECART, 0.0,
+                       PLACEMENT["origine"][2]], "angle": 0.0}]
     for k in range(3):
         x = PLACEMENT["origine"][0] + k * ECART
         objets.append({"type": "banc_maison_%d" % (k + 1),

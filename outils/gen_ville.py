@@ -31,6 +31,9 @@ from pathlib import Path
 import bpy
 import bmesh
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from formes import embrasure, mur_perce      # noqa: E402
+
 # Toutes les distances sont en metres. Blender est en Z-up ; l'exportateur
 # glTF convertit vers le Y-up de Godot, on ne compense rien a la main.
 
@@ -782,93 +785,140 @@ def parcelle_parking(m: dict, ox: float, oy: float,
     return objets
 
 
+# LES VARIANTES DE PAVILLON.
+#
+# Douze maisons par ilot, toutes identiques, se lisent comme un copier-coller
+# — c'est le meme defaut que les trois cents poubelles. Quatre gabarits
+# suffisent a le casser : ils different par ce qui se voit de la rue, la
+# SILHOUETTE, pas par des details qu'on ne distinguera jamais a vingt metres.
+#
+#   toit      croupe (Walter) ou plat a parapet (pueblo)
+#   garage    a gauche ou a droite de l'entree
+#   avancee   de combien l'aile de garage sort du corps
+#   fenetres  une ou deux sur la facade rue
+GABARITS = [
+    {"toit": "croupe", "garage": "droite", "avancee": 0.70, "fenetres": 2},
+    {"toit": "plat", "garage": "gauche", "avancee": 0.45, "fenetres": 2},
+    {"toit": "croupe", "garage": "gauche", "avancee": 0.90, "fenetres": 1},
+    {"toit": "plat", "garage": "droite", "avancee": 0.30, "fenetres": 1},
+]
+
+
 def maisonnette(m: dict, x0: float, y0: float, largeur: float, profondeur: float,
                 cote: str, rng: random.Random) -> None:
-    """Un pavillon d'Albuquerque : bas, large, GARAGE EN FACADE.
+    """Un pavillon d'Albuquerque, OUVERTURES CREUSEES.
 
-    REFAIT LE 31/07/2026 D'APRES LES PHOTOS. La version d'avant etait une
-    boite avec un toit qui deborde — vraie n'importe ou dans le monde. Ce que
-    montrent les cinquante-six references est beaucoup plus typé, et tient en
-    trois traits :
+    Les portes et les fenetres etaient peintes sur une face plate : aucune
+    ombre, donc un cube colorie. Elles sont maintenant de vrais trous, avec
+    leurs quatre retours — voir outils/formes.py, qui porte le raisonnement.
 
-      DE PLAIN-PIED, ET LARGE. Jamais d'etage. La maison s'etale sur sa
-      parcelle au lieu de monter.
-
-      LE GARAGE EST EN FACADE, ET IL EST ENORME — deux portes, souvent la
-      moitie de la largeur de la maison. C'est l'element le plus
-      caracteristique d'une rue de lotissement la-bas, et il manquait
-      entierement.
-
-      LE TOIT EST UNE CROUPE A FAIBLE PENTE, avec un debord marque, ou un
-      toit plat a parapet. On prend la croupe : c'est celui de la maison de
-      Walter, et il se distingue mieux du bati commercial.
+    Le volume est casse en deux profondeurs : le corps, et l'aile de garage en
+    avant. C'est le minimum pour qu'une maison cesse d'etre une boite, et ca
+    ne coute que quatre faces de plus.
     """
-    h = rng.uniform(2.55, 2.85)
-    x1, y1 = x0 + largeur, y0 + profondeur
-    boite(m["crepi"], x0, y0, x1, y1, 0.0, h, 3.2, 2.6)
+    g = GABARITS[rng.randrange(len(GABARITS))]
+    h = rng.uniform(2.55, 2.80)
 
-    # LA CROUPE. Quatre pans qui montent vers une faitiere courte, et un
-    # debord de trente centimetres. Le debord fait l'ombre sous laquelle la
-    # facade se detache — sans lui, mur et toit se rejoignent sur une arete
-    # que personne n'a jamais vue sur une maison.
-    d = 0.32
-    fx0, fy0, fx1, fy1 = x0 - d, y0 - d, x1 + d, y1 + d
-    ht = h + 0.62
-    # La faitiere court dans le sens de la longueur.
-    if largeur >= profondeur:
-        a = (x0 + largeur * 0.28, (y0 + y1) / 2.0, ht)
-        b = (x0 + largeur * 0.72, (y0 + y1) / 2.0, ht)
+    # On travaille dans un repere local ou la facade rue est le segment
+    # (0,0)-(largeur,0), puis on transporte. C'est ce qui evite d'ecrire les
+    # quatre orientations a la main, et donc d'en rater une.
+    if cote == "sud":
+        base, ux, uy, nx, ny = (x0, y0), 1.0, 0.0, 0.0, -1.0
+        pf = profondeur
+    elif cote == "nord":
+        base, ux, uy, nx, ny = (x0 + largeur, y0 + profondeur), -1.0, 0.0, 0.0, 1.0
+        pf = profondeur
+    elif cote == "ouest":
+        base, ux, uy, nx, ny = (x0, y0 + profondeur), 0.0, -1.0, -1.0, 0.0
+        pf = largeur
     else:
-        a = ((x0 + x1) / 2.0, y0 + profondeur * 0.28, ht)
-        b = ((x0 + x1) / 2.0, y0 + profondeur * 0.72, ht)
-    t = m["toit"]
-    t.face([(fx0, fy0, h), (fx1, fy0, h), b, a], [(0, 0), (3, 0), (2.2, 1.4), (0.8, 1.4)])
-    t.face([(fx1, fy1, h), (fx0, fy1, h), a, b], [(0, 0), (3, 0), (2.2, 1.4), (0.8, 1.4)])
-    t.face([(fx1, fy0, h), (fx1, fy1, h), b], [(0, 0), (2, 0), (1, 1.2)])
-    t.face([(fx0, fy1, h), (fx0, fy0, h), a], [(0, 0), (2, 0), (1, 1.2)])
+        base, ux, uy, nx, ny = (x0 + profondeur, y0), 0.0, 1.0, 1.0, 0.0
+        pf = largeur
+    lg = largeur if cote in ("sud", "nord") else profondeur
 
-    # LE GARAGE : une porte large et sombre, sur presque la moitie de la
-    # facade, avec son linteau. C'est ce qu'on voit en premier d'une maison
-    # d'Albuquerque depuis la rue.
-    e = 0.01
-    large_garage = largeur * 0.46
-    if cote in ("sud", "nord"):
-        yf = (y0 - e) if cote == "sud" else (y1 + e)
-        sens = -1 if cote == "sud" else 1
-        gx = x0 + largeur * (0.48 if cote == "sud" else 0.06)
-        m["porte"].face(
-            [(gx, yf, 0.0), (gx + large_garage, yf, 0.0),
-             (gx + large_garage, yf, 2.18), (gx, yf, 2.18)][::sens],
-            [(0, 0), (2.4, 0), (2.4, 1), (0, 1)])
-        # La porte d'entree, et une fenetre : le reste de la facade.
-        px = x0 + largeur * (0.16 if cote == "sud" else 0.72)
-        m["porte"].face(
-            [(px, yf, 0.0), (px + 0.9, yf, 0.0),
-             (px + 0.9, yf, 2.05), (px, yf, 2.05)][::sens],
-            [(0, 0), (1, 0), (1, 1), (0, 1)])
-        fx = x0 + largeur * (0.30 if cote == "sud" else 0.86)
-        m["fenetre_maison"].face(
-            [(fx, yf, 1.05), (fx + 1.3, yf, 1.05),
-             (fx + 1.3, yf, 2.05), (fx, yf, 2.05)][::sens],
-            [(0, 0), (1, 0), (1, 1), (0, 1)])
+    def P(t: float, prof: float) -> tuple:
+        """Un point : t le long de la facade, prof vers l'interieur."""
+        return (base[0] + ux * t - nx * prof, base[1] + uy * t - ny * prof)
+
+    corps = m["crepi"]
+    vitre = m["fenetre_maison"]
+    porte = m["porte"]
+
+    # L'aile de garage occupe 44 % de la facade, en avant du corps.
+    gl = lg * 0.44
+    av = g["avancee"]
+    gt0 = (lg - gl - 0.2) if g["garage"] == "droite" else 0.2
+    gt1 = gt0 + gl
+
+    # --- la facade rue, percee -------------------------------------------
+    ouvertures = [(gt0 + 0.35, gt1 - 0.35, 0.0, 2.18)]      # porte de garage
+    reste0 = 0.3 if g["garage"] == "droite" else gt1 + 0.3
+    reste1 = gt0 - 0.3 if g["garage"] == "droite" else lg - 0.3
+    place = max(0.0, reste1 - reste0)
+    if place > 2.4:
+        ouvertures.append((reste0 + 0.15, reste0 + 1.05, 0.0, 2.05))   # entree
+        if g["fenetres"] >= 1 and place > 3.4:
+            ouvertures.append((reste0 + 1.45, reste0 + 2.55, 1.02, 2.10))
+        if g["fenetres"] >= 2 and place > 4.6:
+            ouvertures.append((reste0 + 2.85, reste0 + 3.85, 1.02, 2.10))
+
+    mur_perce(corps, P(0.0, 0.0), P(lg, 0.0), 0.0, h, ouvertures)
+    for k, (t0, t1, z0, z1) in enumerate(ouvertures):
+        fond = porte if z0 < 0.01 else vitre
+        embrasure(corps, fond, P(0.0, 0.0), P(lg, 0.0), t0, t1, z0, z1,
+                  0.16 if k == 0 else 0.13, (-nx, -ny))
+
+    # --- les trois autres murs, pleins, plus une fenetre a l'arriere ------
+    mur_perce(corps, P(lg, 0.0), P(lg, pf), 0.0, h, [])
+    mur_perce(corps, P(lg, pf), P(0.0, pf), 0.0, h, [(pf * 0.35, pf * 0.55, 1.10, 2.05)])
+    embrasure(corps, vitre, P(lg, pf), P(0.0, pf), pf * 0.35, pf * 0.55,
+              1.10, 2.05, 0.13, (nx, ny))
+    mur_perce(corps, P(0.0, pf), P(0.0, 0.0), 0.0, h, [])
+
+    # --- l'aile de garage, EN AVANT du corps ------------------------------
+    if av > 0.05:
+        for a, b in ((P(gt0, -av), P(gt1, -av)),
+                     (P(gt1, -av), P(gt1, 0.0)),
+                     (P(gt0, 0.0), P(gt0, -av))):
+            mur_perce(corps, a, b, 0.0, h, [])
+
+    # --- le toit ----------------------------------------------------------
+    d = 0.34
+    c = [P(-d, -d - av), P(lg + d, -d - av), P(lg + d, pf + d), P(-d, pf + d)]
+    if g["toit"] == "croupe":
+        ht = h + 0.85
+        mi = [(c[0][0] + c[2][0]) / 2.0, (c[0][1] + c[2][1]) / 2.0]
+        a = (mi[0] + (c[1][0] - c[0][0]) * 0.18, mi[1] + (c[1][1] - c[0][1]) * 0.18, ht)
+        b = (mi[0] - (c[1][0] - c[0][0]) * 0.18, mi[1] - (c[1][1] - c[0][1]) * 0.18, ht)
+        t = m["toit"]
+        t.face([(c[0][0], c[0][1], h), (c[1][0], c[1][1], h), a, b],
+               [(0, 0), (3, 0), (2.2, 1.4), (0.8, 1.4)])
+        t.face([(c[2][0], c[2][1], h), (c[3][0], c[3][1], h), b, a],
+               [(0, 0), (3, 0), (2.2, 1.4), (0.8, 1.4)])
+        t.face([(c[1][0], c[1][1], h), (c[2][0], c[2][1], h), a],
+               [(0, 0), (2, 0), (1, 1.2)])
+        t.face([(c[3][0], c[3][1], h), (c[0][0], c[0][1], h), b],
+               [(0, 0), (2, 0), (1, 1.2)])
     else:
-        xf = (x0 - e) if cote == "ouest" else (x1 + e)
-        sens = 1 if cote == "ouest" else -1
-        gy = y0 + profondeur * (0.48 if cote == "ouest" else 0.06)
-        m["porte"].face(
-            [(xf, gy, 0.0), (xf, gy + large_garage, 0.0),
-             (xf, gy + large_garage, 2.18), (xf, gy, 2.18)][::sens],
-            [(0, 0), (2.4, 0), (2.4, 1), (0, 1)])
-        py = y0 + profondeur * (0.16 if cote == "ouest" else 0.72)
-        m["porte"].face(
-            [(xf, py, 0.0), (xf, py + 0.9, 0.0),
-             (xf, py + 0.9, 2.05), (xf, py, 2.05)][::sens],
-            [(0, 0), (1, 0), (1, 1), (0, 1)])
-        fy = y0 + profondeur * (0.30 if cote == "ouest" else 0.86)
-        m["fenetre_maison"].face(
-            [(xf, fy, 1.05), (xf, fy + 1.3, 1.05),
-             (xf, fy + 1.3, 2.05), (xf, fy, 2.05)][::sens],
-            [(0, 0), (1, 0), (1, 1), (0, 1)])
+        # Toit plat A PARAPET : le mur monte au-dessus et cache le toit. Sur
+        # les references, c'est la couverture la plus repandue d'Albuquerque.
+        t = m["toit"]
+        t.face([(c[0][0], c[0][1], h), (c[1][0], c[1][1], h),
+                (c[2][0], c[2][1], h), (c[3][0], c[3][1], h)],
+               [(0, 0), (3, 0), (3, 3), (0, 3)])
+        for i in range(4):
+            j = (i + 1) % 4
+            m["crepi"].face(
+                [(c[i][0], c[i][1], h), (c[j][0], c[j][1], h),
+                 (c[j][0], c[j][1], h + 0.40), (c[i][0], c[i][1], h + 0.40)],
+                [(0, 0), (2.4, 0), (2.4, 0.4), (0, 0.4)])
+
+    # --- l'habillage : soubassement et appuis -----------------------------
+    hab = m["crepi"]
+    for a, b in ((P(0.0, -av if av > 0.05 else 0.0), P(lg, -av if av > 0.05 else 0.0)),):
+        hab.face([(a[0], a[1], 0.0), (b[0], b[1], 0.0),
+                  (b[0], b[1], 0.26), (a[0], a[1], 0.26)],
+                 [(0, 0), (3, 0), (3, 0.3), (0, 0.3)])
 
 
 def parcelle_pavillonnaire(m: dict, ox: float, oy: float,
@@ -1002,6 +1052,22 @@ def parcelle_strip_mall(m: dict, ox: float, oy: float,
              (vx + 7.0, y0 - 0.01, 2.9), (vx + 0.6, y0 - 0.01, 2.9)][::-1],
             [(0, 0), (2.4, 0), (2.4, 1), (0, 1)])
 
+    # L'ENSEIGNE DE TOIT, plus haute que le batiment lui-meme. C'est elle
+    # qu'on lit de loin, pas la boite en brique — Dog House, Octopus Car
+    # Wash, Crossroads Motel : sur les trois references, l'enseigne fait la
+    # moitie de la hauteur visible.
+    ens = "enseigne_%d" % rng.randrange(3)
+    ex = ox + BLOC * 0.30
+    m[ens].face([(ex, y0 - 0.30, 5.0), (ex + 11.0, y0 - 0.30, 5.0),
+                 (ex + 11.0, y0 - 0.30, 8.2), (ex, y0 - 0.30, 8.2)][::-1],
+                [(0, 0), (1, 0), (1, 1), (0, 1)])
+    m[ens].face([(ex + 11.0, y0 - 0.16, 5.0), (ex, y0 - 0.16, 5.0),
+                 (ex, y0 - 0.16, 8.2), (ex + 11.0, y0 - 0.16, 8.2)],
+                [(0, 0), (1, 0), (1, 1), (0, 1)])
+    for px in (ex + 1.2, ex + 9.0):
+        boite(m["trottoir"], px, y0 - 0.30, px + 0.22, y0 + 0.10, 4.4, 5.2,
+              1.0, 1.0)
+
     objets: list[dict] = []
     rangees = int((BLOC - profond) / PLACE_PROFONDEUR)
     places = int(BLOC / PLACE_LARGEUR)
@@ -1120,9 +1186,12 @@ def montagnes(m: Maillage, etendue: float, rng: random.Random) -> None:
     # C'est aussi le bon choix de fond : le sud-est est le cote par lequel on
     # QUITTE la ville. Une route qui file vers l'horizon degage vaut mieux que
     # n'importe quel relief, et Albuquerque a ses montagnes d'un seul cote.
-    recul = 300.0
+    # PLUS PRES ET PLUS HAUTES. Elles etaient a 300 et 420 m, hautes de 26 a
+    # 110 m : depuis la ville elles faisaient un lisere. Sur les photos, les
+    # Sandia occupent un tiers du ciel et se voient de n'importe quelle rue.
+    recul = 230.0
     for rang, (ecart, bas, amplitude) in enumerate(
-            ((recul, 26.0, 34.0), (recul + 120.0, 48.0, 62.0))):
+            ((recul, 52.0, 60.0), (recul + 130.0, 96.0, 110.0))):
         for cote in ("nord", "ouest"):
             segments = 26
             longueur = etendue + 2.0 * ecart
@@ -1247,7 +1316,8 @@ def cactus_du_desert(etendue: float, rng: random.Random,
 def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
     noms = ["route", "asphalte", "trottoir", "desert", "lampes",
             "herbe", "parking", "crepi", "toit", "porte", "fenetre_maison",
-            "bardage", "montagne", "beton"] + FACADES
+            "bardage", "montagne", "beton",
+            "enseigne_0", "enseigne_1", "enseigne_2"] + FACADES
     m = {nom: Maillage(nom, mats[nom]) for nom in noms}
 
     etendue = n * BLOC + (n + 1) * COULOIR
@@ -1536,7 +1606,8 @@ def main() -> None:
 
     noms = ["route", "asphalte", "trottoir", "desert",
             "herbe", "parking", "crepi", "toit", "porte", "fenetre_maison",
-            "bardage", "montagne", "beton"] + FACADES
+            "bardage", "montagne", "beton",
+            "enseigne_0", "enseigne_1", "enseigne_2"] + FACADES
     mats = {nom: materiau(nom, textures) for nom in noms}
     mats["lampes"] = mats["trottoir"]
 

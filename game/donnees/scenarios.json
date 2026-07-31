@@ -54,6 +54,15 @@
     { "image": 20, "appeler": "Temps", "methode": "regler", "argument": 13 }
    ]
   },
+  "banc_niveau_4": {
+   "quoi": "La maison a ouvertures creusees, celle qui repond au « ca fait Minecraft ». Ce qu'on regarde : les OMBRES dans les embrasures, le decalage entre le corps, le garage en avant et l'entree en retrait, et la planche de rive sous le debord de toit.",
+   "fin": 70,
+   "etapes": [
+    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 10.5},
+    {"image": 30, "camera": [849, 4.0, -903], "vise": [862, 1.8, -917]}
+   ]
+  },
+
   "banc_ensemble": {
    "quoi": "Le banc de comparaison graphique, les trois niveaux dans le meme cadre. De gauche a droite : 1 ce que la ville pose aujourd'hui, 2 la silhouette enrichie, 3 le detail de pres. C'est la vue qui repond a « est-ce que ca vaut le coup ».",
    "fin": 70,

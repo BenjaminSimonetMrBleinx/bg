@@ -183,8 +183,11 @@ def banc_toit(u: float, v: float):
     bord = 1.0 if ((v * 26) % 1.0) > 0.14 else 0.72
     fente = 1.0 if (((u * 18) + decal) % 1.0) > 0.06 else 0.78
     n = hache(int(u * 260), int(v * 260))
-    g = (86 + n * 22) * bord * fente
-    return (g, g * 0.98, g * 0.94)
+    # BRUN TERRE CUITE, PAS GRIS. Sur les references, aucun toit n'est gris :
+    # ils sont brun rouge, brun sable ou terre cuite. Un toit gris pose sur un
+    # mur sable donne exactement le contraste froid qu'on cherche a supprimer.
+    g = (124 + n * 26) * bord * fente
+    return (g, g * 0.72, g * 0.55)
 
 
 def banc_carrosserie_deux_tons(base, creme=(206, 196, 168)):
@@ -291,6 +294,34 @@ def banc_jante(u: float, v: float):
     return (g, g + 2, g + 6)
 
 
+# Les enseignes de commerce. Trois fonds vifs, releves sur les references :
+# le jaune du Dog House, le rouge du Crossroads Motel, le turquoise de
+# l'Octopus Car Wash.
+ENSEIGNES = [(226, 176, 40), (198, 52, 44), (48, 152, 148)]
+
+
+def enseigne(base, graine: int):
+    """Une enseigne de toit, vue de la rue.
+
+    PAS DE TEXTE — il serait illisible a la resolution du jeu. Ce qu'on lit
+    d'une enseigne a quarante metres, c'est un APLAT VIF avec une bande
+    sombre au milieu et un cadre clair autour. C'est cette composition qu'on
+    peint. Le cadre compte autant que le fond : sur les photos, toutes en ont
+    un, et c'est lui qui les detache du ciel.
+    """
+    r, g, b = base
+    def fn(u: float, v: float):
+        n = hache(int(u * 150) + graine * 11, int(v * 150))
+        bord = 0.055
+        if u < bord or u > 1 - bord or v < bord or v > 1 - bord:
+            return (238 - n * 10, 236 - n * 10, 228 - n * 10)
+        if 0.34 < v < 0.66:
+            k = 0.34
+            return (r * k + n * 10, g * k + n * 10, b * k + n * 10)
+        return (r + n * 14, g + n * 14, b + n * 14)
+    return fn
+
+
 def montagne(u: float, v: float):
     """La roche des Sandia, vue de tres loin.
 
@@ -304,7 +335,11 @@ def montagne(u: float, v: float):
     """
     n = hache(int(u * 90), int(v * 90))
     strate = hache(int(v * 14) + 5, 3)
-    g = 66 + v * 46 + n * 10 + strate * 12
+    # PLUS CONTRASTEE. Les Sandia occupent un tiers de l'horizon sur les
+    # photos ; les notres etaient si pales qu'on les prenait pour de la brume.
+    # On assombrit le pied et on garde les cretes claires : c'est l'ecart
+    # entre les deux qui fait la montagne.
+    g = 44 + v * 62 + n * 10 + strate * 12
     # Le violet des montagnes d'Albuquerque au soleil couchant, tire vers le
     # brun le reste du temps. Le bleu reste au-dessus du vert : sans ca, la
     # roche vire au kaki et ressemble a une colline irlandaise.
@@ -1202,6 +1237,11 @@ def main() -> None:
         ecrire_png(dossier / f"{nom}.png", d, d,
                    rendre(d, d, banc_carrosserie(base)))
         faits.append(f"{nom}.png")
+
+    for k, base in enumerate(ENSEIGNES):
+        ecrire_png(dossier / f"enseigne_{k}.png", t, t,
+                   rendre(t, t, enseigne(base, k)))
+        faits.append(f"enseigne_{k}.png")
 
     for k, base in enumerate(AFFICHES):
         ecrire_png(dossier / f"affiche_{k}.png", t, t, rendre(t, t, affiche(base, k)))

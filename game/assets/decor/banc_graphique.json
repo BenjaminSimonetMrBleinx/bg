@@ -1,6 +1,15 @@
 {
  "decor": [
   {
+   "type": "banc_maison_4",
+   "pos": [
+    -41.0,
+    0.0,
+    -18.0
+   ],
+   "angle": 0.0
+  },
+  {
    "type": "banc_maison_1",
    "pos": [
     -92.0,

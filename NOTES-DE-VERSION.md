@@ -16,6 +16,76 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.37.0 — Albuquerque, d'après tes photos
+
+> **Toute la ville a changé de couleur.** J'ai analysé les 56 références que tu
+> as réunies, et c'est là qu'on était le plus loin : deux de nos quatre façades
+> tiraient vers le bleu-gris — vers une ville du nord. Cette teinte n'apparaît
+> sur **aucun** mur des 56 photos.
+
+**Les murs sont en sable, blanc cassé chaud, terre cuite et brun rosé.** Les
+trottoirs sont en béton clair, presque blancs au soleil, au lieu du gris sombre
+d'avant. Le sol du désert est rosé.
+
+**Les toits plats ont un parapet.** Là-bas, aucun toit ne s'arrête à ras du
+mur : le mur monte de 30 à 60 cm au-dessus et le cache. C'est *le* détail qui
+fait lire « sud-ouest » plutôt qu'« immeuble quelconque ».
+
+**Les maisons ont un garage.** Elles sont refaites : de plain-pied, larges,
+toit à quatre pentes avec un débord — et surtout **deux portes de garage en
+façade** avec une allée en béton de six mètres qui y mène. C'est l'élément le
+plus caractéristique d'une rue de lotissement d'Albuquerque, et il manquait
+entièrement.
+
+**Les centres commerciaux ont leur enseigne de toit**, plus haute que le
+bâtiment lui-même — comme le Dog House, l'Octopus Car Wash et le Crossroads
+Motel.
+
+**Les montagnes ont doublé de hauteur** et se sont rapprochées de 70 m. Elles
+faisaient un liséré ; elles occupent maintenant un vrai morceau de ciel, comme
+sur les photos.
+
+À essayer : roule dans le quartier des Hauteurs et regarde une rue de maisons,
+puis va au Centre voir une enseigne de commerce. Et lève les yeux vers l'ouest
+n'importe où.
+
+---
+
+## 0.37.0 — Albuquerque, d'après tes photos
+
+> **Toute la ville a changé de couleur**, et les maisons ont des ouvertures
+> **vraiment creusées** au lieu de portes peintes sur un mur plat. C'est ce qui
+> faisait « Minecraft » : une face plate ne porte aucune ombre.
+
+**Les murs sont en sable, blanc cassé chaud, terre cuite et brun rosé.** Sur
+les 56 photos que tu as réunies, le bleu-gris de nos façades n'apparaît sur
+aucun mur. Les trottoirs sont en béton clair, presque blancs au soleil ; le sol
+du désert est rosé ; les toits sont bruns au lieu de gris.
+
+**Les maisons sont refaites.** De plain-pied, larges, avec **deux portes de
+garage en façade** et une allée en béton de six mètres qui y mène — l'élément
+le plus caractéristique d'une rue de lotissement là-bas. Portes et fenêtres
+sont creusées de 13 à 16 cm : chacune fabrique quatre bandes d'ombre qui
+suivent le soleil. Quatre gabarits différents pour qu'une rue ne soit pas un
+copier-coller : toit en croupe ou toit plat à parapet, garage à gauche ou à
+droite, une ou deux fenêtres.
+
+**Les toits plats ont un parapet.** Là-bas, aucun toit ne s'arrête à ras du
+mur : le mur monte de 30 à 60 cm au-dessus et le cache.
+
+**Les centres commerciaux ont leur enseigne de toit**, plus haute que le
+bâtiment — comme le Dog House ou le Crossroads Motel.
+
+**Les montagnes ont doublé de hauteur** et se sont rapprochées. Elles
+faisaient un liséré ; elles occupent maintenant un vrai morceau de ciel.
+
+À essayer : marche dans une rue des Hauteurs et regarde les maisons de trois
+quarts, avec le soleil de côté — c'est là que les creux se voient.
+
+> Mesuré après tout ça : **59 images/seconde, zéro image ratée**, 148 Mo.
+
+---
+
 ## 0.36.0 — Les voitures garées existent enfin, et la rue se remplit
 
 > **On ne traverse plus les voitures à l'arrêt.** Elles n'avaient aucune
