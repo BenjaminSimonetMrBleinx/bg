@@ -185,8 +185,14 @@ func _recycler() -> void:
 	var proches := _rues_proches(oeil)
 	if proches.is_empty():
 		return
+	# UNE RUE PAR PASSANT TANT QU'IL Y EN A. On melange la liste et on la
+	# parcourt, au lieu de tirer au sort a chaque fois : sur six rues et vingt
+	# passants, le tirage independant en met regulierement quatre sur la meme.
+	proches.shuffle()
+	var i := 0
 	for p in loin:
-		_replacer(p, proches)
+		_replacer(p, proches, i)
+		i += 1
 
 
 # Le premier placement. Si le joueur commence hors de la ville — c'est le cas
@@ -197,8 +203,11 @@ func _repartir() -> void:
 	var proches := _rues_proches(_oeil())
 	if proches.is_empty():
 		return
+	proches.shuffle()
+	var i := 0
 	for p in _passants:
-		_replacer(p, proches)
+		_replacer(p, proches, i)
+		i += 1
 
 
 # LES RUES OU L'ON PEUT REAPPARAITRE : ni sous le nez du joueur, ni hors de vue.
@@ -263,10 +272,10 @@ static func _distance_au_troncon(p: Vector3, a: Vector3, b: Vector3) -> float:
 # Repose un passant sur une rue proche du point de vue. On tire au sort parmi
 # les troncons plutot que de prendre le plus proche : sinon les seize se
 # retrouvent tous dans la meme rue.
-func _replacer(p: Pieton, proches: Array) -> void:
+func _replacer(p: Pieton, proches: Array, rang: int = 0) -> void:
 	if proches.is_empty():
 		return
-	var choisie: Array = proches[_rng.randi() % proches.size()]
+	var choisie: Array = proches[rang % proches.size()]
 	var de := int(choisie[0])
 	var vers := int(choisie[1])
 	# On part du bout le PLUS ELOIGNE du point de vue, donc on marche vers le
@@ -278,7 +287,15 @@ func _replacer(p: Pieton, proches: Array) -> void:
 		de = vers
 		vers = t
 	p.etendue = _etendue
-	p.sur_le_graphe(_noeuds, _voisins, de, vers, _ecart, _retrait)
+	# ET A UNE PLACE DIFFERENTE LE LONG DE LA RUE. Deux passants sur le meme
+	# troncon partent d'endroits differents, donc ils ne se suivent pas.
+	p.sur_le_graphe(_noeuds, _voisins, de, vers, _ecart, _retrait,
+			_rng.randf_range(0.0, 0.85))
+	# Une allure retiree au hasard a chaque replacement, et non une fois pour
+	# toutes : deux personnes qui marchent exactement a la meme vitesse restent
+	# cote a cote indefiniment, meme parties de loin.
+	p.allure = _rng.randf_range(0.62, 1.18)
+	p.pause = _rng.randf_range(0.4, 2.4)
 	p.global_position = p.depart
 
 

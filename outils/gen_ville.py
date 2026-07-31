@@ -169,7 +169,7 @@ PROBA_CLIM = 0.4
 # Voitures a l'arret le long des trottoirs. Purement decoratives — une rue
 # vide de vehicules ne se lit pas comme une ville, quelle que soit la
 # densite du mobilier.
-ESPACEMENT_VOITURES = 13.0
+ESPACEMENT_VOITURES = 15.0
 
 # Quelles voitures sont garees, et en quelle proportion.
 #
@@ -181,7 +181,17 @@ MODELES_GAREES = [
     ("pickup", 34), ("berline", 26), ("break", 22), ("aztek", 17),
     ("alpine", 1),
 ]
-PROBA_PLACE_OCCUPEE = 0.55
+# Une place sur trois occupee, pas une sur deux.
+#
+# A 0,55 avec un espacement de 13 m, les deux cotes de chaque rue etaient
+# presque pleins : on ne voyait plus la bordure, on ne pouvait plus se garer, et
+# depuis que les voitures a l'arret ont un corps physique (0.36.0) la rue etait
+# devenue un couloir. Retour de Benjamin apres essai : « y a trop de voitures
+# garees. »
+#
+# Une rue a moitie vide se lit mieux qu'une rue pleine : les trous laissent voir
+# le trottoir, et une file continue de tole ressemble a un mur peint.
+PROBA_PLACE_OCCUPEE = 0.32
 
 # Passants. Chacun arpente un segment de trottoir. Pas de foule : dix
 # silhouettes qui bougent en donnent plus qu'une centaine d'immobiles.

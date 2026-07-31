@@ -132,7 +132,7 @@
    "fin": 420,
    "etapes": [
     {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
-    {"image": 30, "camera": [65.5, 1.8, -36], "vise": [65.5, 1.5, -110]}
+    {"image": 300, "camera": [65.5, 1.9, -36], "vise": [65.5, 1.5, -110]}
    ]
   },
 

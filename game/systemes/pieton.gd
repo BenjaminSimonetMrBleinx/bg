@@ -100,8 +100,15 @@ func _ready() -> void:
 
 ## Pose le passant sur le graphe, entre deux carrefours. Sans appel a cette
 ## methode il retombe sur l'aller-retour entre depart et arrivee.
+## `avance` dit OU sur le troncon on entre : 0 au debut, 1 a la fin.
+##
+## Elle existe pour une raison qui se voyait a l'ecran : places tous au meme
+## bout, les passants recycles sur la meme rue partaient en file indienne,
+## trois ou quatre presque colles. Ils ne se percutent pas — ils sont sur la
+## couche du joueur et ne se voient pas entre eux — donc rien ne les separait
+## jamais.
 func sur_le_graphe(tous: Array, liens: Dictionary, de: int, vers: int,
-		largeur: float, recul: float = 8.5) -> void:
+		largeur: float, recul: float = 8.5, avance: float = 0.0) -> void:
 	noeuds = tous
 	voisins = liens
 	ecart = largeur
@@ -110,6 +117,7 @@ func sur_le_graphe(tous: Array, liens: Dictionary, de: int, vers: int,
 	_vers = vers
 	depart = _bord(_de, _vers, false)
 	arrivee = _bord(_de, _vers, true)
+	depart = depart.lerp(arrivee, clampf(avance, 0.0, 0.92))
 	_vers_arrivee = true
 
 

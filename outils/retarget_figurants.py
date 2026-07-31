@@ -65,7 +65,7 @@ import sys
 from pathlib import Path
 
 import bpy
-from mathutils import Matrix, Vector
+from mathutils import Matrix, Quaternion, Vector
 
 # Les clips a reporter, et rien d'autre. Un figurant n'a pas besoin de savoir
 # se coiffer ni de lire un livre : il marche, il court un peu, il attend.
@@ -146,7 +146,95 @@ def ordonner(arm, noms: list) -> list:
     return sorted([n for n in noms if n in arm.data.bones], key=profondeur)
 
 
-def reporter(src, cible, nom_clip: str, echelle: float) -> int:
+def verifier_le_repos(src, cible, reference: dict) -> float:
+    """LE CONTROLE QUI NE DEMANDE PAS D'YEUX.
+
+    Si la formule est juste, transferer la source AU REPOS doit laisser la
+    cible EXACTEMENT a son repos : l'ecart au repos vaut l'identite, donc la
+    pose visee est le repos de la cible. Tout ecart mesure ici est une erreur
+    de formule, et il se voit sur un nombre avant de se voir sur un corps.
+
+    Rend l'ecart maximal en degres.
+    """
+    src.data.pose_position = "REST"
+    bpy.context.view_layer.update()
+    pire = 0.0
+    for nom in ordonner(cible, [n for n in OS if n in src.data.bones]):
+        os_src = src.pose.bones[nom]
+        os_cible = cible.pose.bones[nom]
+        repos_src = (src.matrix_world @ os_src.bone.matrix_local).to_quaternion()
+        pose_src = (src.matrix_world @ os_src.matrix).to_quaternion()
+        ecart = pose_src @ repos_src.inverted()
+        vise = ecart @ reference[nom]
+        pire = max(pire, math.degrees(
+                vise.rotation_difference(reference[nom]).angle))
+    src.data.pose_position = "POSE"
+    bpy.context.view_layer.update()
+    return pire
+
+
+def pose_locale_de_reference(cible, action_pack) -> dict:
+    """La rotation LOCALE de chaque os dans la pose debout du pack.
+
+    Elle sert aux os qu'on NE reporte PAS — la colonne intermediaire, les
+    doigts, les bouts. On les remettait a leur repos, c'est-a-dire a la pose de
+    liaison, c'est-a-dire COUCHEE : la chaine se cassait au milieu du dos et
+    tout le haut du corps partait de travers. Vu a l'image, quatre fois.
+
+    Un os non reporte doit rester ou le pack le met. C'est le seul endroit
+    sensé : c'est la pose sur laquelle tout le reste est calibre.
+    """
+    locales = {}
+    if action_pack is None:
+        return locales
+    if cible.animation_data is None:
+        cible.animation_data_create()
+    cible.animation_data.action = action_pack
+    bpy.context.scene.frame_set(int(action_pack.frame_range[0]))
+    bpy.context.view_layer.update()
+    for os_ in cible.pose.bones:
+        locales[os_.name] = (os_.rotation_quaternion.copy(),
+                             os_.location.copy(), os_.scale.copy())
+    return locales
+
+
+def pose_de_reference(cible, action_pack) -> dict:
+    """L'orientation de chaque os du figurant DANS SA POSE DEBOUT.
+
+    C'EST LA PIECE QUI MANQUAIT, et elle explique tout ce qui a rate cette
+    nuit. La pose de LIAISON du pack est couchee — mesure a l'image : 0,21 m de
+    haut pour 1,60 m de long, un corps parfaitement propre, allonge sur le dos.
+    Le pack s'en accommode parce que ses propres clips le redressent.
+
+    Reporter un mouvement en le rapportant a cette liaison revient donc a faire
+    marcher quelqu'un d'allonge. Ce qu'on a vu — un corps disloque, membres en
+    etoile — n'etait pas une erreur de formule : c'etait un homme couche qui
+    marche, vu de trop pres.
+
+    On prend donc pour reference la premiere image du clip du pack, ou le
+    personnage se tient DEBOUT. Walter, lui, a une liaison debout : sa pose de
+    repos suffit. Les deux references decrivent la meme chose — quelqu'un qui
+    se tient droit — et c'est tout ce que la formule demande.
+    """
+    reference = {}
+    if action_pack is None:
+        for os_ in cible.pose.bones:
+            reference[os_.name] = (cible.matrix_world
+                    @ os_.bone.matrix_local).to_quaternion()
+        return reference
+
+    if cible.animation_data is None:
+        cible.animation_data_create()
+    cible.animation_data.action = action_pack
+    bpy.context.scene.frame_set(int(action_pack.frame_range[0]))
+    bpy.context.view_layer.update()
+    for os_ in cible.pose.bones:
+        reference[os_.name] = (cible.matrix_world @ os_.matrix).to_quaternion()
+    return reference
+
+
+def reporter(src, cible, nom_clip: str, echelle: float,
+             reference: dict, locales: dict) -> int:
     """Cuit un clip de la source sur la cible. Rend le nombre d'images."""
     action_src = action_de(src, nom_clip)
     if action_src is None:
@@ -164,8 +252,25 @@ def reporter(src, cible, nom_clip: str, echelle: float) -> int:
     cible.animation_data.action = action
 
     noms = ordonner(cible, [n for n in OS if n in src.data.bones])
+    # ON REPART D'UNE POSE NEUVE.
+    #
+    # Notre clip ne pilote QUE des rotations. Tout ce qu'on ne pilote pas garde
+    # la derniere valeur evaluee — et on vient justement d'evaluer le clip du
+    # pack pour en tirer la pose de reference. S'il anime l'echelle des os, on
+    # herite de la sienne, et les membres s'etirent en pointes sans qu'aucune
+    # rotation soit en cause. Vu a l'image.
     for os_ in cible.pose.bones:
         os_.rotation_mode = "QUATERNION"
+        if os_.name in locales:
+            rot, pos, ech = locales[os_.name]
+            os_.rotation_quaternion = rot.copy()
+            os_.location = pos.copy()
+            os_.scale = ech.copy()
+        else:
+            os_.location = Vector()
+            os_.rotation_quaternion = Quaternion()
+            os_.scale = Vector((1.0, 1.0, 1.0))
+    bpy.context.view_layer.update()
 
     # Le bassin au repos, pour ne garder du clip que l'ECART vertical.
     repos_bassin = cible.pose.bones["Hips"].bone.head_local.copy() \
@@ -178,20 +283,49 @@ def reporter(src, cible, nom_clip: str, echelle: float) -> int:
         for nom in noms:
             os_src = src.pose.bones[nom]
             os_cible = cible.pose.bones[nom]
-            # L'orientation ABSOLUE de l'os source, posee telle quelle.
-            monde = (src.matrix_world @ os_src.matrix).to_quaternion()
-            actuelle = cible.matrix_world @ os_cible.matrix
-            # ON NE REMPLACE QUE LA ROTATION. La premiere version reconstruisait
-            # la matrice a partir du seul quaternion : elle imposait donc au
-            # passage une echelle de 1 et une translation reprise a la main. Sur
-            # un modele dont l'armature n'est pas a l'echelle 1 — c'est le cas
-            # de tout ce qui sort d'un import glTF — les membres partaient en
-            # etoile. Verifie a l'image, pas deduit.
-            position, _rotation, taille_os = actuelle.decompose()
-            neuve = Matrix.LocRotScale(position, monde, taille_os)
-            os_cible.matrix = cible.matrix_world.inverted() @ neuve
-            # Sans cette mise a jour, les enfants gardent la pose de l'image
-            # precedente et on cumule un decalage qui grandit le long du membre.
+            # L'ECART AU REPOS, PAS L'ORIENTATION.
+            #
+            # C'est ici qu'etait la faute. On posait sur le figurant
+            # l'orientation ABSOLUE de l'os de Walter — ce qui ne vaut que si
+            # les deux squelettes ont le meme repos. Ils ne l'ont pas, et
+            # c'etait deja mesure a l'import : chez Walter une cuisse pointe
+            # vers le bas, chez un Biped TOUS les os pointent dans la meme
+            # direction. Chaque os se faisait donc tordre de l'ecart entre son
+            # repos et celui de Walter, d'ou les membres en etoile.
+            #
+            # Ce qu'on transfere est ce que Walter FAIT : la rotation qui mene
+            # de son repos a sa pose. Appliquee au repos du figurant, elle ne
+            # suppose plus rien sur l'orientation des os.
+            repos_src = (src.matrix_world @ os_src.bone.matrix_local).to_quaternion()
+            pose_src = (src.matrix_world @ os_src.matrix).to_quaternion()
+            ecart = pose_src @ repos_src.inverted()
+            monde = ecart @ reference[nom]
+
+            # ON N'ECRIT QUE LA ROTATION. JAMAIS LA POSITION.
+            #
+            # La version precedente posait la matrice complete de l'os, en
+            # reprenant sa translation courante. C'est ce qui ETIRAIT les
+            # membres : une translation ecrite sur un os le decolle de son
+            # parent, et le maillage suit — une cuisse de deux metres, vue a
+            # l'image.
+            #
+            # On resout donc la rotation LOCALE qui, composee avec le parent
+            # deja pose et avec le repos de l'os, donne l'orientation voulue :
+            #
+            #     parent_monde x repos_local x locale = monde
+            #
+            # Les os gardent alors exactement les longueurs de leur squelette,
+            # quoi qu'on leur demande.
+            if os_cible.parent is not None:
+                parent_monde = (cible.matrix_world
+                        @ os_cible.parent.matrix).to_quaternion()
+                repos_local = (os_cible.parent.bone.matrix_local.inverted()
+                        @ os_cible.bone.matrix_local).to_quaternion()
+            else:
+                parent_monde = cible.matrix_world.to_quaternion()
+                repos_local = os_cible.bone.matrix_local.to_quaternion()
+            os_cible.rotation_quaternion =                     (parent_monde @ repos_local).inverted() @ monde
+            os_cible.location = Vector()
             bpy.context.view_layer.update()
 
         if "Hips" in cible.pose.bones:
@@ -204,9 +338,9 @@ def reporter(src, cible, nom_clip: str, echelle: float) -> int:
             os_.location.z = monte
             os_.keyframe_insert("location", frame=image)
 
-        for nom in noms:
-            cible.pose.bones[nom].keyframe_insert("rotation_quaternion",
-                                                  frame=image)
+        for os_ in cible.pose.bones:
+            os_.keyframe_insert("rotation_quaternion", frame=image)
+            os_.keyframe_insert("scale", frame=image)
     return fin - debut + 1
 
 
@@ -245,17 +379,56 @@ def main() -> None:
         h_src, h_cible = hauteur(src), hauteur(cible)
         echelle = (h_cible / h_src) if h_src > 0.01 else 1.0
 
+        # Le clip du pack, garde a l'import : c'est lui qui porte la pose
+        # debout. On le retient AVANT de creer les notres, sinon on ne sait
+        # plus lequel est lequel.
+        action_pack = None
+        if cible.animation_data is not None:
+            action_pack = cible.animation_data.action
+        if action_pack is None:
+            action_pack = next((x for x in bpy.data.actions
+                                if not x.name.endswith("_cible")
+                                and x.name not in CLIPS), None)
+        locales = pose_locale_de_reference(cible, action_pack)
+        reference = pose_de_reference(cible, action_pack)
+
+        ecart_repos = verifier_le_repos(src, cible, reference)
+        if ecart_repos > 0.5:
+            raise SystemExit(
+                "%s : la formule de report est fausse. Au repos, la cible "
+                "devrait rester a son repos ; elle s'en ecarte de %.1f degres. "
+                "Rien n'est exporte : mieux vaut pas de clip qu'un corps disloque."
+                % (chemin.name, ecart_repos))
+
         faits = []
         for clip in CLIPS:
-            images = reporter(src, cible, clip, echelle)
+            images = reporter(src, cible, clip, echelle, reference, locales)
             if images:
                 faits.append("%s (%d images)" % (clip, images))
 
-        # La source s'en va avant l'export : sans ca on exporterait Walter et le
-        # figurant dans le meme fichier, et le jeu instancierait les deux.
+        # LA SOURCE S'EN VA AVANT L'EXPORT — SES OBJETS ET SES ACTIONS.
+        #
+        # Retirer les objets ne suffisait pas, et c'est ce qui a fait perdre la
+        # nuit : Blender exporte TOUTES les actions du fichier, pas seulement
+        # celles qui sont assignees. Le .glb du figurant contenait donc les
+        # neuf clips de Walter — Accroupi, Assis, Marche, Saut... — en plus des
+        # notres. Tout ce qui demandait « Marche » recevait les rotations
+        # LOCALES BRUTES de Walter posees sur un Biped, c'est-a-dire le corps
+        # disloque qu'on a regarde cinq fois en croyant juger un report.
+        #
+        # Le clip du pack part avec : le notre porte le meme nom et doit gagner.
         for o in list(bpy.data.objects):
             if o not in objets:
                 bpy.data.objects.remove(o, do_unlink=True)
+        nos_clips = {c + "_cible" for c in CLIPS}
+        for act in list(bpy.data.actions):
+            if act.name not in nos_clips:
+                bpy.data.actions.remove(act)
+        # Puis on leur rend leur vrai nom : c'est celui que demarche.gd cherche.
+        for act in list(bpy.data.actions):
+            act.name = act.name.removesuffix("_cible")
+        if cible.animation_data is not None:
+            cible.animation_data.action = bpy.data.actions.get("Repos")
 
         exporter(objets, chemin)
         print("figurant %-28s %.2f m  <-  %s"
