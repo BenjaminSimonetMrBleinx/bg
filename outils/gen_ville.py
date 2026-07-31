@@ -387,6 +387,24 @@ def boite(m: Maillage, x0, y0, x1, y1, z0, z1, mu=MODULE_U, mv=MODULE_V) -> None
     )
 
 
+def parapet(m: Maillage, x0: float, y0: float, x1: float, y1: float,
+            h: float, haut: float = 0.42, debord: float = 0.10) -> None:
+    """L'acrotere qui couronne un toit plat.
+
+    C'EST LA SIGNATURE D'ALBUQUERQUE, et elle coute cinq faces. Sur les
+    cinquante-six photos de reference, aucun toit plat ne s'arrete a ras du
+    mur : le mur MONTE de trente a soixante centimetres au-dessus du toit et
+    le cache. C'est ce qui fait lire « sud-ouest » plutot qu'« immeuble
+    quelconque », et c'est ce qui manquait le plus a notre bati.
+
+    Il DEBORDE legerement du mur, ce qui pose une ligne d'ombre juste sous le
+    couronnement. Sans ce decrochement, le parapet se confond avec la facade
+    et ne se voit plus.
+    """
+    d = debord
+    boite(m, x0 - d, y0 - d, x1 + d, y1 + d, h, h + haut, 3.0, 0.9)
+
+
 def lampadaire(m: Maillage, x, y, vx, vy) -> None:
     """Poteau, potence, tete. Geometrie minimale : une PS2 n'aurait pas
     depense plus de triangles la-dessus."""
@@ -766,54 +784,91 @@ def parcelle_parking(m: dict, ox: float, oy: float,
 
 def maisonnette(m: dict, x0: float, y0: float, largeur: float, profondeur: float,
                 cote: str, rng: random.Random) -> None:
-    """Un pavillon : un corps, un toit debordant, une porte, deux fenetres.
+    """Un pavillon d'Albuquerque : bas, large, GARAGE EN FACADE.
 
-    CE N'EST PAS LA MAISON DE WALTER. Celle-la est un modele a part, avec un
-    interieur ou l'on entre. Ici on fabrique du VOISINAGE : ce qui doit se lire
-    a trente metres depuis une voiture, et rien de plus. Quatorze faces.
+    REFAIT LE 31/07/2026 D'APRES LES PHOTOS. La version d'avant etait une
+    boite avec un toit qui deborde — vraie n'importe ou dans le monde. Ce que
+    montrent les cinquante-six references est beaucoup plus typé, et tient en
+    trois traits :
 
-    Le toit DEBORDE de trente centimetres. C'est le detail qui separe une
-    maison d'une boite : sans avancee, le mur et le toit se rejoignent sur une
-    arete nette qu'aucune construction n'a.
+      DE PLAIN-PIED, ET LARGE. Jamais d'etage. La maison s'etale sur sa
+      parcelle au lieu de monter.
+
+      LE GARAGE EST EN FACADE, ET IL EST ENORME — deux portes, souvent la
+      moitie de la largeur de la maison. C'est l'element le plus
+      caracteristique d'une rue de lotissement la-bas, et il manquait
+      entierement.
+
+      LE TOIT EST UNE CROUPE A FAIBLE PENTE, avec un debord marque, ou un
+      toit plat a parapet. On prend la croupe : c'est celui de la maison de
+      Walter, et il se distingue mieux du bati commercial.
     """
-    h = rng.uniform(2.8, 3.3)
+    h = rng.uniform(2.55, 2.85)
     x1, y1 = x0 + largeur, y0 + profondeur
-    boite(m["crepi"], x0, y0, x1, y1, 0.0, h, 3.2, 3.0)
-    d = 0.3
-    boite(m["toit"], x0 - d, y0 - d, x1 + d, y1 + d, h, h + 0.22, 3.0, 3.0)
+    boite(m["crepi"], x0, y0, x1, y1, 0.0, h, 3.2, 2.6)
 
-    # La facade qui donne sur la rue. Porte et fenetres sont des faces POSEES
-    # DEVANT le mur, a un centimetre : une ouverture creusee dans la geometrie
-    # couterait dix fois plus cher pour un resultat identique a cette distance.
+    # LA CROUPE. Quatre pans qui montent vers une faitiere courte, et un
+    # debord de trente centimetres. Le debord fait l'ombre sous laquelle la
+    # facade se detache — sans lui, mur et toit se rejoignent sur une arete
+    # que personne n'a jamais vue sur une maison.
+    d = 0.32
+    fx0, fy0, fx1, fy1 = x0 - d, y0 - d, x1 + d, y1 + d
+    ht = h + 0.62
+    # La faitiere court dans le sens de la longueur.
+    if largeur >= profondeur:
+        a = (x0 + largeur * 0.28, (y0 + y1) / 2.0, ht)
+        b = (x0 + largeur * 0.72, (y0 + y1) / 2.0, ht)
+    else:
+        a = ((x0 + x1) / 2.0, y0 + profondeur * 0.28, ht)
+        b = ((x0 + x1) / 2.0, y0 + profondeur * 0.72, ht)
+    t = m["toit"]
+    t.face([(fx0, fy0, h), (fx1, fy0, h), b, a], [(0, 0), (3, 0), (2.2, 1.4), (0.8, 1.4)])
+    t.face([(fx1, fy1, h), (fx0, fy1, h), a, b], [(0, 0), (3, 0), (2.2, 1.4), (0.8, 1.4)])
+    t.face([(fx1, fy0, h), (fx1, fy1, h), b], [(0, 0), (2, 0), (1, 1.2)])
+    t.face([(fx0, fy1, h), (fx0, fy0, h), a], [(0, 0), (2, 0), (1, 1.2)])
+
+    # LE GARAGE : une porte large et sombre, sur presque la moitie de la
+    # facade, avec son linteau. C'est ce qu'on voit en premier d'une maison
+    # d'Albuquerque depuis la rue.
     e = 0.01
+    large_garage = largeur * 0.46
     if cote in ("sud", "nord"):
         yf = (y0 - e) if cote == "sud" else (y1 + e)
-        sens = -1.0 if cote == "sud" else 1.0
-        cx = x0 + largeur * 0.5
+        sens = -1 if cote == "sud" else 1
+        gx = x0 + largeur * (0.48 if cote == "sud" else 0.06)
         m["porte"].face(
-            [(cx - 0.45, yf, 0.0), (cx + 0.45, yf, 0.0),
-             (cx + 0.45, yf, 2.05), (cx - 0.45, yf, 2.05)][::int(sens)],
+            [(gx, yf, 0.0), (gx + large_garage, yf, 0.0),
+             (gx + large_garage, yf, 2.18), (gx, yf, 2.18)][::sens],
+            [(0, 0), (2.4, 0), (2.4, 1), (0, 1)])
+        # La porte d'entree, et une fenetre : le reste de la facade.
+        px = x0 + largeur * (0.16 if cote == "sud" else 0.72)
+        m["porte"].face(
+            [(px, yf, 0.0), (px + 0.9, yf, 0.0),
+             (px + 0.9, yf, 2.05), (px, yf, 2.05)][::sens],
             [(0, 0), (1, 0), (1, 1), (0, 1)])
-        for k in (0.18, 0.82):
-            fx = x0 + largeur * k
-            m["fenetre_maison"].face(
-                [(fx - 0.62, yf, 1.05), (fx + 0.62, yf, 1.05),
-                 (fx + 0.62, yf, 2.15), (fx - 0.62, yf, 2.15)][::int(sens)],
-                [(0, 0), (1, 0), (1, 1), (0, 1)])
+        fx = x0 + largeur * (0.30 if cote == "sud" else 0.86)
+        m["fenetre_maison"].face(
+            [(fx, yf, 1.05), (fx + 1.3, yf, 1.05),
+             (fx + 1.3, yf, 2.05), (fx, yf, 2.05)][::sens],
+            [(0, 0), (1, 0), (1, 1), (0, 1)])
     else:
         xf = (x0 - e) if cote == "ouest" else (x1 + e)
-        sens = 1.0 if cote == "ouest" else -1.0
-        cy = y0 + profondeur * 0.5
+        sens = 1 if cote == "ouest" else -1
+        gy = y0 + profondeur * (0.48 if cote == "ouest" else 0.06)
         m["porte"].face(
-            [(xf, cy - 0.45, 0.0), (xf, cy + 0.45, 0.0),
-             (xf, cy + 0.45, 2.05), (xf, cy - 0.45, 2.05)][::int(sens)],
+            [(xf, gy, 0.0), (xf, gy + large_garage, 0.0),
+             (xf, gy + large_garage, 2.18), (xf, gy, 2.18)][::sens],
+            [(0, 0), (2.4, 0), (2.4, 1), (0, 1)])
+        py = y0 + profondeur * (0.16 if cote == "ouest" else 0.72)
+        m["porte"].face(
+            [(xf, py, 0.0), (xf, py + 0.9, 0.0),
+             (xf, py + 0.9, 2.05), (xf, py, 2.05)][::sens],
             [(0, 0), (1, 0), (1, 1), (0, 1)])
-        for k in (0.18, 0.82):
-            fy = y0 + profondeur * k
-            m["fenetre_maison"].face(
-                [(xf, fy - 0.62, 1.05), (xf, fy + 0.62, 1.05),
-                 (xf, fy + 0.62, 2.15), (xf, fy - 0.62, 2.15)][::int(sens)],
-                [(0, 0), (1, 0), (1, 1), (0, 1)])
+        fy = y0 + profondeur * (0.30 if cote == "ouest" else 0.86)
+        m["fenetre_maison"].face(
+            [(xf, fy, 1.05), (xf, fy + 1.3, 1.05),
+             (xf, fy + 1.3, 2.05), (xf, fy, 2.05)][::sens],
+            [(0, 0), (1, 0), (1, 1), (0, 1)])
 
 
 def parcelle_pavillonnaire(m: dict, ox: float, oy: float,
@@ -860,21 +915,25 @@ def parcelle_pavillonnaire(m: dict, ox: float, oy: float,
             # L'ALLEE. Elle relie la maison au trottoir, et c'est elle qui
             # designe l'entree : sans allee, douze maisons alignees sur du
             # gravier ne montrent pas ou l'on rentre.
+            # L'ALLEE EST LARGE ET BETONNEE, et elle mene AU GARAGE.
+            #
+            # Elle faisait 2,8 m d'asphalte vers la porte d'entree. Sur les
+            # photos, l'allee d'une maison d'Albuquerque est en beton clair,
+            # large de six metres, et occupe la moitie du terrain : c'est la
+            # surface la plus visible d'un jardin de devant.
             if cote == "sud":
-                a = x0 + lg * 0.62
-                dalle(m["asphalte"], a, oy, a + 2.8, y0, 0.04, TUILE_ROUTE)
+                a = x0 + lg * 0.44
+                dalle(m["beton"], a, oy, a + 6.0, y0, 0.04, 3.0)
             elif cote == "nord":
-                a = x0 + lg * 0.62
-                dalle(m["asphalte"], a, y0 + pf, a + 2.8, oy + BLOC, 0.04,
-                      TUILE_ROUTE)
+                a = x0 + lg * 0.10
+                dalle(m["beton"], a, y0 + pf, a + 6.0, oy + BLOC, 0.04, 3.0)
             elif cote == "ouest":
-                a = y0 + pf * 0.62
-                dalle(m["asphalte"], ox, a, x0, a + 2.8, 0.04, TUILE_ROUTE)
+                a = y0 + pf * 0.44
+                dalle(m["beton"], ox, a, x0, a + 6.0, 0.04, 3.0)
             else:
-                a = y0 + pf * 0.62
-                dalle(m["asphalte"], x0 + lg, a, ox + BLOC, a + 2.8, 0.04,
-                      TUILE_ROUTE)
-            percees[cote].append((a - 0.4, a + 3.2))
+                a = y0 + pf * 0.10
+                dalle(m["beton"], x0 + lg, a, ox + BLOC, a + 6.0, 0.04, 3.0)
+            percees[cote].append((a - 0.5, a + 6.5))
 
             objets.append({
                 "type": "boite_lettres",
@@ -1188,7 +1247,7 @@ def cactus_du_desert(etendue: float, rng: random.Random,
 def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
     noms = ["route", "asphalte", "trottoir", "desert", "lampes",
             "herbe", "parking", "crepi", "toit", "porte", "fenetre_maison",
-            "bardage", "montagne"] + FACADES
+            "bardage", "montagne", "beton"] + FACADES
     m = {nom: Maillage(nom, mats[nom]) for nom in noms}
 
     etendue = n * BLOC + (n + 1) * COULOIR
@@ -1375,9 +1434,13 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
                     mat = rng.choice(FACADES)
                     if axe == "x":
                         boite(m[mat], cx0 + pos, cy0, cx0 + pos + large, cy1, 0.0, h)
+                        parapet(m["beton"], cx0 + pos, cy0,
+                                cx0 + pos + large, cy1, h)
                         centre = (cx0 + pos + large / 2, (cy0 + cy1) / 2)
                     else:
                         boite(m[mat], cx0, cy0 + pos, cx1, cy0 + pos + large, 0.0, h)
+                        parapet(m["beton"], cx0, cy0 + pos, cx1,
+                                cy0 + pos + large, h)
                         centre = ((cx0 + cx1) / 2, cy0 + pos + large / 2)
                     if rng.random() < PROBA_CLIM:
                         decor.append({"type": "climatiseur",
@@ -1473,7 +1536,7 @@ def main() -> None:
 
     noms = ["route", "asphalte", "trottoir", "desert",
             "herbe", "parking", "crepi", "toit", "porte", "fenetre_maison",
-            "bardage", "montagne"] + FACADES
+            "bardage", "montagne", "beton"] + FACADES
     mats = {nom: materiau(nom, textures) for nom in noms}
     mats["lampes"] = mats["trottoir"]
 
