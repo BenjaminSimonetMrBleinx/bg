@@ -112,11 +112,16 @@ def asphalte(u: float, v: float):
 
 
 def desert(u: float, v: float):
-    """Terre sableuse du Nouveau-Mexique, pour tout ce qui entoure la ville."""
+    """Terre sableuse du Nouveau-Mexique, pour tout ce qui entoure la ville.
+
+    ELLE EST ROSEE, pas brune. Les photos montrent un sol qui tire franchement
+    vers le rose-orange au soleil ; c'est ce qui donne sa chaleur a toutes les
+    vues larges, et c'est aussi ce qui fait ressortir le bleu du ciel.
+    """
     n = hache(int(u * 200), int(v * 200))
     gros = hache(int(u * 23) + 7, int(v * 23) + 41)
-    r = 58 + n * 16 + gros * 14
-    return (r, r * 0.86, r * 0.68)
+    r = 74 + n * 18 + gros * 16
+    return (r, r * 0.80, r * 0.63)
 
 
 # Les fonds des panneaux publicitaires. Trois suffisent : au-dela on ne les
@@ -344,11 +349,17 @@ def parking(u: float, v: float):
 
 
 def trottoir(u: float, v: float):
-    """Dalles jointoyees, tuilable dans les deux sens."""
+    """Beton clair, dalles jointoyees, tuilable dans les deux sens.
+
+    IL ETAIT GRIS SOMBRE ET BLEUTE. Sur les photos, un trottoir d'Albuquerque
+    est du beton CLAIR, presque blanc au soleil, et legerement chaud — il
+    renvoie la lumiere du sable qui l'entoure. Un trottoir sombre tire toute la
+    rue vers le nord de l'Europe.
+    """
     n = hache(int(u * 190), int(v * 190))
-    joint = 0.70 if (u % 0.5) < 0.030 or (v % 0.5) < 0.030 else 1.0
-    g = (66 + n * 12) * joint
-    return (g, g, g + 7)
+    joint = 0.78 if (u % 0.5) < 0.030 or (v % 0.5) < 0.030 else 1.0
+    g = (138 + n * 16) * joint
+    return (g, g * 0.975, g * 0.93)
 
 
 def facade_vitres(base, graine: int):
@@ -1087,11 +1098,22 @@ def mur(base):
 
 
 # La palette vient du rasteriseur de reference, deja calibree.
+# LA PALETTE D'ALBUQUERQUE, RELEVEE SUR PHOTOS le 31/07/2026.
+#
+# AUCUN GRIS FROID. C'est la regle la plus simple de docs/16-albuquerque.md et
+# celle qui change le plus d'un seul coup : deux de ces quatre facades tiraient
+# vers le bleu-gris — (72, 76, 92) et (64, 70, 84) — c'est-a-dire vers une
+# ville du nord. Sur cinquante-six photos d'Albuquerque, cette teinte
+# n'apparait nulle part sur un mur.
+#
+# Ce qu'on y voit a la place : sable, terre cuite claire, blanc casse, brun
+# rose. Le bleu et le turquoise existent, mais SEULEMENT en accents — enseignes
+# et garde-corps de motel — jamais sur une facade entiere.
 FACADES = {
-    "facade_a": (96, 80, 68),
-    "facade_b": (72, 76, 92),
-    "facade_c": (106, 86, 70),
-    "facade_d": (64, 70, 84),
+    "facade_a": (142, 118, 92),      # sable
+    "facade_b": (156, 132, 112),     # blanc casse chaud
+    "facade_c": (134, 96, 74),       # terre cuite claire
+    "facade_d": (120, 104, 84),      # brun rose
 }
 
 # Le beige-or est la couleur de l'Aztek de Walt. Les autres serviront au
@@ -1274,7 +1296,7 @@ def main() -> None:
         ("rouille", (122, 80, 54), 0.16, False),
         ("bois_banc", (112, 76, 46), 0.12, True),
         ("rouge_borne", (156, 44, 36), 0.10, False),
-        ("beton", (128, 124, 116), 0.09, False),
+        ("beton", (168, 160, 146), 0.09, False),
         # LES VARIANTES DE COULEUR. Le meme objet, repeint.
         #
         # Trois cents poubelles rigoureusement identiques se lisent comme un
