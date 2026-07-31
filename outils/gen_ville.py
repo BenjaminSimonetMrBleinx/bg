@@ -661,6 +661,22 @@ def parcelle_parc(m: dict, ox: float, oy: float,
                     round(-(oy + BLOC * (0.72 if k % 2 else 0.24)), 2)],
             "angle": round(rng.uniform(0.0, 6.28), 3),
         })
+    # LES ARBRES SE GROUPENT. Semes un par un, ils se repartissent trop
+    # regulierement et le parc se lit comme un verger. Sur les photos, ils
+    # viennent par deux ou trois, serres, avec du vide entre les groupes.
+    for _ in range(5):
+        cx = rng.uniform(ox + 6.0, ox + BLOC - 6.0)
+        cy = rng.uniform(oy + 6.0, oy + BLOC - 6.0)
+        if abs(cx - milieu_x) < ALLEE + 2.0 or abs(cy - milieu_y) < ALLEE + 2.0:
+            continue
+        for _ in range(rng.randint(2, 3)):
+            objets.append({
+                "type": rng.choice(["arbre", "arbre", "arbre_haut"]),
+                "pos": [round(cx + rng.uniform(-3.2, 3.2), 2), 0.03,
+                        round(-(cy + rng.uniform(-3.2, 3.2)), 2)],
+                "angle": round(rng.uniform(0.0, 6.28), 3),
+            })
+
     for _ in range(14):
         x = rng.uniform(ox + 2.5, ox + BLOC - 2.5)
         y = rng.uniform(oy + 2.5, oy + BLOC - 2.5)
@@ -985,6 +1001,35 @@ def parcelle_pavillonnaire(m: dict, ox: float, oy: float,
                 dalle(m["beton"], x0 + lg, a, ox + BLOC, a + 6.0, 0.04, 3.0)
             percees[cote].append((a - 0.5, a + 6.5))
 
+            # LE XERISCAPE : une rangee d'arbustes plaquee contre la facade,
+            # et un arbre pose de biais. Sur les references d'Albuquerque,
+            # c'est TOUTE la verdure d'un jardin de devant — le reste est du
+            # gravier. Sans eux la maison a l'air inhabitee ; avec eux, elle a
+            # l'air entretenue.
+            for k in range(3):
+                q = 0.18 + k * 0.28
+                if cote == "sud":
+                    ax, ay = x0 + lg * q, y0 - 0.75
+                elif cote == "nord":
+                    ax, ay = x0 + lg * q, y0 + pf + 0.75
+                elif cote == "ouest":
+                    ax, ay = x0 - 0.75, y0 + pf * q
+                else:
+                    ax, ay = x0 + lg + 0.75, y0 + pf * q
+                objets.append({
+                    "type": "arbuste",
+                    "pos": [round(ax, 2), 0.03, round(-ay, 2)],
+                    "angle": round(rng.uniform(0.0, 6.28), 3),
+                })
+            if rng.random() < 0.55:
+                objets.append({
+                    "type": rng.choice(["arbre", "arbre_haut"]),
+                    "pos": [round(x0 + lg * rng.uniform(0.75, 0.95), 2), 0.03,
+                            round(-(y0 - 2.2 if cote == "sud" else y0 + pf + 2.2
+                                    if cote == "nord" else y0 + pf * 0.5), 2)],
+                    "angle": round(rng.uniform(0.0, 6.28), 3),
+                })
+
             objets.append({
                 "type": "boite_lettres",
                 "pos": [round(x0 + lg * 0.5, 2), 0.03,
@@ -1227,6 +1272,65 @@ def montagnes(m: Maillage, etendue: float, rng: random.Random) -> None:
                 lu = abs(p1 - p0) / 60.0
                 m.face([a, b, c, d],
                        [(0, 0), (lu, 0), (lu, h1 / 90.0), (0, h0 / 90.0)])
+
+
+def poteaux_et_cables(m: dict, n: int) -> list:
+    """Les poteaux electriques des rues, et les cables entre eux.
+
+    ILS CADRENT TOUTES LES PHOTOS. Sur les references d'Albuquerque, pas une
+    vue de rue sans deux ou trois cables qui traversent le ciel en biais. Ce
+    sont les seules lignes OBLIQUES d'un decor fait de verticales et
+    d'horizontales, et c'est exactement pour ca qu'on les remarque.
+
+    Les POTEAUX sont instancies — ce sont des objets, comme les poubelles. Les
+    CABLES sont cuits dans le maillage de la ville : ils relient deux points
+    precis, donc ils ne peuvent pas etre un modele repete.
+    """
+    objets: list = []
+    axe = TROTTOIR + ROUTE / 2.0
+    ecart = PAS / 2.0                       # un poteau tous les 28,5 m
+    haut = 7.6
+    fleche = 0.9
+
+    for i in range(n + 1):
+        x = i * PAS + axe + ROUTE / 2.0 + 1.7
+        precedent = None
+        y = 6.0
+        while y < n * PAS + COULOIR:
+            objets.append({
+                "type": "poteau",
+                "pos": [round(x, 2), 0.0, round(-y, 2)],
+                "angle": round(math.pi / 2.0, 3),
+            })
+            if precedent is not None:
+                for c in (-0.86, 0.86):     # deux cables, sur la traverse
+                    _cable(m["lampes"], x + c, precedent, y, haut, fleche)
+            precedent = y
+            y += ecart
+    return objets
+
+
+def _cable(m: Maillage, x: float, y0: float, y1: float,
+           haut: float, fleche: float) -> None:
+    """Un cable qui PEND entre deux poteaux, en trois segments.
+
+    Une droite tendue se lit comme un fil de fer. Une fleche d'un metre
+    suffit a en faire un cable — et trois segments suffisent a la fleche, a
+    cette distance.
+    """
+    pas_ = 3
+    e = 0.04
+    points = []
+    for k in range(pas_ + 1):
+        t = k / pas_
+        # Une parabole vaut la chainette a cette echelle, et coute une ligne.
+        z = haut - fleche * 4.0 * t * (1.0 - t)
+        points.append((y0 + (y1 - y0) * t, z))
+    for (ya, za), (yb, zb) in zip(points, points[1:]):
+        m.face([(x - e, ya, za), (x - e, yb, zb), (x + e, yb, zb), (x + e, ya, za)],
+               [(0, 0), (1, 0), (1, 0.08), (0, 0.08)])
+        m.face([(x, ya, za - e), (x, yb, zb - e), (x, yb, zb + e), (x, ya, za + e)],
+               [(0, 0), (1, 0), (1, 0.08), (0, 0.08)])
 
 
 def routes_sortantes(m: dict, n: int, etendue: float) -> list[dict]:
@@ -1553,6 +1657,7 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
     montagnes(m["montagne"], etendue, rng)
     decor += routes_sortantes(m, n, etendue)
 
+    decor += poteaux_et_cables(m, n)
     decor += cactus_du_desert(etendue, rng)
 
     faces = sum(maillage.finir() for maillage in m.values())

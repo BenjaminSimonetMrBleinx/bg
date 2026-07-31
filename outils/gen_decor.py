@@ -269,6 +269,40 @@ def saguaro(mats) -> int:
     return m.finir()
 
 
+def arbuste(mats) -> int:
+    """L'arbuste taille en boule, contre une facade.
+
+    C'EST LA SIGNATURE DU XERISCAPE. Sur les references d'Albuquerque, le
+    jardin de devant est du gravier, et la seule verdure est une rangee de
+    boules taillees plaquees contre le mur. Sans elles, une maison a l'air
+    inhabitee ; avec elles, elle a l'air entretenue — et ca coute douze faces.
+    """
+    m = Maillage("Arbuste", mats["herbe"])
+    m.prisme(0, 0, 0.0, 0.62, 0.44, 0.30, 6, 1.2)
+    m.prisme(0.0, 0.0, 0.52, 0.74, 0.30, 0.10, 6, 1.0)
+    return m.finir()
+
+
+def arbre_haut(mats) -> int:
+    """Le peuplier : haut, etroit, un peu penche.
+
+    Les arbres d'Albuquerque ne sont pas des boules sur un baton — ce sont
+    des masses IRREGULIERES et hautes, souvent en groupe. Celui-ci monte a
+    huit metres pour deux de large : c'est lui qui casse la ligne des toits,
+    et c'est ce qu'on voit depuis la voiture au-dessus des murets.
+    """
+    m = Maillage("Tronc", mats["bois_banc"])
+    m.prisme(0, 0, 0.0, 2.10, 0.17, 0.13, 6, 1.4)
+    total = m.finir()
+    f = Maillage("Feuillage", mats["herbe"])
+    # Trois masses decalees plutot qu'un cone : une couronne symetrique se lit
+    # comme un sapin de maquette, une couronne decalee comme un arbre.
+    f.prisme(0.10, -0.05, 1.70, 4.30, 1.05, 0.85, 7, 2.2)
+    f.prisme(-0.22, 0.16, 3.70, 6.40, 0.92, 0.62, 7, 2.2)
+    f.prisme(0.14, -0.10, 5.90, 7.90, 0.62, 0.16, 6, 2.0)
+    return total + f.finir()
+
+
 def arbre(mats) -> int:
     """Un arbre de parc. Tronc et deux etages de feuillage.
 
@@ -286,11 +320,13 @@ def arbre(mats) -> int:
     m.prisme(0, 0, 0.0, 2.05, 0.16, 0.13, 6, 1.2)
     total = m.finir()
     f = Maillage("Feuillage", mats["herbe"])
-    # Deux etages plutot qu'un : une seule masse fait un champignon, et la
-    # cassure entre les deux est ce qui se lit comme des branches a vingt
-    # metres.
-    f.prisme(0, 0, 1.70, 3.15, 1.35, 1.05, 8, 2.4)
-    f.prisme(0, 0, 3.05, 4.10, 0.95, 0.20, 8, 2.4)
+    # TROIS MASSES DECALEES, jamais centrees. La version d'avant empilait deux
+    # prismes sur l'axe : ca donnait une sucette, symetrique et reconnaissable
+    # d'un seul coup d'oeil. Un arbre est irregulier, et c'est le decalage —
+    # pas le nombre de faces — qui le fait lire comme tel.
+    f.prisme(-0.18, 0.12, 1.60, 3.30, 1.40, 1.15, 8, 2.4)
+    f.prisme(0.34, -0.20, 2.30, 3.90, 1.05, 0.78, 7, 2.2)
+    f.prisme(-0.05, -0.08, 3.60, 4.55, 0.82, 0.18, 7, 2.2)
     return total + f.finir()
 
 
@@ -517,6 +553,8 @@ OBJETS = {
     "table_picnic": (table_picnic, ["bois_banc", "metal_sombre"]),
     "buisson": (buisson, ["herbe"]),
     "rocher": (rocher, ["montagne"]),
+    "arbuste": (arbuste, ["herbe"]),
+    "arbre_haut": (arbre_haut, ["bois_banc", "herbe"]),
     "panneau_pub_0": (panneau_pub("affiche_0"), ["metal_sombre", "affiche_0"]),
     "panneau_pub_1": (panneau_pub("affiche_1"), ["metal_sombre", "affiche_1"]),
     "panneau_pub_2": (panneau_pub("affiche_2"), ["metal_sombre", "affiche_2"]),

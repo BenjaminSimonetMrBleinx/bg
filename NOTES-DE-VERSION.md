@@ -79,10 +79,21 @@ bâtiment — comme le Dog House ou le Crossroads Motel.
 **Les montagnes ont doublé de hauteur** et se sont rapprochées. Elles
 faisaient un liséré ; elles occupent maintenant un vrai morceau de ciel.
 
-À essayer : marche dans une rue des Hauteurs et regarde les maisons de trois
-quarts, avec le soleil de côté — c'est là que les creux se voient.
+**Il y a de la végétation.** Des arbustes taillés en boule plaqués contre les
+façades — c'est toute la verdure d'un jardin d'Albuquerque, le reste est du
+gravier — et des arbres qui cassent la ligne des toits. Dans les parcs ils
+viennent **par groupes de deux ou trois** au lieu d'être semés en verger.
 
-> Mesuré après tout ça : **59 images/seconde, zéro image ratée**, 148 Mo.
+**Des poteaux électriques et leurs câbles traversent les rues.** Sur les
+références, pas une vue de rue sans deux ou trois câbles en biais dans le ciel :
+ce sont les seules lignes obliques d'un décor fait de verticales, et c'est
+exactement pour ça qu'on les remarque.
+
+À essayer : marche dans une rue des Hauteurs et regarde les maisons de trois
+quarts, avec le soleil de côté — c'est là que les creux se voient. Puis
+regarde en l'air.
+
+> Mesuré après tout ça : **57 images/seconde, zéro image ratée**, 157 Mo.
 
 ---
 
