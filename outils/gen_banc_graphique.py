@@ -386,6 +386,27 @@ SECTIONS_3 = [
 ESSIEUX = (-1.42, 1.30)
 DEMI_VOIE = 0.78
 
+# LA MONTE CARLO. Cinq metres dix, un capot de deux metres, un pavillon de
+# quatre-vingt-quinze centimetres pose aux deux tiers arriere. Ce sont ces
+# rapports qui font la voiture ; on peut lui retirer la moitie de ses faces,
+# elle restera reconnaissable, et lui en ajouter le double sur de mauvaises
+# proportions n'y changera rien.
+SECTIONS_MONTE_CARLO = [
+    (-2.62, 0.80, 0.52, 0.94),
+    (-2.40, 0.90, 0.38, 0.97),
+    (-1.90, 0.92, 0.34, 0.98),
+    (-1.00, 0.92, 0.33, 0.99),
+    (-0.58, 0.92, 0.33, 1.01),
+    (-0.14, 0.90, 0.33, 1.40),
+    (0.98, 0.89, 0.33, 1.41),
+    (1.34, 0.90, 0.33, 1.14),
+    (1.76, 0.92, 0.35, 1.04),
+    (2.14, 0.90, 0.42, 1.00),
+    (2.30, 0.82, 0.50, 0.96),
+]
+ESSIEUX_MC = (-1.55, 1.42)
+DEMI_VOIE_MC = 0.76
+
 
 def voiture_2(mats) -> int:
     """Niveau 2 : le galbe, et de vraies roues."""
@@ -433,53 +454,110 @@ def voiture_2(mats) -> int:
 
 
 def voiture_3(mats) -> int:
-    """Niveau 3 : le detail de pres, sur les memes proportions."""
+    """Niveau 3 : la Monte Carlo de Jesse, d'apres les references.
+
+    CE N'EST PLUS UNE BERLINE GENERIQUE. Benjamin a fourni trois photos de la
+    voiture de Jesse — une Chevrolet Monte Carlo du milieu des annees 80 — et
+    ce qui la rend reconnaissable tient a cinq proportions, pas au nombre de
+    faces :
+
+      LE CAPOT est enorme et PLAT. Deux metres de long, quasi horizontal. Sur
+      une berline moderne il plonge et fait la moitie ; ici il fait la moitie
+      de la voiture a lui seul, et c'est la premiere chose qu'on lit.
+
+      LE PAVILLON est COURT et RECULE. Un coupe deux portes : l'habitacle
+      commence apres le milieu de la voiture. Un pavillon centre donne
+      immediatement une berline familiale.
+
+      LA LUNETTE ARRIERE EST PRESQUE VERTICALE — toit dit « formel » — avec un
+      montant arriere tres large. C'est la signature de la voiture, celle qu'on
+      reconnait de trois quarts arriere.
+
+      LA FACE AVANT EST VERTICALE, pas fuyante : une calandre rectangulaire a
+      lamelles, quatre phares rectangulaires encastres, et un pare-chocs
+      chrome horizontal qui prend toute la largeur.
+
+      LA BANDE CREME DE BAS DE CAISSE. Deux tons, rouge et creme, separes par
+      un jonc. Elle allonge la voiture et c'est ce qui accroche l'oeil sur les
+      photos.
+    """
     m = Maillage("Caisse", mats["banc_tole_rouge"])
-    coque(m, SECTIONS_3, tuile=1.15)
+    coque(m, SECTIONS_MONTE_CARLO, tuile=1.1)
     total = m.finir()
 
-    v = Maillage("Vitrage", mats["banc_vitre"])
+    # La bande creme, posee sur le flanc plutot que peinte dans la texture :
+    # elle doit suivre exactement la silhouette, et une texture de carrosserie
+    # est etiree differemment sur chaque section.
+    b = Maillage("BandeBasse", mats["banc_tole_creme"])
     for cote in (-1, 1):
-        v.face([(cote * 0.945, -0.48, 1.12), (cote * 0.945, 0.30, 1.12),
-                (cote * 0.945, 0.30, 1.48), (cote * 0.945, -0.48, 1.48)][::cote])
-        v.face([(cote * 0.945, 0.36, 1.12), (cote * 0.945, 0.74, 1.12),
-                (cote * 0.945, 0.74, 1.40), (cote * 0.945, 0.36, 1.46)][::cote])
-    v.face([(-0.90, -0.82, 1.16), (0.90, -0.82, 1.16),
-            (0.88, -0.50, 1.52), (-0.88, -0.50, 1.52)][::-1])
-    v.face([(-0.88, 0.80, 1.44), (0.88, 0.80, 1.44),
-            (0.92, 1.20, 1.20), (-0.92, 1.20, 1.20)][::-1])
+        for a1, a2 in zip(SECTIONS_MONTE_CARLO, SECTIONS_MONTE_CARLO[1:]):
+            y0, l0, z0, _ = a1
+            y1, l1, z1, _ = a2
+            if y0 < -2.30 or y1 > 2.10:
+                continue
+            b.face([(cote * (l0 + 0.005), y0, z0 + 0.02),
+                    (cote * (l1 + 0.005), y1, z1 + 0.02),
+                    (cote * (l1 + 0.005), y1, z1 + 0.16),
+                    (cote * (l0 + 0.005), y0, z0 + 0.16)][::cote],
+                   [(0, 0), (1, 0), (1, 0.3), (0, 0.3)])
+    total += b.finir()
+
+    v = Maillage("Vitrage", mats["banc_vitre"])
+    # DEUX portes, donc UNE vitre laterale par cote, et un montant arriere
+    # large : le vitrage s'arrete a 0,55 alors que le pavillon va jusqu'a 0,95.
+    for cote in (-1, 1):
+        v.face([(cote * 0.908, -0.04, 1.03), (cote * 0.908, 0.90, 1.03),
+                (cote * 0.900, 0.90, 1.34), (cote * 0.900, -0.04, 1.37)][::cote])
+    v.face([(-0.88, -0.60, 1.00), (0.88, -0.60, 1.00),
+            (0.86, -0.13, 1.37), (-0.86, -0.13, 1.37)])           # pare-brise
+    v.face([(-0.86, 1.00, 1.37), (0.86, 1.00, 1.37),
+            (0.88, 1.32, 1.13), (-0.88, 1.32, 1.13)])             # lunette
     total += v.finir()
 
+    # LES MONTANTS. Une vitre sans encadrement ne se lit pas : c'est le
+    # contraste avec le noir qui la designe comme un trou, et un trou est ce
+    # qui distingue une cabine d'un bloc de tole.
+    mo = Maillage("Montants", mats["metal_sombre"])
+    for cote in (-1, 1):
+        mo.boite(cote * 0.885, -0.14, 0.99, cote * 0.915, -0.02, 1.41, 0.6)
+        mo.boite(cote * 0.885, 0.88, 0.99, cote * 0.915, 1.02, 1.41, 0.6)
+        mo.boite(cote * 0.885, -0.08, 1.35, cote * 0.915, 0.94, 1.42, 0.6)
+    total += mo.finir()
+
+    # Le chrome : pare-chocs pleine largeur, jonc de caisse, entourages.
+    c = Maillage("Chrome", mats["metal"])
+    c.boite(-0.93, -2.76, 0.52, 0.93, -2.62, 0.74, 1.0)
+    c.boite(-0.93, 2.24, 0.56, 0.93, 2.38, 0.78, 1.0)
+    for cote in (-1, 1):                                          # jonc
+        c.boite(cote * 0.925, -2.30, 0.50, cote * 0.940, 2.10, 0.54, 2.0)
+    total += c.finir()
+
     d = Maillage("Sombre", mats["metal_sombre"])
-    d.boite(-0.76, -2.40, 0.42, 0.76, -2.32, 0.62, 1.0)
-    d.boite(-0.76, 2.10, 0.46, 0.76, 2.18, 0.66, 1.0)
-    for sx in (-0.96, 0.90):
-        d.boite(sx - 0.04, -1.20, 0.20, sx + 0.04, 1.10, 0.30, 1.5)
-    for sx in (-1.00, 0.90):
-        d.boite(sx, -0.60, 1.14, sx + 0.13, -0.40, 1.30, 0.6)
-    for sx in (-0.97, 0.93):
-        d.boite(sx, -0.14, 1.06, sx + 0.05, 0.10, 1.13, 0.4)
-    d.boite(0.34, 2.14, 0.34, 0.52, 2.28, 0.46, 0.5)
-    d.boite(-0.50, -2.38, 0.60, 0.50, -2.34, 0.76, 0.8)
+    d.boite(-0.68, -2.70, 0.70, 0.68, -2.64, 0.92, 0.8)           # calandre
+    for sx in (-0.96, 0.90):                                       # retroviseurs
+        d.boite(sx, -0.30, 1.00, sx + 0.12, -0.10, 1.14, 0.6)
+    for sx in (-0.955, 0.925):                                     # poignees
+        d.boite(sx, 0.10, 0.96, sx + 0.04, 0.32, 1.02, 0.4)
+    d.boite(0.32, 2.26, 0.30, 0.50, 2.42, 0.42, 0.5)              # echappement
     for sx in (-1, 1):
-        for sy in ESSIEUX:
-            _passage_de_roue(d, sx * 0.955, sy, 0.35, sx * 0.17)
+        for sy in ESSIEUX_MC:
+            _passage_de_roue(d, sx * 0.935, sy, 0.37, sx * 0.16)
     total += d.finir()
 
     f = Maillage("Feux", mats["feu_avant"])
-    for sx in (-0.70, 0.42):
-        f.boite(sx, -2.36, 0.64, sx + 0.28, -2.30, 0.82, 0.5)
+    for sx in (-0.84, 0.20):                    # deux blocs de phares doubles
+        f.boite(sx, -2.71, 0.72, sx + 0.64, -2.66, 0.90, 0.6)
     total += f.finir()
     fa = Maillage("FeuxArriere", mats["feu_arriere"])
-    for sx in (-0.72, 0.44):
-        fa.boite(sx, 2.08, 0.74, sx + 0.28, 2.14, 0.96, 0.5)
+    for sx in (-0.86, 0.14):                                       # bandeaux larges
+        fa.boite(sx, 2.22, 0.76, sx + 0.72, 2.28, 0.96, 0.5)
     total += fa.finir()
 
     pneus = Maillage("Pneus", mats["pneu"])
-    jantes = Maillage("Jantes", mats["banc_jante"])
-    for sx in (-DEMI_VOIE, DEMI_VOIE):
-        for sy in ESSIEUX:
-            _roue(pneus, jantes, sx, sy, 0.35, 0.22, 12)
+    jantes = Maillage("Jantes", mats["banc_jante_rouge"])
+    for sx in (-DEMI_VOIE_MC, DEMI_VOIE_MC):
+        for sy in ESSIEUX_MC:
+            _roue(pneus, jantes, sx, sy, 0.37, 0.22, 12)
     return total + pneus.finir() + jantes.finir()
 
 
@@ -496,8 +574,9 @@ MODELES = [
     ("banc_voiture_2", voiture_2, ["banc_tole_bleue", "banc_vitre",
                                    "banc_jante", "pneu", "metal_sombre",
                                    "feu_avant", "feu_arriere"]),
-    ("banc_voiture_3", voiture_3, ["banc_tole_rouge", "banc_vitre",
-                                   "banc_jante", "pneu", "metal_sombre",
+    ("banc_voiture_3", voiture_3, ["banc_tole_rouge", "banc_tole_creme",
+                                   "banc_vitre", "banc_jante_rouge", "pneu",
+                                   "metal", "metal_sombre",
                                    "feu_avant", "feu_arriere"]),
 ]
 

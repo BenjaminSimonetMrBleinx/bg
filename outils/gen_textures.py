@@ -200,11 +200,43 @@ def banc_carrosserie(base):
 
 
 def banc_vitre(u: float, v: float):
-    """Vitrage teinte, avec le reflet oblique du ciel."""
+    """Vitrage, avec le reflet oblique du ciel.
+
+    IL DOIT ETRE CLAIR, pas teinte. Une vitre sombre sur une carrosserie
+    sombre ne se distingue pas : l'habitacle se lit alors comme un bloc plein,
+    et la voiture perd sa cabine. Ce qu'on voit d'une vitre en plein jour,
+    c'est le CIEL dedans — donc du clair, avec une bande plus vive en biais.
+    """
     n = hache(int(u * 200), int(v * 200))
-    reflet = 1.0 + max(0.0, 0.55 - abs(u - v)) * 0.9
-    g = (74 + n * 10) * reflet
-    return (g * 0.86, g * 0.95, g * 1.05)
+    reflet = 1.0 + max(0.0, 0.55 - abs(u - v)) * 0.75
+    g = (128 + n * 12) * reflet
+    return (g * 0.88, g * 0.97, g * 1.08)
+
+
+def banc_jante_rouge(u: float, v: float):
+    """La jante a rayons rouge de la Monte Carlo, avec son pneu a flanc blanc.
+
+    C'est le detail le plus voyant des photos : rayons rouges, cercle chrome,
+    et un liset blanc sur le flanc du pneu. Ca ne coute rien — la roue est deja
+    un disque texture — et c'est ce qu'on reconnait en premier sur la voiture.
+    """
+    import math as _m
+    dx, dy = u - 0.5, v - 0.5
+    d = _m.hypot(dx, dy)
+    a = _m.atan2(dy, dx)
+    n = hache(int(u * 240), int(v * 240))
+    if d > 0.47:
+        return (26 + n * 8, 26 + n * 8, 28 + n * 8)              # pneu
+    if d > 0.40:
+        return (214 + n * 12, 210 + n * 12, 202 + n * 12)        # flanc blanc
+    if d > 0.35:
+        return (176 + n * 14, 178 + n * 14, 182 + n * 14)        # cercle chrome
+    if d < 0.11:
+        return (172 + n * 12, 174 + n * 12, 178 + n * 12)        # moyeu
+    rayon = _m.cos(a * 8.0) > 0.1
+    if rayon:
+        return (168 + n * 16, 42 + n * 8, 34 + n * 8)            # rayon rouge
+    return (120 + n * 12, 26 + n * 6, 22 + n * 6)                # fond sombre
 
 
 def banc_jante(u: float, v: float):
@@ -1104,7 +1136,8 @@ def main() -> None:
     # --- le banc graphique : 256 px, deux fois le jeu ---
     d = t * 2
     for nom, fn in [("banc_mur", banc_mur), ("banc_toit", banc_toit),
-                    ("banc_vitre", banc_vitre), ("banc_jante", banc_jante)]:
+                    ("banc_vitre", banc_vitre), ("banc_jante", banc_jante),
+                    ("banc_jante_rouge", banc_jante_rouge)]:
         ecrire_png(dossier / f"{nom}.png", d, d, rendre(d, d, fn))
         faits.append(f"{nom}.png")
     for nom, base in [("banc_tole_bleue", (54, 78, 128)),
