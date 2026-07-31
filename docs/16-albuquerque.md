@@ -99,6 +99,43 @@ passée vient en premier.
 | 7 | **Les câbles** entre poteaux | ½ soirée | Le ciel des rues |
 | 8 | **Les rues** — banquette de gravier, impasses, raquettes | 3 soirées | Le plus cher : `PAS` est une constante partagée |
 
+---
+
+## 3. Casser `PAS` : essayé, écarté, et ce qu'il faudrait
+
+**Tenté le 31/07/2026, annulé le jour même.** Le générateur sait faire une
+trame irrégulière — des îlots de 30 à 64 m au lieu de 40 partout — et la ville
+sortait juste : géométrie, carrefours, parcelles à la bonne taille.
+
+**C'est le JEU qui n'a pas suivi.** Mesure à l'appui, sur vingt-six passants :
+
+| Où ils se tenaient | Combien |
+|---|---|
+| Sur le trottoir (0,18 m) | 15 |
+| **Sur la chaussée** (0,01 m) | **6** |
+| **Dans le désert**, hors ville (−0,05 m) | **3** |
+
+Deux hypothèses côté générateur ont été éliminées — la ville non carrée, puis
+la taille des parcelles. Le défaut est ailleurs, et il est structurel :
+
+- `foule.gd` publie **un seul** `ecart_trottoir` pour toute la ville, et
+  `pieton.gd` s'en sert pour tenir sa voie. C'est juste tant que toutes les
+  rues ont la même largeur.
+- `pieton.gd` borne la ville avec **une seule** `etendue` et un seul
+  `retrait`, sur les deux axes. Une trame irrégulière fait mentir ce bornage
+  près des bords.
+
+**Ce qu'il faudrait, et ce n'est pas un travail de générateur :** publier
+l'écart de trottoir **par tronçon** dans le graphe, et remplacer le bornage
+carré par un test contre la géométrie réelle. C'est-à-dire toucher à
+`pieton.gd` et `foule.gd`, avec les tests qui vont avec.
+
+**Ce qu'on garde en attendant :** les super-îlots — une rue sur cinq
+supprimée, deux parcelles réunies — qui cassent déjà le damier sans rien
+demander au jeu. C'est 80 % de l'effet pour 10 % du risque.
+
+---
+
 ### Pour les cartes à venir
 
 Trois règles à appliquer d'emblée, tirées des photos :
