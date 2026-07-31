@@ -38,471 +38,1307 @@
   "'fin' est l'image ou l'on enregistre. Prevoir large : un fondu de porte dure",
   "une seconde, une sonnerie deux, et capturer au milieu ne montre rien."
  ],
-
  "scenarios": {
   "h06_aube": {
    "quoi": "L'aube : le soleil rase, les lampadaires pas encore eteints.",
    "fin": 90,
    "etapes": [
-    { "image": 20, "appeler": "Temps", "methode": "regler", "argument": 6.8 }
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 6.8
+    }
    ]
   },
   "h13_midi": {
    "quoi": "Midi. Ombres courtes, brume de chaleur au loin.",
    "fin": 90,
    "etapes": [
-    { "image": 20, "appeler": "Temps", "methode": "regler", "argument": 13 }
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 13
+    }
    ]
   },
   "banc_niveau_4": {
    "quoi": "La maison a ouvertures creusees, celle qui repond au « ca fait Minecraft ». Ce qu'on regarde : les OMBRES dans les embrasures, le decalage entre le corps, le garage en avant et l'entree en retrait, et la planche de rive sous le debord de toit.",
    "fin": 70,
    "etapes": [
-    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 10.5},
-    {"image": 30, "camera": [849, 4.0, -903], "vise": [862, 1.8, -917]}
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 10.5
+    },
+    {
+     "image": 30,
+     "camera": [
+      849,
+      4.0,
+      -903
+     ],
+     "vise": [
+      862,
+      1.8,
+      -917
+     ]
+    }
    ]
   },
-
   "banc_ensemble": {
    "quoi": "Le banc de comparaison graphique, les trois niveaux dans le meme cadre. De gauche a droite : 1 ce que la ville pose aujourd'hui, 2 la silhouette enrichie, 3 le detail de pres. C'est la vue qui repond a « est-ce que ca vaut le coup ».",
    "fin": 70,
    "etapes": [
-    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 10.5},
-    {"image": 30, "camera": [826, 9.5, -880], "vise": [826, 2.0, -915]}
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 10.5
+    },
+    {
+     "image": 30,
+     "camera": [
+      826,
+      9.5,
+      -880
+     ],
+     "vise": [
+      826,
+      2.0,
+      -915
+     ]
+    }
    ]
   },
-
   "banc_niveau_1": {
    "quoi": "Niveau 1 de pres : la maison et la voiture telles que le jeu les pose aujourd'hui. Boites, toit plat, portes peintes sur le mur.",
    "fin": 70,
    "etapes": [
-    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 10.5},
-    {"image": 30, "camera": [800, 3.2, -906], "vise": [809, 1.6, -917]}
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 10.5
+    },
+    {
+     "image": 30,
+     "camera": [
+      800,
+      3.2,
+      -906
+     ],
+     "vise": [
+      809,
+      1.6,
+      -917
+     ]
+    }
    ]
   },
-
   "banc_niveau_2": {
    "quoi": "Niveau 2 de pres : toit a deux pentes, auvent, cheminee, encadrements — et une carrosserie construite par sections au lieu de boites empilees.",
    "fin": 70,
    "etapes": [
-    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 10.5},
-    {"image": 30, "camera": [817, 3.2, -906], "vise": [826, 1.6, -917]}
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 10.5
+    },
+    {
+     "image": 30,
+     "camera": [
+      817,
+      3.2,
+      -906
+     ],
+     "vise": [
+      826,
+      1.6,
+      -917
+     ]
+    }
    ]
   },
-
   "banc_niveau_3": {
    "quoi": "Niveau 3 de pres : volets, gouttiere, appuis, climatiseur, antenne, et une voiture a calandre, jantes et poignees.",
    "fin": 70,
    "etapes": [
-    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 10.5},
-    {"image": 30, "camera": [834, 3.2, -906], "vise": [843, 1.6, -917]}
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 10.5
+    },
+    {
+     "image": 30,
+     "camera": [
+      834,
+      3.2,
+      -906
+     ],
+     "vise": [
+      843,
+      1.6,
+      -917
+     ]
+    }
    ]
   },
-
   "desert_arrivee": {
    "quoi": "L'arrivee au desert, vue depuis la piste. Ce qu'on regarde : est-ce qu'on a de quoi se REPERER — les mesas — et est-ce que la piste donne envie de la suivre au lieu d'etre un ruban droit.",
    "fin": 80,
    "etapes": [
-    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 10},
-    {"image": 30, "camera": [874, 9.0, -736], "vise": [880, 3.0, -800]}
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 10
+    },
+    {
+     "image": 30,
+     "camera": [
+      874,
+      9.0,
+      -736
+     ],
+     "vise": [
+      880,
+      3.0,
+      -800
+     ]
+    }
    ]
   },
-
   "desert_arroyo": {
    "quoi": "Le passage de l'arroyo : le lit du torrent a sec, et la piste qui y plonge. Ce qu'on regarde : est-ce que la depression se lit, et est-ce que la piste descend franchement sans faire sauter la voiture.",
    "fin": 80,
    "etapes": [
-    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 10},
-    {"image": 30, "camera": [938, 5.0, -972], "vise": [913, -1.5, -946]}
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 10
+    },
+    {
+     "image": 30,
+     "camera": [
+      938,
+      5.0,
+      -972
+     ],
+     "vise": [
+      913,
+      -1.5,
+      -946
+     ]
+    }
    ]
   },
-
   "desert_fosse": {
    "quoi": "Le fosse de la mission 1, ou le camping-car sort de la route. Ce qu'on regarde : est-ce que la cuvette se voit depuis la piste, et est-ce qu'on comprend d'un regard qu'un vehicule a quitte la chaussee ici.",
    "fin": 80,
    "etapes": [
-    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 10},
-    {"image": 30, "camera": [872, 6.0, -742], "vise": [895, -1.5, -768]}
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 10
+    },
+    {
+     "image": 30,
+     "camera": [
+      872,
+      6.0,
+      -742
+     ],
+     "vise": [
+      895,
+      -1.5,
+      -768
+     ]
+    }
    ]
   },
-
   "horizon": {
    "quoi": "Le bord nord de la ville, vu depuis la derniere rue. Ce qu'on regarde : est-ce qu'il y a quelque chose a l'horizon, et est-ce que la ville se DILUE — terrains vagues, pavillons isoles — au lieu de s'arreter net sur du sable.",
    "fin": 70,
    "etapes": [
-    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
-    {"image": 30, "camera": [237, 52.0, -290], "vise": [237, 30.0, 60]}
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 11
+    },
+    {
+     "image": 30,
+     "camera": [
+      237,
+      52.0,
+      -290
+     ],
+     "vise": [
+      237,
+      30.0,
+      60
+     ]
+    }
    ]
   },
-
   "route_sortante": {
    "quoi": "La route qui quitte la ville vers le nord, avec ses poteaux electriques. Ce qu'on regarde : est-ce qu'elle donne l'impression qu'il y a un ailleurs, et est-ce que les poteaux donnent l'echelle de la plaine.",
    "fin": 70,
    "etapes": [
-    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
-    {"image": 30, "camera": [231, 3.4, 24], "vise": [237, 4.0, 190]}
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 11
+    },
+    {
+     "image": 30,
+     "camera": [
+      231,
+      3.4,
+      24
+     ],
+     "vise": [
+      237,
+      4.0,
+      190
+     ]
+    }
    ]
   },
-
   "ilot_pavillonnaire": {
    "quoi": "Une rue de pavillons, dans les Hauteurs. Ce qu'on regarde : est-ce que ca se lit comme un quartier ou l'on HABITE — allees, boites aux lettres, gravier — et pas comme douze boites alignees. C'est le quartier de Walt, et celui ou le soupcon montera le plus vite le jour ou les temoins existeront.",
    "fin": 70,
    "etapes": [
-    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
-    {"image": 30, "camera": [24, 4.2, -66], "vise": [40, 1.6, -80]}
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 11
+    },
+    {
+     "image": 30,
+     "camera": [
+      24,
+      4.2,
+      -66
+     ],
+     "vise": [
+      40,
+      1.6,
+      -80
+     ]
+    }
    ]
   },
-
   "ilot_strip_mall": {
    "quoi": "Un centre commercial de bord de route, dans le Centre. Ce qu'on regarde : le batiment est-il bien AU FOND avec son parking sur la rue — l'inverse d'un centre-ville — et l'auvent se lit-il comme une devanture plutot que comme un hangar.",
    "fin": 70,
    "etapes": [
-    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
-    {"image": 30, "camera": [138, 6.0, -62], "vise": [155, 2.0, -100]}
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 11
+    },
+    {
+     "image": 30,
+     "camera": [
+      138,
+      6.0,
+      -62
+     ],
+     "vise": [
+      155,
+      2.0,
+      -100
+     ]
+    }
    ]
   },
-
   "figurant": {
    "quoi": "UN passant, pose devant l'objectif. C'est la seule facon de juger un modele de foule : courir apres l'un d'eux en capture ne marche pas, ils sont recycles. Ce qu'on regarde : est-ce que le corps tient — pas de membre etire a l'infini, pas de vrille — et est-ce que la demarche reportee de Walter lui va.",
    "fin": 260,
    "etapes": [
-    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
-    {"image": 40, "placer": "Passant_00", "pos": [30, 0.3, -8.5], "cap": 90},
-    {"image": 44, "camera": [33.2, 1.2, -8.5], "vise": [30, 0.95, -8.5]}
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 11
+    },
+    {
+     "image": 40,
+     "placer": "Passant_00",
+     "pos": [
+      30,
+      0.3,
+      -8.5
+     ],
+     "cap": 90
+    },
+    {
+     "image": 44,
+     "camera": [
+      33.2,
+      1.2,
+      -8.5
+     ],
+     "vise": [
+      30,
+      0.95,
+      -8.5
+     ]
+    }
    ]
   },
-
   "super_ilot": {
    "quoi": "Un super-ilot : deux parcelles reunies, la rue entre elles supprimee, et un entrepot avec son parking a la place. Ce qu'on regarde : est-ce que le damier est casse sans que la trame devienne illisible.",
    "fin": 70,
    "etapes": [
-    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
-    {"image": 30, "camera": [180, 46.0, -150], "vise": [230, 6.0, -230]}
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 11
+    },
+    {
+     "image": 30,
+     "camera": [
+      180,
+      46.0,
+      -150
+     ],
+     "vise": [
+      230,
+      6.0,
+      -230
+     ]
+    }
    ]
   },
-
   "passants": {
    "quoi": "Les passants sur un trottoir, de pres. Ce qu'on regarde : est-ce que ce sont bien les figurants du pack et pas des boites, est-ce qu'ils MARCHENT — la demarche de Walter leur a ete reportee, leur pack n'en avait aucune — et est-ce qu'ils se tiennent droit sans jambes en helice.",
    "fin": 420,
    "etapes": [
-    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
-    {"image": 300, "camera": [65.5, 1.9, -36], "vise": [65.5, 1.5, -110]}
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 11
+    },
+    {
+     "image": 300,
+     "camera": [
+      65.5,
+      1.9,
+      -36
+     ],
+     "vise": [
+      65.5,
+      1.5,
+      -110
+     ]
+    }
    ]
   },
-
   "mobilier_rue": {
    "quoi": "Le nouveau mobilier de trottoir : cabine telephonique, distributeur de journaux, abri de bus, poubelles repeintes. Ce qu'on regarde : est-ce que la rue a cesse d'etre une repetition de la meme poubelle.",
    "fin": 80,
    "etapes": [
-    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
-    {"image": 30, "camera": [58, 2.4, -7], "vise": [104, 1.1, -2]}
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 11
+    },
+    {
+     "image": 30,
+     "camera": [
+      58,
+      2.4,
+      -7
+     ],
+     "vise": [
+      104,
+      1.1,
+      -2
+     ]
+    }
    ]
   },
-
   "ilot_parc": {
    "quoi": "Un parc, vu du trottoir. Ce qu'on regarde : est-ce que les allees se lisent comme des chemins, est-ce que les arbres tiennent debout a cette distance, et est-ce que la pelouse ne jure pas avec le desert d'a cote.",
    "fin": 70,
    "etapes": [
-    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
-    {"image": 30, "camera": [122, 6.5, -94], "vise": [151, 1.2, -94]}
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 11
+    },
+    {
+     "image": 30,
+     "camera": [
+      122,
+      6.5,
+      -94
+     ],
+     "vise": [
+      151,
+      1.2,
+      -94
+     ]
+    }
    ]
   },
-
   "ilot_parking": {
    "quoi": "Un parking, vu de trois quarts en hauteur. Ce qu'on regarde : est-ce que les lignes tombent sous les voitures, et est-ce que les rangees se lisent.",
    "fin": 70,
    "etapes": [
-    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
-    {"image": 30, "camera": [8, 12.0, -228], "vise": [37, 0.5, -262]}
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 11
+    },
+    {
+     "image": 30,
+     "camera": [
+      8,
+      12.0,
+      -228
+     ],
+     "vise": [
+      37,
+      0.5,
+      -262
+     ]
+    }
    ]
   },
-
   "ilot_terrain_vague": {
    "quoi": "Un terrain vague. Ce qu'on regarde : est-ce qu'il se lit comme un terrain a l'abandon plutot que comme une parcelle ou le generateur a oublie de poser des immeubles.",
    "fin": 70,
    "etapes": [
-    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
-    {"image": 30, "camera": [52, 5.5, -288], "vise": [94, 1.0, -322]}
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 11
+    },
+    {
+     "image": 30,
+     "camera": [
+      52,
+      5.5,
+      -288
+     ],
+     "vise": [
+      94,
+      1.0,
+      -322
+     ]
+    }
    ]
   },
-
   "porche_nuit": {
    "quoi": "La facade de Walter a 22 h, MONDE CHARGE DE JOUR. C'est la vue qui montre le correctif du 30/07/2026 : la lumiere de porche n'etait pas creee quand le monde chargeait en journee, donc la maison restait une silhouette noire toute la nuit suivante. Si la porte n'est pas eclairee ici, le porche a cesse de suivre l'heure.",
    "fin": 100,
    "etapes": [
-    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 22},
-    {"image": 30, "camera": [26, 3.2, -2], "vise": [26, 1.4, -14]}
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 22
+    },
+    {
+     "image": 30,
+     "camera": [
+      26,
+      3.2,
+      -2
+     ],
+     "vise": [
+      26,
+      1.4,
+      -14
+     ]
+    }
    ]
   },
-
   "h19_crepuscule": {
    "quoi": "Le crepuscule : soleil rouge, fenetres qui commencent a s'allumer.",
    "fin": 90,
    "etapes": [
-    { "image": 20, "appeler": "Temps", "methode": "regler", "argument": 19.9 }
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 19.9
+    }
    ]
   },
   "h22_nuit": {
    "quoi": "Nuit noire. Lampadaires, phares et fenetres.",
    "fin": 90,
    "etapes": [
-    { "image": 20, "appeler": "Temps", "methode": "regler", "argument": 22 }
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 22
+    }
    ]
   },
   "bordure": {
    "quoi": "La voiture lancee sur une bordure de trottoir. Monte-t-elle ?",
    "fin": 120,
    "etapes": [
-    { "image": 20, "placer": "Vehicule", "pos": [5, 0.45, -40], "cap": -90 },
-    { "image": 22, "appeler": "Controleur", "methode": "_monter" },
-    { "image": 40, "lancer": "Vehicule", "vitesse": [8, 0, 0] },
-    { "image": 95, "camera": [4, 3.2, -34], "vise": [12, 0.6, -40] }
+    {
+     "image": 20,
+     "placer": "Vehicule",
+     "pos": [
+      5,
+      0.45,
+      -40
+     ],
+     "cap": -90
+    },
+    {
+     "image": 22,
+     "appeler": "Controleur",
+     "methode": "_monter"
+    },
+    {
+     "image": 40,
+     "lancer": "Vehicule",
+     "vitesse": [
+      8,
+      0,
+      0
+     ]
+    },
+    {
+     "image": 95,
+     "camera": [
+      4,
+      3.2,
+      -34
+     ],
+     "vise": [
+      12,
+      0.6,
+      -40
+     ]
+    }
    ]
   },
-
   "voitures": {
    "quoi": "Le parc automobile gare : pick-up, berlines, breaks, et l Alpine.",
    "fin": 60,
    "etapes": [
-    { "image": 30, "camera": [46, 9, -3], "vise": [28, 0.8, -13] }
+    {
+     "image": 30,
+     "camera": [
+      46,
+      9,
+      -3
+     ],
+     "vise": [
+      28,
+      0.8,
+      -13
+     ]
+    }
    ]
   },
-
   "alpine": {
    "quoi": "L Alpine de pres. Anachronique et voulue comme telle.",
    "fin": 60,
    "etapes": [
-    { "image": 30, "camera": [27, 2.4, -9], "vise": [23, 0.6, -12.9] }
+    {
+     "image": 30,
+     "camera": [
+      27,
+      2.4,
+      -9
+     ],
+     "vise": [
+      23,
+      0.6,
+      -12.9
+     ]
+    }
    ]
   },
-
   "circulation": {
    "quoi": "La rue vue de haut : les voitures qui roulent, chacune sur sa voie.",
    "fin": 220,
    "etapes": [
-    { "image": 40, "camera": [11, 5.5, -22], "vise": [8, 0.8, -75] }
+    {
+     "image": 40,
+     "camera": [
+      11,
+      5.5,
+      -22
+     ],
+     "vise": [
+      8,
+      0.8,
+      -75
+     ]
+    }
    ]
   },
-
   "walt_face": {
    "quoi": "Walter vu de FACE. Doit montrer son visage : il regarde -Z.",
    "fin": 70,
    "etapes": [
-    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
-    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
-    { "image": 30, "camera": [23.5, 1.5, -15.5], "vise": [23.5, 1.4, -12] }
+    {
+     "image": 18,
+     "placer": "Joueur",
+     "pos": [
+      23.5,
+      0.4,
+      -12
+     ]
+    },
+    {
+     "image": 20,
+     "appeler": "Controleur",
+     "methode": "sortir_du_batiment"
+    },
+    {
+     "image": 30,
+     "camera": [
+      23.5,
+      1.5,
+      -15.5
+     ],
+     "vise": [
+      23.5,
+      1.4,
+      -12
+     ]
+    }
    ]
   },
-
   "walt_dos": {
    "quoi": "Walter vu de DOS, comme la camera de jeu le voit.",
    "fin": 70,
    "etapes": [
-    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
-    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
-    { "image": 30, "camera": [23.5, 1.5, -8.5], "vise": [23.5, 1.4, -12] }
+    {
+     "image": 18,
+     "placer": "Joueur",
+     "pos": [
+      23.5,
+      0.4,
+      -12
+     ]
+    },
+    {
+     "image": 20,
+     "appeler": "Controleur",
+     "methode": "sortir_du_batiment"
+    },
+    {
+     "image": 30,
+     "camera": [
+      23.5,
+      1.5,
+      -8.5
+     ],
+     "vise": [
+      23.5,
+      1.4,
+      -12
+     ]
+    }
    ]
   },
-
   "walt_repos": {
    "quoi": "Walter debout, sans commande. Doit se tenir RELACHE : bras le long du corps, jambes sous lui. Une image de course figee se voit tout de suite.",
    "fin": 90,
    "etapes": [
-    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
-    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
-    { "image": 30, "camera": [22.2, 1.35, -10.6], "vise": [23.5, 1.15, -12] }
+    {
+     "image": 18,
+     "placer": "Joueur",
+     "pos": [
+      23.5,
+      0.4,
+      -12
+     ]
+    },
+    {
+     "image": 20,
+     "appeler": "Controleur",
+     "methode": "sortir_du_batiment"
+    },
+    {
+     "image": 30,
+     "camera": [
+      22.2,
+      1.35,
+      -10.6
+     ],
+     "vise": [
+      23.5,
+      1.15,
+      -12
+     ]
+    }
    ]
   },
-
   "walt_lunettes": {
    "quoi": "Le geste du repos : la main GAUCHE monte aux lunettes. Le geste occupe un cinquieme du cycle de huit secondes, donc l'image est calee dessus — la deplacer de vingt images ne montre plus rien.",
    "fin": 372,
    "etapes": [
-    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
-    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
-    { "image": 30, "camera": [22.75, 1.72, -12.95], "vise": [23.45, 1.6, -12.08] }
+    {
+     "image": 18,
+     "placer": "Joueur",
+     "pos": [
+      23.5,
+      0.4,
+      -12
+     ]
+    },
+    {
+     "image": 20,
+     "appeler": "Controleur",
+     "methode": "sortir_du_batiment"
+    },
+    {
+     "image": 30,
+     "camera": [
+      22.75,
+      1.72,
+      -12.95
+     ],
+     "vise": [
+      23.45,
+      1.6,
+      -12.08
+     ]
+    }
    ]
   },
-
   "jesse_repos": {
    "quoi": "Jesse devant le camping-car. Il doit RESPIRER, bras le long du corps. Bras en croix = pose en T, c'est-a-dire que son clip de repos n'a pas ete rebati sur SON squelette. Ses clips avaient ete recopies depuis Walter : la marche mesurait zero metre de foulee, ce qui se lit tout de suite ici.",
    "fin": 90,
    "etapes": [
-    { "image": 30, "camera": [872.6, 1.7, -799.4], "vise": [875.2, 1.1, -801.4] }
+    {
+     "image": 30,
+     "camera": [
+      872.6,
+      1.7,
+      -799.4
+     ],
+     "vise": [
+      875.2,
+      1.1,
+      -801.4
+     ]
+    }
    ]
   },
-
   "walt_chapeau": {
    "quoi": "Le porkpie sur la tete, apres le geste. On le donne, on le choisit dans la roue, la main monte au crane et le chapeau apparait a mi-parcours. L'image est prise APRES le delai : on doit voir le chapeau pose, pas la main en route. Le don attend l'image 90 : la mission POSE l'inventaire a son demarrage, et tout ce qu'on donne avant est efface.",
    "fin": 320,
    "etapes": [
-    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
-    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
-    { "image": 240, "appeler": "Equipement", "methode": "donner", "argument": "chapeau" },
-    { "image": 245, "appeler": "Equipement", "methode": "equiper_cle", "argument": "chapeau" },
-    { "image": 250, "camera": [22.6, 1.85, -13.3], "vise": [23.5, 1.62, -12] },
-    { "image": 315, "appeler": "Equipement", "methode": "journal" }
+    {
+     "image": 18,
+     "placer": "Joueur",
+     "pos": [
+      23.5,
+      0.4,
+      -12
+     ]
+    },
+    {
+     "image": 20,
+     "appeler": "Controleur",
+     "methode": "sortir_du_batiment"
+    },
+    {
+     "image": 240,
+     "appeler": "Equipement",
+     "methode": "donner",
+     "argument": "chapeau"
+    },
+    {
+     "image": 245,
+     "appeler": "Equipement",
+     "methode": "equiper_cle",
+     "argument": "chapeau"
+    },
+    {
+     "image": 250,
+     "camera": [
+      22.6,
+      1.85,
+      -13.3
+     ],
+     "vise": [
+      23.5,
+      1.62,
+      -12
+     ]
+    },
+    {
+     "image": 315,
+     "appeler": "Equipement",
+     "methode": "journal"
+    }
    ]
   },
-
   "walt_coiffer": {
    "quoi": "Le geste lui-meme, saisi PENDANT : la main droite au sommet du crane, coude leve. Si le bras traverse la tete ou si le coude reste colle au corps, ca se voit ici et nulle part ailleurs.",
    "fin": 118,
    "etapes": [
-    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
-    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
-    { "image": 90, "appeler": "Equipement", "methode": "donner", "argument": "chapeau" },
-    { "image": 95, "appeler": "Equipement", "methode": "equiper_cle", "argument": "chapeau" },
-    { "image": 100, "camera": [22.2, 1.9, -13.4], "vise": [23.5, 1.6, -12] }
+    {
+     "image": 18,
+     "placer": "Joueur",
+     "pos": [
+      23.5,
+      0.4,
+      -12
+     ]
+    },
+    {
+     "image": 20,
+     "appeler": "Controleur",
+     "methode": "sortir_du_batiment"
+    },
+    {
+     "image": 90,
+     "appeler": "Equipement",
+     "methode": "donner",
+     "argument": "chapeau"
+    },
+    {
+     "image": 95,
+     "appeler": "Equipement",
+     "methode": "equiper_cle",
+     "argument": "chapeau"
+    },
+    {
+     "image": 100,
+     "camera": [
+      22.2,
+      1.9,
+      -13.4
+     ],
+     "vise": [
+      23.5,
+      1.6,
+      -12
+     ]
+    }
    ]
   },
-
   "walt_lecture": {
    "quoi": "Walter lit. Les deux mains montent devant le buste, le livre est dans la main droite, le menton descend. L'image est calee au milieu du clip de quatre secondes et demie.",
    "fin": 190,
    "etapes": [
-    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
-    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
-    { "image": 90, "appeler": "Equipement", "methode": "donner", "argument": "livre" },
-    { "image": 95, "appeler": "Equipement", "methode": "equiper_cle", "argument": "livre" },
-    { "image": 120, "appeler": "Joueur", "methode": "geste", "argument": "lire" },
-    { "image": 125, "camera": [22.3, 1.72, -13.5], "vise": [23.5, 1.42, -12] }
+    {
+     "image": 18,
+     "placer": "Joueur",
+     "pos": [
+      23.5,
+      0.4,
+      -12
+     ]
+    },
+    {
+     "image": 20,
+     "appeler": "Controleur",
+     "methode": "sortir_du_batiment"
+    },
+    {
+     "image": 90,
+     "appeler": "Equipement",
+     "methode": "donner",
+     "argument": "livre"
+    },
+    {
+     "image": 95,
+     "appeler": "Equipement",
+     "methode": "equiper_cle",
+     "argument": "livre"
+    },
+    {
+     "image": 120,
+     "appeler": "Joueur",
+     "methode": "geste",
+     "argument": "lire"
+    },
+    {
+     "image": 125,
+     "camera": [
+      22.3,
+      1.72,
+      -13.5
+     ],
+     "vise": [
+      23.5,
+      1.42,
+      -12
+     ]
+    }
    ]
   },
-
   "walt_accroupi": {
    "quoi": "Walter accroupi, touche Ctrl gauche tenue. Sa tete doit descendre a 1,17 m et ses pieds rester au sol.",
    "fin": 110,
    "etapes": [
-    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
-    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
-    { "image": 30, "appui": "accroupir" },
-    { "image": 40, "camera": [22.2, 1.2, -10.4], "vise": [23.5, 0.9, -12] }
+    {
+     "image": 18,
+     "placer": "Joueur",
+     "pos": [
+      23.5,
+      0.4,
+      -12
+     ]
+    },
+    {
+     "image": 20,
+     "appeler": "Controleur",
+     "methode": "sortir_du_batiment"
+    },
+    {
+     "image": 30,
+     "appui": "accroupir"
+    },
+    {
+     "image": 40,
+     "camera": [
+      22.2,
+      1.2,
+      -10.4
+     ],
+     "vise": [
+      23.5,
+      0.9,
+      -12
+     ]
+    }
    ]
   },
-
   "labo_interieur": {
    "quoi": "L'interieur du camping-car : le couloir, la paillasse, la verrerie, les bidons.",
    "fin": 80,
    "etapes": [
-    { "image": 30, "camera": [300, 1.55, 1200.8], "vise": [300, 1.05, 1207] }
+    {
+     "image": 30,
+     "camera": [
+      300,
+      1.55,
+      1200.8
+     ],
+     "vise": [
+      300,
+      1.05,
+      1207
+     ]
+    }
    ]
   },
-
   "labo_atelier": {
    "quoi": "L'atelier de chimie, celui qu'on utilise pour cuisiner la botte secrete.",
    "fin": 80,
    "etapes": [
-    { "image": 30, "camera": [298.9, 1.5, 1202.4], "vise": [301.2, 1.0, 1203.8] }
+    {
+     "image": 30,
+     "camera": [
+      298.9,
+      1.5,
+      1202.4
+     ],
+     "vise": [
+      301.2,
+      1.0,
+      1203.8
+     ]
+    }
    ]
   },
-
   "qg_dehors": {
    "quoi": "Le QG de Tuco vu de la rue : le batiment a l'abandon et sa fresque.",
    "fin": 80,
    "etapes": [
-    { "image": 30, "camera": [-1214, 6, -578], "vise": [-1200, 3, -595] }
+    {
+     "image": 30,
+     "camera": [
+      -1214,
+      6,
+      -578
+     ],
+     "vise": [
+      -1200,
+      3,
+      -595
+     ]
+    }
    ]
   },
-
   "qg_bureau": {
    "quoi": "Le bureau de Tuco : lambris, stores barricades, et trois hommes de main.",
    "fin": 80,
    "etapes": [
-    { "image": 30, "camera": [-1201, 1.65, -897.4], "vise": [-1200, 1.15, -903] }
+    {
+     "image": 30,
+     "camera": [
+      -1201,
+      1.65,
+      -897.4
+     ],
+     "vise": [
+      -1200,
+      1.15,
+      -903
+     ]
+    }
    ]
   },
-
   "depart": {
    "quoi": "Le point de depart, tel qu'on le decouvre en lancant le jeu.",
    "fin": 150,
    "etapes": []
   },
-
   "roue": {
    "quoi": "La roue des outils ouverte, avec ses quatre parts.",
    "fin": 90,
    "etapes": [
-    { "image": 40, "appui": "roue" }
+    {
+     "image": 40,
+     "appui": "roue"
+    }
    ]
   },
-
   "telephone": {
    "quoi": "Un appel en cours : le combine, le cadre de dialogue, l'invite.",
    "fin": 260,
    "etapes": [
-    { "image": 30, "touche": "telephone" },
-    { "image": 60, "touche": "interagir" },
-    { "image": 90, "touche": "interagir" }
+    {
+     "image": 30,
+     "touche": "telephone"
+    },
+    {
+     "image": 60,
+     "touche": "interagir"
+    },
+    {
+     "image": 90,
+     "touche": "interagir"
+    }
    ]
   },
-
   "refus_desert": {
    "quoi": "A pied sur la fleche : le bandeau doit expliquer le refus.",
    "fin": 60,
    "etapes": [
-    { "image": 20, "placer": "Joueur", "pos": [8.5, 0.4, -128] }
+    {
+     "image": 20,
+     "placer": "Joueur",
+     "pos": [
+      8.5,
+      0.4,
+      -128
+     ]
+    }
    ]
   },
-
   "panneau_desert": {
    "quoi": "La fleche et le panneau vus de haut, pour juger sens et position.",
    "fin": 60,
    "etapes": [
-    { "image": 30, "camera": [8.5, 11, -118], "vise": [10, 0, -129] }
+    {
+     "image": 30,
+     "camera": [
+      8.5,
+      11,
+      -118
+     ],
+     "vise": [
+      10,
+      0,
+      -129
+     ]
+    }
    ]
   },
-
   "arrivee_desert": {
    "quoi": "Ce qu'on voit en arrivant au desert : la piste et le camping-car.",
    "fin": 170,
    "etapes": [
-    { "image": 20, "placer": "Vehicule", "pos": [8.5, 0.4, -128] },
-    { "image": 22, "appeler": "Controleur", "methode": "_monter" }
+    {
+     "image": 20,
+     "placer": "Vehicule",
+     "pos": [
+      8.5,
+      0.4,
+      -128
+     ]
+    },
+    {
+     "image": 22,
+     "appeler": "Controleur",
+     "methode": "_monter"
+    }
    ]
   },
-
   "camping_car": {
    "quoi": "Le camping-car de pres, seul point de repere de la zone.",
    "fin": 60,
    "etapes": [
-    { "image": 30, "camera": [866, 4, -792], "vise": [877, 1.5, -804] }
+    {
+     "image": 30,
+     "camera": [
+      866,
+      4,
+      -792
+     ],
+     "vise": [
+      877,
+      1.5,
+      -804
+     ]
+    }
    ]
   },
-
   "voiture_joueur": {
    "quoi": "La voiture de Walter vue de trois quarts avant. La voiture est posee cap zero, donc son nez pointe vers -Z, et la camera est placee en -Z par rapport a elle : c'est donc la CALANDRE qui doit faire face a l'objectif. Si on voit le hayon, le modele est retourne. La formulation precedente disait l'inverse et a fait conclure trois fois de suite que l'orientation etait bonne alors qu'elle ne l'etait pas.",
    "fin": 70,
    "etapes": [
-    { "image": 20, "placer": "Vehicule", "pos": [880, 0.6, -760], "cap": 0 },
-    { "image": 30, "camera": [884, 2.2, -766], "vise": [880, 0.9, -760] }
+    {
+     "image": 20,
+     "placer": "Vehicule",
+     "pos": [
+      880,
+      0.6,
+      -760
+     ],
+     "cap": 0
+    },
+    {
+     "image": 30,
+     "camera": [
+      884,
+      2.2,
+      -766
+     ],
+     "vise": [
+      880,
+      0.9,
+      -760
+     ]
+    }
    ]
   },
-
   "nuit_ciel": {
    "quoi": "La rue de nuit, camera levee vers le ciel. Doit montrer les etoiles, la lune, et assez de lumiere pour qu'on distingue le sol entre deux lampadaires. Les autres vues de nuit demarrent dans le salon depuis que la partie s'ouvre chez Walter, et ne montrent donc aucun ciel.",
    "fin": 90,
    "etapes": [
-    { "image": 20, "appeler": "Temps", "methode": "regler", "argument": 22 },
-    { "image": 30, "camera": [24, 2.4, -4], "vise": [24, 8, -26] }
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 22
+    },
+    {
+     "image": 30,
+     "camera": [
+      24,
+      2.4,
+      -4
+     ],
+     "vise": [
+      24,
+      8,
+      -26
+     ]
+    }
    ]
   },
-
   "camping_car_porte": {
    "quoi": "Le camping-car vu de haut, avec Walter pose sur le point d'entree. Le modele est livre par Guillaume et son orientation vient d'un lacet impose a l'import : cette vue est le seul moyen de verifier que la porte du modele tombe bien la ou le jeu propose d'entrer.",
    "fin": 70,
    "etapes": [
-    { "image": 20, "placer": "Joueur", "pos": [875.0, 0.4, -803.0] },
-    { "image": 30, "camera": [877, 14, -804], "vise": [877, 0, -803.5] }
+    {
+     "image": 20,
+     "placer": "Joueur",
+     "pos": [
+      875.0,
+      0.4,
+      -803.0
+     ]
+    },
+    {
+     "image": 30,
+     "camera": [
+      877,
+      14,
+      -804
+     ],
+     "vise": [
+      877,
+      0,
+      -803.5
+     ]
+    }
    ]
   },
-
   "maison_walter": {
    "quoi": "Le salon de Walter et son habitante.",
    "fin": 120,
    "etapes": [
-    { "image": 20, "placer": "Joueur", "pos": [-574, 0.5, 583], "cap": 180 },
-    { "image": 24, "appeler": "Camera3D", "methode": "recaler" }
+    {
+     "image": 20,
+     "placer": "Joueur",
+     "pos": [
+      -574,
+      0.5,
+      583
+     ],
+     "cap": 180
+    },
+    {
+     "image": 24,
+     "appeler": "Camera3D",
+     "methode": "recaler"
+    }
+   ]
+  },
+  "vitrine_rue": {
+   "quoi": "Un immeuble de rue vu du trottoir. Ce qu'on regarde : le rez-de-chaussee CREUSE, l'auvent qui porte son ombre sur toute la largeur, le decrochement du dernier niveau, et le fouillis de toit.",
+   "fin": 70,
+   "etapes": [
+    {
+     "image": 20,
+     "appeler": "Temps",
+     "methode": "regler",
+     "argument": 10.5
+    },
+    {
+     "image": 30,
+     "camera": [
+      72,
+      2.0,
+      -46
+     ],
+     "vise": [
+      90,
+      4.0,
+      -62
+     ]
+    }
    ]
   }
  }

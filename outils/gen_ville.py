@@ -56,6 +56,74 @@ BATI = 12.0                # profondeur des immeubles, cour au centre de l'ilot
 COULOIR = ROUTE + 2 * TROTTOIR
 PAS = BLOC + COULOIR
 
+# LA TRAME N'EST PLUS REGULIERE.
+#
+# PAS a longtemps ete une constante : tous les ilots faisaient quarante metres
+# et toutes les rues etaient a cinquante-sept metres les unes des autres. Ca se
+# voit d'en haut, et ca se sent en roulant — on sait toujours ou sera le
+# prochain carrefour.
+#
+# Les vues aeriennes d'Albuquerque montrent l'inverse : des ilots courts et des
+# ilots longs, des parcelles doubles, rien de repetitif. On tire donc la
+# largeur de chaque bande d'ilots dans cette table.
+#
+# CE QU'ON NE FAIT PAS VARIER : la largeur des RUES. Le graphe publie un seul
+# ecart entre l'axe de la chaussee et le milieu du trottoir, et voitures comme
+# pietons s'en servent pour tenir leur voie. Une rue plus large demanderait de
+# publier cet ecart par troncon, donc de toucher au jeu. Les tailles d'ilot
+# suffisent a casser le damier, et elles ne coutent rien de ce cote-la.
+LARGEURS_ILOT = [30.0, 36.0, 40.0, 40.0, 46.0, 54.0, 64.0]
+
+# Les largeurs tirees pour la ville en cours, une liste par axe. Remplies par
+# tramer(), lues par xb()/yb(). C'est un etat global, ce qu'on evite d'habitude
+# — mais la solution propre serait de passer deux listes a trente fonctions,
+# et le generateur ne construit qu'une ville a la fois.
+_BX: list = []
+_BY: list = []
+
+
+def tramer(n: int, graine: int) -> None:
+    """Tire la largeur de chaque bande d'ilots, dans les deux sens."""
+    global _BX, _BY
+    rng = random.Random(graine * 104729 + 7)
+    # L'ilot (0, 0) garde une taille standard : il porte les maisons de
+    # Walter et de Jesse, dont les positions sont mesurees sur sa geometrie.
+    _BX = [BLOC] + [rng.choice(LARGEURS_ILOT) for _ in range(n - 1)]
+    _BY = [BLOC] + [rng.choice(LARGEURS_ILOT) for _ in range(n - 1)]
+
+
+def lb(bx: int) -> float:
+    """La largeur de la bande d'ilots bx."""
+    return _BX[bx] if 0 <= bx < len(_BX) else BLOC
+
+
+def hb(by: int) -> float:
+    return _BY[by] if 0 <= by < len(_BY) else BLOC
+
+
+def xb(bx: int) -> float:
+    """L'abscisse du bord OUEST de la bande d'ilots bx."""
+    return COULOIR * (bx + 1) + sum(_BX[:bx])
+
+
+def yb(by: int) -> float:
+    return COULOIR * (by + 1) + sum(_BY[:by])
+
+
+def xr(i: int) -> float:
+    """L'abscisse du bord ouest du corridor i — la rue, trottoirs compris."""
+    return COULOIR * i + sum(_BX[:i])
+
+
+def yr(j: int) -> float:
+    return COULOIR * j + sum(_BY[:j])
+
+
+def etendue_de(n: int) -> float:
+    """Le cote de la ville. Les deux axes peuvent differer ; on prend le plus
+    grand, parce que le sol, la brume et le desert sont carres."""
+    return max(COULOIR * (n + 1) + sum(_BX), COULOIR * (n + 1) + sum(_BY))
+
 # La texture de facade contient 2 x 2 travees : un module UV couvre donc
 # deux travees de large et deux etages de haut.
 MODULE_U = 6.8             # 2 travees de 3,4 m
@@ -396,6 +464,109 @@ def boite(m: Maillage, x0, y0, x1, y1, z0, z1, mu=MODULE_U, mv=MODULE_V) -> None
     )
 
 
+def immeuble(m: dict, x0: float, y0: float, x1: float, y1: float,
+             h: float, cote: str, mat: str, rng: random.Random) -> None:
+    """Un immeuble de rue, avec sa devanture, son auvent et ses decrochements.
+
+    CE QUI RESTAIT CUBIQUE. Les pavillons ont recu leurs ouvertures creusees ;
+    le bati de rue, lui, etait encore une boite avec des fenetres peintes. Vu
+    depuis un trottoir, c'est-a-dire d'ou l'on regarde pendant toute la partie,
+    c'etait le plus visible des deux.
+
+    Quatre choses, et aucune ne coute cher :
+
+      LA DEVANTURE. Le rez-de-chaussee est creuse sur deux metres cinquante de
+      haut, vitre au fond. C'est la seule partie qu'on voit vraiment a hauteur
+      d'homme, et c'est celle qui portait le moins de relief.
+
+      L'AUVENT. Une dalle en saillie au-dessus de la devanture. Elle jette une
+      ombre franche sur toute la largeur du batiment — le trait horizontal le
+      plus lisible d'une rue commercante.
+
+      LE DECROCHEMENT. Un immeuble sur trois porte un volume en retrait sur son
+      dernier niveau. Une facade qui monte droit sur onze metres est ce qui
+      fait le plus « boite » de loin.
+
+      LE FOUILLIS DE TOIT. Cage d'escalier, caisson de ventilation. Sur les
+      references, aucun toit plat n'est nu.
+    """
+    # La rue est du cote indique : c'est la seule facade qu'on habille.
+    if cote == "sud":
+        a, b, normale = (x0, y0), (x1, y0), (0.0, -1.0)
+    elif cote == "nord":
+        a, b, normale = (x1, y1), (x0, y1), (0.0, 1.0)
+    elif cote == "ouest":
+        a, b, normale = (x0, y1), (x0, y0), (-1.0, 0.0)
+    else:
+        a, b, normale = (x1, y0), (x1, y1), (1.0, 0.0)
+
+    lg = math.hypot(b[0] - a[0], b[1] - a[1])
+    corps = m[mat]
+
+    # --- la devanture, creusee ------------------------------------------
+    marge = 0.9
+    haut_vitrine = 2.55
+    ouvertures = []
+    if lg > 4.0:
+        ouvertures.append((marge, lg - marge, 0.35, haut_vitrine))
+    mur_perce(corps, a, b, 0.0, h, ouvertures, MODULE_U)
+    for t0, t1, z0, z1 in ouvertures:
+        embrasure(corps, m["fenetre_maison"], a, b, t0, t1, z0, z1, 0.34,
+                  normale)
+
+    # --- les trois autres murs, pleins -----------------------------------
+    coins = [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
+    for i in range(4):
+        p0, p1 = coins[i], coins[(i + 1) % 4]
+        if {p0, p1} == {a, b}:
+            continue
+        mur_perce(corps, p0, p1, 0.0, h, [], MODULE_U)
+
+    # le dessus
+    corps.face([(x0, y0, h), (x1, y0, h), (x1, y1, h), (x0, y1, h)],
+               [(0, 0), (2, 0), (2, 2), (0, 2)])
+
+    # --- l'auvent ---------------------------------------------------------
+    d = 1.15
+    nx, ny = normale
+    uv = [(0, 0), (lg / 2.0, 0), (lg / 2.0, 0.6), (0, 0.6)]
+    m["beton"].face([
+        (a[0] + nx * d, a[1] + ny * d, haut_vitrine + 0.30),
+        (b[0] + nx * d, b[1] + ny * d, haut_vitrine + 0.30),
+        (b[0], b[1], haut_vitrine + 0.30),
+        (a[0], a[1], haut_vitrine + 0.30)], uv)
+    m["beton"].face([
+        (a[0], a[1], haut_vitrine + 0.16),
+        (b[0], b[1], haut_vitrine + 0.16),
+        (b[0] + nx * d, b[1] + ny * d, haut_vitrine + 0.16),
+        (a[0] + nx * d, a[1] + ny * d, haut_vitrine + 0.16)], uv)
+    m["beton"].face([
+        (a[0] + nx * d, a[1] + ny * d, haut_vitrine + 0.16),
+        (b[0] + nx * d, b[1] + ny * d, haut_vitrine + 0.16),
+        (b[0] + nx * d, b[1] + ny * d, haut_vitrine + 0.30),
+        (a[0] + nx * d, a[1] + ny * d, haut_vitrine + 0.30)], uv)
+
+    # --- le decrochement du dernier niveau -------------------------------
+    if h > 7.0 and rng.random() < 0.34:
+        r = 1.4
+        hr = h + rng.uniform(2.4, 3.4)
+        boite(m[mat], x0 + r, y0 + r, x1 - r, y1 - r, h, hr, MODULE_U, MODULE_V)
+        parapet(m["beton"], x0 + r, y0 + r, x1 - r, y1 - r, hr, 0.36, 0.08)
+        toit = hr
+    else:
+        toit = h
+    parapet(m["beton"], x0, y0, x1, y1, h)
+
+    # --- le fouillis de toit ---------------------------------------------
+    cx, cy = (x0 + x1) / 2.0, (y0 + y1) / 2.0
+    if rng.random() < 0.55:
+        boite(m["beton"], cx - 1.1, cy - 1.0, cx + 1.1, cy + 1.0,
+              toit, toit + 2.2, 2.0, 2.0)          # cage d'escalier
+    if rng.random() < 0.45:
+        boite(m["bardage"], cx + 1.6, cy - 1.4, cx + 3.0, cy + 0.2,
+              toit, toit + 0.9, 1.0, 1.0)          # caisson de ventilation
+
+
 def parapet(m: Maillage, x0: float, y0: float, x1: float, y1: float,
             h: float, haut: float = 0.42, debord: float = 0.10) -> None:
     """L'acrotere qui couronne un toit plat.
@@ -447,7 +618,7 @@ def tirer(rng: random.Random, table: list = None) -> str:
 
 
 def mobilier_de_cote(ox: float, oy: float, cote: str,
-                     rng: random.Random) -> list[dict]:
+                     rng: random.Random, large: float = BLOC) -> list[dict]:
     """Pose du mobilier le long d'un cote d'ilot, contre les facades.
 
     Contre les FACADES, pas au bord du trottoir : les lampadaires occupent
@@ -463,14 +634,14 @@ def mobilier_de_cote(ox: float, oy: float, cote: str,
     if cote == "ouest":
         fixe, angle, axe = ox - recul, -math.pi / 2, "y"
     elif cote == "est":
-        fixe, angle, axe = ox + BLOC + recul, math.pi / 2, "y"
+        fixe, angle, axe = ox + large + recul, math.pi / 2, "y"
     elif cote == "sud":
         fixe, angle, axe = oy - recul, 0.0, "x"
     else:
-        fixe, angle, axe = oy + BLOC + recul, math.pi, "x"
+        fixe, angle, axe = oy + large + recul, math.pi, "x"
 
     debut = (oy if axe == "y" else ox) + marge
-    fin = debut + BLOC - 2 * marge
+    fin = debut + large - 2 * marge
     pos = debut + rng.uniform(0.0, ESPACEMENT_DECOR)
     while pos < fin:
         x, y = (fixe, pos) if axe == "y" else (pos, fixe)
@@ -492,15 +663,15 @@ def voitures_de_cote(ox: float, oy: float, cote: str,
     if cote == "ouest":
         fixe, angle, axe = ox - bord, 0.0, "y"
     elif cote == "est":
-        fixe, angle, axe = ox + BLOC + bord, math.pi, "y"
+        fixe, angle, axe = ox + large + bord, math.pi, "y"
     elif cote == "sud":
         fixe, angle, axe = oy - bord, math.pi / 2, "x"
     else:
-        fixe, angle, axe = oy + BLOC + bord, -math.pi / 2, "x"
+        fixe, angle, axe = oy + large + bord, -math.pi / 2, "x"
 
     debut = (oy if axe == "y" else ox) + 4.0
     pos = debut
-    while pos < debut + BLOC - 8.0:
+    while pos < debut + large - 8.0:
         if rng.random() < PROBA_PLACE_OCCUPEE:
             x, y = (fixe, pos) if axe == "y" else (pos, fixe)
             objets.append({
@@ -526,15 +697,15 @@ def pietons_de_cote(ox: float, oy: float, cote: str,
     if cote == "ouest":
         fixe, axe = ox - milieu, "y"
     elif cote == "est":
-        fixe, axe = ox + BLOC + milieu, "y"
+        fixe, axe = ox + large + milieu, "y"
     elif cote == "sud":
         fixe, axe = oy - milieu, "x"
     else:
-        fixe, axe = oy + BLOC + milieu, "x"
+        fixe, axe = oy + large + milieu, "x"
 
     base = (oy if axe == "y" else ox)
     for _ in range(PIETONS_PAR_COTE):
-        a = base + rng.uniform(2.0, BLOC - LONGUEUR_TRAJET - 2.0)
+        a = base + rng.uniform(2.0, large - LONGUEUR_TRAJET - 2.0)
         b = a + LONGUEUR_TRAJET * rng.uniform(0.7, 1.0)
         p1 = (fixe, a) if axe == "y" else (a, fixe)
         p2 = (fixe, b) if axe == "y" else (b, fixe)
@@ -651,7 +822,8 @@ def quartier_de(bx: int, n: int) -> str:
 
 
 def parcelle_parc(m: dict, ox: float, oy: float,
-                  rng: random.Random) -> list[dict]:
+                  rng: random.Random, lg: float = BLOC,
+                    ht: float = BLOC) -> list[dict]:
     """Un parc : pelouse, deux allees en croix, des arbres, des bancs.
 
     LES ALLEES SE CROISENT AU MILIEU, ET C'EST LE POINT. Un parc sans chemin
@@ -659,21 +831,21 @@ def parcelle_parc(m: dict, ox: float, oy: float,
     entre deux rues — le seul endroit de la ville qu'on traverse a pied et pas
     en voiture, ce qui donne une raison de descendre de voiture.
     """
-    dalle(m["herbe"], ox, oy, ox + BLOC, oy + BLOC, 0.03, 4.0)
+    dalle(m["herbe"], ox, oy, ox + lg, oy + ht, 0.03, 4.0)
 
-    milieu_x = ox + BLOC / 2.0
-    milieu_y = oy + BLOC / 2.0
+    milieu_x = ox + lg / 2.0
+    milieu_y = oy + ht / 2.0
     # Les allees montent a 0,05 : au meme niveau que la pelouse, le moteur ne
     # sait pas laquelle afficher et l'image papillonne selon l'angle.
     dalle(m["trottoir"], ox, milieu_y - ALLEE / 2.0,
-          ox + BLOC, milieu_y + ALLEE / 2.0, 0.05, TUILE_SOL)
+          ox + lg, milieu_y + ALLEE / 2.0, 0.05, TUILE_SOL)
     dalle(m["trottoir"], milieu_x - ALLEE / 2.0, oy,
-          milieu_x + ALLEE / 2.0, oy + BLOC, 0.05, TUILE_SOL)
+          milieu_x + ALLEE / 2.0, oy + ht, 0.05, TUILE_SOL)
 
     objets: list[dict] = []
     for _ in range(26):
-        x = rng.uniform(ox + 2.0, ox + BLOC - 2.0)
-        y = rng.uniform(oy + 2.0, oy + BLOC - 2.0)
+        x = rng.uniform(ox + 2.0, ox + lg - 2.0)
+        y = rng.uniform(oy + 2.0, oy + ht - 2.0)
         # Rien dans une allee : un arbre plante au milieu du chemin annule
         # l'interet du chemin.
         if abs(x - milieu_x) < ALLEE or abs(y - milieu_y) < ALLEE:
@@ -690,16 +862,16 @@ def parcelle_parc(m: dict, ox: float, oy: float,
     for k in range(3):
         objets.append({
             "type": "table_picnic",
-            "pos": [round(ox + BLOC * (0.24 + 0.26 * k), 2), 0.03,
-                    round(-(oy + BLOC * (0.72 if k % 2 else 0.24)), 2)],
+            "pos": [round(ox + lg * (0.24 + 0.26 * k), 2), 0.03,
+                    round(-(oy + ht * (0.72 if k % 2 else 0.24)), 2)],
             "angle": round(rng.uniform(0.0, 6.28), 3),
         })
     # LES ARBRES SE GROUPENT. Semes un par un, ils se repartissent trop
     # regulierement et le parc se lit comme un verger. Sur les photos, ils
     # viennent par deux ou trois, serres, avec du vide entre les groupes.
     for _ in range(5):
-        cx = rng.uniform(ox + 6.0, ox + BLOC - 6.0)
-        cy = rng.uniform(oy + 6.0, oy + BLOC - 6.0)
+        cx = rng.uniform(ox + 6.0, ox + lg - 6.0)
+        cy = rng.uniform(oy + 6.0, oy + ht - 6.0)
         if abs(cx - milieu_x) < ALLEE + 2.0 or abs(cy - milieu_y) < ALLEE + 2.0:
             continue
         for _ in range(rng.randint(2, 3)):
@@ -711,8 +883,8 @@ def parcelle_parc(m: dict, ox: float, oy: float,
             })
 
     for _ in range(14):
-        x = rng.uniform(ox + 2.5, ox + BLOC - 2.5)
-        y = rng.uniform(oy + 2.5, oy + BLOC - 2.5)
+        x = rng.uniform(ox + 2.5, ox + lg - 2.5)
+        y = rng.uniform(oy + 2.5, oy + ht - 2.5)
         if abs(x - milieu_x) < ALLEE or abs(y - milieu_y) < ALLEE:
             continue
         objets.append({
@@ -723,7 +895,7 @@ def parcelle_parc(m: dict, ox: float, oy: float,
 
     # Les bancs regardent l'allee, poses le long de la branche est-ouest.
     for k in range(4):
-        x = ox + BLOC * (0.18 + 0.21 * k)
+        x = ox + lg * (0.18 + 0.21 * k)
         cote = 1.0 if k % 2 == 0 else -1.0
         objets.append({
             "type": "banc",
@@ -735,7 +907,8 @@ def parcelle_parc(m: dict, ox: float, oy: float,
 
 
 def parcelle_terrain_vague(m: dict, ox: float, oy: float,
-                           rng: random.Random) -> list[dict]:
+                           rng: random.Random, lg: float = BLOC,
+                    ht: float = BLOC) -> list[dict]:
     """Un terrain vague : de la terre, quelques bennes, rien qui regarde.
 
     C'est le seul endroit de la ville SANS FENETRE. Le jour ou les temoins
@@ -743,7 +916,7 @@ def parcelle_terrain_vague(m: dict, ox: float, oy: float,
     dans une rue pavillonnaire — et c'est pour ca qu'il vaut la peine d'etre
     construit maintenant, avant meme qu'ils existent.
     """
-    dalle(m["desert"], ox, oy, ox + BLOC, oy + BLOC, 0.03, TUILE_SOL)
+    dalle(m["desert"], ox, oy, ox + lg, oy + ht, 0.03, TUILE_SOL)
 
     # LA CLOTURE, ET POURQUOI ELLE N'EST PAS DECORATIVE.
     #
@@ -757,14 +930,14 @@ def parcelle_terrain_vague(m: dict, ox: float, oy: float,
     # profondeur que ce rendu n'a pas. A vingt metres, deux lisses horizontales
     # donnent la meme lecture.
     poteau = 0.055
-    for long_axe, fixe in (("x", oy), ("x", oy + BLOC),
-                           ("y", ox), ("y", ox + BLOC)):
+    for long_axe, fixe in (("x", oy), ("x", oy + ht),
+                           ("y", ox), ("y", ox + lg)):
         debut = ox if long_axe == "x" else oy
         # Une ouverture par cote : un terrain entierement ceint est un decor
         # qu'on longe, alors qu'on doit pouvoir y entrer.
-        trou = debut + BLOC * 0.5
+        trou = debut + lg * 0.5
         k = 0.0
-        while k < BLOC:
+        while k < lg:
             p = debut + k
             k += 5.0
             if abs(p - trou) < 4.0:
@@ -776,7 +949,7 @@ def parcelle_terrain_vague(m: dict, ox: float, oy: float,
                 boite(m["trottoir"], fixe - poteau, p - poteau,
                       fixe + poteau, p + poteau, 0.0, 1.9, 1.0, 1.9)
         for hauteur in (0.85, 1.78):
-            a, b = debut, debut + BLOC
+            a, b = debut, debut + lg
             if long_axe == "x":
                 boite(m["trottoir"], a, fixe - 0.03, trou - 4.0, fixe + 0.03,
                       hauteur, hauteur + 0.06, 2.0, 1.0)
@@ -790,8 +963,8 @@ def parcelle_terrain_vague(m: dict, ox: float, oy: float,
 
     objets: list[dict] = []
     for _ in range(11):
-        x = rng.uniform(ox + 3.0, ox + BLOC - 3.0)
-        y = rng.uniform(oy + 3.0, oy + BLOC - 3.0)
+        x = rng.uniform(ox + 3.0, ox + lg - 3.0)
+        y = rng.uniform(oy + 3.0, oy + ht - 3.0)
         objets.append({
             "type": tirer(rng, [("benne", 20), ("benne_verte", 12),
                                 ("benne_bleue", 10), ("poubelle", 18),
@@ -803,19 +976,20 @@ def parcelle_terrain_vague(m: dict, ox: float, oy: float,
 
 
 def parcelle_parking(m: dict, ox: float, oy: float,
-                     rng: random.Random) -> list[dict]:
+                     rng: random.Random, lg: float = BLOC,
+                    ht: float = BLOC) -> list[dict]:
     """Un parking : de l'asphalte marque, et des voitures rangees.
 
     Les places sont dans la TEXTURE, pas en geometrie — une place peinte
     coute alors zero face, et un parking de cent places coute exactement ce que
     coute un parking vide. Voir parking() dans gen_textures.py.
     """
-    dalle_uv(m["parking"], ox, oy, ox + BLOC, oy + BLOC, 0.03,
+    dalle_uv(m["parking"], ox, oy, ox + lg, oy + ht, 0.03,
              PLACE_LARGEUR, PLACE_PROFONDEUR)
 
     objets: list[dict] = []
-    rangees = int(BLOC / PLACE_PROFONDEUR)
-    places = int(BLOC / PLACE_LARGEUR)
+    rangees = int(lg / PLACE_PROFONDEUR)
+    places = int(lg / PLACE_LARGEUR)
     for r in range(rangees):
         # Les voitures d'une rangee se garent toutes du meme cote de la ligne,
         # et une rangee sur deux regarde l'autre sens : c'est ce qui fait lire
@@ -1056,7 +1230,8 @@ def parcelle_double(m: dict, ox: float, oy: float, largeur: float,
 
 
 def parcelle_pavillonnaire(m: dict, ox: float, oy: float,
-                           rng: random.Random) -> list[dict]:
+                           rng: random.Random, lg: float = BLOC,
+                    ht: float = BLOC) -> list[dict]:
     """Un ilot de pavillons : douze maisons, leurs allees, leurs murets.
 
     C'EST LE QUARTIER DE WALT, ET DONC CELUI DES TEMOINS. Une rue pavillonnaire
@@ -1072,7 +1247,7 @@ def parcelle_pavillonnaire(m: dict, ox: float, oy: float,
     # Le sol est du GRAVIER, pas de la pelouse. Une pelouse verte devant chaque
     # maison d'Albuquerque sonne faux : la ville est a deux cents millimetres
     # de pluie par an, et les jardins y sont mineraux.
-    dalle(m["desert"], ox, oy, ox + BLOC, oy + BLOC, 0.03, TUILE_SOL)
+    dalle(m["desert"], ox, oy, ox + lg, oy + ht, 0.03, TUILE_SOL)
 
     largeur, profondeur, recul = 9.0, 7.5, 3.4
     objets: list[dict] = []
@@ -1087,11 +1262,11 @@ def parcelle_pavillonnaire(m: dict, ox: float, oy: float,
             if cote == "sud":
                 x0, y0 = ox + depart, oy + recul
             elif cote == "nord":
-                x0, y0 = ox + depart, oy + BLOC - recul - profondeur
+                x0, y0 = ox + depart, oy + ht - recul - profondeur
             elif cote == "ouest":
                 x0, y0 = ox + recul, oy + depart
             else:
-                x0, y0 = ox + BLOC - recul - profondeur, oy + depart
+                x0, y0 = ox + lg - recul - profondeur, oy + depart
             lg = largeur if cote in ("sud", "nord") else profondeur
             pf = profondeur if cote in ("sud", "nord") else largeur
             maisonnette(m, x0, y0, lg, pf, cote, rng)
@@ -1110,13 +1285,13 @@ def parcelle_pavillonnaire(m: dict, ox: float, oy: float,
                 dalle(m["beton"], a, oy, a + 6.0, y0, 0.04, 3.0)
             elif cote == "nord":
                 a = x0 + lg * 0.10
-                dalle(m["beton"], a, y0 + pf, a + 6.0, oy + BLOC, 0.04, 3.0)
+                dalle(m["beton"], a, y0 + pf, a + 6.0, oy + ht, 0.04, 3.0)
             elif cote == "ouest":
                 a = y0 + pf * 0.44
                 dalle(m["beton"], ox, a, x0, a + 6.0, 0.04, 3.0)
             else:
                 a = y0 + pf * 0.10
-                dalle(m["beton"], x0 + lg, a, ox + BLOC, a + 6.0, 0.04, 3.0)
+                dalle(m["beton"], x0 + lg, a, ox + lg, a + 6.0, 0.04, 3.0)
             percees[cote].append((a - 0.5, a + 6.5))
 
             # LE XERISCAPE : une rangee d'arbustes plaquee contre la facade,
@@ -1163,12 +1338,12 @@ def parcelle_pavillonnaire(m: dict, ox: float, oy: float,
     # on ne voit plus les maisons depuis la voiture, et c'est tout ce qu'on
     # vient chercher ici.
     ep, haut = 0.16, 1.32
-    for cote, (fixe, sens) in (("sud", (oy, "x")), ("nord", (oy + BLOC, "x")),
-                               ("ouest", (ox, "y")), ("est", (ox + BLOC, "y"))):
+    for cote, (fixe, sens) in (("sud", (oy, "x")), ("nord", (oy + ht, "x")),
+                               ("ouest", (ox, "y")), ("est", (ox + lg, "y"))):
         debut = ox if sens == "x" else oy
         bornes = sorted(percees[cote])
         curseur = debut
-        for a, b in bornes + [(debut + BLOC, debut + BLOC)]:
+        for a, b in bornes + [(debut + lg, debut + lg)]:
             if a - curseur > 0.6:
                 if sens == "x":
                     boite(m["crepi"], curseur, fixe - ep / 2.0, a,
@@ -1181,7 +1356,8 @@ def parcelle_pavillonnaire(m: dict, ox: float, oy: float,
 
 
 def parcelle_strip_mall(m: dict, ox: float, oy: float,
-                        rng: random.Random) -> list[dict]:
+                        rng: random.Random, lg: float = BLOC,
+                    ht: float = BLOC) -> list[dict]:
     """Un centre commercial de bord de route : un batiment bas en L, un auvent,
     et un grand parking devant.
 
@@ -1192,16 +1368,16 @@ def parcelle_strip_mall(m: dict, ox: float, oy: float,
     americaine de l'ouest plutot qu'une ville generique.
     """
     profond = 11.0
-    dalle_uv(m["parking"], ox, oy, ox + BLOC, oy + BLOC - profond, 0.03,
+    dalle_uv(m["parking"], ox, oy, ox + lg, oy + ht - profond, 0.03,
              PLACE_LARGEUR, PLACE_PROFONDEUR)
 
-    y0 = oy + BLOC - profond
-    boite(m["bardage"], ox + 1.0, y0, ox + BLOC - 1.0, oy + BLOC, 0.0, 4.6,
+    y0 = oy + ht - profond
+    boite(m["bardage"], ox + 1.0, y0, ox + lg - 1.0, oy + ht, 0.0, 4.6,
           4.0, 4.6)
     # L'AUVENT. Une bande qui court sur toute la facade, a hauteur d'homme et
     # demi. C'est ce qui distingue un commerce d'un hangar, et c'est aussi ce
     # qui porte l'ombre sur la devanture.
-    boite(m["toit"], ox + 0.4, y0 - 2.6, ox + BLOC - 0.4, y0 + 0.2, 3.15, 3.45,
+    boite(m["toit"], ox + 0.4, y0 - 2.6, ox + lg - 0.4, y0 + 0.2, 3.15, 3.45,
           4.0, 1.0)
     for k in range(5):
         px = ox + 3.0 + k * (BLOC - 6.0) / 4.0
@@ -1220,7 +1396,7 @@ def parcelle_strip_mall(m: dict, ox: float, oy: float,
     # Wash, Crossroads Motel : sur les trois references, l'enseigne fait la
     # moitie de la hauteur visible.
     ens = "enseigne_%d" % rng.randrange(3)
-    ex = ox + BLOC * 0.30
+    ex = ox + lg * 0.30
     m[ens].face([(ex, y0 - 0.30, 5.0), (ex + 11.0, y0 - 0.30, 5.0),
                  (ex + 11.0, y0 - 0.30, 8.2), (ex, y0 - 0.30, 8.2)][::-1],
                 [(0, 0), (1, 0), (1, 1), (0, 1)])
@@ -1232,8 +1408,8 @@ def parcelle_strip_mall(m: dict, ox: float, oy: float,
               1.0, 1.0)
 
     objets: list[dict] = []
-    rangees = int((BLOC - profond) / PLACE_PROFONDEUR)
-    places = int(BLOC / PLACE_LARGEUR)
+    rangees = int((ht - profond) / PLACE_PROFONDEUR)
+    places = int(lg / PLACE_LARGEUR)
     for r in range(rangees):
         cap = math.pi / 2.0 if r % 2 == 0 else -math.pi / 2.0
         y = oy + (r + 0.5) * PLACE_PROFONDEUR
@@ -1283,8 +1459,12 @@ def graphe_des_rues(n: int, fusions: dict = None) -> dict:
     for i in range(n + 1):
         for j in range(n + 1):
             index[(i, j)] = len(noeuds)
-            noeuds.append([round(i * PAS + axe, 3), 0.0,
-                           round(-(j * PAS + axe), 3)])
+            # LES CARREFOURS NE SONT PLUS EQUIDISTANTS. Le graphe porte leurs
+            # positions explicitement depuis le debut, donc il encaisse une
+            # trame irreguliere sans rien changer d'autre — c'est ce qui rend
+            # la variation des tailles d'ilot bon marche.
+            noeuds.append([round(xr(i) + axe, 3), 0.0,
+                           round(-(yr(j) + axe), 3)])
 
     # LES RUES SUPPRIMEES SORTENT AUSSI DU GRAPHE.
     #
@@ -1422,10 +1602,10 @@ def poteaux_et_cables(m: dict, n: int) -> list:
     fleche = 0.9
 
     for i in range(n + 1):
-        x = i * PAS + axe + ROUTE / 2.0 + 1.7
+        x = xr(i) + axe + ROUTE / 2.0 + 1.7
         precedent = None
         y = 6.0
-        while y < n * PAS + COULOIR:
+        while y < yr(n) + COULOIR:
             objets.append({
                 "type": "poteau",
                 "pos": [round(x, 2), 0.0, round(-y, 2)],
@@ -1472,7 +1652,7 @@ def routes_sortantes(m: dict, n: int, etendue: float) -> list[dict]:
     """
     longueur = 260.0
     axe = TROTTOIR + ROUTE / 2.0
-    milieu = (n // 2) * PAS + axe
+    milieu = xr(n // 2) + axe
     objets: list[dict] = []
 
     # Vers le nord, depuis la rue du milieu.
@@ -1547,13 +1727,14 @@ def cactus_du_desert(etendue: float, rng: random.Random,
 
 
 def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
+    tramer(n, graine)
     noms = ["route", "asphalte", "trottoir", "desert", "lampes",
             "herbe", "parking", "crepi", "toit", "porte", "fenetre_maison",
             "bardage", "montagne", "beton",
             "enseigne_0", "enseigne_1", "enseigne_2"] + FACADES
     m = {nom: Maillage(nom, mats[nom]) for nom in noms}
 
-    etendue = n * BLOC + (n + 1) * COULOIR
+    etendue = etendue_de(n)
     lampes: list[tuple[float, float, float, float]] = []
     decor: list[dict] = []
     pietons: list[dict] = []
@@ -1573,36 +1754,36 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
     # Corridor k : [k*PAS, k*PAS + COULOIR]. Chaussee au centre : +TROTTOIR.
     # Carrefour (i, j) : croisement des chaussees i et j.
     for j in range(n + 1):
-        ry0 = j * PAS + TROTTOIR
+        ry0 = yr(j) + TROTTOIR
         ry1 = ry0 + ROUTE
         for i in range(n):                       # segments horizontaux
-            sx0 = i * PAS + TROTTOIR + ROUTE
-            sx1 = (i + 1) * PAS + TROTTOIR
+            sx0 = xr(i) + TROTTOIR + ROUTE
+            sx1 = xr(i + 1) + TROTTOIR
             chaussee(m["route"], sx0, ry0, sx1, ry1, "x")
 
     for i in range(n + 1):
-        rx0 = i * PAS + TROTTOIR
+        rx0 = xr(i) + TROTTOIR
         rx1 = rx0 + ROUTE
         for j in range(n):                       # segments verticaux
             # La rue qui separait deux ilots fusionnes n'existe pas.
             if fusions.get((i - 1, j)) == "est":
                 continue
-            sy0 = j * PAS + TROTTOIR + ROUTE
-            sy1 = (j + 1) * PAS + TROTTOIR
+            sy0 = yr(j) + TROTTOIR + ROUTE
+            sy1 = yr(j + 1) + TROTTOIR
             chaussee(m["route"], rx0, sy0, rx1, sy1, "y")
 
     for i in range(n + 1):
         for j in range(n + 1):
             dalle(m["asphalte"],
-                  i * PAS + TROTTOIR, j * PAS + TROTTOIR,
-                  i * PAS + TROTTOIR + ROUTE, j * PAS + TROTTOIR + ROUTE,
+                  xr(i) + TROTTOIR, yr(j) + TROTTOIR,
+                  xr(i) + TROTTOIR + ROUTE, yr(j) + TROTTOIR + ROUTE,
                   Z_ROUTE, TUILE_ROUTE)
 
     # --- ilots ---------------------------------------------------------------
     for bx in range(n):
         for by in range(n):
-            ox = COULOIR + bx * PAS
-            oy = COULOIR + by * PAS
+            ox = xb(bx)
+            oy = yb(by)
             # LE TYPE DE L'ILOT. L'ilot (0, 0) reste bati quoi qu'il arrive :
             # c'est celui qui porte les maisons de Walter et de Jesse, et le
             # point de depart de la partie donne dessus.
@@ -1613,9 +1794,10 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
             # L'ilot qui a absorbe le sien s'etend sur toute la largeur, la
             # rue disparue comprise.
             double = fusions.get((bx, by)) == "est"
-            bloc_l = (BLOC * 2.0 + COULOIR) if double else BLOC
+            bloc_l = (lb(bx) + COULOIR + lb(bx + 1)) if double else lb(bx)
+            bloc_h = hb(by)
             x0, y0 = ox - TROTTOIR, oy - TROTTOIR
-            x1, y1 = ox + bloc_l + TROTTOIR, oy + BLOC + TROTTOIR
+            x1, y1 = ox + bloc_l + TROTTOIR, oy + bloc_h + TROTTOIR
             t = TROTTOIR
 
             # LE TROTTOIR N'EST PAS D'UN SEUL TENANT.
@@ -1706,20 +1888,21 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
                 # stationnement et passants ne dependent pas de ce qu'il y a
                 # derriere. Seul le CONTENU de la parcelle change.
                 for cote in ("sud", "nord", "ouest", "est"):
-                    decor += voitures_de_cote(ox, oy, cote, rng)
-                    pietons += pietons_de_cote(ox, oy, cote, rng)
+                    cl = bloc_l if cote in ("sud", "nord") else bloc_h
+                    decor += voitures_de_cote(ox, oy, cote, rng, cl)
+                    pietons += pietons_de_cote(ox, oy, cote, rng, cl)
                     if type_ilot == "terrain_vague":
-                        decor += mobilier_de_cote(ox, oy, cote, rng)
+                        decor += mobilier_de_cote(ox, oy, cote, rng, cl)
                 if type_ilot == "parc":
-                    decor += parcelle_parc(m, ox, oy, rng)
+                    decor += parcelle_parc(m, ox, oy, rng, bloc_l, bloc_h)
                 elif type_ilot == "terrain_vague":
-                    decor += parcelle_terrain_vague(m, ox, oy, rng)
+                    decor += parcelle_terrain_vague(m, ox, oy, rng, bloc_l, bloc_h)
                 elif type_ilot == "pavillonnaire":
-                    decor += parcelle_pavillonnaire(m, ox, oy, rng)
+                    decor += parcelle_pavillonnaire(m, ox, oy, rng, bloc_l, bloc_h)
                 elif type_ilot == "strip_mall":
-                    decor += parcelle_strip_mall(m, ox, oy, rng)
+                    decor += parcelle_strip_mall(m, ox, oy, rng, bloc_l, bloc_h)
                 else:
-                    decor += parcelle_parking(m, ox, oy, rng)
+                    decor += parcelle_parking(m, ox, oy, rng, bloc_l, bloc_h)
                 # Un lieu NOMME par parcelle : c'est ce qui permettra a une
                 # mission de dire « rendez-vous au terrain vague » sans que
                 # personne recopie des coordonnees.
@@ -1730,7 +1913,7 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
                     "cap": 0.0,
                     "quartier": quartier,
                 })
-                nb = max(2, int(BLOC / ESPACEMENT_LAMPES))
+                nb = max(2, int(bloc_l / ESPACEMENT_LAMPES))
                 for k in range(nb):
                     f = (k + 0.5) / nb
                     lampes += [
@@ -1743,14 +1926,15 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
 
             # cour interieure, en terre
             dalle(m["desert"], ox + BATI, oy + BATI,
-                  ox + BLOC - BATI, oy + BLOC - BATI, 0.02, TUILE_SOL)
+                  ox + bloc_l - BATI, oy + bloc_h - BATI, 0.02, TUILE_SOL)
 
             # immeubles : une rangee par cote de l'ilot
             for cx0, cy0, cx1, cy1, axe, cote in [
-                (ox, oy, ox + BLOC, oy + BATI, "x", "sud"),
-                (ox, oy + BLOC - BATI, ox + BLOC, oy + BLOC, "x", "nord"),
-                (ox, oy + BATI, ox + BATI, oy + BLOC - BATI, "y", "ouest"),
-                (ox + BLOC - BATI, oy + BATI, ox + BLOC, oy + BLOC - BATI, "y", "est"),
+                (ox, oy, ox + bloc_l, oy + BATI, "x", "sud"),
+                (ox, oy + bloc_h - BATI, ox + bloc_l, oy + bloc_h, "x", "nord"),
+                (ox, oy + BATI, ox + BATI, oy + bloc_h - BATI, "y", "ouest"),
+                (ox + bloc_l - BATI, oy + BATI, ox + bloc_l, oy + bloc_h - BATI,
+                 "y", "est"),
             ]:
                 # Une parcelle reservee reste vide : c'est la qu'on pose les
                 # batiments faits main. Sans ca, il n'y a pas un metre carre
@@ -1772,13 +1956,13 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
                     # qu'on veut poser « devant chez Walter » a besoin de ce
                     # point-la, pas de l'autre.
                     if cote == "sud":
-                        bord = (ox + BLOC / 2.0, oy - TROTTOIR - 1.15)
+                        bord = (ox + bloc_l / 2.0, oy - TROTTOIR - 1.15)
                     elif cote == "nord":
-                        bord = (ox + BLOC / 2.0, oy + BLOC + TROTTOIR + 1.15)
+                        bord = (ox + bloc_l / 2.0, oy + bloc_h + TROTTOIR + 1.15)
                     elif cote == "ouest":
-                        bord = (ox - TROTTOIR - 1.15, oy + BLOC / 2.0)
+                        bord = (ox - TROTTOIR - 1.15, oy + bloc_h / 2.0)
                     else:
-                        bord = (ox + BLOC + TROTTOIR + 1.15, oy + BLOC / 2.0)
+                        bord = (ox + bloc_l + TROTTOIR + 1.15, oy + bloc_h / 2.0)
                     lieux.append({
                         "nom": "reserve_%d_%d_%s" % (bx, by, cote),
                         "pos": [round((cx0 + cx1) / 2.0, 3), 0.0,
@@ -1790,9 +1974,10 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
                     })
                     continue
 
-                decor += mobilier_de_cote(ox, oy, cote, rng)
-                decor += voitures_de_cote(ox, oy, cote, rng)
-                pietons += pietons_de_cote(ox, oy, cote, rng)
+                cl = bloc_l if cote in ("sud", "nord") else bloc_h
+                decor += mobilier_de_cote(ox, oy, cote, rng, cl)
+                decor += voitures_de_cote(ox, oy, cote, rng, cl)
+                pietons += pietons_de_cote(ox, oy, cote, rng, cl)
 
                 longueur = (cx1 - cx0) if axe == "x" else (cy1 - cy0)
                 pos = 0.0
@@ -1802,16 +1987,27 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
                         large = longueur - pos
                     h = rng.choice(HAUTEURS)
                     mat = rng.choice(FACADES)
+                    # LA PROFONDEUR VARIE, ET L'ALIGNEMENT SE CASSE.
+                    #
+                    # Tous les immeubles avaient douze metres de fond et le nez
+                    # sur la meme ligne : une rue entiere au cordeau, ce qui ne
+                    # se voit nulle part. Deux nombres tires suffisent — un
+                    # retrait de zero a un metre quatre-vingts, une profondeur
+                    # de dix a seize — et la rue prend du relief.
+                    recul = rng.uniform(0.0, 1.8) if rng.random() < 0.55 else 0.0
+                    fond = rng.uniform(-2.0, 3.5)
                     if axe == "x":
-                        boite(m[mat], cx0 + pos, cy0, cx0 + pos + large, cy1, 0.0, h)
-                        parapet(m["beton"], cx0 + pos, cy0,
-                                cx0 + pos + large, cy1, h)
-                        centre = (cx0 + pos + large / 2, (cy0 + cy1) / 2)
+                        d0, d1 = (cy0 + recul, cy1 + fond) if cote == "sud" \
+                            else (cy0 - fond, cy1 - recul)
+                        immeuble(m, cx0 + pos, min(d0, d1), cx0 + pos + large,
+                                 max(d0, d1), h, cote, mat, rng)
+                        centre = (cx0 + pos + large / 2, (d0 + d1) / 2)
                     else:
-                        boite(m[mat], cx0, cy0 + pos, cx1, cy0 + pos + large, 0.0, h)
-                        parapet(m["beton"], cx0, cy0 + pos, cx1,
-                                cy0 + pos + large, h)
-                        centre = ((cx0 + cx1) / 2, cy0 + pos + large / 2)
+                        e0, e1 = (cx0 + recul, cx1 + fond) if cote == "ouest" \
+                            else (cx0 - fond, cx1 - recul)
+                        immeuble(m, min(e0, e1), cy0 + pos, max(e0, e1),
+                                 cy0 + pos + large, h, cote, mat, rng)
+                        centre = ((e0 + e1) / 2, cy0 + pos + large / 2)
                     if rng.random() < PROBA_CLIM:
                         decor.append({"type": "climatiseur",
                                       "pos": [centre[0], h, -centre[1]],
@@ -1819,7 +2015,7 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
                     pos += large
 
             # lampadaires, tournes vers la chaussee
-            nb = max(2, int(BLOC / ESPACEMENT_LAMPES))
+            nb = max(2, int(bloc_l / ESPACEMENT_LAMPES))
             for k in range(nb):
                 f = (k + 0.5) / nb
                 lampes += [
@@ -1889,8 +2085,8 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
             "pietons": pietons, "lieux": lieux, "graphe": graphe_des_rues(n, fusions),
             "faces": faces, "types": types,
             "quartiers": {quartier_de(bx, n): [
-                round(COULOIR + bx * PAS - COULOIR / 2.0, 1),
-                round(COULOIR + bx * PAS + BLOC + COULOIR / 2.0, 1)]
+                round(xb(bx) - COULOIR / 2.0, 1),
+                round(xb(bx) + lb(bx) + COULOIR / 2.0, 1)]
                 for bx in range(n)}}
 
 

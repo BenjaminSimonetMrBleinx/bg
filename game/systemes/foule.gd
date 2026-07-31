@@ -51,7 +51,17 @@ const RAYON := 0.28
 ## Vingt-six, dans un rayon plus court et devant soi de preference. Le cout est
 ## mesure a chaque changement — c'est le systeme qui a deja fait tomber la ville
 ## a six images par seconde.
-@export_range(0, 120, 1) var combien: int = 26
+##
+## A ZERO DEPUIS LE 31/07/2026, ET C'EST TEMPORAIRE. On travaille la ville
+## seule : les passants sont ce qui empechait la trame d'etre irreguliere —
+## leur voie se calcule avec un ecart de trottoir UNIQUE, valable seulement si
+## toutes les rues ont la meme largeur. Mesure : sur vingt-six, six marchaient
+## sur la chaussee et trois dans le desert des que les ilots changeaient de
+## taille.
+##
+## Les remettre demande de publier l'ecart PAR TRONCON et de borner la ville
+## sur sa geometrie plutot que sur un carre. Voir docs/16-albuquerque.md.
+@export_range(0, 120, 1) var combien: int = 0
 
 ## Au-dela de cette distance de la camera, un passant est recycle : on le
 ## replace sur une rue proche au lieu de le laisser marcher pour personne.

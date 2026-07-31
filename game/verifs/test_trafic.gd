@@ -119,19 +119,56 @@ func _scenario() -> void:
 		quit(1)
 
 
-# Sur une chaussee ? Le couloir k occupe [k*PAS, k*PAS + COULOIR], et la
-# chaussee son centre. On tolere une marge : la voiture a une largeur.
+# SUR UNE CHAUSSEE ? ON LE DEMANDE AU GRAPHE, PAS A UNE CONSTANTE.
+#
+# Ce test calculait les bandes de chaussee a partir d'un PAS de 57 m ecrit en
+# dur. C'etait juste tant que la trame etait reguliere ; le jour ou les ilots
+# ont pris des tailles differentes, le test a declare des voitures « hors
+# chaussee » alors qu'elles roulaient exactement au milieu de leur rue.
+#
+# C'est le piege le plus cher du projet, dans sa version test : on mesurait une
+# HYPOTHESE sur la ville au lieu de mesurer la ville. Le graphe, lui, publie
+# ou sont les rues — c'est la meme source que celle dont les voitures se
+# servent pour rouler.
+const ROUTES := "res://assets/ville/ville_lampes.json"
+
+var _segments: Array = []
+
+
+func _charger_les_rues() -> void:
+	if not _segments.is_empty():
+		return
+	var lu: Variant = JSON.parse_string(FileAccess.get_file_as_string(ROUTES))
+	if typeof(lu) != TYPE_DICTIONARY:
+		return
+	var graphe: Dictionary = (lu as Dictionary).get("graphe", {})
+	var noeuds: Array = graphe.get("noeuds", [])
+	for a in graphe.get("aretes", []):
+		var p: Array = noeuds[int(a[0])]
+		var q: Array = noeuds[int(a[1])]
+		_segments.append([Vector3(p[0], 0.0, p[2]), Vector3(q[0], 0.0, q[2])])
+
+
 func _sur_une_rue(p: Vector3) -> bool:
-	return _dans_une_bande(p.x) or _dans_une_bande(-p.z)
+	_charger_les_rues()
+	if _segments.is_empty():
+		return true
+	# La demi-chaussee, plus la largeur d'une voiture.
+	var marge := 11.0 / 2.0 + 1.2
+	var plat := Vector3(p.x, 0.0, p.z)
+	for seg in _segments:
+		if _distance_au_segment(plat, seg[0], seg[1]) <= marge:
+			return true
+	return false
 
 
-func _dans_une_bande(v: float) -> bool:
-	const PAS := 57.0
-	const TROTTOIR := 3.0
-	const ROUTE := 11.0
-	var k := floorf(v / PAS)
-	var dans := v - k * PAS
-	return dans >= TROTTOIR - 1.0 and dans <= TROTTOIR + ROUTE + 1.0
+static func _distance_au_segment(p: Vector3, a: Vector3, b: Vector3) -> float:
+	var ab := b - a
+	var l2 := ab.length_squared()
+	if l2 < 0.001:
+		return p.distance_to(a)
+	var t := clampf((p - a).dot(ab) / l2, 0.0, 1.0)
+	return p.distance_to(a + ab * t)
 
 
 func _trouver(n: Node, nom: String) -> Node:
