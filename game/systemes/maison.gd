@@ -43,6 +43,9 @@ var _porche: OmniLight3D
 
 func _ready() -> void:
 	add_to_group(Temps.ECOUTE)
+	# Le groupe des maisons : c'est ainsi qu'on retrouve celle d'un habitant
+	# sans connaitre le chemin de son noeud dans la scene.
+	add_to_group("maisons")
 	_poser_exterieur()
 	_poser_interieur()
 
@@ -196,6 +199,12 @@ func _collisionner(n: Node) -> void:
 
 ## Devant la porte, cote rue. C'est la qu'on detecte la proximite et qu'on
 ## repose le joueur en ressortant.
+## Le seuil en coordonnees du MONDE. seuil() le rend en local, ce qui ne sert
+## a rien pour poser quelqu'un devant la porte.
+func seuil_monde() -> Vector3:
+	return _seuil.global_position if _seuil != null else global_position
+
+
 func seuil() -> Vector3:
 	return _seuil.global_position if _seuil != null else global_position
 

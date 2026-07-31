@@ -56,6 +56,12 @@ LACET = Vector((0.0, 0.0, 1.0))     # tourner sur soi
 IPS = 30
 
 
+# QUI SE TIENT MAL. Pour l'instant Jesse, et c'est un trait de personnage :
+# epaules basses, dos creuse, poids sur une jambe, menton qui remonte. Voir
+# pose_nonchalante().
+NONCHALANTS = {"jesse"}
+
+
 def arguments() -> argparse.Namespace:
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     ap = argparse.ArgumentParser(description="Fabrique les clips manquants")
@@ -345,6 +351,58 @@ def pose_relachee(arm, action) -> dict:
     return pose
 
 
+def pose_nonchalante(arm, pose: dict) -> dict:
+    """La posture de Jesse : l'inverse du garde-a-vous.
+
+    LA PLANCHE DE CONTACT A TRANCHE. Le repos livre le tenait dos droit,
+    epaules carrees, bras colles, tete fixe — huit images identiques d'un homme
+    a l'appel. Jesse ne se tient jamais comme ca : il s'affaisse.
+
+    Ce qu'on retrouve dans la serie, et ce qu'on transcrit ici :
+
+      LES EPAULES BASSES ET ROULEES EN AVANT. C'est le trait qui porte le plus
+      : une silhouette voutee se lit a trente metres, avant tout le reste.
+      LE DOS CREUSE, le bassin bascule, le sternum rentre. Il ne se grandit
+      jamais.
+      LES BRAS QUI PENDENT, un peu en arriere du corps, coudes lachez. Des
+      bras colles aux cuisses appartiennent a quelqu'un qui attend des ordres.
+      LE POIDS SUR UNE JAMBE, hanche decalee, l'autre genou mou. Personne ne
+      s'ennuie en repartissant son poids.
+      LE MENTON QUI REMONTE. Il ecoute d'en haut, ce qui est exactement
+      l'attitude de quelqu'un a qui vous parlez trop longtemps.
+    """
+    # Le buste s'affaisse et rentre.
+    tourner(arm, pose, "Hips", TANGAGE, -8.0)
+    tourner(arm, pose, "Spine02", TANGAGE, 12.0)
+    tourner(arm, pose, "Spine01", TANGAGE, 8.0)
+    tourner(arm, pose, "Spine", TANGAGE, 5.0)
+
+    # Les epaules tombent et s'enroulent. LACET les amene vers l'avant,
+    # TANGAGE les fait descendre — c'est le couple qui fait la voute.
+    for cote, sens in (("Left", 1.0), ("Right", -1.0)):
+        tourner(arm, pose, cote + "Shoulder", TANGAGE, 14.0 * sens)
+        tourner(arm, pose, cote + "Shoulder", LACET, 10.0 * sens)
+        # Les bras partent un peu en arriere, et s'ecartent a peine.
+        tourner(arm, pose, cote + "Arm", TANGAGE, -6.0 * sens)
+        tourner(arm, pose, cote + "Arm", LACET, 3.0 * sens)
+        # Les coudes restent mous, les avant-bras pendent vers l'interieur.
+        tourner(arm, pose, cote + "ForeArm", GAUCHE, 10.0)
+
+    # Le poids sur la jambe gauche : la hanche monte de ce cote, l'autre genou
+    # flechit et le pied s'ecarte.
+    tourner(arm, pose, "Hips", ROULIS, -4.5)
+    tourner(arm, pose, "RightUpLeg", TANGAGE, 4.0)
+    tourner(arm, pose, "RightLeg", TANGAGE, -7.0)
+    tourner(arm, pose, "RightUpLeg", HAUT, -7.0)
+    tourner(arm, pose, "LeftUpLeg", HAUT, 3.0)
+
+    # Le menton remonte, la tete part legerement de cote.
+    tourner(arm, pose, "neck", TANGAGE, -7.0)
+    tourner(arm, pose, "Head", TANGAGE, -5.0)
+    tourner(arm, pose, "Head", ROULIS, 3.5)
+    return pose
+
+
 def resoudre(arm, depart: dict, leviers: list, cout, departs: list,
              monter: float = 0.0) -> dict:
     """Cherche les angles qui satisfont un objectif, et rend la pose.
@@ -587,7 +645,9 @@ def adoucir(t: float) -> float:
     return t * t * (3.0 - 2.0 * t)
 
 
-def clip_repos(arm, source, duree_s: float = 8.0):
+def clip_repos(arm, source, duree_s: float = 8.0, nonchalant: bool = False):
+    if nonchalant:
+        duree_s = 11.0
     """Debout, vivant, et une fois par cycle il remonte ses lunettes.
 
     Trois choses se superposent, et aucune n'a la meme periode : la
@@ -596,7 +656,13 @@ def clip_repos(arm, source, duree_s: float = 8.0):
     redevient une machine — c'est exactement ce qu'on cherche a eviter.
     """
     repos = pose_relachee(arm, source)
-    lunettes = resoudre_les_lunettes(arm, repos)
+    # L'ATTITUDE, quand le personnage en a une. Walter se tient droit ; Jesse
+    # s'affaisse. C'est la meme mecanique de repos, avec une pose de depart
+    # differente — et c'est ce qui evite d'ecrire deux fois la respiration, le
+    # report de poids et le balancement de tete.
+    if nonchalant:
+        repos = pose_nonchalante(arm, repos)
+    lunettes = resoudre_les_lunettes(arm, repos) if not nonchalant else repos
 
     action = action_neuve("Repos")
     if arm.animation_data is None:
@@ -635,13 +701,37 @@ def clip_repos(arm, source, duree_s: float = 8.0):
         # Report du poids, sur toute la duree du clip : personne ne tient
         # huit secondes parfaitement d'aplomb.
         bascule = math.sin(t * math.tau)
-        tourner(arm, pose, "Hips", ROULIS, 1.6 * bascule)
-        tourner(arm, pose, "Spine02", ROULIS, -1.0 * bascule)
+        ampleur = 4.2 if nonchalant else 1.6
+        tourner(arm, pose, "Hips", ROULIS, ampleur * bascule)
+        tourner(arm, pose, "Spine02", ROULIS, -0.6 * ampleur * bascule)
+        if nonchalant:
+            # Le poids passe VRAIMENT d'une jambe a l'autre : le genou libre
+            # flechit quand la hanche descend. Sans ca, le bassin se balance
+            # au-dessus de deux jambes raides, ce qui n'existe pas.
+            tourner(arm, pose, "RightLeg", TANGAGE, -3.5 * (1.0 + bascule))
+            tourner(arm, pose, "LeftLeg", TANGAGE, -3.5 * (1.0 - bascule))
 
         # La tete, sur une periode qui ne tombe juste avec aucune des deux.
         regard = math.sin(t * duree_s / 5.3 * math.tau)
-        tourner(arm, pose, "Head", LACET, 2.6 * regard)
-        tourner(arm, pose, "Head", TANGAGE, 0.8 * math.cos(t * duree_s / 3.7 * math.tau))
+        if nonchalant:
+            # L'ENNUI SE VOIT SURTOUT A LA TETE, et il demande de l'AMPLITUDE.
+            #
+            # La planche de contact a tranche : a deux degres et demi, huit
+            # images se ressemblent toutes. Quelqu'un qui s'ennuie roule la
+            # tete lentement et loin — en arriere, puis sur un cote — et
+            # s'arrete parfois dessus.
+            tourner(arm, pose, "Head", LACET, 9.0 * regard)
+            tourner(arm, pose, "Head", ROULIS,
+                    8.0 * math.sin(t * duree_s / 6.7 * math.tau + 1.1))
+            # La bascule en arriere : une longue respiration de dix secondes,
+            # qui ne retombe jamais au meme moment que le reste.
+            arriere = math.sin(t * duree_s / 9.5 * math.tau)
+            tourner(arm, pose, "Head", TANGAGE, -7.0 * max(0.0, arriere))
+            tourner(arm, pose, "neck", TANGAGE, -4.0 * max(0.0, arriere))
+        else:
+            tourner(arm, pose, "Head", LACET, 2.6 * regard)
+            tourner(arm, pose, "Head", TANGAGE,
+                    0.8 * math.cos(t * duree_s / 3.7 * math.tau))
 
         if g0 <= t <= g3:
             if t < g1:
@@ -1231,7 +1321,11 @@ def main() -> None:
         return
 
     debout = pose_relachee(arm, source)
-    nouvelles = (clip_repos(arm, source), clip_marche(arm, source),
+    # L'ATTITUDE EST UNE PROPRIETE DU PERSONNAGE, pas une option de ligne de
+    # commande : Jesse s'affaisse toujours, Walter se tient toujours droit. La
+    # mettre ici garantit qu'une regeneration ne la perd pas.
+    nouvelles = (clip_repos(arm, source, nonchalant=(a.nom in NONCHALANTS)),
+                 clip_marche(arm, source),
                  clip_accroupi(arm, debout),
                  clip_marche_accroupie(arm, source, debout),
                  clip_saut(arm, debout), clip_assis(arm, debout),

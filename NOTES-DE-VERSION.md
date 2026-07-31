@@ -16,6 +16,29 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.38.0 — Jesse ne se tient plus au garde-à-vous
+
+> **Son animation d'attente est refaite.** Épaules basses et roulées en avant,
+> dos creusé, bras qui pendent un peu en arrière, poids sur une jambe, menton
+> qui remonte — et la tête qui bascule lentement en arrière et sur les côtés,
+> comme quelqu'un qui s'ennuie pendant que tu parles.
+
+Le cycle dure onze secondes au lieu de huit : **la lenteur fait la
+nonchalance** autant que la posture.
+
+C'est maintenant son attente par défaut, dès qu'il est immobile.
+
+**Comment j'ai pu le juger.** Je ne peux pas regarder un mouvement — une image
+fixe dit si un corps tient debout, jamais s'il bouge bien. Un nouvel outil rend
+**huit poses d'un même cycle côte à côte dans une seule image**. La première
+planche a montré le problème en une seconde : huit images identiques d'un homme
+à l'appel. La tête parcourait 32 mm ; elle en parcourt 62 maintenant.
+
+**En bonus, un raccourci** : `.g.ps1 jouer -Ou jesse` te dépose devant chez
+lui. Et `-Ou walter`, `-Ou banc`, `-Ou desert`.
+
+---
+
 ## 0.37.0 — Albuquerque, d'après tes photos
 
 > **Toute la ville a changé de couleur.** J'ai analysé les 56 références que tu

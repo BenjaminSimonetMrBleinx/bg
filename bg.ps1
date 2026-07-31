@@ -35,8 +35,8 @@ param(
 
     [int]$Blocs = 2,
 
-    # Ou deposer le joueur au lancement : 'banc', 'desert'. Voir DEPARTS dans
-    # systemes/controleur.gd.
+    # Ou deposer le joueur au lancement : 'banc', 'desert', 'jesse',
+    # 'walter'. Voir DEPARTS dans systemes/controleur.gd.
     [string]$Ou = '',
     [int]$Graine = 505,
     [string]$Couleur = 'voiture_aztek',

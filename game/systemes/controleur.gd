@@ -241,7 +241,19 @@ func _ready() -> void:
 const DEPARTS := {
 	"banc": {"pos": Vector3(825.0, 0.6, -896.0), "cap": 180.0},
 	"desert": {"pos": Vector3(874.0, 0.6, -750.0), "cap": 0.0},
+	# Devant une porte de maison, trouvee par son habitant. On ne peut pas
+	# ecrire ses coordonnees : la ville se regenere, et la maison suit sa
+	# parcelle reservee.
+	"jesse": {"devant": "Jesse"},
+	"walter": {"devant": "Walter"},
 }
+
+
+func _maison_de(nom: String) -> Node:
+	for n in get_tree().get_nodes_in_group("maisons"):
+		if str(n.get("nom_affiche")) == nom:
+			return n
+	return null
 
 
 func _depart_de_developpement() -> void:
@@ -258,6 +270,21 @@ func _depart_de_developpement() -> void:
 		return
 	var d: Dictionary = DEPARTS[ou]
 	sortir_du_batiment()
+	if d.has("devant"):
+		var maison := _maison_de(str(d["devant"]))
+		if maison == null:
+			push_warning("controleur : maison '%s' introuvable" % d["devant"])
+			return
+		# Trois metres devant le seuil, tourne vers la porte.
+		var seuil: Vector3 = maison.call("seuil_monde")
+		_j.global_position = seuil + Vector3(0.0, 0.4, 3.0)
+		_j.velocity = Vector3.ZERO
+		_j.rotation.y = PI
+		var camd := get_viewport().get_camera_3d()
+		if camd != null and camd.has_method("recaler"):
+			camd.call("recaler")
+		print("controleur : depart de developpement devant chez %s" % d["devant"])
+		return
 	_j.global_position = d["pos"]
 	_j.velocity = Vector3.ZERO
 	_j.rotation.y = deg_to_rad(float(d["cap"]))
