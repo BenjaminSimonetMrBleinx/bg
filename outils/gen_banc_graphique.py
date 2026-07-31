@@ -120,12 +120,26 @@ class Maillage:
                          for k in range(cotes)])
         self.face(bas[::-1], [(0.5, 0.5)] * cotes)
 
-    def finir(self) -> int:
+    def finir(self, lisse: bool = False) -> int:
+        """`lisse` interpole les normales entre faces voisines.
+
+        C'EST CE QUI FAIT LA TOLE. Sans lui, chaque anneau de sections s'arrete
+        net et la carrosserie sort zebree de bandes verticales : on voit la
+        construction. Avec, la lumiere glisse d'une section a l'autre et le
+        galbe se lit.
+
+        Il ne s'applique QU'AUX SURFACES COURBES. Une caisse de camion, un
+        pare-chocs, une boite doivent garder leurs aretes vives : lisser un
+        cube lui donne l'air d'un galet.
+        """
         bmesh.ops.remove_doubles(self.bm, verts=self.bm.verts, dist=1e-5)
         self.bm.normal_update()
         n = len(self.bm.faces)
         self.bm.to_mesh(self.mesh)
         self.bm.free()
+        if lisse:
+            for face in self.mesh.polygons:
+                face.use_smooth = True
         return n
 
 
@@ -283,6 +297,97 @@ def coque(m, sections, tuile=1.0) -> None:
         m.face([(-l, y, z0), (l, y, z0), (l, y, z1), (-l, y, z1)][::sens])
 
 
+def profil(demi_largeur: float, z_bas: float, z_haut: float,
+           arrondi: float = 0.10) -> list:
+    """Le contour d'une section : FLANCS PLATS, EPAULES ARRONDIES.
+
+    Premier essai : une superellipse, qui arrondit les quatre coins. Resultat
+    verifie a l'image — un savon des annees cinquante. Une Monte Carlo est
+    ANGULEUSE : flanc vertical, bas de caisse droit, toit plat. Ce qui doit
+    etre arrondi, c'est l'EPAULE, et elle seule : c'est elle qui accroche la
+    lumiere le long de la voiture, et c'est ce qu'un rectangle ne fait pas.
+
+    On construit donc explicitement : un bas legerement rentre, deux flancs
+    verticaux, deux congés en haut, un toit plat. Seize points.
+
+    `arrondi` est le rayon du conge, en metres. Grand sur un nez, petit sur un
+    pavillon.
+    """
+    r = min(arrondi, demi_largeur * 0.8, (z_haut - z_bas) * 0.45)
+    lb = demi_largeur * 0.88          # le bas rentre : tole qui plonge
+    h = z_haut - z_bas
+    points = [
+        (lb, z_bas),
+        (demi_largeur, z_bas + h * 0.10),
+        (demi_largeur, z_bas + h * 0.45),
+        (demi_largeur, z_haut - r),
+    ]
+    for k in (1, 2):                  # conge droit, deux pas
+        a = math.pi / 2.0 * k / 3.0
+        points.append((demi_largeur - r + r * math.cos(a),
+                       z_haut - r + r * math.sin(a)))
+    points.append((demi_largeur - r, z_haut))
+    points.append((0.0, z_haut))
+    points.append((-demi_largeur + r, z_haut))
+    for k in (2, 1):                  # conge gauche
+        a = math.pi / 2.0 * k / 3.0
+        points.append((-demi_largeur + r - r * math.cos(a),
+                       z_haut - r + r * math.sin(a)))
+    points += [
+        (-demi_largeur, z_haut - r),
+        (-demi_largeur, z_bas + h * 0.45),
+        (-demi_largeur, z_bas + h * 0.10),
+        (-lb, z_bas),
+        (0.0, z_bas),
+    ]
+    return points
+
+
+def coque_lissee(m, sections, tuile: float = 1.0) -> None:
+    """Relie des sections le long de la voiture.
+
+    Chaque section est (y, demi_largeur, z_bas, z_haut, arrondi). On fait le
+    tour de deux sections voisines et on relie point a point : la surface est
+    continue le long du vehicule, et l'ombrage suit l'epaule au lieu de
+    s'arreter net sur une arete.
+    """
+    anneaux = [(y, profil(l, z0, z1, r)) for y, l, z0, z1, r in sections]
+    tour = len(anneaux[0][1])
+
+    # LES COORDONNEES DE TEXTURE SUIVENT LA VOITURE, PAS LA SECTION.
+    #
+    # Premiere version : u faisait le tour de la section et v courait le long
+    # du vehicule. La texture de carrosserie porte un degrade vertical — le
+    # ciel qui se reflete en haut — et il se retrouvait donc enroule autour de
+    # la caisse, repete a chaque anneau. Resultat, verifie a l'image : une
+    # carrosserie zebree de bandes verticales, qu'on prend d'abord pour un
+    # defaut d'ombrage.
+    #
+    # u suit la LONGUEUR, v suit la HAUTEUR REELLE du point. Le degrade monte
+    # alors du bas de caisse au pavillon, une fois, comme sur une vraie tole.
+    ys = [y for y, _ in anneaux]
+    zs = [z for _, pts in anneaux for _, z in pts]
+    y0g, y1g = min(ys), max(ys)
+    z0g, z1g = min(zs), max(zs)
+
+    def uv(y: float, z: float) -> tuple:
+        return ((y - y0g) / max(0.01, y1g - y0g) * tuile,
+                (z - z0g) / max(0.01, z1g - z0g))
+
+    for (ya, pa), (yb, pb) in zip(anneaux, anneaux[1:]):
+        for k in range(tour):
+            j = (k + 1) % tour
+            m.face([(pa[k][0], ya, pa[k][1]), (pa[j][0], ya, pa[j][1]),
+                    (pb[j][0], yb, pb[j][1]), (pb[k][0], yb, pb[k][1])],
+                   [uv(ya, pa[k][1]), uv(ya, pa[j][1]),
+                    uv(yb, pb[j][1]), uv(yb, pb[k][1])])
+    for (y, pts), sens in ((anneaux[0], 1), (anneaux[-1], -1)):
+        m.face([(x, y, z) for x, z in pts][::sens],
+               [(0.5 + 0.5 * math.cos(math.tau * k / tour),
+                 0.5 + 0.5 * math.sin(math.tau * k / tour))
+                for k in range(tour)][::sens])
+
+
 def voiture_1(mats) -> int:
     """Niveau 1 : la voiture d'aujourd'hui. Deux boites et quatre roues."""
     m = Maillage("Caisse", mats["banc_tole_bleue"])
@@ -391,18 +496,40 @@ DEMI_VOIE = 0.78
 # rapports qui font la voiture ; on peut lui retirer la moitie de ses faces,
 # elle restera reconnaissable, et lui en ajouter le double sur de mauvaises
 # proportions n'y changera rien.
+# (y, demi_largeur, z_bas, z_haut, carre)
+#
+# VINGT-DEUX SECTIONS au lieu de onze, et arrondies. Le galbe se joue aux
+# transitions : nez qui s'arrondit, epaulement du capot, montee du pare-brise,
+# pavillon bombe, chute de la lunette. Chacune demandait une section de plus.
+# (y, demi_largeur, z_bas, z_haut, rayon du conge d'epaule)
+#
+# VINGT-DEUX SECTIONS, et des conges qui varient : gros sur le nez et la
+# poupe, ou la tole s'enroule, minuscules sur le capot et le pavillon, qui
+# doivent rester PLATS. C'est ce reglage-la qui fait la difference entre une
+# voiture des annees 80 et une savonnette.
 SECTIONS_MONTE_CARLO = [
-    (-2.62, 0.80, 0.52, 0.94),
-    (-2.40, 0.90, 0.38, 0.97),
-    (-1.90, 0.92, 0.34, 0.98),
-    (-1.00, 0.92, 0.33, 0.99),
-    (-0.58, 0.92, 0.33, 1.01),
-    (-0.14, 0.90, 0.33, 1.40),
-    (0.98, 0.89, 0.33, 1.41),
-    (1.34, 0.90, 0.33, 1.14),
-    (1.76, 0.92, 0.35, 1.04),
-    (2.14, 0.90, 0.42, 1.00),
-    (2.30, 0.82, 0.50, 0.96),
+    (-2.62, 0.72, 0.56, 0.90, 0.22),
+    (-2.52, 0.84, 0.48, 0.94, 0.16),
+    (-2.38, 0.90, 0.40, 0.96, 0.10),
+    (-2.15, 0.92, 0.36, 0.97, 0.07),
+    (-1.80, 0.93, 0.34, 0.98, 0.05),
+    (-1.40, 0.93, 0.33, 0.98, 0.05),
+    (-1.00, 0.93, 0.33, 0.99, 0.05),
+    (-0.76, 0.93, 0.33, 1.00, 0.05),
+    (-0.60, 0.92, 0.33, 1.04, 0.06),
+    (-0.46, 0.92, 0.33, 1.16, 0.07),
+    (-0.30, 0.91, 0.33, 1.30, 0.07),
+    (-0.16, 0.90, 0.33, 1.38, 0.07),
+    (0.10, 0.90, 0.33, 1.41, 0.06),
+    (0.55, 0.90, 0.33, 1.42, 0.06),
+    (0.86, 0.89, 0.33, 1.41, 0.06),
+    (1.00, 0.89, 0.33, 1.34, 0.07),
+    (1.14, 0.90, 0.33, 1.22, 0.07),
+    (1.30, 0.91, 0.33, 1.12, 0.07),
+    (1.58, 0.92, 0.34, 1.06, 0.06),
+    (1.92, 0.92, 0.37, 1.03, 0.08),
+    (2.16, 0.88, 0.44, 1.00, 0.14),
+    (2.32, 0.76, 0.52, 0.96, 0.20),
 ]
 ESSIEUX_MC = (-1.55, 1.42)
 DEMI_VOIE_MC = 0.76
@@ -481,26 +608,80 @@ def voiture_3(mats) -> int:
       un jonc. Elle allonge la voiture et c'est ce qui accroche l'oeil sur les
       photos.
     """
-    m = Maillage("Caisse", mats["banc_tole_rouge"])
-    coque(m, SECTIONS_MONTE_CARLO, tuile=1.1)
-    total = m.finir()
+    m = Maillage("Caisse", mats["banc_tole_monte_carlo"])
+    coque_lissee(m, SECTIONS_MONTE_CARLO, tuile=1.1)
+    total = m.finir(lisse=True)
 
-    # La bande creme, posee sur le flanc plutot que peinte dans la texture :
-    # elle doit suivre exactement la silhouette, et une texture de carrosserie
-    # est etiree differemment sur chaque section.
-    b = Maillage("BandeBasse", mats["banc_tole_creme"])
+    v = Maillage("Vitrage", mats["banc_vitre"])
     for cote in (-1, 1):
-        for a1, a2 in zip(SECTIONS_MONTE_CARLO, SECTIONS_MONTE_CARLO[1:]):
-            y0, l0, z0, _ = a1
-            y1, l1, z1, _ = a2
-            if y0 < -2.30 or y1 > 2.10:
-                continue
-            b.face([(cote * (l0 + 0.005), y0, z0 + 0.02),
-                    (cote * (l1 + 0.005), y1, z1 + 0.02),
-                    (cote * (l1 + 0.005), y1, z1 + 0.16),
-                    (cote * (l0 + 0.005), y0, z0 + 0.16)][::cote],
-                   [(0, 0), (1, 0), (1, 0.3), (0, 0.3)])
-    total += b.finir()
+        v.face([(cote * 0.94, -0.58, 1.10), (cote * 0.94, 0.58, 1.10),
+                (cote * 0.94, 0.58, 1.46), (cote * 0.94, -0.58, 1.46)][::cote])
+    v.face([(-0.90, -1.02, 1.06), (0.90, -1.02, 1.06),
+            (0.88, -0.60, 1.50), (-0.88, -0.60, 1.50)][::-1])
+    v.face([(-0.88, 0.64, 1.52), (0.88, 0.64, 1.52),
+            (0.92, 1.12, 1.18), (-0.92, 1.12, 1.18)][::-1])
+    total += v.finir()
+
+    d = Maillage("Sombre", mats["metal_sombre"])
+    # Le pare-chocs epouse la caisse au lieu de la deborder : un bloc plus
+    # large que la voiture se lit comme une piece rapportee.
+    d.boite(-0.74, -2.36, 0.40, 0.74, -2.30, 0.60, 1.0)
+    d.boite(-0.74, 2.12, 0.44, 0.74, 2.18, 0.64, 1.0)
+    for sx in (-0.99, 0.87):
+        d.boite(sx, -0.66, 1.12, sx + 0.12, -0.46, 1.26, 0.6)
+    for sx in (-1, 1):
+        for sy in ESSIEUX:
+            _passage_de_roue(d, sx * 0.945, sy, 0.34, sx * 0.16)
+    total += d.finir()
+
+    f = Maillage("Feux", mats["feu_avant"])
+    for sx in (-0.58, 0.32):
+        f.boite(sx, -2.34, 0.66, sx + 0.26, -2.28, 0.82, 0.5)
+    total += f.finir()
+    fa = Maillage("FeuxArriere", mats["feu_arriere"])
+    for sx in (-0.60, 0.34):
+        fa.boite(sx, 2.12, 0.72, sx + 0.26, 2.18, 0.92, 0.5)
+    total += fa.finir()
+
+    pneus = Maillage("Pneus", mats["pneu"])
+    jantes = Maillage("Jantes", mats["banc_jante"])
+    for sx in (-DEMI_VOIE, DEMI_VOIE):
+        for sy in ESSIEUX:
+            _roue(pneus, jantes, sx, sy, 0.34, 0.20, 10)
+    return total + pneus.finir() + jantes.finir()
+
+
+def voiture_3(mats) -> int:
+    """Niveau 3 : la Monte Carlo de Jesse, d'apres les references.
+
+    CE N'EST PLUS UNE BERLINE GENERIQUE. Benjamin a fourni trois photos de la
+    voiture de Jesse — une Chevrolet Monte Carlo du milieu des annees 80 — et
+    ce qui la rend reconnaissable tient a cinq proportions, pas au nombre de
+    faces :
+
+      LE CAPOT est enorme et PLAT. Deux metres de long, quasi horizontal. Sur
+      une berline moderne il plonge et fait la moitie ; ici il fait la moitie
+      de la voiture a lui seul, et c'est la premiere chose qu'on lit.
+
+      LE PAVILLON est COURT et RECULE. Un coupe deux portes : l'habitacle
+      commence apres le milieu de la voiture. Un pavillon centre donne
+      immediatement une berline familiale.
+
+      LA LUNETTE ARRIERE EST PRESQUE VERTICALE — toit dit « formel » — avec un
+      montant arriere tres large. C'est la signature de la voiture, celle qu'on
+      reconnait de trois quarts arriere.
+
+      LA FACE AVANT EST VERTICALE, pas fuyante : une calandre rectangulaire a
+      lamelles, quatre phares rectangulaires encastres, et un pare-chocs
+      chrome horizontal qui prend toute la largeur.
+
+      LA BANDE CREME DE BAS DE CAISSE. Deux tons, rouge et creme, separes par
+      un jonc. Elle allonge la voiture et c'est ce qui accroche l'oeil sur les
+      photos.
+    """
+    m = Maillage("Caisse", mats["banc_tole_monte_carlo"])
+    coque_lissee(m, SECTIONS_MONTE_CARLO, tuile=1.1)
+    total = m.finir(lisse=True)
 
     v = Maillage("Vitrage", mats["banc_vitre"])
     # DEUX portes, donc UNE vitre laterale par cote, et un montant arriere
@@ -541,7 +722,7 @@ def voiture_3(mats) -> int:
     d.boite(0.32, 2.26, 0.30, 0.50, 2.42, 0.42, 0.5)              # echappement
     for sx in (-1, 1):
         for sy in ESSIEUX_MC:
-            _passage_de_roue(d, sx * 0.935, sy, 0.37, sx * 0.16)
+            _passage_de_roue(d, sx * 0.945, sy, 0.37, sx * 0.17)
     total += d.finir()
 
     f = Maillage("Feux", mats["feu_avant"])
@@ -557,8 +738,8 @@ def voiture_3(mats) -> int:
     jantes = Maillage("Jantes", mats["banc_jante_rouge"])
     for sx in (-DEMI_VOIE_MC, DEMI_VOIE_MC):
         for sy in ESSIEUX_MC:
-            _roue(pneus, jantes, sx, sy, 0.37, 0.22, 12)
-    return total + pneus.finir() + jantes.finir()
+            _roue(pneus, jantes, sx, sy, 0.37, 0.22, 16)
+    return total + pneus.finir(lisse=True) + jantes.finir()
 
 
 # --------------------------------------------------------------------- sortie
@@ -574,7 +755,7 @@ MODELES = [
     ("banc_voiture_2", voiture_2, ["banc_tole_bleue", "banc_vitre",
                                    "banc_jante", "pneu", "metal_sombre",
                                    "feu_avant", "feu_arriere"]),
-    ("banc_voiture_3", voiture_3, ["banc_tole_rouge", "banc_tole_creme",
+    ("banc_voiture_3", voiture_3, ["banc_tole_monte_carlo",
                                    "banc_vitre", "banc_jante_rouge", "pneu",
                                    "metal", "metal_sombre",
                                    "feu_avant", "feu_arriere"]),

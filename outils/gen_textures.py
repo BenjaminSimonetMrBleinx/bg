@@ -182,6 +182,37 @@ def banc_toit(u: float, v: float):
     return (g, g * 0.98, g * 0.94)
 
 
+def banc_carrosserie_deux_tons(base, creme=(206, 196, 168)):
+    """Tole peinte AVEC sa bande de bas de caisse.
+
+    La bande etait un ruban de geometrie colle sur le flanc : elle formait une
+    planche en saillie qui ne suivait pas le galbe. Depuis que les coordonnees
+    de texture suivent la HAUTEUR reelle du point, elle se peint — et elle
+    epouse alors la carrosserie exactement, quel que soit son profil.
+
+    C'est la regle generale de ce projet, appliquee une fois de plus : ce qui
+    peut vivre dans une texture ne doit pas vivre en faces.
+    """
+    r, g, b = base
+    cr, cg, cb = creme
+    def fn(u: float, v: float):
+        n = hache(int(u * 340), int(v * 340))
+        # v = 0 EST LE HAUT DE L'IMAGE, et le haut de l'image tombe en bas de
+        # la voiture : la ligne 0 d'un PNG est sa ligne superieure, alors que
+        # l'UV compte depuis le bas. Premiere version : la bande creme s'est
+        # retrouvee sur le TOIT. Le sens se verifie sur une image, il ne se
+        # deduit pas.
+        if v > 0.85:                                  # bas de caisse creme
+            return (cr + n * 8, cg + n * 8, cb + n * 8)
+        if v > 0.825:                                 # jonc chrome
+            return (186 + n * 14, 188 + n * 14, 192 + n * 14)
+        ciel = 1.16 - v * 0.36
+        ligne = 0.90 if 0.565 < v < 0.60 else 1.0
+        k = ciel * ligne
+        return (r * k + n * 6, g * k + n * 6, b * k + n * 6)
+    return fn
+
+
 def banc_carrosserie(base):
     """Tole peinte : degrade vertical, ligne de caisse, grain fin.
 
@@ -1140,6 +1171,9 @@ def main() -> None:
                     ("banc_jante_rouge", banc_jante_rouge)]:
         ecrire_png(dossier / f"{nom}.png", d, d, rendre(d, d, fn))
         faits.append(f"{nom}.png")
+    ecrire_png(dossier / "banc_tole_monte_carlo.png", d, d,
+               rendre(d, d, banc_carrosserie_deux_tons((156, 44, 36))))
+    faits.append("banc_tole_monte_carlo.png")
     for nom, base in [("banc_tole_bleue", (54, 78, 128)),
                       ("banc_tole_rouge", (146, 52, 44)),
                       ("banc_tole_creme", (196, 186, 156))]:
