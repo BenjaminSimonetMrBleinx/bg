@@ -89,9 +89,14 @@ références, pas une vue de rue sans deux ou trois câbles en biais dans le cie
 ce sont les seules lignes obliques d'un décor fait de verticales, et c'est
 exactement pour ça qu'on les remarque.
 
+**La rue a trois matières au lieu de deux.** Entre la bordure et le trottoir
+il y a maintenant une **banquette de gravier** d'un mètre, comme là-bas, et un
+**caniveau en béton** au pied de la bordure. La chaussée et le trottoir se
+touchaient sur une arête sans épaisseur.
+
 À essayer : marche dans une rue des Hauteurs et regarde les maisons de trois
 quarts, avec le soleil de côté — c'est là que les creux se voient. Puis
-regarde en l'air.
+regarde en l'air, et enfin par terre au bord de la chaussée.
 
 > Mesuré après tout ça : **57 images/seconde, zéro image ratée**, 157 Mo.
 

@@ -1475,12 +1475,44 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
             x1, y1 = ox + BLOC + TROTTOIR, oy + BLOC + TROTTOIR
             t = TROTTOIR
 
-            # dessus du trottoir : anneau en quatre bandes
-            for a, b, c, d in [
-                (x0, y0, x1, y0 + t), (x0, y1 - t, x1, y1),
-                (x0, y0 + t, x0 + t, y1 - t), (x1 - t, y0 + t, x1, y1 - t),
+            # LE TROTTOIR N'EST PAS D'UN SEUL TENANT.
+            #
+            # Sur les references d'Albuquerque, entre la bordure et le trottoir
+            # il y a une BANQUETTE — une bande de gravier d'un metre, parfois
+            # d'herbe seche. Le trottoir betonne ne commence qu'apres.
+            #
+            # Ca ne coute qu'une dalle de plus par cote, et ca change beaucoup :
+            # la rue cesse d'etre deux aplats — asphalte, beton — pour en avoir
+            # trois, dont un chaud. C'est aussi ce qui met de la distance entre
+            # la chaussee et les pietons, comme la-bas.
+            banq = 1.0
+            for a, b, c, d, sens in [
+                (x0, y0, x1, y0 + t, "y-"), (x0, y1 - t, x1, y1, "y+"),
+                (x0, y0 + t, x0 + t, y1 - t, "x-"),
+                (x1 - t, y0 + t, x1, y1 - t, "x+"),
             ]:
-                dalle(m["trottoir"], a, b, c, d, H_TROTTOIR, TUILE_SOL)
+                if sens == "y-":
+                    dalle(m["desert"], a, b, c, b + banq, H_TROTTOIR, TUILE_SOL)
+                    dalle(m["trottoir"], a, b + banq, c, d, H_TROTTOIR, TUILE_SOL)
+                elif sens == "y+":
+                    dalle(m["desert"], a, d - banq, c, d, H_TROTTOIR, TUILE_SOL)
+                    dalle(m["trottoir"], a, b, c, d - banq, H_TROTTOIR, TUILE_SOL)
+                elif sens == "x-":
+                    dalle(m["desert"], a, b, a + banq, d, H_TROTTOIR, TUILE_SOL)
+                    dalle(m["trottoir"], a + banq, b, c, d, H_TROTTOIR, TUILE_SOL)
+                else:
+                    dalle(m["desert"], c - banq, b, c, d, H_TROTTOIR, TUILE_SOL)
+                    dalle(m["trottoir"], a, b, c - banq, d, H_TROTTOIR, TUILE_SOL)
+
+            # LE CANIVEAU : une bande de beton au pied de la bordure, sur la
+            # chaussee. Toutes les rues des references en ont un, et c'est lui
+            # qui dessine le bord de la route — sans lui, l'asphalte et la
+            # bordure se touchent sur une arete sans epaisseur.
+            cani = 0.42
+            dalle(m["beton"], x0 - cani, y0 - cani, x1 + cani, y0, Z_ROUTE + 0.004, 2.0)
+            dalle(m["beton"], x0 - cani, y1, x1 + cani, y1 + cani, Z_ROUTE + 0.004, 2.0)
+            dalle(m["beton"], x0 - cani, y0, x0, y1, Z_ROUTE + 0.004, 2.0)
+            dalle(m["beton"], x1, y0, x1 + cani, y1, Z_ROUTE + 0.004, 2.0)
 
             # bordure : quatre faces verticales, pas une ligne peinte
             #
