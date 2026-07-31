@@ -149,7 +149,7 @@ func _preparer_ambiance() -> void:
 func ambiance(nom: String = "") -> void:
 	if _ambiance == null:
 		return
-	var flux: AudioStream = ambiances_interieures.get(nom, ambiance_exterieure)
+	var flux: AudioStream = ambiances_interieures.get(nom, _ambiance_de_zone(nom))
 	if flux == _ambiance.stream:
 		return
 	if _fondu != null and _fondu.is_valid():
@@ -160,6 +160,40 @@ func ambiance(nom: String = "") -> void:
 		_ambiance.stream = flux
 		_ambiance.play())
 	_fondu.tween_property(_ambiance, "volume_db", 0.0, 0.6)
+
+
+# L'AMBIANCE D'UNE ZONE SE DECLARE EN DEPOSANT UN FICHIER.
+#
+# Les interieurs sont cables dans la scene, un par maison. Les zones — le
+# desert, et celles qui viendront — n'ont pas de noeud ou les declarer, et
+# ajouter une entree dans l'inspecteur a chaque nouvelle carte est le genre
+# d'etape qu'on oublie une fois sur deux.
+#
+# La convention remplace le cablage : un fichier nomme d'apres la zone lui
+# donne son ambiance. Rien a brancher, rien a declarer. Une zone sans fichier
+# garde l'ambiance exterieure, ce qui est le bon defaut.
+#
+# L'ambiance du desert etait livree depuis le 27/07 et n'avait jamais ete
+# branchee, faute exactement de cet endroit ou la mettre.
+const AMBIANCE_DE_ZONE := "res://assets/sons/ambiance/amb_zone_%s.ogg"
+
+var _zones: Dictionary = {}
+
+
+func _ambiance_de_zone(nom: String) -> AudioStream:
+	if nom == "":
+		return ambiance_exterieure
+	if _zones.has(nom):
+		return _zones[nom]
+	var chemin := AMBIANCE_DE_ZONE % nom
+	var flux: AudioStream = null
+	if ResourceLoader.exists(chemin):
+		flux = ResourceLoader.load(chemin) as AudioStream
+		if flux is AudioStreamOggVorbis:
+			(flux as AudioStreamOggVorbis).loop = true
+		print("AUDIO : ambiance de zone '%s' -> %s" % [nom, chemin.get_file()])
+	_zones[nom] = flux if flux != null else ambiance_exterieure
+	return _zones[nom]
 
 
 ## Retrouve le systeme audio depuis n'importe quel noeud de la scene.

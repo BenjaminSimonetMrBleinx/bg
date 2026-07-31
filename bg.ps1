@@ -565,7 +565,8 @@ switch ($Commande) {
             @{ cle = 'chocs'; nom = 'chocs de la voiture'
                script = 'res://verifs/test_chocs.gd'
                couvre = @('systemes/vehicule', 'systemes/audio', 'systemes/controleur',
-                          'donnees/sons', 'assets/sons', 'systemes/reglages') }
+                          'donnees/sons', 'assets/sons', 'systemes/reglages',
+                          'systemes/garee', 'systemes/circulant') }
             @{ cle = 'temps'; nom = 'cycle jour et nuit'
                script = 'res://verifs/test_temps.gd'
                couvre = @('systemes/temps', 'systemes/reglages', 'systemes/ville',
@@ -573,7 +574,8 @@ switch ($Commande) {
             @{ cle = 'desert'; nom = 'aller au desert'
                script = 'res://verifs/test_desert.gd'
                couvre = @('systemes/desert', 'systemes/passage', 'systemes/controleur',
-                          'gen_desert', 'assets/desert', 'systemes/hud') }
+                          'gen_desert', 'assets/desert', 'systemes/hud',
+                          'systemes/audio', 'assets/sons/ambiance') }
             @{ cle = 'telephone'; nom = 'le telephone'
                script = 'res://verifs/test_telephone.gd'
                couvre = @('systemes/telephone', 'systemes/controleur',
@@ -597,7 +599,8 @@ switch ($Commande) {
                couvre = @('systemes/roue', 'systemes/equipement', 'donnees/outils', 'gen_objets', 'scenes/joueur') }
             @{ cle = 'decor'; nom = 'mobilier urbain'
                script = 'res://verifs/test_decor.gd'
-               couvre = @('systemes/ville', 'gen_decor', 'gen_ville', 'systemes/maison') }
+               couvre = @('systemes/ville', 'gen_decor', 'gen_ville', 'systemes/maison',
+                          'systemes/garee', 'assets/decor') }
             @{ cle = 'jour'; nom = 'jour et nuit'
                script = 'res://verifs/test_jour.gd'
                couvre = @('rendu/rendu_ps2', 'systemes/reglages', 'systemes/ville', 'gen_textures', 'donnees/monde') }
@@ -612,7 +615,8 @@ switch ($Commande) {
                couvre = @('systemes/camera_poursuite', 'systemes/controleur') }
             @{ cle = 'foule'; nom = 'passants'
                script = 'res://verifs/test_foule.gd'
-               couvre = @('systemes/foule', 'systemes/pieton', 'systemes/silhouette', 'gen_ville') }
+               couvre = @('systemes/foule', 'systemes/pieton', 'systemes/silhouette',
+                          'gen_ville', 'systemes/demarche', 'assets/personnages') }
         )
 
         # Toute modification de la scene principale ou des reglages touche

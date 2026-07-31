@@ -528,6 +528,11 @@ func _franchir(p: Passage, au_volant: bool) -> void:
 
 	await _noircir(0.0)
 	_transition = false
+	# L'ambiance suit la zone : le desert n'a pas la meme nappe que la rue, et
+	# c'est ce qui fait qu'on entend qu'on a change d'endroit avant de le voir.
+	# Une zone sans fichier d'ambiance garde celle du dehors.
+	if _audio != null:
+		_audio.ambiance(p.zone)
 	if p.zone != "" and _scenario != null:
 		_scenario.zone_atteinte(p.zone)
 
