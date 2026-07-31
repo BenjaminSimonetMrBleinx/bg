@@ -172,6 +172,15 @@
    ]
   },
 
+  "super_ilot": {
+   "quoi": "Un super-ilot : deux parcelles reunies, la rue entre elles supprimee, et un entrepot avec son parking a la place. Ce qu'on regarde : est-ce que le damier est casse sans que la trame devienne illisible.",
+   "fin": 70,
+   "etapes": [
+    {"image": 20, "appeler": "Temps", "methode": "regler", "argument": 11},
+    {"image": 30, "camera": [180, 46.0, -150], "vise": [230, 6.0, -230]}
+   ]
+  },
+
   "passants": {
    "quoi": "Les passants sur un trottoir, de pres. Ce qu'on regarde : est-ce que ce sont bien les figurants du pack et pas des boites, est-ce qu'ils MARCHENT — la demarche de Walter leur a ete reportee, leur pack n'en avait aucune — et est-ce qu'ils se tiennent droit sans jambes en helice.",
    "fin": 420,

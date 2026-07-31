@@ -89,6 +89,13 @@ références, pas une vue de rue sans deux ou trois câbles en biais dans le cie
 ce sont les seules lignes obliques d'un décor fait de verticales, et c'est
 exactement pour ça qu'on les remarque.
 
+**La ville n'est plus un damier parfait.** Une rue sur cinq environ a disparu :
+les deux îlots qu'elle séparait n'en font plus qu'un, et cette grande parcelle
+porte **une seule chose** — un entrepôt et son parking, une aire de
+stationnement nue, ou une friche clôturée. C'est ce que montrent les vues
+aériennes d'Albuquerque : la trame reste lisible, mais elle n'est jamais
+régulière.
+
 **La rue a trois matières au lieu de deux.** Entre la bordure et le trottoir
 il y a maintenant une **banquette de gravier** d'un mètre, comme là-bas, et un
 **caniveau en béton** au pied de la bordure. La chaussée et le trottoir se

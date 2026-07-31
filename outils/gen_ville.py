@@ -117,6 +117,12 @@ QUARTIERS = {
                 ("strip_mall", 10), ("parc", 6)],
 }
 
+# Une rue sur combien disparait, en moyenne. A 0,22, environ un ilot sur cinq
+# se retrouve fusionne avec son voisin de l'est — assez pour casser le damier,
+# assez peu pour que la trame reste lisible et qu'on s'y repere.
+PROBA_FUSION = 0.22
+
+
 # LA FRANGE : la derniere rangee d'ilots, quel que soit son quartier.
 #
 # Presque pas de bati. C'est ce qui fait qu'on sent la ville se terminer au
@@ -478,7 +484,7 @@ def mobilier_de_cote(ox: float, oy: float, cote: str,
 
 
 def voitures_de_cote(ox: float, oy: float, cote: str,
-                     rng: random.Random) -> list[dict]:
+                     rng: random.Random, large: float = BLOC) -> list[dict]:
     """Voitures garees le long du trottoir, nez dans le sens de la rue."""
     bord = TROTTOIR + 1.15          # a un metre du trottoir, sur la chaussee
     objets: list[dict] = []
@@ -507,7 +513,7 @@ def voitures_de_cote(ox: float, oy: float, cote: str,
 
 
 def pietons_de_cote(ox: float, oy: float, cote: str,
-                    rng: random.Random) -> list[dict]:
+                    rng: random.Random, large: float = BLOC) -> list[dict]:
     """Trajets de passants : un segment de trottoir, parcouru en aller-retour.
 
     Le trajet est au MILIEU du trottoir, entre les lampadaires cote bordure
@@ -574,7 +580,34 @@ def plan_des_ilots(n: int, graine: int) -> dict:
                     choisi = nom
                     break
             plan[(bx, by)] = (choisi, quartier)
-    return plan
+
+    # LES SUPER-ILOTS. Une rue sur quelques-unes est SUPPRIMEE, et les deux
+    # ilots qu'elle separait n'en font plus qu'un.
+    #
+    # C'est ce que montrent les vues aeriennes d'Albuquerque : le damier n'est
+    # jamais regulier. Des parcelles doubles portent un entrepot, un parking,
+    # une ecole ; la trame reste lisible mais elle n'est pas repetitive.
+    #
+    # On fusionne SEULEMENT vers l'est, et jamais deux fois de suite : une
+    # fusion en croix demanderait de supprimer un carrefour, ce qui casse le
+    # graphe des rues — les voitures et les pietons y circulent.
+    fusions = {}
+    for by in range(n):
+        bx = 0
+        while bx < n - 1:
+            local = random.Random((graine * 7717) ^ (bx * 313 + by * 29))
+            # Jamais l'ilot de depart, ni la frange : on ne veut pas d'un
+            # super-ilot au bord de la carte, ou il donnerait sur le desert.
+            if (bx, by) != (0, 0) and (bx + 1, by) != (0, 0) \
+                    and not est_frange(bx, by, n) \
+                    and not est_frange(bx + 1, by, n) \
+                    and local.random() < PROBA_FUSION:
+                fusions[(bx, by)] = "est"
+                plan[(bx + 1, by)] = ("absorbe", plan[(bx + 1, by)][1])
+                bx += 2
+                continue
+            bx += 1
+    return plan, fusions
 
 
 def est_frange(bx: int, by: int, n: int) -> bool:
@@ -937,6 +970,91 @@ def maisonnette(m: dict, x0: float, y0: float, largeur: float, profondeur: float
                  [(0, 0), (3, 0), (3, 0.3), (0, 0.3)])
 
 
+def parcelle_double(m: dict, ox: float, oy: float, largeur: float,
+                    rng: random.Random) -> list:
+    """Le contenu d'un super-ilot : un entrepot et son parking.
+
+    C'est ce que portent les parcelles doubles sur les vues aeriennes
+    d'Albuquerque — une grande chose basse et une aire de stationnement, pas
+    deux rangees d'immeubles. Rio Sud en aura besoin pour son laboratoire ;
+    d'ici la, elles cassent le damier, ce qui est deja leur raison d'etre.
+    """
+    # TROIS SORTES, sinon six super-ilots identiques refont un motif — on
+    # aurait remplace un damier par un autre.
+    #
+    #   entrepot   une grande chose basse et son parking
+    #   parking    une aire nue, comme il y en a des dizaines la-bas
+    #   friche     un terrain vague double, cloture
+    sorte = tirer(rng, [("entrepot", 46), ("parking", 32), ("friche", 22)])
+
+    if sorte == "friche":
+        dalle(m["desert"], ox, oy, ox + largeur, oy + BLOC, 0.02, TUILE_SOL)
+        objets: list = []
+        for _ in range(22):
+            objets.append({
+                "type": tirer(rng, [("benne", 22), ("benne_verte", 14),
+                                    ("cactus", 26), ("buisson", 20),
+                                    ("rocher", 18)]),
+                "pos": [round(rng.uniform(ox + 3, ox + largeur - 3), 2), 0.03,
+                        round(-rng.uniform(oy + 3, oy + BLOC - 3), 2)],
+                "angle": round(rng.uniform(0.0, 6.28), 3),
+            })
+        return objets
+
+    if sorte == "parking":
+        dalle_uv(m["parking"], ox, oy, ox + largeur, oy + BLOC, 0.03,
+                 PLACE_LARGEUR, PLACE_PROFONDEUR)
+        objets = []
+        rangees = max(1, int(BLOC / PLACE_PROFONDEUR))
+        places = int(largeur / PLACE_LARGEUR)
+        for r in range(rangees):
+            cap = math.pi / 2.0 if r % 2 == 0 else -math.pi / 2.0
+            y = oy + (r + 0.5) * PLACE_PROFONDEUR
+            for pl in range(places):
+                if rng.random() > 0.20:
+                    continue
+                objets.append({
+                    "type": "garee_" + tirer(rng, MODELES_GAREES),
+                    "pos": [round(ox + (pl + 0.5) * PLACE_LARGEUR, 2), 0.03,
+                            round(-y, 2)],
+                    "angle": round(cap + rng.uniform(-0.04, 0.04), 3),
+                })
+        return objets
+
+    profond = BLOC * 0.62
+    dalle_uv(m["parking"], ox, oy, ox + largeur, oy + BLOC - profond, 0.03,
+             PLACE_LARGEUR, PLACE_PROFONDEUR)
+    dalle(m["desert"], ox, oy + BLOC - profond, ox + largeur, oy + BLOC, 0.02,
+          TUILE_SOL)
+
+    # L'entrepot : long, bas, aveugle. Une seule porte de quai, et un parapet.
+    y0 = oy + BLOC - profond + 2.0
+    h = 6.4
+    boite(m["bardage"], ox + 3.0, y0, ox + largeur - 3.0, oy + BLOC - 3.0,
+          0.0, h, 5.0, 6.0)
+    parapet(m["beton"], ox + 3.0, y0, ox + largeur - 3.0, oy + BLOC - 3.0, h)
+    for k in range(3):
+        px = ox + largeur * (0.24 + k * 0.22)
+        boite(m["porte"], px, y0 - 0.10, px + 3.2, y0 + 0.06, 0.0, 3.6, 2.0, 2.0)
+
+    objets: list = []
+    rangees = max(1, int((BLOC - profond) / PLACE_PROFONDEUR))
+    places = int(largeur / PLACE_LARGEUR)
+    for r in range(rangees):
+        cap = math.pi / 2.0 if r % 2 == 0 else -math.pi / 2.0
+        y = oy + (r + 0.5) * PLACE_PROFONDEUR
+        for pl in range(places):
+            if rng.random() > 0.22:
+                continue
+            objets.append({
+                "type": "garee_" + tirer(rng, MODELES_GAREES),
+                "pos": [round(ox + (pl + 0.5) * PLACE_LARGEUR, 2), 0.03,
+                        round(-y, 2)],
+                "angle": round(cap + rng.uniform(-0.04, 0.04), 3),
+            })
+    return objets
+
+
 def parcelle_pavillonnaire(m: dict, ox: float, oy: float,
                            rng: random.Random) -> list[dict]:
     """Un ilot de pavillons : douze maisons, leurs allees, leurs murets.
@@ -1138,7 +1256,7 @@ def parcelle_strip_mall(m: dict, ox: float, oy: float,
     return objets
 
 
-def graphe_des_rues(n: int) -> dict:
+def graphe_des_rues(n: int, fusions: dict = None) -> dict:
     """Le reseau routier : des carrefours, et des troncons entre eux.
 
     POURQUOI UN GRAPHE, ET PAS DES SEGMENTS.
@@ -1168,12 +1286,23 @@ def graphe_des_rues(n: int) -> dict:
             noeuds.append([round(i * PAS + axe, 3), 0.0,
                            round(-(j * PAS + axe), 3)])
 
+    # LES RUES SUPPRIMEES SORTENT AUSSI DU GRAPHE.
+    #
+    # Sans ca, voitures et pietons continueraient d'emprunter une rue qui
+    # n'existe plus — c'est-a-dire de traverser l'entrepot bati a sa place. Le
+    # graphe et la geometrie doivent etre supprimes ENSEMBLE : c'est le genre
+    # d'ecart qui ne provoque aucune erreur et qu'on ne voit qu'en regardant
+    # une voiture passer a travers un mur.
+    fusions = fusions or {}
+    supprimees = {(bx + 1, by) for (bx, by), sens in fusions.items()
+                  if sens == "est"}
+
     aretes: list[list[int]] = []
     for i in range(n + 1):
         for j in range(n + 1):
             if i < n:
                 aretes.append([index[(i, j)], index[(i + 1, j)]])
-            if j < n:
+            if j < n and (i, j) not in supprimees:
                 aretes.append([index[(i, j)], index[(i, j + 1)]])
 
     return {
@@ -1438,7 +1567,7 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
     # gabarit.
     lieux: list[dict] = []
     types: dict[str, int] = {}
-    plan = plan_des_ilots(n, graine)
+    plan, fusions = plan_des_ilots(n, graine)
 
     # --- chaussees et carrefours -------------------------------------------
     # Corridor k : [k*PAS, k*PAS + COULOIR]. Chaussee au centre : +TROTTOIR.
@@ -1455,6 +1584,9 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
         rx0 = i * PAS + TROTTOIR
         rx1 = rx0 + ROUTE
         for j in range(n):                       # segments verticaux
+            # La rue qui separait deux ilots fusionnes n'existe pas.
+            if fusions.get((i - 1, j)) == "est":
+                continue
             sy0 = j * PAS + TROTTOIR + ROUTE
             sy1 = (j + 1) * PAS + TROTTOIR
             chaussee(m["route"], rx0, sy0, rx1, sy1, "y")
@@ -1471,8 +1603,19 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
         for by in range(n):
             ox = COULOIR + bx * PAS
             oy = COULOIR + by * PAS
+            # LE TYPE DE L'ILOT. L'ilot (0, 0) reste bati quoi qu'il arrive :
+            # c'est celui qui porte les maisons de Walter et de Jesse, et le
+            # point de depart de la partie donne dessus.
+            type_ilot, quartier = plan[(bx, by)]
+            # L'ilot absorbe par son voisin de l'ouest n'existe plus.
+            if type_ilot == "absorbe":
+                continue
+            # L'ilot qui a absorbe le sien s'etend sur toute la largeur, la
+            # rue disparue comprise.
+            double = fusions.get((bx, by)) == "est"
+            bloc_l = (BLOC * 2.0 + COULOIR) if double else BLOC
             x0, y0 = ox - TROTTOIR, oy - TROTTOIR
-            x1, y1 = ox + BLOC + TROTTOIR, oy + BLOC + TROTTOIR
+            x1, y1 = ox + bloc_l + TROTTOIR, oy + BLOC + TROTTOIR
             t = TROTTOIR
 
             # LE TROTTOIR N'EST PAS D'UN SEUL TENANT.
@@ -1531,11 +1674,32 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
                 nu, nv = lg / TUILE_SOL, H_TROTTOIR / TUILE_SOL
                 m["trottoir"].face(pts, [(0, 0), (nu, 0), (nu, nv), (0, nv)])
 
-            # LE TYPE DE L'ILOT. L'ilot (0, 0) reste bati quoi qu'il arrive :
-            # c'est celui qui porte les maisons de Walter et de Jesse, et le
-            # point de depart de la partie donne dessus.
-            type_ilot, quartier = plan[(bx, by)]
             types[type_ilot] = types.get(type_ilot, 0) + 1
+
+            if double:
+                # UN SUPER-ILOT NE SE MEUBLE PAS COMME DEUX PETITS. Sur les
+                # vues aeriennes, une parcelle double porte toujours UNE seule
+                # chose — un entrepot, un parking, une ecole — jamais deux
+                # rangees d'immeubles. C'est ce qui la fait lire comme un
+                # accident dans la trame plutot que comme une erreur.
+                for cote in ("sud", "nord", "ouest", "est"):
+                    decor += voitures_de_cote(ox, oy, cote, rng, bloc_l)
+                    pietons += pietons_de_cote(ox, oy, cote, rng, bloc_l)
+                decor += parcelle_double(m, ox, oy, bloc_l, rng)
+                nb = max(2, int(bloc_l / ESPACEMENT_LAMPES))
+                for k in range(nb):
+                    f = (k + 0.5) / nb
+                    lampes += [
+                        (x0 + f * (x1 - x0), y0 + 0.9, 0.0, -1.0),
+                        (x0 + f * (x1 - x0), y1 - 0.9, 0.0, 1.0),
+                    ]
+                for k in range(2):
+                    f = (k + 0.5) / 2
+                    lampes += [
+                        (x0 + 0.9, y0 + f * (y1 - y0), -1.0, 0.0),
+                        (x1 - 0.9, y0 + f * (y1 - y0), 1.0, 0.0),
+                    ]
+                continue
 
             if type_ilot != "bati":
                 # Les rues autour existent toujours : trottoirs, lampadaires,
@@ -1722,7 +1886,7 @@ def construire(n: int, rng: random.Random, mats: dict, graine: int) -> dict:
         })
 
     return {"etendue": etendue, "lampes": lampes, "decor": decor,
-            "pietons": pietons, "lieux": lieux, "graphe": graphe_des_rues(n),
+            "pietons": pietons, "lieux": lieux, "graphe": graphe_des_rues(n, fusions),
             "faces": faces, "types": types,
             "quartiers": {quartier_de(bx, n): [
                 round(COULOIR + bx * PAS - COULOIR / 2.0, 1),
