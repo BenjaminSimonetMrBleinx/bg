@@ -285,8 +285,7 @@ def coque(m, sections, tuile=1.0) -> None:
 
 def voiture_1(mats) -> int:
     """Niveau 1 : la voiture d'aujourd'hui. Deux boites et quatre roues."""
-    m = Maillage("Caisse", mats["carrosserie_bleu"]
-                 if "carrosserie_bleu" in mats else mats["banc_tole_bleue"])
+    m = Maillage("Caisse", mats["banc_tole_bleue"])
     m.boite(-0.93, -2.30, 0.42, 0.93, 2.05, 1.02, 2.0)
     m.boite(-0.82, -0.85, 1.02, 0.82, 0.95, 1.48, 2.0)
     total = m.finir()
@@ -297,76 +296,24 @@ def voiture_1(mats) -> int:
     return total + r.finir()
 
 
-def voiture_2(mats) -> int:
-    """Niveau 2 : le galbe.
+def _roue(pneus, jantes, x, y, rayon, largeur, cotes) -> None:
+    """Une roue : bande de roulement NOIRE, flancs a la jante.
 
-    La caisse est construite par sections : le capot plonge vers l'avant, le
-    pavillon retrecit, le coffre redescend. Passages de roue creuses,
-    pare-chocs, retroviseurs, feux en relief.
+    LES DEUX MATIERES SONT SEPAREES, et c'est ce qui manquait. La bande de
+    roulement portait la texture de jante : le pneu ressortait gris clair vu de
+    trois quarts. Une roue dont le caoutchouc ne se lit pas comme du caoutchouc
+    casse toute la voiture — c'est la piece qu'on regarde en premier.
     """
-    m = Maillage("Caisse", mats["banc_tole_bleue"])
-    coque(m, [
-        (-2.35, 0.72, 0.46, 0.82),      # nez
-        (-1.85, 0.90, 0.40, 0.94),
-        (-0.95, 0.94, 0.38, 1.06),      # base du pare-brise
-        (-0.35, 0.92, 0.38, 1.52),      # pavillon avant
-        (0.75, 0.90, 0.38, 1.52),       # pavillon arriere
-        (1.35, 0.92, 0.40, 1.14),
-        (2.10, 0.76, 0.46, 0.96),       # poupe
-    ], tuile=1.4)
-    total = m.finir()
-
-    v = Maillage("Vitrage", mats["banc_vitre"])
-    for cote in (-1, 1):
-        v.face([(cote * 0.93, -0.34, 1.06), (cote * 0.91, 0.74, 1.06),
-                (cote * 0.89, 0.74, 1.48), (cote * 0.91, -0.34, 1.48)][::cote])
-    v.face([(-0.9, -0.95, 1.02), (0.9, -0.95, 1.02),
-            (0.86, -0.36, 1.50), (-0.86, -0.36, 1.50)][::-1])   # pare-brise
-    v.face([(-0.86, 0.76, 1.50), (0.86, 0.76, 1.50),
-            (0.9, 1.32, 1.10), (-0.9, 1.32, 1.10)][::-1])       # lunette
-    total += v.finir()
-
-    p = Maillage("Pare-chocs", mats["metal_sombre"])
-    p.boite(-0.80, -2.48, 0.42, 0.80, -2.30, 0.72, 1.0)
-    p.boite(-0.80, 2.08, 0.44, 0.80, 2.24, 0.74, 1.0)
-    for sx in (-0.99, 0.86):                                   # retroviseurs
-        p.boite(sx, -0.42, 1.06, sx + 0.13, -0.20, 1.22, 0.6)
-    total += p.finir()
-
-    f = Maillage("Feux", mats["feu_avant"])
-    for sx in (-0.60, 0.34):
-        f.boite(sx, -2.38, 0.62, sx + 0.26, -2.32, 0.78, 0.5)
-    total += f.finir()
-    fa = Maillage("FeuxArriere", mats["feu_arriere"])
-    for sx in (-0.62, 0.36):
-        fa.boite(sx, 2.10, 0.66, sx + 0.26, 2.16, 0.86, 0.5)
-    total += fa.finir()
-
-    r = Maillage("Roues", mats["banc_jante"])
-    for sx in (-0.82, 0.82):
-        for sy in (-1.45, 1.30):
-            r.prisme(sx, sy, 0.0, 0.0, 0.34, 0.34, 8, 1.0)     # place tenante
-    r.finir()
-    rr = Maillage("Pneus", mats["banc_jante"])
-    for sx in (-0.80, 0.80):
-        for sy in (-1.45, 1.30):
-            _roue(rr, sx, sy, 0.34, 0.20, 8)
-    return total + rr.finir()
-
-
-def _roue(m, x, y, rayon, largeur, cotes) -> None:
-    """Une roue couchee sur l'axe X : disque exterieur, bande de roulement."""
     for signe in (-1, 1):
         pts = []
         for k in range(cotes):
             a = math.tau * k / cotes
             pts.append((x + signe * largeur / 2.0,
-                        y + math.cos(a) * rayon,
-                        rayon + math.sin(a) * rayon))
-        m.face(pts[::signe],
-               [(0.5 + 0.5 * math.cos(math.tau * k / cotes),
-                 0.5 + 0.5 * math.sin(math.tau * k / cotes))
-                for k in range(cotes)])
+                        y + math.cos(a) * rayon, rayon + math.sin(a) * rayon))
+        jantes.face(pts[::signe],
+                    [(0.5 + 0.5 * math.cos(math.tau * k / cotes),
+                      0.5 + 0.5 * math.sin(math.tau * k / cotes))
+                     for k in range(cotes)])
     for k in range(cotes):
         j = (k + 1) % cotes
         a1, a2 = math.tau * k / cotes, math.tau * j / cotes
@@ -377,73 +324,163 @@ def _roue(m, x, y, rayon, largeur, cotes) -> None:
         for a in (a2, a1):
             p.append((x + largeur / 2.0, y + math.cos(a) * rayon,
                       rayon + math.sin(a) * rayon))
-        m.face(p, [(0, 0), (1, 0), (1, 0.35), (0, 0.35)])
+        pneus.face(p, [(0, 0), (1, 0), (1, 0.3), (0, 0.3)])
 
 
-def voiture_3(mats) -> int:
-    """Niveau 3 : le detail de pres.
+def _passage_de_roue(m, x, y, rayon, profondeur) -> None:
+    """L'arche sombre au-dessus d'une roue.
 
-    Sections plus nombreuses, roues a douze cotes avec leur jante, calandre,
-    poignees, montants, echappement, bas de caisse. C'est le budget d'un
-    vehicule de heros sur PS2.
+    Une roue qui sort d'un flanc PLAT se lit comme une roue collee dessus.
+    Quelques faces sombres en arche, en retrait, donnent le creux : c'est le
+    detail qui separe une voiture d'un jouet, pour six faces.
     """
-    m = Maillage("Caisse", mats["banc_tole_rouge"])
-    coque(m, [
-        (-2.42, 0.58, 0.50, 0.72),
-        (-2.20, 0.76, 0.44, 0.84),
-        (-1.80, 0.92, 0.38, 0.96),
-        (-1.25, 0.95, 0.36, 1.02),
-        (-0.95, 0.95, 0.36, 1.08),
-        (-0.40, 0.93, 0.36, 1.54),
-        (0.40, 0.93, 0.36, 1.56),
-        (0.85, 0.92, 0.36, 1.46),
-        (1.40, 0.93, 0.38, 1.10),
-        (1.95, 0.86, 0.44, 0.98),
-        (2.18, 0.66, 0.50, 0.88),
-    ], tuile=1.2)
+    for k in range(6):
+        a1 = math.pi * (0.06 + 0.88 * k / 6.0)
+        a2 = math.pi * (0.06 + 0.88 * (k + 1) / 6.0)
+        p = []
+        for a in (a1, a2):
+            p.append((x, y + math.cos(a) * rayon * 1.20,
+                      rayon + math.sin(a) * rayon * 1.20))
+        for a in (a2, a1):
+            p.append((x - profondeur, y + math.cos(a) * rayon * 1.20,
+                      rayon + math.sin(a) * rayon * 1.20))
+        m.face(p, [(0, 0), (1, 0), (1, 0.4), (0, 0.4)])
+
+
+# LES PROPORTIONS COMPTENT PLUS QUE LE NOMBRE DE FACES.
+#
+# La premiere version avait une caisse basse et un pavillon long : ca donnait
+# un savon, et deux cent dix-huit faces n'y changeaient rien. Ceinture de
+# caisse a 1,05 m, pavillon a 1,52 m et COURT, porte-a-faux avant reduit :
+# c'est la silhouette d'une berline americaine des annees 2000.
+#
+# (y, demi_largeur, z_bas, z_haut)
+SECTIONS_2 = [
+    (-2.30, 0.66, 0.40, 0.92),
+    (-1.86, 0.88, 0.28, 1.00),
+    (-1.05, 0.94, 0.24, 1.08),
+    (-0.62, 0.92, 0.24, 1.50),
+    (0.62, 0.92, 0.24, 1.52),
+    (1.15, 0.94, 0.26, 1.18),
+    (1.90, 0.86, 0.34, 1.02),
+    (2.16, 0.68, 0.42, 0.94),
+]
+
+SECTIONS_3 = [
+    (-2.34, 0.60, 0.40, 0.86),
+    (-2.10, 0.80, 0.32, 0.94),
+    (-1.74, 0.90, 0.26, 0.99),
+    (-1.20, 0.95, 0.24, 1.06),
+    (-0.78, 0.95, 0.24, 1.16),
+    (-0.52, 0.93, 0.24, 1.50),
+    (0.34, 0.93, 0.24, 1.54),
+    (0.78, 0.93, 0.24, 1.44),
+    (1.22, 0.95, 0.26, 1.20),
+    (1.80, 0.90, 0.32, 1.06),
+    (2.14, 0.70, 0.42, 0.96),
+]
+
+# Les essieux, et la demi-voie. Les roues rentrent SOUS la caisse : 0,78 pour
+# une demi-largeur de 0,95, donc le flanc du pneu reste en retrait de la tole.
+# Elles debordaient, ce qui donnait quatre disques colles sur les cotes.
+ESSIEUX = (-1.42, 1.30)
+DEMI_VOIE = 0.78
+
+
+def voiture_2(mats) -> int:
+    """Niveau 2 : le galbe, et de vraies roues."""
+    m = Maillage("Caisse", mats["banc_tole_bleue"])
+    coque(m, SECTIONS_2, tuile=1.3)
     total = m.finir()
 
     v = Maillage("Vitrage", mats["banc_vitre"])
     for cote in (-1, 1):
-        v.face([(cote * 0.94, -0.38, 1.08), (cote * 0.94, 0.34, 1.08),
-                (cote * 0.92, 0.34, 1.52), (cote * 0.92, -0.38, 1.52)][::cote])
-        v.face([(cote * 0.94, 0.38, 1.08), (cote * 0.94, 0.82, 1.10),
-                (cote * 0.92, 0.82, 1.44), (cote * 0.92, 0.38, 1.50)][::cote])
-    v.face([(-0.92, -0.96, 1.04), (0.92, -0.96, 1.04),
-            (0.88, -0.42, 1.54), (-0.88, -0.42, 1.54)][::-1])
-    v.face([(-0.88, 0.86, 1.46), (0.88, 0.86, 1.46),
-            (0.92, 1.38, 1.08), (-0.92, 1.38, 1.08)][::-1])
+        v.face([(cote * 0.94, -0.58, 1.10), (cote * 0.94, 0.58, 1.10),
+                (cote * 0.94, 0.58, 1.46), (cote * 0.94, -0.58, 1.46)][::cote])
+    v.face([(-0.90, -1.02, 1.06), (0.90, -1.02, 1.06),
+            (0.88, -0.60, 1.50), (-0.88, -0.60, 1.50)][::-1])
+    v.face([(-0.88, 0.64, 1.52), (0.88, 0.64, 1.52),
+            (0.92, 1.12, 1.18), (-0.92, 1.12, 1.18)][::-1])
     total += v.finir()
 
-    d = Maillage("Details", mats["metal_sombre"])
-    d.boite(-0.84, -2.56, 0.44, 0.84, -2.38, 0.76, 1.0)        # pare-chocs av
-    d.boite(-0.84, 2.14, 0.46, 0.84, 2.30, 0.78, 1.0)          # pare-chocs ar
-    for sx in (-0.96, 0.96):                                   # bas de caisse
-        d.boite(sx - 0.06, -1.30, 0.30, sx + 0.06, 1.20, 0.44, 1.5)
-    for sx in (-1.02, 0.90):                                   # retroviseurs
-        d.boite(sx, -0.46, 1.08, sx + 0.14, -0.22, 1.26, 0.6)
-    for sx in (-0.97, 0.93):                                   # poignees
-        d.boite(sx, -0.10, 1.00, sx + 0.05, 0.16, 1.08, 0.4)
-    d.boite(0.30, 2.26, 0.30, 0.52, 2.42, 0.44, 0.5)           # echappement
-    for k in range(6):                                          # calandre
-        x = -0.52 + k * 0.19
-        d.boite(x, -2.50, 0.60, x + 0.12, -2.44, 0.78, 0.4)
+    d = Maillage("Sombre", mats["metal_sombre"])
+    # Le pare-chocs epouse la caisse au lieu de la deborder : un bloc plus
+    # large que la voiture se lit comme une piece rapportee.
+    d.boite(-0.74, -2.36, 0.40, 0.74, -2.30, 0.60, 1.0)
+    d.boite(-0.74, 2.12, 0.44, 0.74, 2.18, 0.64, 1.0)
+    for sx in (-0.99, 0.87):
+        d.boite(sx, -0.66, 1.12, sx + 0.12, -0.46, 1.26, 0.6)
+    for sx in (-1, 1):
+        for sy in ESSIEUX:
+            _passage_de_roue(d, sx * 0.945, sy, 0.34, sx * 0.16)
     total += d.finir()
 
     f = Maillage("Feux", mats["feu_avant"])
-    for sx in (-0.72, 0.42):
-        f.boite(sx, -2.46, 0.62, sx + 0.30, -2.38, 0.80, 0.5)
+    for sx in (-0.58, 0.32):
+        f.boite(sx, -2.34, 0.66, sx + 0.26, -2.28, 0.82, 0.5)
     total += f.finir()
     fa = Maillage("FeuxArriere", mats["feu_arriere"])
-    for sx in (-0.74, 0.44):
-        fa.boite(sx, 2.18, 0.66, sx + 0.30, 2.26, 0.90, 0.5)
+    for sx in (-0.60, 0.34):
+        fa.boite(sx, 2.12, 0.72, sx + 0.26, 2.18, 0.92, 0.5)
     total += fa.finir()
 
-    r = Maillage("Roues", mats["banc_jante"])
-    for sx in (-0.80, 0.80):
-        for sy in (-1.48, 1.32):
-            _roue(r, sx, sy, 0.35, 0.24, 12)
-    return total + r.finir()
+    pneus = Maillage("Pneus", mats["pneu"])
+    jantes = Maillage("Jantes", mats["banc_jante"])
+    for sx in (-DEMI_VOIE, DEMI_VOIE):
+        for sy in ESSIEUX:
+            _roue(pneus, jantes, sx, sy, 0.34, 0.20, 10)
+    return total + pneus.finir() + jantes.finir()
+
+
+def voiture_3(mats) -> int:
+    """Niveau 3 : le detail de pres, sur les memes proportions."""
+    m = Maillage("Caisse", mats["banc_tole_rouge"])
+    coque(m, SECTIONS_3, tuile=1.15)
+    total = m.finir()
+
+    v = Maillage("Vitrage", mats["banc_vitre"])
+    for cote in (-1, 1):
+        v.face([(cote * 0.945, -0.48, 1.12), (cote * 0.945, 0.30, 1.12),
+                (cote * 0.945, 0.30, 1.48), (cote * 0.945, -0.48, 1.48)][::cote])
+        v.face([(cote * 0.945, 0.36, 1.12), (cote * 0.945, 0.74, 1.12),
+                (cote * 0.945, 0.74, 1.40), (cote * 0.945, 0.36, 1.46)][::cote])
+    v.face([(-0.90, -0.82, 1.16), (0.90, -0.82, 1.16),
+            (0.88, -0.50, 1.52), (-0.88, -0.50, 1.52)][::-1])
+    v.face([(-0.88, 0.80, 1.44), (0.88, 0.80, 1.44),
+            (0.92, 1.20, 1.20), (-0.92, 1.20, 1.20)][::-1])
+    total += v.finir()
+
+    d = Maillage("Sombre", mats["metal_sombre"])
+    d.boite(-0.76, -2.40, 0.42, 0.76, -2.32, 0.62, 1.0)
+    d.boite(-0.76, 2.10, 0.46, 0.76, 2.18, 0.66, 1.0)
+    for sx in (-0.96, 0.90):
+        d.boite(sx - 0.04, -1.20, 0.20, sx + 0.04, 1.10, 0.30, 1.5)
+    for sx in (-1.00, 0.90):
+        d.boite(sx, -0.60, 1.14, sx + 0.13, -0.40, 1.30, 0.6)
+    for sx in (-0.97, 0.93):
+        d.boite(sx, -0.14, 1.06, sx + 0.05, 0.10, 1.13, 0.4)
+    d.boite(0.34, 2.14, 0.34, 0.52, 2.28, 0.46, 0.5)
+    d.boite(-0.50, -2.38, 0.60, 0.50, -2.34, 0.76, 0.8)
+    for sx in (-1, 1):
+        for sy in ESSIEUX:
+            _passage_de_roue(d, sx * 0.955, sy, 0.35, sx * 0.17)
+    total += d.finir()
+
+    f = Maillage("Feux", mats["feu_avant"])
+    for sx in (-0.70, 0.42):
+        f.boite(sx, -2.36, 0.64, sx + 0.28, -2.30, 0.82, 0.5)
+    total += f.finir()
+    fa = Maillage("FeuxArriere", mats["feu_arriere"])
+    for sx in (-0.72, 0.44):
+        fa.boite(sx, 2.08, 0.74, sx + 0.28, 2.14, 0.96, 0.5)
+    total += fa.finir()
+
+    pneus = Maillage("Pneus", mats["pneu"])
+    jantes = Maillage("Jantes", mats["banc_jante"])
+    for sx in (-DEMI_VOIE, DEMI_VOIE):
+        for sy in ESSIEUX:
+            _roue(pneus, jantes, sx, sy, 0.35, 0.22, 12)
+    return total + pneus.finir() + jantes.finir()
 
 
 # --------------------------------------------------------------------- sortie
@@ -457,10 +494,10 @@ MODELES = [
                                  "porte", "metal_sombre", "metal"]),
     ("banc_voiture_1", voiture_1, ["banc_tole_bleue", "pneu"]),
     ("banc_voiture_2", voiture_2, ["banc_tole_bleue", "banc_vitre",
-                                   "banc_jante", "metal_sombre",
+                                   "banc_jante", "pneu", "metal_sombre",
                                    "feu_avant", "feu_arriere"]),
     ("banc_voiture_3", voiture_3, ["banc_tole_rouge", "banc_vitre",
-                                   "banc_jante", "metal_sombre",
+                                   "banc_jante", "pneu", "metal_sombre",
                                    "feu_avant", "feu_arriere"]),
 ]
 
