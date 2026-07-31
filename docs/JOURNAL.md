@@ -13,6 +13,75 @@ raconte la session.
 
 ---
 
+## Session du 31 juillet 2026, nuit — de 0.35.0 a 0.36.0
+
+**Début** : 31/07 vers 1 h, sur `v0.35.0`, juste après la publication de la
+release. **Fin** : au petit matin, sur `v0.36.0`.
+
+**Séance en autonomie complète**, sans personne pour juger à l'écran. C'est le
+premier point à noter, parce qu'il change ce qu'on peut livrer : tout ce qui se
+mesure a avancé, tout ce qui se juge à l'œil a été vérifié en capture, et une
+chose a été **annulée faute de tenir cet examen**.
+
+### Ce qui était demandé
+
+Reprendre le désert ; mettre les vrais figurants avec la démarche de Walter ;
+enrichir la ville en objets et en couleurs ; réparer deux défauts de jeu (les
+voitures garées traversables, et le joueur baladé par ce qu'il percute) ; passer
+sur les tickets ; publier.
+
+### Ce qui est livré
+
+| | |
+|---|---|
+| **Les voitures garées** | Elles n'avaient aucune collision : `SOLIDES_PREFIXES` était déclaré dans `ville.gd` et lu nulle part. Elles sont maintenant des corps rigides **gelés** — gratuits tant qu'ils dorment, poussables quand on les percute |
+| **Le choc** | Ce qu'on percute cède : une voiture qui roule s'arrête et laisse passer, une voiture garée se fait pousser et se repose de travers |
+| **Six objets neufs** | Cabine téléphonique, distributeur de journaux, abri de bus, table de pique-nique, buisson, panneaux publicitaires |
+| **Des variantes** | Poubelles et bennes repeintes : une texture de 32 pixels casse la répétition mieux qu'un objet de plus |
+| **Le désert** | Quatre-vingt-dix blocs de grès au pied des mesas, et son **ambiance sonore**, livrée le 27 et jamais branchée |
+| **La foule** | Vingt-six passants au lieu de seize, plus près, et devant soi |
+
+### Les surprises
+
+**La foule était invisible, et personne ne s'en était aperçu.** Seize passants
+répartis dans un anneau de quatre-vingt-quinze mètres : trois captures de rue
+d'affilée n'en montraient aucun. Deux causes, toutes deux trouvées en
+instrumentant plutôt qu'en réfléchissant — on comparait la distance aux
+**carrefours**, distants de 57 m, donc une rue passant à dix mètres devant soi
+n'était pas candidate ; et on peuplait aussi bien le dos du joueur que son champ
+de vision.
+
+**Le report de la démarche sur les figurants ne marche pas, et je l'ai cru
+pendant une heure.** Le pipeline tourne de bout en bout, les clips s'exportent,
+le jeu les joue — et le corps est disloqué. Je l'ai annoncé comme fonctionnel
+avant de l'avoir regardé. C'est exactement la faute que le dépôt documente
+depuis le premier jour : *une image ou un nombre, jamais une conviction.* Les
+passants sont donc restés des boîtes, et `outils/apercu_modele.py` existe
+maintenant pour rendre un modèle seul dans une pose choisie — l'outil qui
+manquait pour que cette vérification coûte trente secondes.
+
+**Deux suites de conduite sont tombées pour une raison étrangère à la
+conduite.** Le circuit de tenue de route passait à soixante mètres de la ville,
+et la bande de cactus est passée de 75 à 165 m dans la même nuit : la voiture a
+tapé un saguaro et le test a annoncé « 0 km/h ». Le circuit de bordure, lui,
+longe un trottoir — c'est-à-dire là où se garent les voitures, qui venaient de
+recevoir un corps physique. **Un test isolé de son décor ne l'est jamais
+vraiment.**
+
+**Une ambiance livrée peut dormir quatre jours** faute d'un endroit où la
+déclarer. Les intérieurs sont câblés un par un dans la scène ; une zone n'avait
+aucun endroit équivalent. La convention — un fichier nommé d'après la zone —
+remplace le câblage, et la prochaine carte n'aura rien à déclarer.
+
+### Où on reprend
+
+Le palier 1 (#43) est la tranche verticale suivante, et le désert a désormais
+son relief, ses lieux nommés et son ambiance pour l'accueillir. Trois décisions
+attendent Benjamin : les figurants (#16), la musique (#38), et l'équilibrage
+(#41) le jour venu.
+
+---
+
 ## Session du 30 au 31 juillet 2026 — de 0.30.0 à 0.35.0
 
 **Début** : 30/07 en fin de journée, sur `v0.30.0`, dépôt propre.
