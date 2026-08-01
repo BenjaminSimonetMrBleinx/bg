@@ -159,7 +159,9 @@ func connait(nom: String) -> bool:
 ##
 ## Changer de clip REMET LA PHASE A SA PLACE et pas a zero : passer du trot a
 ## la course au milieu d'une foulee ne doit pas replanter le pied.
-func allure(nom: String) -> bool:
+## `depart` demarre le clip ailleurs qu'a son debut, en secondes. Sert au saut
+## pris en course : voir Reglages.saut_decollage.
+func allure(nom: String, depart: float = 0.0) -> bool:
 	# Un geste en cours garde la main. On retient quand meme l'allure demandee :
 	# a la fin du geste, on doit reprendre celle du moment, pas celle d'il y a
 	# cinq secondes.
@@ -194,6 +196,11 @@ func allure(nom: String) -> bool:
 		# animation qui TOURNE — c'est pour ca qu'on ne met pas en pause ici, et
 		# qu'on ne demande aucun fondu dans l'autre sens.
 		_lecteur.play(_nom, 0.25)
+		if depart > 0.0:
+			# APRES le play, jamais avant : seek sur une animation qui ne
+			# tourne pas encore ne pose rien. C'est le meme piege que celui
+			# qui laissait le personnage fige sur sa pose de repos.
+			_lecteur.seek(minf(depart, _duree - 0.01), true)
 	else:
 		_lecteur.play(_nom)
 		_lecteur.seek(_phase * _duree, true)

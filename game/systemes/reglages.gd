@@ -581,6 +581,24 @@ extends Resource
 ## reglage impossible a juger. Le remettre a zero rend cet etat-la.
 @export_range(0.0, 1.0, 0.005) var temps_vitesse: float = 0.015
 
+## OU COMMENCE LE CLIP DE SAUT QUAND ON SAUTE EN COURANT, en secondes.
+##
+## Le saut livre porte une ANTICIPATION : le personnage flechit les jambes
+## avant de pousser. Mesure sur le clip de Walter — le bassin descend de
+## vingt-trois centimetres et les pieds ne quittent le sol qu'a 0,54 s, soit
+## 35 % du clip.
+##
+## Sur place, cette flexion est juste : on la voit, puis on decolle. En
+## courant, la physique lance le personnage a l'instant meme ou l'on appuie —
+## il est deja en l'air pendant que l'animation s'accroupit, et il a l'air de
+## glisser. On demarre donc le clip AU DECOLLAGE.
+##
+## Se remesure avec .tmp/decollage.py si le clip est remplace.
+@export_range(0.0, 2.0, 0.01) var saut_decollage: float = 0.54
+
+## Au-dela de cette vitesse au sol, on considere qu'on saute EN MOUVEMENT.
+@export_range(0.0, 6.0, 0.1) var saut_mouvement_seuil: float = 1.2
+
 @export_group("Jour")
 
 ## Les couleurs du plein jour. Elles ne remplacent plus celles de nuit : le

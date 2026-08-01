@@ -320,12 +320,21 @@ func _physics_process(delta: float) -> void:
 			nom_allure = arret
 
 	# EN L'AIR, plus rien de tout ca : on saute.
+	#
+	# ET ON ENTRE DANS LE CLIP AU DECOLLAGE quand on saute en courant. Le clip
+	# livre commence par une flexion d'une demi-seconde ; la physique, elle,
+	# lance le personnage a l'instant ou l'on appuie. Joue depuis le debut, il
+	# s'accroupit en plein vol et donne l'impression de glisser au sol.
+	# Sur place la flexion est juste, et on la garde.
+	var depart_saut := 0.0
 	if not is_on_floor() and _demarche != null and _demarche.connait("saut"):
 		nom_allure = "saut"
+		if Vector2(velocity.x, velocity.z).length() > reglages.saut_mouvement_seuil:
+			depart_saut = reglages.saut_decollage
 
 	_allure = nom_allure
 	if _demarche != null:
-		_demarche.allure(nom_allure)
+		_demarche.allure(nom_allure, depart_saut)
 		_demarche.foulee = enjambee
 
 	# Reculer est plus lent qu'avancer : personne ne court a reculons.
