@@ -1324,12 +1324,31 @@ def main() -> None:
     # L'ATTITUDE EST UNE PROPRIETE DU PERSONNAGE, pas une option de ligne de
     # commande : Jesse s'affaisse toujours, Walter se tient toujours droit. La
     # mettre ici garantit qu'une regeneration ne la perd pas.
-    nouvelles = (clip_repos(arm, source, nonchalant=(a.nom in NONCHALANTS)),
-                 clip_marche(arm, source),
-                 clip_accroupi(arm, debout),
-                 clip_marche_accroupie(arm, source, debout),
-                 clip_saut(arm, debout), clip_assis(arm, debout),
-                 clip_coiffer(arm, debout), clip_lire(arm, debout))
+    # UN CLIP LIVRE PRIME SUR UN CLIP FABRIQUE.
+    #
+    # Les miens sont resolus a partir de poses : ils tiennent, mais ils sont
+    # raides — c'est de l'animation calculee, pas de l'animation faite. Le jour
+    # ou quelqu'un livre un vrai saut, il doit gagner sans discussion, et
+    # surtout sans qu'une regeneration lancee pour une autre raison ne l'ecrase
+    # en silence. C'est exactement ce qui est arrive au Jesse de Guillaume.
+    fabriques = [
+        ("Repos", lambda: clip_repos(arm, source,
+                                     nonchalant=(a.nom in NONCHALANTS))),
+        ("Marche", lambda: clip_marche(arm, source)),
+        ("Accroupi", lambda: clip_accroupi(arm, debout)),
+        ("AccroupiMarche", lambda: clip_marche_accroupie(arm, source, debout)),
+        ("Saut", lambda: clip_saut(arm, debout)),
+        ("Assis", lambda: clip_assis(arm, debout)),
+        ("Coiffer", lambda: clip_coiffer(arm, debout)),
+        ("Lire", lambda: clip_lire(arm, debout)),
+    ]
+    nouvelles = []
+    for nom, batir in fabriques:
+        if nom in livrees:
+            print("  %-14s LIVRE, on garde celui-la" % nom)
+            continue
+        nouvelles.append(batir())
+    nouvelles = tuple(nouvelles)
     print("")
     # On RELIT ce qu'on vient d'ecrire. Construire une pose et l'inserer en cle
     # sont deux operations distinctes, et rien ne garantit que la seconde ait

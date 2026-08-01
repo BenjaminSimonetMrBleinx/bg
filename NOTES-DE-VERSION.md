@@ -16,6 +16,30 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.39.0 — Le nouveau Walter, avec ses vraies animations
+
+> **Walter est remplacé par ton modèle v2**, et ses quatre animations livrées
+> sont dans le jeu : **marcher, courir, sauter et remettre ses lunettes.**
+
+Les trois que je fabriquais à sa place — la marche, la course, le saut —
+étaient calculées à partir de poses. Elles tenaient debout, mais elles étaient
+raides : c'est de l'animation résolue, pas de l'animation faite. Les tiennes
+gagnent, et **une régénération ne peut plus les écraser** : un clip livré prime
+désormais sur un clip fabriqué, et le générateur le dit quand il en garde un.
+
+Le reste — repos, accroupi, marche accroupie, assis, lecture — est refabriqué
+sur le nouveau squelette.
+
+**Deux de tes quatre clips arrivaient sans nom** (des identifiants à rallonge).
+Je les ai identifiés en les **mesurant** : celui où le bassin monte de 12 cm est
+le saut ; celui où une main s'approche à 19 cm de la tête sans que le bassin
+bouge, les lunettes. Vérifié ensuite à l'image, les deux étaient bons.
+
+À essayer : marche, cours, saute. Et mets le chapeau — il se pose toujours
+correctement sur la tête du nouveau modèle.
+
+---
+
 ## 0.38.0 — Jesse ne se tient plus au garde-à-vous
 
 > **Son animation d'attente est refaite.** Épaules basses et roulées en avant,
