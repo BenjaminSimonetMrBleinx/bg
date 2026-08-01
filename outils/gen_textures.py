@@ -906,44 +906,66 @@ def panneau_ecrit(texte: str):
     return dessin
 
 
+# LA PALETTE DE LA SERIE, pour l'interface.
+#
+# Breaking Bad a une signature visuelle qui tient en un objet : LA CASE DU
+# TABLEAU PERIODIQUE. Un cadre epais, le symbole au centre, le numero atomique
+# en petit dans un coin, et ce vert-olive jaune qui n'appartient qu'a elle.
+# C'est ce qui ouvre chaque episode, et c'est reconnaissable en un dixieme de
+# seconde.
+#
+# On s'en sert pour encadrer le portrait : le HUD porte alors la marque de la
+# serie sans qu'on ait rien a expliquer, et pour le prix d'une bordure.
+BB_OLIVE = (138, 166, 62)
+BB_OLIVE_SOMBRE = (86, 104, 40)
+BB_FOND = (22, 26, 22)
+
+
 def portrait_hud(u: float, v: float):
-    """Le portrait de Walter pour le HUD, en 32 pixels de cote.
+    """Le portrait de Walter, dans une case du tableau periodique.
 
     Trente-deux pixels, c'est la taille d'une vignette de jeu PS2, et c'est
     aussi trop peu pour un visage : on ne dessine donc pas un visage, on
-    dessine ce qui le rend RECONNAISSABLE en trois traits. Chez Walter c'est le
-    crane degarni, les lunettes et le bouc — dans cet ordre d'importance.
+    dessine ce qui le rend RECONNAISSABLE en trois traits — le crane degarni,
+    les lunettes, le bouc, dans cet ordre.
 
-    Fond transparent impossible ici : le format de sortie du projet est un PNG
-    opaque. On pose donc un fond sombre, qui fait cadre.
+    LE CADRE FAIT LE RESTE. Bordure olive epaisse et « 35 » dans le coin — le
+    numero du brome, celui du « Br » du generique. A cette taille personne ne
+    lit le chiffre, mais tout le monde reconnait la CASE, et c'est exactement
+    ce qu'on cherche.
     """
-    fond = (18, 20, 26)
     peau = (206, 168, 138)
     poil = (58, 52, 48)
 
-    # Le cadre.
-    if u < 0.06 or u > 0.94 or v < 0.06 or v > 0.94:
-        return (92, 88, 80)
+    # Le cadre olive, epais : deux pixels sur trente-deux.
+    if u < 0.065 or u > 0.935 or v < 0.065 or v > 0.935:
+        return BB_OLIVE
+    if u < 0.10 or u > 0.90 or v < 0.10 or v > 0.90:
+        return BB_OLIVE_SOMBRE
+
+    # Le numero atomique, en haut a gauche, en tout petit.
+    for k, chiffre in enumerate("35"):
+        lx = (u - (0.14 + k * 0.10)) / 0.085
+        ly = (v - 0.13) / 0.115
+        if 0.0 <= lx < 1.0 and 0.0 <= ly < 1.0 and _lettre(chiffre, lx, ly):
+            return BB_OLIVE
 
     # La tete : une ellipse un peu haute, posee bas dans le cadre.
-    dx = (u - 0.5) / 0.34
-    dy = (v - 0.56) / 0.40
+    dx = (u - 0.5) / 0.32
+    dy = (v - 0.60) / 0.36
     if dx * dx + dy * dy > 1.0:
-        return fond
+        return BB_FOND
 
-    # La couronne de cheveux : sur les cotes, jamais sur le dessus.
-    if v < 0.34 and abs(u - 0.5) > 0.17:
+    if v < 0.40 and abs(u - 0.5) > 0.16:
         return poil
-    # Le bouc, autour de la bouche.
-    if v > 0.72 and abs(u - 0.5) < 0.17:
+    if v > 0.76 and abs(u - 0.5) < 0.16:
         return poil
-    # Les lunettes : deux verres et le pont.
-    if 0.44 < v < 0.56:
-        if 0.20 < abs(u - 0.5) < 0.30:
+    if 0.50 < v < 0.61:
+        if 0.19 < abs(u - 0.5) < 0.28:
             return (36, 38, 44)
         if abs(u - 0.5) < 0.06:
             return (36, 38, 44)
-    if 0.46 < v < 0.54 and 0.09 < abs(u - 0.5) < 0.20:
+    if 0.52 < v < 0.59 and 0.08 < abs(u - 0.5) < 0.19:
         return (24, 26, 30)
 
     return peau

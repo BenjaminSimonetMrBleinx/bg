@@ -16,6 +16,33 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.40.0 — L'interface prend l'esthétique de la série
+
+> **Le portrait de Walter est maintenant une case du tableau périodique** —
+> bordure olive épaisse, numéro atomique dans le coin. C'est ce qui ouvre
+> chaque épisode, et c'est reconnaissable en un dixième de seconde.
+
+**La barre de vie est segmentée** en douze crans au lieu d'être un rectangle
+qui se vide. À 512 pixels de large, une longueur continue ne se lit pas : on
+voit qu'elle a baissé, jamais de combien. Douze segments se comptent du coin
+de l'œil.
+
+**La vitesse est un cadran, plus un nombre nu.** On ne lit pas un chiffre en
+conduisant — on regarde où en est l'aiguille. L'arc s'arrête à la vitesse
+maximale réelle de la voiture, donc la position de l'aiguille veut dire quelque
+chose. Le chiffre reste au centre, petit, pour quand on veut savoir exactement.
+
+**Un rappel de ce qu'on tient**, en bas à gauche. Le nom de l'objet s'annonçait
+une seconde et demie puis disparaissait : c'était juste au moment de choisir, ça
+ne l'était plus deux minutes après, quand on approche de quelqu'un sans savoir
+si on a le revolver à la main. Rien ne s'affiche les mains vides.
+
+Et toute l'interface partage désormais **trois couleurs** — l'olive de la case,
+l'ambre du désert, le rouge du sang — au lieu de laisser chaque élément dériver
+vers sa propre nuance.
+
+---
+
 ## 0.39.0 — Le nouveau Walter, avec ses vraies animations
 
 > **Walter est remplacé par ton modèle v2**, et ses quatre animations livrées

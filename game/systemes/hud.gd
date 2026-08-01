@@ -54,9 +54,25 @@ var _douleur: float = 0.0
 var _annonce: float = 0.0
 var _texte_annonce: String = ""
 
+## L'objet en main. Son nom ne s'affiche qu'une seconde et demie a l'equipement
+## — assez pour savoir ce qu'on vient de prendre, pas pour s'en souvenir deux
+## minutes plus tard. Le rappel permanent vit en bas a gauche.
+var _outil: int = -1
+
 ## Vitesse lissee. La valeur brute d'un VehicleBody3D oscille d'un ou deux
 ## km/h a chaque image ; affichee telle quelle, le compteur papillonne.
 var _kmh: float = 0.0
+
+## LA PALETTE DE LA SERIE, en un endroit.
+##
+## Breaking Bad tient dans trois couleurs : le vert-olive de la case du
+## tableau periodique, l'ambre du desert, le rouge du sang. Les avoir nommees
+## ici evite qu'elles derivent d'un dessin a l'autre — c'est ce qui etait en
+## train d'arriver, chaque fonction ayant sa propre nuance de vert.
+const BB_OLIVE := Color(0.541, 0.651, 0.243)
+const BB_AMBRE := Color(0.949, 0.776, 0.420)
+const BB_ROUGE := Color(0.702, 0.208, 0.161)
+const COULEUR_FOND := Color(0.043, 0.055, 0.086, 0.80)
 
 
 func _ready() -> void:
@@ -121,6 +137,7 @@ func _sur_blessure(_restant: float) -> void:
 func _sur_changement_outil(i: int) -> void:
 	_texte_annonce = _eq.nom_de(i) if i >= 0 else "Mains vides"
 	_annonce = reglages.hud_annonce
+	_outil = i
 
 
 func _process(delta: float) -> void:
@@ -158,6 +175,7 @@ func _draw() -> void:
 	_bandeau(police)
 	_etat_du_joueur(police)
 	_objectif_courant(police)
+	_objet_en_main(police)
 	_reticule()
 
 	if _au_volant():
@@ -230,18 +248,38 @@ func _etat_du_joueur(police: Font) -> void:
 		draw_texture(icone_visage, coin)
 		x += icone_visage.get_width() + 5.0
 
-	# La barre de vie, a droite du visage, sur la moitie haute.
+	# LA BARRE DE VIE EST SEGMENTEE, comme une jauge de laboratoire.
+	#
+	# Elle etait un rectangle plein qui se vidait en continu. A 512 pixels de
+	# large, une longueur continue ne se lit pas : on voit qu'elle a baisse,
+	# jamais de combien. Douze segments se COMPTENT du coin de l'oeil, et c'est
+	# ce qu'on veut d'une barre de vie — savoir combien il en reste, pas
+	# regarder un degrade.
+	#
+	# Le segment en cours de perte reste allume a demi : sans ca la barre saute
+	# par a-coups de huit pour cent et donne l'impression de mentir.
 	if _j != null:
 		var l := 78.0
-		var h := 6.0
-		var barre := Vector2(x, coin.y + 3.0)
-		draw_rect(Rect2(barre, Vector2(l, h)), Color(0.043, 0.055, 0.086, 0.8))
+		var h := 7.0
+		var barre := Vector2(x, coin.y + 2.0)
+		draw_rect(Rect2(barre, Vector2(l, h)), COULEUR_FOND)
 		var part := clampf(_j.pv / 100.0, 0.0, 1.0)
-		# Du vert au rouge en passant par l'ambre : la couleur dit l'urgence
-		# avant que la longueur ne se lise.
-		var teinte := Color(0.78, 0.26, 0.20).lerp(Color(0.55, 0.76, 0.36), part)
-		draw_rect(Rect2(barre, Vector2(l * part, h)), teinte)
-		draw_rect(Rect2(barre, Vector2(l, h)), Color(0.72, 0.70, 0.64, 0.55),
+		# Olive quand tout va bien, ambre, puis rouge : la couleur dit
+		# l'urgence avant que le compte ne se lise.
+		var teinte := BB_ROUGE.lerp(BB_AMBRE, clampf(part * 2.0, 0.0, 1.0))
+		teinte = teinte.lerp(BB_OLIVE, clampf((part - 0.5) * 2.0, 0.0, 1.0))
+		var n := 12
+		var pas := l / float(n)
+		for k in n:
+			var rempli := part * n - k
+			if rempli <= 0.0:
+				continue
+			var c := teinte
+			if rempli < 1.0:
+				c.a = 0.45
+			draw_rect(Rect2(barre + Vector2(k * pas + 1.0, 1.0),
+					Vector2(pas - 2.0, h - 2.0)), c)
+		draw_rect(Rect2(barre, Vector2(l, h)), Color(0.72, 0.70, 0.64, 0.45),
 				false, 1.0)
 
 	# L'argent, sous la barre, aligne sur elle.
@@ -253,7 +291,7 @@ func _etat_du_joueur(police: Font) -> void:
 		draw_texture(icone_argent, Vector2(xa, ya - 8.0))
 		xa += icone_argent.get_width() + 4.0
 	_ecrire(police, Bourse.ecrire(roundi(_affiche)), Vector2(xa, ya + 3.0), 13,
-			Color(0.60, 0.82, 0.44), false)
+			BB_OLIVE, false)
 
 
 # L'OBJECTIF COURANT, en haut a gauche, sous l'argent.
@@ -285,6 +323,34 @@ func _objectif_courant(police: Font) -> void:
 			Color(0.949, 0.925, 0.867, a), false)
 
 
+# LE RAPPEL DE CE QU'ON TIENT, en bas a gauche.
+#
+# Le nom de l'objet s'annonce une seconde et demie a l'equipement, puis
+# disparait. C'est juste au moment ou l'on choisit ; ca ne l'est plus deux
+# minutes apres, quand on approche de quelqu'un sans savoir si on a le
+# revolver a la main. Une interface doit repondre a « qu'est-ce que je tiens »
+# sans qu'on ait a rouvrir la roue pour le verifier.
+#
+# Discret : une case sombre et le nom en petit. On n'affiche RIEN les mains
+# vides — c'est l'etat par defaut, et la regle du fichier reste de ne montrer
+# que ce qui merite un coup d'oeil.
+func _objet_en_main(police: Font) -> void:
+	if _outil < 0 or _eq == null:
+		return
+	var nom := _eq.nom_de(_outil)
+	if nom == "":
+		return
+	var largeur := police.get_string_size(nom, HORIZONTAL_ALIGNMENT_LEFT,
+			-1, 11).x
+	var coin := Vector2(6.0, size.y - 24.0)
+	draw_rect(Rect2(coin, Vector2(largeur + 14.0, 17.0)), COULEUR_FOND)
+	# Le filet olive du bord gauche, comme l'objectif porte son filet ambre :
+	# deux bandes de la meme famille de gris se distinguent par leur liseré.
+	draw_rect(Rect2(coin, Vector2(2.0, 17.0)), BB_OLIVE)
+	_ecrire(police, nom, coin + Vector2(9.0, 12.0), 11,
+			Color(0.86, 0.85, 0.80), false)
+
+
 # Le reticule, et le voile rouge des blessures.
 #
 # Le reticule est une CROIX OUVERTE, pas un point : un point de un pixel
@@ -303,11 +369,53 @@ func _reticule() -> void:
 
 
 func _compteur(police: Font) -> void:
-	var coin := Vector2(size.x - 16.0, size.y - 18.0)
-	_ecrire(police, "%d" % roundi(_kmh), coin - Vector2(26.0, 0.0), 26,
-			Color(0.949, 0.925, 0.867), false, HORIZONTAL_ALIGNMENT_RIGHT)
-	_ecrire(police, "km/h", coin, 12, Color(0.72, 0.70, 0.64), false,
-			HORIZONTAL_ALIGNMENT_RIGHT)
+	# UN CADRAN, PAS UN NOMBRE NU.
+	#
+	# La vitesse s'affichait en chiffres poses sur le decor. Deux choses n'y
+	# allaient pas : on ne lit pas un nombre en conduisant — on regarde ou en
+	# est l'aiguille — et une voiture de 2008 a un cadran, pas un afficheur.
+	#
+	# L'arc fait 200 degres et s'arrete a la vitesse maximale du vehicule : la
+	# position de l'aiguille veut donc dire quelque chose, au lieu d'etre une
+	# fraction d'un maximum invente. Le chiffre reste, petit, au centre — c'est
+	# ce qu'on lit quand on veut savoir exactement.
+	var centre := Vector2(size.x - 40.0, size.y - 30.0)
+	var rayon := 26.0
+	var depart := deg_to_rad(160.0)
+	var arc := deg_to_rad(200.0)
+	var maxi := 140.0
+	if _v != null and _v.reglages != null:
+		maxi = maxf(60.0, _v.reglages.vitesse_max_kmh)
+	var part := clampf(_kmh / maxi, 0.0, 1.0)
+
+	# Le fond du cadran : un disque sombre, pour que l'arc se detache d'un
+	# decor clair comme d'un decor sombre.
+	draw_circle(centre, rayon + 4.0, Color(0.043, 0.055, 0.086, 0.55))
+	draw_arc(centre, rayon, depart, depart + arc, 32,
+			Color(0.72, 0.70, 0.64, 0.40), 2.0)
+	# Les graduations, tous les vingt kilometres/heure.
+	var pas_grad := 20.0
+	var g := 0.0
+	while g <= maxi:
+		var ang := depart + arc * (g / maxi)
+		var dir := Vector2(cos(ang), sin(ang))
+		draw_line(centre + dir * (rayon - 4.0), centre + dir * rayon,
+				Color(0.72, 0.70, 0.64, 0.45), 1.0)
+		g += pas_grad
+	# L'arc parcouru, ambre puis rouge dans le dernier quart — c'est la ou la
+	# voiture cesse de tourner.
+	var teinte := BB_AMBRE if part < 0.75 else BB_ROUGE
+	if part > 0.01:
+		draw_arc(centre, rayon, depart, depart + arc * part, 28, teinte, 3.0)
+	# L'aiguille.
+	var a := depart + arc * part
+	var d := Vector2(cos(a), sin(a))
+	draw_line(centre + d * 6.0, centre + d * (rayon - 2.0), teinte, 2.0)
+
+	_ecrire(police, "%d" % roundi(_kmh), centre + Vector2(0.0, 6.0), 18,
+			Color(0.949, 0.925, 0.867), false, HORIZONTAL_ALIGNMENT_CENTER)
+	_ecrire(police, "km/h", centre + Vector2(0.0, 17.0), 9,
+			Color(0.72, 0.70, 0.64), false, HORIZONTAL_ALIGNMENT_CENTER)
 
 
 # Contour noir puis texte : sans lui, un chiffre clair passe devant un phare
