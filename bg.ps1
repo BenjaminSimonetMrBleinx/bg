@@ -11,6 +11,7 @@
     .\bg.ps1 integrer       met un modele livre aux normes du jeu et le pose
                             dans game\assets. -Fichier, -Vers, -Hauteur
     .\bg.ps1 verif          verifie que le projet charge (headless)
+    .\bg.ps1 diag           releve le cout de la ville : FPS, memoire, chargement
     .\bg.ps1 exporter       fabrique build\BG.exe, jouable sans rien installer
     .\bg.ps1 nettoyer       vide .tmp et build (tout y est regenerable)
     .\bg.ps1 outils         affiche l etat de la chaine d outils
@@ -22,7 +23,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('jouer', 'editeur', 'generer', 'capture', 'integrer', 'verif', 'test', 'son', 'sons', 'reparer', 'exporter', 'nettoyer', 'voix', 'outils')]
+    [ValidateSet('jouer', 'editeur', 'generer', 'capture', 'integrer', 'verif', 'test', 'diag', 'son', 'sons', 'reparer', 'exporter', 'nettoyer', 'voix', 'outils')]
     [string]$Commande = 'jouer',
 
     # Pour 'integrer' : le modele livre, sa destination dans game\assets, et
@@ -547,6 +548,22 @@ switch ($Commande) {
         try { & $GodotConsole --headless --path $Projet --import 2>&1 | Out-Null }
         finally { $ErrorActionPreference = $ancien }
         Write-Host "  Termine. Relance le jeu." -ForegroundColor Green
+    }
+
+    'diag' {
+        # Un RELEVE de cout, pas un test : diag_ville mesure les images/seconde,
+        # la memoire et le temps de chargement. Rien a valider, aucun seuil - on
+        # compare deux releves avant et apres un changement de taille ou de
+        # densite. Il tourne quelques secondes puis se ferme tout seul.
+        #
+        # DE NUIT par defaut : de jour les lampadaires sont masques et ne coutent
+        # rien, donc mesurer a midi ne mesure pas la ville eclairee. Un vrai
+        # rendu est necessaire (pas de --headless), sinon les FPS ne veulent rien
+        # dire.
+        Exiger $GodotConsole 'Godot (console)'
+        Set-Build
+        Initialize-Projet
+        & $GodotConsole --path $Projet --script res://verifs/diag_ville.gd -- --heure 22
     }
 
     'test' {
