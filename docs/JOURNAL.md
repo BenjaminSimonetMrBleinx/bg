@@ -13,6 +13,79 @@ raconte la session.
 
 ---
 
+## Session du 5 au 6 aout 2026 — le depot demenage, l'outillage arrive, et le suivi se remet d'aplomb
+
+**Début** : 05/08 au soir, sur `v0.40.0`. **Fin** : 06/08 au petit matin, même
+version — c'est une session d'infrastructure, d'outillage et de tickets, pas de
+game code. Rien de jouable n'a changé, donc pas de bump.
+
+### Ce qui était demandé
+
+Reprendre le projet côté perso, donner aux gens un lien propre pour télécharger
+l'exe, puis remettre les tickets d'aplomb — et en traiter.
+
+### Ce qui est livré
+
+| | |
+|---|---|
+| **Le dépôt** | Transféré sur le compte perso `benjibleinx-perso/bg`, public. L'ancienne URL redirige, les liens existants tiennent |
+| **La release** | `v0.40.0` publiée — les versions 0.37→0.40 étaient codées mais jamais sorties. Le lien de download est enfin celui du code actuel |
+| **Les docs** | Journal rattrapé jusqu'à 0.40, doublon 0.37.0 des notes retiré, cadrage corrigé (dépôt public assumé) |
+| **Les tickets** | #23/#24/#25 soldés (déjà faits à 0.28→0.40), #44 et #45 pour les vrais résidus, quatre décisions consignées, et un grooming complet : trois familles d'étiquettes, un seul *qui* par ticket, et un label **🤖 Claude** pour ce sur quoi j'avance seul |
+| **L'outillage** | Godot 4.7.1 et Blender 5.2.0 installés sur cette machine, chaîne vérifiée |
+| **#18** | Tuco assis : vérifié à l'image, il l'était déjà. Fermé |
+| **#19** | `project.godot` ne relance plus les 27 suites quand seule sa carte d'entrées change — 9 au lieu de 27. Plus un `-Lister` pour voir la sélection sans jouer |
+
+### Les surprises
+
+**Le dépôt vivait sur le compte GitHub pro.** Un projet perso hébergé du mauvais
+côté de la séparation. Le transfert l'a remis où il faut, et comme il préserve
+tout — historique, issues, releases, LFS — et redirige l'ancienne URL, personne
+ne casse un lien au passage.
+
+**Les retours de test étaient faits, mais jamais fermés.** #23, #24, #25
+listaient soixante points ; la quasi-totalité avait été livrée entre la 0.28 et
+la 0.40, sans que le ticket bouge. *Un ticket ouvert n'est pas un travail à
+faire — c'est parfois un travail déjà fait que personne n'a coché.* On les a
+soldés en croisant chaque point avec sa version.
+
+**Cette machine n'avait pas le toolchain.** Godot et Blender nulle part : c'est
+la machine miroir, celle qui sert au git et à l'admin. Tout ce qu'on a fait ce
+soir avant l'install ne demandait pas le jeu — et c'est justement pour coder
+ET vérifier qu'on l'a posé ici.
+
+**#18 était périmé.** Tuco est assis depuis un moment : le clip `Assis` est
+fabriqué par le solveur, présent dans `tuco.glb`, branché. La règle d'or a
+tranché — capture `qg_bureau`, il est bien calé dans son fauteuil — là où une
+conviction aurait laissé le ticket ouvert ou l'aurait fermé à tort.
+
+**Le correctif de #19 a failli être défait par sa propre mesure.** On compare
+`project.godot` à HEAD, section `[input]` retirée, pour savoir si seule la carte
+d'entrées a bougé. Sauf que `Get-Content -Raw` lit le fichier en CP-1252 et
+`git show` sort de l'UTF-8 : les tirets cadratins des commentaires, *hors*
+`[input]`, cassaient l'égalité à tous les coups, et `project.godot` aurait
+continué de relancer les 27 suites en silence. C'est le piège UTF-8 de
+PowerShell 5.1, encore lui. Trouvé parce qu'on a mesuré « identiques ? » au lieu
+de le croire.
+
+**`tir.gd` n'était couvert par aucune suite.** Trouvé en vérifiant #19 : modifier
+le système de visée et de tir ne déclenchait aucun test. Rattaché à la suite
+`mission`, qui charge et câble le signal du tir. Le comportement du tir
+lui-même — viser, toucher, la riposte — n'a toujours pas de test qui tire
+vraiment : c'est un cran au-dessus, noté.
+
+### Où on reprend
+
+Deux décisions attendent, et elles débloquent le socle : **#30** — comment on
+gagne la réputation (Benjamin + Guillaume) — et **#38** — la musique (Benjamin).
+Guillaume a trois choses en 🔥 : le rig des passants (#16), les voix (#5), le
+formulaire de mission (#37). Côté code autonome, le prochain chantier propre et
+sans dépendance est **#32** (sauvegarder et reprendre) ; le puits économique
+(#20) reprendra une fois #30 tranchée. La page Issues, elle, dit maintenant d'un
+coup d'œil quoi, pour qui, et quand.
+
+---
+
 ## Session du 31 juillet au 2 aout 2026 — de 0.36.0 a 0.40.0
 
 **Début** : 31/07, dans la foulée de la release `v0.36.0`. **Fin** : 02/08 sur
