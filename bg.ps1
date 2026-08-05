@@ -68,6 +68,11 @@ param(
     # concernees. C est le mode a utiliser avant chaque commit.
     [switch]$Modifies,
 
+    # Pour 'test' : montre les suites qui SERAIENT jouees, et sort. Ne lance ni
+    # Godot ni aucune suite. Sert a verifier ce qu une modification declenche -
+    # notamment ce que project.godot relance depuis qu il n est plus global.
+    [switch]$Lister,
+
     # Pour 'voix' : refabrique meme ce qui existe deja. A utiliser apres avoir
     # touche a un profil dans donnees\voix.json - le nom de fichier depend du
     # TEXTE, pas du timbre, donc rien ne se regenere tout seul.
@@ -120,6 +125,24 @@ function Find-Outil {
     $cmd = Get-Command $Nom -ErrorAction SilentlyContinue
     if ($cmd) { return $cmd.Source }
     return $null
+}
+
+function Get-HorsEntrees {
+    # Rend le contenu de project.godot PRIVE de sa section [input]. Deux
+    # versions du fichier identiques une fois cette section retiree n ont
+    # differe que par la carte d entrees - c est ce qui permet de dire qu une
+    # modification ne touche QUE les entrees, et ne concerne donc que les
+    # suites qui en simulent.
+    param([string]$Contenu)
+    $lignes = ($Contenu -replace "`r", '') -split "`n"
+    $sortie = New-Object System.Collections.Generic.List[string]
+    $dans = $false
+    foreach ($l in $lignes) {
+        if ($l -match '^\[input\]') { $dans = $true; continue }
+        if ($dans -and $l -match '^\[') { $dans = $false }
+        if (-not $dans) { $sortie.Add($l) }
+    }
+    return ($sortie -join "`n").TrimEnd()
 }
 
 $Godot = Find-Outil 'godot' @(
@@ -507,10 +530,10 @@ switch ($Commande) {
         # Tests de comportement : ils ont besoin d un vrai rendu, donc pas de
         # --headless. Et imperativement la variante console : le binaire
         # graphique se detache, PowerShell ne recupere jamais son code de
-        # sortie et toutes les suites paraissent echouer.
-        Exiger $GodotConsole 'Godot (console)'
-        Set-Build
-        Initialize-Projet
+        # sortie et toutes les suites paraissent echouer. On ne l EXIGE toutefois
+        # qu au moment de jouer, plus bas : choisir ou lister les suites ne
+        # demande pas Godot, et -Lister doit pouvoir repondre sans rien importer.
+        #
         # Chaque suite declare les FICHIERS qu elle couvre. C est ce qui
         # permet de ne rejouer que ce qui est concerne par une modification,
         # au lieu de payer la totale a chaque commit.
@@ -627,9 +650,23 @@ switch ($Commande) {
                           'gen_ville', 'systemes/demarche', 'assets/personnages') }
         )
 
-        # Toute modification de la scene principale ou des reglages touche
-        # tout le monde : ce sont les deux fichiers que chaque suite charge.
-        $Global = @('scenes/monde', 'systemes/reglages.tres', 'project.godot')
+        # Toute modification de la scene principale ou des reglages touche tout
+        # le monde : ce sont les fichiers que chaque suite charge.
+        #
+        # project.godot N Y EST PLUS. Il y etait, et ajouter une action d entree
+        # y relancait les 27 suites. Mais une action d entree ne concerne que les
+        # suites qui SIMULENT des entrees ; le reste du fichier - autoloads,
+        # rendu, affichage - touche tout. On regarde donc CE QUI a change dedans,
+        # plus bas, au lieu de le declarer global d office.
+        $Global = @('scenes/monde', 'systemes/reglages.tres')
+
+        # Les suites qui envoient de vrais evenements d entree. Ce sont les
+        # seules qu une modification de la carte d entrees puisse affecter : les
+        # autres pilotent le jeu par appels directs, la carte leur est
+        # indifferente. Genereux a dessein, comme les motifs de couverture - une
+        # suite jouee pour rien coute des secondes, une oubliee un bug livre.
+        $SuitesEntree = @('allures', 'camera', 'chocs', 'jour', 'outils',
+                          'sons', 'souris', 'telephone', 'trottoir')
 
         $choisies = $suites
         $raison = 'toutes'
@@ -659,9 +696,36 @@ switch ($Commande) {
             Write-Host "Modifie :" -ForegroundColor Gray
             $fichiers | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
 
+            # project.godot a-t-il change, et si oui, EST-CE UNIQUEMENT sa
+            # section [input] ? On compare la version de travail a celle de HEAD,
+            # section [input] retiree des deux : si le reste est identique, seule
+            # la carte d entrees a bouge.
+            $godot_touche = @($fichiers | Where-Object { $_ -like '*project.godot' }).Count -gt 0
+            $entree_seule = $false
+            if ($godot_touche) {
+                # Lecture UTF-8 des DEUX cotes, et c est indispensable :
+                # project.godot porte des tirets cadratins hors [input], que
+                # Get-Content -Raw lit en CP-1252 et casse, alors que git sort de
+                # l UTF-8. Compares tels quels, les deux differaient TOUJOURS et
+                # project.godot relancait les 27 suites - le bug que ce ticket
+                # corrige, reintroduit par la mesure elle-meme.
+                $prev = [Console]::OutputEncoding
+                [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+                $tete = & git -C $Racine show HEAD:game/project.godot 2>$null
+                $ok = $LASTEXITCODE -eq 0
+                [Console]::OutputEncoding = $prev
+                if ($ok -and $tete) {
+                    $travail = [System.IO.File]::ReadAllText((Join-Path $Projet 'project.godot'))
+                    $entree_seule = (Get-HorsEntrees $travail) -eq (Get-HorsEntrees ($tete -join "`n"))
+                }
+            }
+
             $global_touche = @($fichiers | Where-Object {
                 $f = $_; ($Global | Where-Object { $f -like "*$_*" }).Count -gt 0 })
-            if ($global_touche.Count -gt 0) {
+
+            # Un fichier partage a bouge - ou project.godot a change AILLEURS que
+            # dans [input] : dans les deux cas, tout se rejoue.
+            if ($global_touche.Count -gt 0 -or ($godot_touche -and -not $entree_seule)) {
                 $raison = 'un fichier partage a bouge'
             } else {
                 $choisies = @($suites | Where-Object {
@@ -671,6 +735,18 @@ switch ($Commande) {
                     }).Count -gt 0
                 })
                 $raison = 'lie aux fichiers modifies'
+                # Seule la carte d entrees a bouge : on ajoute les suites qui
+                # exercent les entrees a celles que la couverture a deja retenues.
+                if ($godot_touche -and $entree_seule) {
+                    $choisies = @($choisies) + @($suites | Where-Object { $SuitesEntree -contains $_.cle })
+                    $vues = @{}
+                    $uniques = @()
+                    foreach ($s in $choisies) {
+                        if (-not $vues.ContainsKey($s.cle)) { $vues[$s.cle] = $true; $uniques += $s }
+                    }
+                    $choisies = $uniques
+                    $raison = 'project.godot : entrees seules'
+                }
                 if ($choisies.Count -eq 0) {
                     Write-Host "`nAucune suite ne couvre ces fichiers." -ForegroundColor Yellow
                     Write-Host "Si c est du code de jeu, ajoute-le a 'couvre' dans bg.ps1." -ForegroundColor Gray
@@ -680,6 +756,17 @@ switch ($Commande) {
         }
 
         Write-Host "`n$($choisies.Count) suite(s) - $raison" -ForegroundColor Gray
+        if ($Lister) {
+            $choisies | ForEach-Object { Write-Host "  $($_.cle)  -  $($_.nom)" -ForegroundColor Gray }
+            exit 0
+        }
+
+        # A PARTIR D ICI ON JOUE : c est le seul moment ou Godot est necessaire.
+        # Le tenir jusqu ici laisse -Lister et la selection repondre sans rien
+        # importer.
+        Exiger $GodotConsole 'Godot (console)'
+        Set-Build
+        Initialize-Projet
         $echecs = @()
         foreach ($s in $choisies) {
             Write-Host "`n--- $($s.nom) ---" -ForegroundColor Cyan
