@@ -16,6 +16,23 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.43.0 — Un écran-titre
+
+> **À essayer : lance le jeu.** Tu arrives sur un écran-titre — **Nouvelle
+> partie / Quitter** — au lieu de tomber directement dans le monde. Si une
+> partie a été sauvegardée, **« Reprendre »** apparaît en premier, et
+> « Nouvelle partie » demande de confirmer avant d'écraser.
+
+Le menu se navigue au clavier (W/S pour monter-descendre, F pour valider) ou à
+la souris. « Reprendre » recharge le dernier point ; « Nouvelle partie » repart
+de zéro.
+
+Pas encore là, et ça viendra sur ce même chantier : écran de chargement,
+cartons de chapitre, générique de fin, bilan de fin d'acte. Et le titre
+s'affiche en pleine résolution, pas encore à travers le rendu PS2.
+
+---
+
 ## 0.42.0 — Mourir ne remet plus tout à zéro
 
 > **À essayer : gagne un peu d'argent, prends le chapeau, puis fais-toi tuer

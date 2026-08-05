@@ -675,7 +675,10 @@ switch ($Commande) {
                script = 'res://verifs/test_sauvegarde.gd'
                couvre = @('systemes/sauvegarde', 'systemes/bourse', 'systemes/temps',
                           'systemes/equipement', 'systemes/mission', 'systemes/pause',
-                          'donnees/outils') }
+                          'systemes/scenario', 'systemes/fin_de_partie', 'donnees/outils') }
+            @{ cle = 'titre'; nom = 'ecran-titre et menu'
+               script = 'res://verifs/test_titre.gd'
+               couvre = @('systemes/titre', 'systemes/sauvegarde', 'scenes/titre') }
         )
 
         # Toute modification de la scene principale ou des reglages touche tout
