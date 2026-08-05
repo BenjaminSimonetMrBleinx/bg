@@ -102,6 +102,29 @@ func _scenario() -> void:
 	_verifier(mission.index() == 3,
 			"la mission est revenue a l'etape %d" % mission.index())
 
+	# --- Lot 2 : mourir recharge le dernier point ---
+	# Le fichier ecrit plus haut existe toujours. On degrade l'etat et on met le
+	# joueur a terre, comme apres une mort, puis on reprend : le joueur doit
+	# revivre et l'etat du dernier point revenir.
+	print("\n--- reprise apres une mort ---")
+	var scenario := _trouver(_monde, "Scenario") as Scenario
+	if scenario == null:
+		_erreurs.append("scenario introuvable")
+	else:
+		bourse.poser(50)
+		mission.reprendre(0, [])
+		joueur.global_position = Vector3.ZERO
+		joueur.pv = 10.0
+		scenario.reprendre_apres_mort()
+		_verifier(joueur.pv == 100.0,
+				"le joueur est revenu en vie (pv %.0f)" % joueur.pv)
+		_verifier(bourse.montant() == 3000,
+				"l'argent du dernier point est restaure (%d $)" % bourse.montant())
+		_verifier(mission.index() == 3,
+				"la mission repart de l'etape sauvee (%d)" % mission.index())
+		_verifier(joueur.global_position.distance_to(place) < 0.05,
+				"la position du dernier point est restauree")
+
 	# On ne laisse pas trainer le fichier du test : il ferait reprendre cette
 	# partie repere au prochain vrai lancement.
 	sauvegarde.effacer()

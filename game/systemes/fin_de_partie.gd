@@ -21,6 +21,11 @@ extends Control
 
 signal recommence
 
+## Emis a la place de `recommence` quand une sauvegarde existe : au lieu de
+## repartir a zero, on recharge le dernier point. Une mort cesse alors d'etre
+## un retour au debut.
+signal reprendre
+
 ## Delai avant que l'invite apparaisse, et delai au bout duquel on repart tout
 ## seul si personne ne touche a rien. Les deux en SECONDES REELLES.
 const AVANT_INVITE := 5.0
@@ -35,7 +40,12 @@ const ENTREE := 1.0
 
 @export var reglages: Reglages
 
+## D'ou vient l'etat a recharger. Facultatif : sans lui, l'ecran propose
+## toujours « Recommencer » et repart a zero, comme avant.
+@export var sauvegarde: NodePath
+
 var _actif: bool = false
+var _sauvegarde: Sauvegarde
 var _titre: String = ""
 var _temps: float = 0.0
 var _lecteur: AudioStreamPlayer
@@ -55,6 +65,7 @@ func _ready() -> void:
 	_lecteur.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_lecteur)
 	set_process(true)
+	_sauvegarde = get_node_or_null(sauvegarde) as Sauvegarde
 
 
 ## Le TextureRect qui affiche le rendu du jeu. C'est LUI qu'on decolore, et pas
@@ -67,6 +78,13 @@ func brancher_l_ecran(ecran: CanvasItem) -> void:
 
 func actif() -> bool:
 	return _actif
+
+
+## Y a-t-il un point ou revenir ? Si oui, la mort recharge au lieu de repartir
+## a zero. On le RELIT a chaque fois : une sauvegarde ecrite pendant la partie
+## change la reponse.
+func _reprise_possible() -> bool:
+	return _sauvegarde != null and _sauvegarde.existe()
 
 
 ## `titre` est ce qui s'affiche en grand : « Vous etes mort », « Jesse est
@@ -128,7 +146,12 @@ func _repartir() -> void:
 	_lecteur.stop()
 	if _ecran != null:
 		_ecran.modulate = Color.WHITE
-	recommence.emit()
+	# Une sauvegarde existe : on recharge le dernier point plutot que de
+	# repartir a zero. Sinon, le comportement d'avant.
+	if _reprise_possible():
+		reprendre.emit()
+	else:
+		recommence.emit()
 
 
 func _draw() -> void:
@@ -156,7 +179,8 @@ func _draw() -> void:
 		# Le clignotement lent est ce qui distingue une invite d'un titre. Il
 		# bat en temps reel, comme tout le reste de cet ecran.
 		var battement := 0.55 + 0.45 * sin(_temps * 3.0)
-		_ecrire(police, "F   Recommencer",
+		var invite := "F   Reprendre" if _reprise_possible() else "F   Recommencer"
+		_ecrire(police, invite,
 				Vector2(size.x / 2.0, size.y * 0.72), 14,
 				Color(0.949, 0.776, 0.42, battement))
 

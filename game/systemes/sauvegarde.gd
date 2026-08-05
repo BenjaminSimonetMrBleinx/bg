@@ -96,6 +96,13 @@ func effacer() -> void:
 		DirAccess.remove_absolute(FICHIER)
 
 
+## Recharge la partie depuis le fichier, si elle existe. Public : c'est ce
+## qu'on appelle a la reprise apres une mort. _reprendre_si_possible fait deja
+## le travail ; recharger() lui donne un nom qui dit l'intention depuis dehors.
+func recharger() -> void:
+	_reprendre_si_possible()
+
+
 func _reprendre_si_possible() -> void:
 	if not existe():
 		return

@@ -416,6 +416,7 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("37_fin")
 reglages = ExtResource("2_reglages")
+sauvegarde = NodePath("../../../Sauvegarde")
 
 [node name="Fondu" type="ColorRect" parent="Rendu/Interface"]
 anchors_preset = 15
@@ -484,6 +485,7 @@ mission = NodePath("../Mission")
 joueur = NodePath("../Rendu/Scene3D/Joueur")
 controleur = NodePath("../Controleur")
 garde_fouilleur = NodePath("../Rendu/Scene3D/Mission1/QgInterieur/Homme2")
+sauvegarde = NodePath("../Sauvegarde")
 
 [node name="Controleur" type="Node" parent="."]
 script = ExtResource("8_controleur")

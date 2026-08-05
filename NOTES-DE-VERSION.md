@@ -16,6 +16,23 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.42.0 — Mourir ne remet plus tout à zéro
+
+> **À essayer : gagne un peu d'argent, prends le chapeau, puis fais-toi tuer
+> (tire sur le garde chez Tuco, par exemple). Sur l'écran de fin, l'invite dit
+> maintenant « Reprendre » : tu repars du dernier point sauvegardé, avec ton
+> argent et ton chapeau, au lieu de recommencer la mission de zéro.**
+
+Tant qu'aucune partie n'a été sauvegardée, l'écran propose « Recommencer »
+comme avant. Et le « Recommencer la mission » du menu pause reste, lui, un vrai
+redémarrage à zéro — les deux ne se confondent pas.
+
+Ce que la reprise restaure : l'argent gagné **jusqu'au dernier point** (ce qui
+a été gagné depuis est perdu — c'est ce qui rend la mort coûteuse sans être un
+retour au début), l'inventaire, l'heure, la position et l'étape de mission.
+
+---
+
 ## 0.41.0 — On peut sauvegarder et reprendre
 
 > **À essayer : joue un peu, prends le chapeau, gagne de l'argent, puis quitte

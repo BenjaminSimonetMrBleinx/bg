@@ -54,6 +54,9 @@ const HEURES := {
 ## qui attendent derriere le joueur : celui du milieu.
 @export var garde_fouilleur: NodePath
 
+## D'ou recharger l'etat quand le joueur reprend apres une mort.
+@export var sauvegarde: NodePath
+
 var _mission: Mission
 var _joueur: Joueur
 var _controleur: Node
@@ -62,6 +65,7 @@ var _telephone: Telephone
 var _bourse: Bourse
 var _tir: Tir
 var _fin: FinDePartie
+var _sauvegarde: Sauvegarde
 var _cachette: Cachette
 var _equipement: Equipement
 var _audio: Audio
@@ -100,6 +104,7 @@ func _ready() -> void:
 	_mission = get_node_or_null(mission) as Mission
 	_joueur = get_node_or_null(joueur) as Joueur
 	_controleur = get_node_or_null(controleur)
+	_sauvegarde = get_node_or_null(sauvegarde) as Sauvegarde
 	call_deferred("_commencer")
 
 
@@ -127,6 +132,7 @@ func _commencer() -> void:
 		_joueur.mort.connect(_sur_mort)
 	if _fin != null:
 		_fin.recommence.connect(recommencer)
+		_fin.reprendre.connect(reprendre_apres_mort)
 	if _cachette != null:
 		_cachette.range.connect(_sur_argent_cache)
 	if _tir != null:
@@ -197,6 +203,16 @@ func recommencer() -> void:
 		p.replacer()
 	if _controleur != null:
 		_controleur.call("recommencer_la_partie")
+
+
+## Reprise apres une mort : on remet d'abord le jeu dans un etat jouable (comme
+## recommencer - le joueur ressuscite, la scene se reinitialise), PUIS on
+## recharge le dernier point par-dessus : argent, inventaire, position, heure,
+## etape de mission. Une mort ne remet plus tout a zero.
+func reprendre_apres_mort() -> void:
+	recommencer()
+	if _sauvegarde != null:
+		_sauvegarde.recharger()
 
 
 # ------------------------------------------------------------------ le fil
