@@ -13,6 +13,111 @@ raconte la session.
 
 ---
 
+## Session du 31 juillet au 2 aout 2026 — de 0.36.0 a 0.40.0
+
+**Début** : 31/07, dans la foulée de la release `v0.36.0`. **Fin** : 02/08 sur
+`v0.40.0`. Trois soirées, cinq versions — entrée écrite après coup, à partir des
+commits, pour que le journal rejoigne le code.
+
+### Ce qui était demandé
+
+Rapprocher la ville de ses vraies références d'Albuquerque ; casser le damier
+trop régulier ; donner une voiture héros à Jesse ; intégrer le nouveau Walter
+livré par Benjamin ; et donner à l'interface l'identité de la série. Plusieurs de
+ces demandes sont arrivées en cours de route, formulées devant l'écran — « tes
+modèles sont très cubiques », « c'est encore trop carré », « pour les voitures,
+218 ça va pas, c'est moche ».
+
+### Ce qui est livré
+
+| Version | Quoi |
+|---|---|
+| **0.37.0** | Albuquerque d'après 56 photos : palette sans gris froid, ouvertures **creusées** dans le bâti, quatre gabarits de pavillon, parapets, maisons de plain-pied à garage, végétation xeriscape, câbles qui traversent les rues, banquette de gravier et caniveau |
+| **0.38.0** | La trame n'est plus au cordeau (îlots de 30 à 64 m, carrefours non équidistants, super-îlots), les immeubles ne sont plus des boîtes (devanture, auvent, décrochement, fouillis de toit), et Jesse s'affaisse au lieu d'attendre au garde-à-vous |
+| **0.39.0** | Le Walter v2 de Benjamin et ses quatre animations livrées — marcher, courir, sauter, remettre ses lunettes |
+| **0.40.0** | L'interface prend l'esthétique de la série : portrait en case de tableau périodique, barre de vie segmentée, cadran de vitesse, rappel de l'objet tenu, trois couleurs |
+
+Hors versions : un **banc de comparaison graphique** dans le désert (trois
+niveaux de détail côte à côte), la **Monte Carlo de Jesse** modelée d'après
+photo, un outil qui **trace la silhouette d'un véhicule depuis une image**, et
+l'analyse complète des références rangée dans `docs/16-albuquerque.md`.
+
+### Les surprises
+
+**Deux instruments faux, l'un derrière l'autre — et cinq conclusions tirées de
+leurs images.** Le report de la démarche sur les figurants sortait un corps
+disloqué, et j'ai cherché le défaut dans l'animation pendant une soirée. Il était
+ailleurs, deux fois : l'aperçu de modèle cadrait sur la boîte englobante du
+maillage — la géométrie *avant* déformation par le squelette — donc montrait un
+sujet minuscule et décentré ; et l'export du report **embarquait les neuf actions
+de Walter**, que Blender écrit toutes qu'elles soient assignées ou non. On
+jugeait un report en regardant les rotations brutes de Walter posées sur un autre
+rig. Une fois les deux instruments réparés — l'aperçu mesure maintenant la
+géométrie réellement rendue et **imprime l'encombrement**, ce qui dit sans image
+si un corps est debout — la mesure a désigné le vrai coupable : la pose de
+liaison du figurant est **couchée**, 0,21 m de haut pour 1,60 de long. Le défaut
+est à l'import, pas dans l'animation. *Aucun report ne réussit sur un modèle dont
+la liaison est cassée.*
+
+**« Casser PAS » : essayé, mesuré, annulé le jour même.** Rendre les îlots
+irréguliers a sorti une ville juste — mais le jeu n'a pas suivi. Mesure sur
+vingt-six passants : quinze sur le trottoir, **six sur la chaussée, trois dans le
+désert**. Deux hypothèses éliminées avant de trouver la cause, structurelle et
+côté jeu : `foule.gd` publie un seul écart de trottoir pour toute la ville, et
+`pieton.gd` borne la ville par une seule étendue carrée — deux raccourcis qui
+mentent dès que les rues changent de largeur. Le remède touche `pieton.gd` et
+`foule.gd` avec leurs tests : pas un travail de fin de session. On a gardé les
+**super-îlots**, qui cassent déjà le damier sans rien demander au jeu — 80 % de
+l'effet pour 10 % du risque. Le raisonnement est dans `docs/16-albuquerque.md`,
+pour que le prochain parte de la mesure.
+
+**Le « Minecraft » n'était pas le nombre de faces.** « Tes modèles sont très
+cubiques » — et la cause n'était pas la géométrie mais que *tout était dans le
+même plan* : une porte peinte sur une face plate ne porte aucune ombre. Les
+ouvertures sont devenues de vrais trous avec leurs quatre retours, et **la maison
+qui a levé l'objection fait moins de faces que celle qu'elle remplace**. Le
+réalisme est venu de la profondeur, pas des polygones. La Monte Carlo l'a redit
+dans l'autre sens : ses sections étaient des rectangles, donc quatre arêtes vives
+couraient sur toute la caisse — et aucune quantité de polygones ne rattrape une
+arête. Il a fallu des sections *galbées*, un congé au rayon variable, pour que la
+carrosserie cesse d'être une savonnette.
+
+**Identifier un clip livré en le mesurant.** Deux des quatre animations de Walter
+v2 arrivaient sans nom, avec des UUID : le bassin qui monte de 116 mm est le
+saut, une main à 193 mm de la tête sans que le bassin bouge est les lunettes.
+Vérifié ensuite sur planche de contact. Au passage, un piège d'export :
+l'exportateur glTF n'écrit que les actions **rattachées** à quelque chose, et un
+clip s'était volatilisé sans un mot — une piste NLA par action les retient
+toutes. Et une règle posée pour de bon : **un clip livré prime sur un clip
+fabriqué**, et une régénération ne peut plus l'écraser en silence — c'est
+exactement ce qui était arrivé au Jesse de Guillaume.
+
+**Enfin pouvoir juger une animation.** Une image fixe dit si un corps tient
+debout, jamais s'il bouge bien — c'était la raison de fond de mes échecs en
+animation, contournée deux sessions durant au lieu d'être réglée.
+`outils/planche_animation.py` rend huit poses d'un même cycle côte à côte, comme
+les poses extrêmes d'un animateur. Il a tranché en une seconde sur le repos de
+Jesse : huit images identiques d'un homme au garde-à-vous.
+
+**Un avertissement qu'on apprend à ignorer.** « Aucune voix pour ? » s'affichait
+à chaque lancement — l'appelant inconnu du téléphone, muet depuis toujours,
+quatre répliques sans son. Trouvé en lisant le journal de la session de test.
+*C'est la troisième fois que le projet paie cette règle :* un avertissement qu'on
+ignore est un avertissement qu'on n'ira pas lire le jour où il compte.
+
+### Où on reprend
+
+**Les passants sont à zéro depuis la 0.38.0**, désactivés le temps de casser la
+trame — c'est le premier chantier de reprise : publier l'écart de trottoir par
+tronçon et remplacer le bornage carré par un test contre la géométrie réelle
+(`pieton.gd`, `foule.gd`), tout est écrit dans `docs/16-albuquerque.md`. Ensuite :
+mettre Skyler, Jesse et les figurants au niveau du nouveau Walter ; brancher le
+traceur de silhouette sur le générateur de véhicules (les accessoires ne suivent
+pas encore les repères du profil) ; et, quand Benjamin le décidera, le palier 1
+(#43) et le puits économique (#20).
+
+---
+
 ## Session du 31 juillet 2026, nuit — de 0.35.0 a 0.36.0
 
 **Début** : 31/07 vers 1 h, sur `v0.35.0`, juste après la publication de la

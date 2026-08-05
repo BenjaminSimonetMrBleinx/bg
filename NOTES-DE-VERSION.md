@@ -92,41 +92,6 @@ lui. Et `-Ou walter`, `-Ou banc`, `-Ou desert`.
 
 ## 0.37.0 — Albuquerque, d'après tes photos
 
-> **Toute la ville a changé de couleur.** J'ai analysé les 56 références que tu
-> as réunies, et c'est là qu'on était le plus loin : deux de nos quatre façades
-> tiraient vers le bleu-gris — vers une ville du nord. Cette teinte n'apparaît
-> sur **aucun** mur des 56 photos.
-
-**Les murs sont en sable, blanc cassé chaud, terre cuite et brun rosé.** Les
-trottoirs sont en béton clair, presque blancs au soleil, au lieu du gris sombre
-d'avant. Le sol du désert est rosé.
-
-**Les toits plats ont un parapet.** Là-bas, aucun toit ne s'arrête à ras du
-mur : le mur monte de 30 à 60 cm au-dessus et le cache. C'est *le* détail qui
-fait lire « sud-ouest » plutôt qu'« immeuble quelconque ».
-
-**Les maisons ont un garage.** Elles sont refaites : de plain-pied, larges,
-toit à quatre pentes avec un débord — et surtout **deux portes de garage en
-façade** avec une allée en béton de six mètres qui y mène. C'est l'élément le
-plus caractéristique d'une rue de lotissement d'Albuquerque, et il manquait
-entièrement.
-
-**Les centres commerciaux ont leur enseigne de toit**, plus haute que le
-bâtiment lui-même — comme le Dog House, l'Octopus Car Wash et le Crossroads
-Motel.
-
-**Les montagnes ont doublé de hauteur** et se sont rapprochées de 70 m. Elles
-faisaient un liséré ; elles occupent maintenant un vrai morceau de ciel, comme
-sur les photos.
-
-À essayer : roule dans le quartier des Hauteurs et regarde une rue de maisons,
-puis va au Centre voir une enseigne de commerce. Et lève les yeux vers l'ouest
-n'importe où.
-
----
-
-## 0.37.0 — Albuquerque, d'après tes photos
-
 > **Toute la ville a changé de couleur**, et les maisons ont des ouvertures
 > **vraiment creusées** au lieu de portes peintes sur un mur plat. C'est ce qui
 > faisait « Minecraft » : une face plate ne porte aucune ombre.
