@@ -38,6 +38,14 @@ param(
     # Ou deposer le joueur au lancement : 'banc', 'desert', 'jesse',
     # 'walter'. Voir DEPARTS dans systemes/controleur.gd.
     [string]$Ou = '',
+
+    # Sur quel ecran ouvrir le jeu, 0-indexe. Par defaut le SECOND : sur le
+    # poste de dev, le jeu s ouvre a cote de l editeur et du terminal, pas
+    # par-dessus. Ignore si l ecran demande n existe pas - sur une machine a un
+    # seul moniteur, on ouvre normalement. C est une preference de LANCEMENT,
+    # jamais ecrite dans project.godot : l executable des joueurs n en sait rien.
+    [int]$Ecran = 1,
+
     [int]$Graine = 505,
     [string]$Couleur = 'voiture_aztek',
 
@@ -263,11 +271,26 @@ switch ($Commande) {
         Exiger $Godot 'Godot'
         Set-Build
         Initialize-Projet
+        # On n ouvre sur un autre ecran QUE s il existe : sinon, sur un poste a
+        # un seul moniteur, le jeu s ouvrirait dans le vide. Les deux PC
+        # partagent ce script, donc le garde-fou evite qu il divergent.
+        $argsGodot = @('--path', $Projet)
+        $ecrans = @()
+        try {
+            Add-Type -AssemblyName System.Windows.Forms -ErrorAction Stop
+            $ecrans = @([System.Windows.Forms.Screen]::AllScreens)
+        } catch {}
+        if ($Ecran -ge 0 -and $Ecran -lt $ecrans.Count) {
+            $argsGodot += @('--screen', "$Ecran")
+        }
+        elseif ($Ecran -gt 0) {
+            Write-Host ("  (ecran {0} demande, mais {1} ecran(s) detecte(s) : ouverture par defaut)" -f $Ecran, $ecrans.Count) -ForegroundColor Gray
+        }
         # -Ou depose le joueur ailleurs qu au point de depart. Raccourci de
         # developpement : aller regarder quelque chose a l autre bout de la
         # carte vingt fois dans une soiree coute une minute a chaque fois.
-        if ($Ou) { & $Godot --path $Projet -- --ou $Ou }
-        else     { & $Godot --path $Projet }
+        if ($Ou) { $argsGodot += @('--', '--ou', $Ou) }
+        & $Godot @argsGodot
     }
 
     'editeur' {
