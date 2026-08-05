@@ -648,6 +648,11 @@ switch ($Commande) {
                script = 'res://verifs/test_foule.gd'
                couvre = @('systemes/foule', 'systemes/pieton', 'systemes/silhouette',
                           'gen_ville', 'systemes/demarche', 'assets/personnages') }
+            @{ cle = 'sauvegarde'; nom = 'sauvegarder et reprendre'
+               script = 'res://verifs/test_sauvegarde.gd'
+               couvre = @('systemes/sauvegarde', 'systemes/bourse', 'systemes/temps',
+                          'systemes/equipement', 'systemes/mission', 'systemes/pause',
+                          'donnees/outils') }
         )
 
         # Toute modification de la scene principale ou des reglages touche tout

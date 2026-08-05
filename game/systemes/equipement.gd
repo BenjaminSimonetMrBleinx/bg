@@ -240,6 +240,45 @@ func definir_inventaire(cles: Array) -> void:
 	equiper(RIEN)
 
 
+## Les cles de ce qu'on possede, dans l'ordre de la roue. Pour la sauvegarde.
+func cles_possedees() -> Array:
+	var sortie: Array = []
+	for i in _possedes:
+		sortie.append(str(_fiches[i].get("cle", "")))
+	return sortie
+
+
+## Les cles de ce qu'on PORTE en ce moment (le chapeau), par opposition a ce
+## qu'on tient en main. Pour la sauvegarde : les deux se restaurent autrement.
+func cles_portees() -> Array:
+	var sortie: Array = []
+	for i in _portes.keys():
+		if bool(_portes[i]):
+			sortie.append(str(_fiches[i].get("cle", "")))
+	return sortie
+
+
+## Restaure l'inventaire d'une sauvegarde : ce qu'on possede, ce qu'on porte,
+## ce qu'on tient. On rejoue le port et la mise en main par equiper(), pour que
+## le visuel suive exactement comme si le joueur l'avait fait lui-meme.
+func restaurer(possedes: Array, tenu: String, portes: Array) -> void:
+	definir_inventaire(possedes)
+	# Le port se pose DIRECTEMENT, sans le delai ni l'animation de
+	# _demander_le_port : recharger une partie n'est pas remettre son chapeau
+	# geste par geste, c'est le retrouver deja dessus.
+	for c in portes:
+		var ip := _indice_de_cle(str(c))
+		if ip != RIEN:
+			_portes[ip] = true
+	# Ce qu'on tient en main, lui, se pose par la voie normale : elle est
+	# instantanee, et gere le visuel comme l'etat.
+	if tenu != "":
+		var it := _indice_de_cle(tenu)
+		if it != RIEN:
+			equiper(_rang_de(it))
+	_montrer()
+
+
 func possede(cle: String) -> bool:
 	var i := _indice_de_cle(cle)
 	return i != RIEN and (not _impose or _possedes.has(i))

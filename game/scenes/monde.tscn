@@ -11,7 +11,7 @@
 ; Le vehicule demarre sur la chaussee verticale du couloir 0, qui court le
 ; long de -Z : il est donc deja dans le bon sens.
 
-[gd_scene load_steps=40 format=3 uid="uid://bgmonde0v0001"]
+[gd_scene load_steps=41 format=3 uid="uid://bgmonde0v0001"]
 
 [ext_resource type="Script" path="res://rendu/rendu_ps2.gd" id="1_rendu"]
 [ext_resource type="Resource" path="res://systemes/reglages.tres" id="2_reglages"]
@@ -57,6 +57,7 @@
 [ext_resource type="Script" path="res://systemes/foule.gd" id="22_foule"]
 [ext_resource type="Script" path="res://systemes/pause.gd" id="42_pause"]
 [ext_resource type="Texture2D" path="res://assets/images/visage.png" id="43_visage"]
+[ext_resource type="Script" path="res://systemes/sauvegarde.gd" id="44_sauvegarde"]
 
 [sub_resource type="ViewportTexture" id="tex_ecran"]
 viewport_path = NodePath("Rendu")
@@ -402,6 +403,7 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("42_pause")
 reglages = ExtResource("2_reglages")
+sauvegarde = NodePath("../../../Sauvegarde")
 
 ; L'ecran de fin est DERRIERE le fondu dans l'arbre, donc dessine par-dessus :
 ; le voile de mort doit couvrir le jeu, y compris un fondu de porte en cours.
@@ -460,6 +462,17 @@ script = ExtResource("33_mission")
 
 [node name="Bourse" type="Node" parent="."]
 script = ExtResource("34_bourse")
+
+; Sauvegarder et reprendre. Se cable sur les systemes qui portent l'etat a
+; ecrire : l'heure, l'argent, l'inventaire, la position, la mission. Le monde,
+; lui, ne se sauve pas - il se regenere.
+[node name="Sauvegarde" type="Node" parent="."]
+script = ExtResource("44_sauvegarde")
+bourse = NodePath("../Bourse")
+temps = NodePath("../Temps")
+equipement = NodePath("../Equipement")
+joueur = NodePath("../Rendu/Scene3D/Joueur")
+mission = NodePath("../Mission")
 
 [node name="Tir" type="Node" parent="."]
 script = ExtResource("36_tir")

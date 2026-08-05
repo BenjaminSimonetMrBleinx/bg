@@ -21,6 +21,10 @@ signal recommencer_demande
 
 @export var reglages: Reglages
 
+## Ou ecrire la partie en quittant. Facultatif : sans lui, Quitter quitte sans
+## sauver, ce qui reste correct - juste sans reprise.
+@export var sauvegarde: NodePath
+
 ## Ou l'on est dans le menu.
 enum Vue { FERME, RACINE, OPTIONS }
 
@@ -45,6 +49,7 @@ const CURSEURS := [
 var _vue: int = Vue.FERME
 var _choix: int = 0
 var _audio: Audio
+var _sauvegarde: Sauvegarde
 
 
 func _ready() -> void:
@@ -54,6 +59,7 @@ func _ready() -> void:
 	# suspend, et un noeud fige ne peut plus se rouvrir.
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	set_process(true)
+	_sauvegarde = get_node_or_null(sauvegarde) as Sauvegarde
 
 
 func _son() -> Audio:
@@ -293,6 +299,10 @@ func _valider() -> void:
 			fermer()
 			recommencer_demande.emit()
 		3:
+			# On sauve AVANT de quitter : c'est le moment ou l'on part avec son
+			# argent, son chapeau et son heure, et ou l'on veut les retrouver.
+			if _sauvegarde:
+				_sauvegarde.sauver()
 			get_tree().quit()
 
 

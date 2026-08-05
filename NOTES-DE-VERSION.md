@@ -16,6 +16,25 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.41.0 — On peut sauvegarder et reprendre
+
+> **À essayer : joue un peu, prends le chapeau, gagne de l'argent, puis quitte
+> par le menu pause (Échap → Quitter). Relance le jeu : tu retrouves ton argent,
+> ton chapeau sur la tête, l'heure qu'il était, ta position, et l'avancement de
+> la mission.**
+
+La partie se sauvegarde **en quittant** et **à la fin d'une mission**. Au
+lancement, si une sauvegarde existe, elle **reprend toute seule** — pas besoin
+de rejouer la mission depuis le début. Le monde, lui, n'est pas sauvegardé : il
+se refabrique à l'identique, l'écrire serait inutile.
+
+Pas encore là, et c'est volontaire : la pureté, la famille et la réputation (qui
+n'existent pas encore dans le jeu), la sauvegarde en dormant chez soi, et ce que
+devient une mort. Ça viendra par-dessus, sans casser les sauvegardes déjà
+écrites.
+
+---
+
 ## 0.40.0 — L'interface prend l'esthétique de la série
 
 > **Le portrait de Walter est maintenant une case du tableau périodique** —

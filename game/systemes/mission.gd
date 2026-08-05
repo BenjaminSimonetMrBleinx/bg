@@ -129,6 +129,18 @@ func evenement(nom: String) -> bool:
 	return true
 
 
+## Repositionne la mission a l'etat d'une sauvegarde : on saute directement a
+## l'etape `i`, avec la liste des objectifs deja franchis. Sert au chargement,
+## pour reprendre une partie sans rejouer la mission depuis le debut.
+func reprendre(i: int, faits: Array) -> void:
+	_index = clampi(i, 0, _etapes.size())
+	_faites.clear()
+	for f in faits:
+		_faites.append(str(f))
+	_finie = _index >= _etapes.size()
+	etape_changee.emit(_index)
+
+
 ## Sommes-nous a cette etape ? Lu par les points d'interaction qui ne doivent
 ## exister qu'a un moment precis — l'atelier de chimie avant d'avoir cuisine,
 ## la cachette a la toute fin.
