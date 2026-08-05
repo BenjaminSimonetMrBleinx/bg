@@ -555,10 +555,10 @@ switch ($Commande) {
                couvre = @('systemes/controleur', 'systemes/vehicule', 'systemes/joueur', 'scenes/joueur') }
             @{ cle = 'mission'; nom = 'mission 1'
                script = 'res://verifs/test_mission.gd'
-               couvre = @('systemes/mission', 'systemes/scenario', 'systemes/bourse',
-                          'systemes/point', 'systemes/cachette', 'systemes/equipement',
-                          'donnees/mission1', 'donnees/dialogues', 'donnees/outils',
-                          'scenes/mission1') }
+               couvre = @('systemes/mission', 'systemes/scenario', 'systemes/tir',
+                          'systemes/bourse', 'systemes/point', 'systemes/cachette',
+                          'systemes/equipement', 'donnees/mission1', 'donnees/dialogues',
+                          'donnees/outils', 'scenes/mission1') }
 
             @{ cle = 'allures'; nom = 'allures de Walter'
 
