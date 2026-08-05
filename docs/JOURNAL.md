@@ -13,6 +13,67 @@ raconte la session.
 
 ---
 
+## Session du 6 aout 2026 — sauvegarder, reprendre, et un ecran-titre
+
+**Début** : 06/08, sur `v0.40.0`, dépôt propre et outillage enfin en place.
+**Fin** : sur `v0.43.0`, trois versions livrées et un verbe d'outil de plus.
+
+### Ce qui était demandé
+
+Reprendre le traitement des tickets, cette fois du vrai code de jeu — et le
+faire un par un, chaque ticket validé avant d'être démarré.
+
+### Ce qui est livré
+
+| Version | Quoi |
+|---|---|
+| **0.41.0** | On peut **sauvegarder et reprendre** (#32 lot 1) : heure, argent, inventaire, position, mission. On sauve en quittant et à la fin d'une mission ; au lancement, une partie existante reprend seule |
+| — | Le jeu s'ouvre sur le **second écran** (`bg.ps1 jouer`), pour ne pas recouvrir l'éditeur |
+| **0.42.0** | **Mourir recharge le dernier point** (#32 lot 2) au lieu de repartir de zéro ; l'argent gagné depuis est perdu |
+| **0.43.0** | Un **écran-titre** (#40 lot 1) : Nouvelle partie / Reprendre / Quitter, avec confirmation avant d'écraser |
+| — | Un verbe **`bg.ps1 diag`** pour relever le coût de la ville (#33) |
+
+### Les surprises
+
+**Le pre-flight a évité deux fausses routes.** Avant de coder chaque ticket, on
+a cadré — et deux se sont révélés déjà faits : **#18** (Tuco est assis depuis un
+moment, vérifié à la capture) et **#33** (la règle « plafonner et recycler » est
+déjà appliquée, l'outil de diag existe déjà). Un ticket ouvert n'est pas un
+travail à faire ; parfois c'est un travail déjà fait que personne n'a coché.
+
+**Recharger une partie n'est pas refaire les gestes.** Le premier test de
+sauvegarde a échoué sur une seule chose : le chapeau ne revenait pas sur la
+tête. `_demander_le_port` pose le port après un **délai** — c'est une animation,
+juste pour le geste joué. À la restauration on écrit l'état directement : on
+retrouve le chapeau dessus, on ne le remet pas cran par cran.
+
+**Le relevé frais a fait exactement son travail.** `bg.ps1 diag` sur la 0.43 a
+sorti un chiffre qui prévient : **7 images/seconde au pire, 8 images ratées sur
+180, 16,5 ms de scripts par image — et zéro passant.** La moyenne (58) allait
+bien ; c'est le pire cas qui s'est effondré depuis le décor d'Albuquerque. C'est
+tout l'intérêt d'un instrument : il dit ce que la moyenne cache.
+
+**Un type non inférable plante tout, en silence jusqu'à ce qu'on regarde.**
+`var etiquette := ... if ... else liste[i]` — `liste[i]` est un Variant, donc le
+type ne s'infère pas, et GDScript refuse de compiler le fichier ET tous ceux qui
+en dépendent. Le lanceur ne montrait qu'une bannière ; il a fallu lancer le
+script en direct pour lire l'erreur. Type explicite, et c'est réglé.
+
+### Où on reprend
+
+**L'à-coup perf est le premier fil à tirer** : 7 im/s au pire, 16,5 ms de
+scripts par image avec 0 passant — documenté sur #33, à profiler (décor
+d'Albuquerque ? rafraîchissement jour/nuit ?). À part ça : les lots suivants de
+#40 (écran de chargement, cartons de chapitre, générique, bilan d'acte) et de
+#32 (dormir pour sauver ; pureté/famille/réputation quand elles existeront).
+Décisions toujours en attente de Benjamin : **#30** (comment on gagne la
+réputation) et **#38** (musique). Guillaume : rig des passants (#16), voix (#5),
+formulaire de mission (#37). Et un fil ancien : les suites `tenue de route` et
+`sons` échouent sur ce poste **même sur le code propre** — pré-existant, à
+creuser.
+
+---
+
 ## Session du 5 au 6 aout 2026 — le depot demenage, l'outillage arrive, et le suivi se remet d'aplomb
 
 **Début** : 05/08 au soir, sur `v0.40.0`. **Fin** : 06/08 au petit matin, même
