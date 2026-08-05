@@ -14,7 +14,7 @@
 | Moteur | **Godot 4.7** — choix définitif |
 | Modélisation | Blender 5.2, pipeline procédural en Python |
 | Juridique | Fan game non commercial. Médias de la série utilisés, aucun droit revendiqué |
-| Dépôt | **Privé**, dédié, séparé du monorepo professionnel |
+| Dépôt | **Public**, sur le compte perso `benjibleinx-perso`, dédié et séparé du monorepo pro. Public assumé : c'est ce qui rend le lien de téléchargement de l'exe ouvert, sans compte GitHub — voir les releases |
 | Médias de la série | Dans `assets-ref/`, **jamais versionnés** — l'historique git est irréversible |
 | Rôles | Benjamin : stack, systèmes, intégration · Guillaume : son, 3D, script |
 
