@@ -1,4 +1,4 @@
-# Notes de version
+﻿# Notes de version
 
 **Ce fichier s'adresse à celui qui va tester**, pas à celui qui a codé.
 
@@ -20,58 +20,126 @@ le numéro ne voulait plus rien dire. Un lot livré est désormais un correctif.
 
 ---
 
-## 📌 Session du 6 août 2026 — de la 0.44 à la 0.48.2
+## 📌 La session du 6 au 7 août 2026 — de la 0.43 à la 0.48.10
 
-**Ce qu'il faut retenir de la soirée, en une lecture.** Le détail version par
-version est en dessous.
+**Onze versions en une soirée.** Voilà ce qu'il faut en retenir, en une lecture.
+Le détail version par version est en dessous, si tu veux creuser.
 
-### Les trois compteurs sont à l'écran
+---
 
-`$192` · `Famille 60` · `Rue 10`, en haut à gauche, en permanence.
+### Trois chiffres en haut de l'écran
 
-C'est le **changement de direction de la soirée**, et il renverse la règle n°1
-du projet — qui disait qu'aucun chiffre ne se montre au joueur. La raison :
-ce sont des **comptes à rebours qu'on surveille en conduisant**, pas des notes
-qu'on découvre à la fin. Et les avoir côte à côte donne le sujet du jeu à voir
-sans une ligne de dialogue : **la réputation monte quand la famille descend**.
+`$192` · `Famille 60` · `Rue 10`
 
-- **Famille** — un seul compteur pour Skyler, Junior et Hank réunis : la place
-  qu'on laisse à sa vie d'avant. Il descend tout seul avec les heures. Il
-  monterait en s'occupant d'eux, en pensant aux courses, en s'occupant de son
-  cancer — mais **aucun de ces endroits n'existe encore**, donc pour l'instant
-  il ne fait que baisser.
-- **Réputation de rue** — gagnée par un **mélange**, et c'est décidé : la pureté
-  de ce qu'on livre, la fiabilité des livraisons, la violence assumée, et le
-  fait de cuisiner de sa main. Aucune voie ne suffit seule ; un joueur qui ne
-  serait que violent, ou que rigoureux, plafonne. Elle **ne se dépense jamais** :
-  elle ouvre des portes. Le **chapeau la multiplie par 1,5** — coiffé, on est
-  Heisenberg et tout ce qu'on fait se raconte plus vite.
-- **Argent** — inchangé.
+C'est le gros changement de la soirée. Jusqu'ici le jeu ne montrait **aucun**
+chiffre, par principe — on voulait que tout se devine. On a changé d'avis pour
+ces trois-là, et pour une raison simple : **ce sont des choses qu'on surveille
+en conduisant.** Comme une jauge d'essence. Les cacher aurait été élégant et
+pénible.
 
-### Le produit a une couleur
+Et surtout, les mettre côte à côte raconte le jeu sans un mot : **la réputation
+monte quand la famille descend.**
+
+- **Famille** — un seul compteur pour Skyler, Junior et Hank ensemble. C'est la
+  place que tu laisses à ta vie d'avant. Il baisse tout seul, heure après heure.
+- **Rue** — ta réputation. Elle se gagne de plusieurs façons à la fois : la
+  qualité de ce que tu livres, le fait de tenir tes délais, celui d'assumer la
+  violence, celui de cuisiner toi-même. Aucune ne suffit seule. Et elle ne se
+  dépense jamais — elle ouvre des portes.
+- **Argent** — comme avant.
+
+Le **porkpie** multiplie tout ce que tu gagnes en réputation par une fois et
+demie. Coiffé, tu es Heisenberg, et ça se raconte plus vite.
+
+---
+
+### Le produit a enfin une couleur
 
 Le cristal dans ta main change de teinte selon sa pureté : **brun, ambre, clair,
-translucide, bleu**. Celle-là reste sans chiffre — on ne t'annoncera jamais un
-pourcentage, tu regardes ta main.
+translucide, bleu**. Celui-là reste sans chiffre — on ne t'annoncera jamais un
+pourcentage, tu regardes ta main et tu sais.
 
-### Un menu d'outils pour tester sans relancer
+---
 
-**Échap → Outils de test**, dix-huit lignes. Aller à n'importe lequel des 45
-lieux, traverser les murs et voler, régler l'heure, la pureté, la famille, la
-réputation, la densité de foule, voir les collisions, afficher un relevé de
-performance en direct. C'est visible pour tout le monde : ceux qui jouent à ce
-jeu sont ceux qui le testent.
+### Une première mission qui te met vraiment en défaut
 
-### Et l'écran-titre a enfin le grain du jeu
+**Échap → Outils de test → Déclencher une mission de test → « Un simple service ».**
 
-Il s'affichait plus net que la première image de jeu qui le suivait.
+Tu pars porter dix dollars à Jesse. Vingt secondes après avoir démarré, **Skyler
+appelle** : il n'y a plus d'œufs, Junior voulait des pancakes. Tu es sur la route
+du désert.
 
-### Ce qui a été réparé sans que ça se voie
+Aucune réponse n'est la bonne, et c'est le sujet :
 
-Trois vérifications mentaient : le relevé de performance annonçait un
-effondrement qui n'existait pas, `verif` validait une scène qui n'est plus le
-point d'entrée du jeu, et chaque capture de situation photographiait le menu au
-lieu de sa scène. Aucune des trois ne le signalait.
+| Ce que tu fais | Famille | Rue |
+|---|---|---|
+| Tu passes prendre les œufs | **+10** | **−6** — tu arrives en retard |
+| Tu promets, et tu files droit | **−10** | **+4** — au moins tu es fiable |
+| Tu ne décroches pas | **−5** | inchangée |
+
+**Rien ne te dit ce que ça t'a coûté.** Les compteurs bougent en silence, et
+Skyler ne te reparle jamais des œufs si tu as promis et oublié.
+
+---
+
+### Une épicerie, et le désert enfin libre
+
+Un centre commercial au nord de la ville, avec une **enseigne ambre** qu'on
+repère de la route. C'est la première façon de faire *remonter* la famille —
+jusqu'ici elle ne savait que descendre.
+
+Et le désert est maintenant **ouvert à toute heure**, sans attendre que la
+mission t'y envoie. *(Ça a un prix, voir plus bas.)*
+
+---
+
+### Une boîte à outils, pour toi qui testes
+
+**Échap → Outils de test.** Dix-neuf lignes qui t'évitent de relancer le jeu :
+
+aller directement à n'importe lequel des 45 lieux · traverser les murs et voler ·
+accélérer le temps · te donner de l'argent ou tous les objets · devenir
+invulnérable · changer la pureté, la famille, la réputation · remplir la ville
+de passants et de voitures · voir les collisions · afficher un relevé de
+performance pendant que tu joues.
+
+Ce n'est pas caché : **ceux qui jouent à ce jeu sont ceux qui le testent.**
+
+---
+
+### Et l'écran-titre a enfin la tête du jeu
+
+Il s'affichait plus net que la première image de jeu qui le suivait. La promesse
+tombait dès qu'on appuyait sur « Nouvelle partie ».
+
+---
+
+### Trois choses qui mentaient, et qu'on a réparées
+
+Aucune ne se voyait en jouant, et c'est bien le problème :
+
+- **Le relevé de performance annonçait un effondrement qui n'existait pas.** Le
+  jeu tournait avec vingt-six fois la marge nécessaire ; c'est l'instrument qui
+  se trompait.
+- **La vérification automatique contrôlait la mauvaise scène** depuis que
+  l'écran-titre est passé devant le monde. La vraie porte d'entrée du jeu
+  n'était vérifiée par personne.
+- **Chaque capture d'écran photographiait le menu** au lieu de la situation
+  demandée. Le fichier était bien écrit, l'image était fausse.
+
+---
+
+### Ce qui est cassé, et qu'on répare la prochaine fois
+
+**Ouvrir le désert a cassé la mission de Tuco.** Jesse t'accueille au camping-car
+avec « Vous êtes en retard » alors que rien n'a commencé, il est posé sur la
+route, et on n'entre plus dans le camping-car. C'est écrit en entier dans le
+ticket #48 — la bonne correction n'est pas de refermer le désert, c'est de faire
+taire Jesse tant que la mission ne l'a pas amené là.
+
+**Et l'épicerie est encore un bouton** : on peut appuyer en boucle et monter la
+famille à cent sans bouger. Ce sera une vraie course — quatre dollars, une boîte
+d'œufs dans l'inventaire, et Skyler qui réagit quand tu rentres. Ticket #49.
 
 ---
 

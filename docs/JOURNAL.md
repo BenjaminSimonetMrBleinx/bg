@@ -1,4 +1,4 @@
-# Journal
+﻿# Journal
 
 **Une entrée par session, avec son début et sa fin.** Chaque entrée dit quatre
 choses et pas une de plus : ce qu'on voulait, ce qu'on a livré, ce qu'on a
@@ -10,6 +10,123 @@ dans trois semaines, et c'est elle qui évite de repayer un piège.
 Le détail technique vit dans les messages de commit ; ce qu'on peut essayer,
 dans `NOTES-DE-VERSION.md` ; ce qui reste à faire, dans les tickets. Ici, on
 raconte la session.
+
+---
+
+## Session du 6 au 7 aout 2026 — les trois compteurs, et cinq instruments qui mentaient
+
+**Début** : 06/08, sur `v0.43.0`. **Fin** : sur `v0.48.10`, onze versions plus tard.
+
+### Ce qui était demandé
+
+Reprendre les tickets un par un, comme la veille. En cours de route, la session
+a changé de nature deux fois : d'abord des outils, puis une décision de
+direction qui renverse la règle numéro un du projet.
+
+### Ce qui est livré
+
+| Version | Quoi |
+|---|---|
+| **0.44.0** | L'écran-titre passe par le rendu du jeu — il était plus net que sa propre première image |
+| **0.45.0** | Un menu d'**outils de test** dans la pause : onze gestes qui évitent une relance |
+| **0.46.0** | Aller à un lieu nommé (45 destinations), traverser les murs et voler |
+| **0.47.0** | Relevé de performance en direct, densités foule/trafic, collisions et repères visibles |
+| **0.48.0** | La **pureté** : cinq paliers, une couleur dans la main, aucun chiffre |
+| **0.48.1** | Les **points de famille**, affichés en permanence |
+| **0.48.2** | La **réputation de rue** — les trois compteurs sont à l'écran |
+| **0.48.3** | Une épicerie, première façon de faire remonter la famille |
+| **0.48.4** | « Un simple service » : la mission de test des appels |
+| **0.48.5 → .10** | Cinq corrections successives sur cette mission, chacune revelant un vrai défaut du jeu |
+
+Côté tickets : **#33 fermé** (fausse alerte), **#46 créé et fermé** (les outils),
+**#30 fermé** (les trois ressources), **#21, #22 et #28 supprimés**, **#47, #48
+et #49 ouverts**. Et deux tickets sortis de 🔥 parce qu'ils attendaient autre
+chose qu'eux-mêmes.
+
+### Les surprises
+
+**Un instrument peut mentir avec l'aplomb d'un chiffre.** Le relevé de coût
+annonçait un effondrement du jeu : pire cas tombé à 7 images/seconde, 16,5 ms de
+scripts par image. Le jeu tournait en réalité avec **vingt-six fois la marge
+nécessaire**, zéro image ratée sur quinze mille. Trois compteurs mal lus, aucun
+bug : le compteur d'images du moteur ne se rafraîchit qu'une fois par seconde,
+`TIME_PROCESS` est un **maximum de la seconde écoulée** et pas un temps de
+scripts, et une seconde de chauffe laissait la compilation des shaders dans la
+mesure. C'est le piège 18, et il donne son revers à la règle d'or du projet :
+*une image ou un nombre, jamais une conviction* — **mais un nombre n'est une
+preuve que si on a lu le code qui le produit.**
+
+**Cinq tickets décrivaient un travail déjà fait.** L'Aztek amélioré était
+intégré depuis le 5 août. Les voix de la mission 1 existent (113 fichiers de
+synthèse). Les sons de pas des piétons aussi (17 fichiers) — ce qui manque,
+c'est que `pieton.gd` ne les joue jamais. Un ticket ouvert n'est pas un travail
+à faire ; c'est parfois un travail déjà fait que personne n'a coché, et on l'a
+repayé cinq fois en une soirée.
+
+**Deux vérifications avaient cessé de vérifier.** Depuis que l'écran-titre est
+devenu la scène d'entrée en 0.43, `verif` validait `monde.tscn` en dur — la
+vraie porte du jeu n'était contrôlée par personne — et `capture` photographiait
+le menu au lieu de sa situation, en écrivant un PNG parfaitement valide. Rien ne
+le signalait. **Une vérification qui ne suit pas un réglage rassure à côté.**
+
+**La règle numéro un a été renversée, et c'est écrit.** Le projet disait
+qu'aucun chiffre ne se montre au joueur. Les trois ressources — argent, famille,
+réputation — s'affichent désormais en permanence, parce que ce sont des comptes
+à rebours qu'on surveille en conduisant. `docs/12-direction.md` et `CLAUDE.md`
+portent l'exception, sa raison et sa borne : la pureté reste une couleur dans la
+main. Une règle qu'on change sans l'écrire devient une règle qu'on enfreint sans
+le savoir.
+
+**Le premier appel pris au volant a révélé un trou de quatre ans.** Le
+contrôleur fait capter la touche d'interaction par une conversation en cours
+dans trois états — à pied, dans une maison, au téléphone — et **pas au volant**.
+Personne ne l'avait vu parce qu'aucun dialogue ne se déclenchait en conduisant.
+Le premier est resté bloqué sur sa première réplique, pendant que le même `F`
+essayait de faire descendre Walter de sa voiture.
+
+**Cinq allers-retours sur la même mission, et pas un pour rien.** Chaque essai a
+sorti un défaut du jeu et pas de la mission : l'appel comptait depuis le début
+de la mission au lieu de la conduite ; `F` éjectait de la voiture ; aucun
+dialogue ne pouvait avancer au volant ; `Audio.bruit()` ne rend pas de poignée,
+donc **un son ne peut pas être coupé** — le téléphone continuait de sonner après
+qu'on avait décroché ; et une parcelle du générateur n'est pas une adresse — sans
+enseigne, l'épicerie était introuvable. **Jouer trouve ce que tester ne trouve
+pas.**
+
+**Un garde-fou retiré en le citant.** Le passage vers le désert était fermé tant
+que la mission 1 n'y envoyait pas, et son commentaire disait mot pour mot ce qui
+arriverait sans lui : *« on pouvait filer au camping-car dès la première minute,
+y trouver un Jesse qui reproche un retard à une mission pas encore commencée »*.
+Il a été retiré à la demande, en recopiant cette phrase, sans en tirer la
+conséquence. Elle est arrivée dans la minute. **Un commentaire qui prédit une
+panne mérite d'être lu comme un avertissement, pas comme une décoration.**
+
+**Deux fausses manœuvres, dites plutôt que tues.** Un `git stash pop` non abouti
+a laissé une heure de travail dans le stash le temps d'un tour — récupérée
+intégralement. Et un commentaire de ticket posté sous le **compte pro** sur un
+dépôt perso public : supprimé, reposté du bon côté, et le remote est passé sur
+l'alias SSH perso pour que ça ne se reproduise pas.
+
+### Où on reprend
+
+**#48 d'abord** : la mission de Tuco est cassée depuis l'ouverture du désert.
+Jesse parle hors contexte, il est mal placé, on n'entre plus dans le camping-car,
+le modèle affiché n'est peut-être pas le bon, et la sortie du désert pose
+problème. La correction n'est pas de refermer la porte — c'est de donner à `Pnj`
+le garde-fou de mission que `Point` a déjà, et de faire taire Jesse tant que rien
+ne l'a amené là. Les quatre autres symptômes sont peut-être antérieurs : à
+vérifier avant de conclure.
+
+**Puis #49** : l'épicerie est encore un bouton qu'on peut marteler. Elle doit
+devenir une vraie course — quatre dollars, une boîte d'œufs dans l'inventaire,
+les points donnés **en rentrant**, et Skyler qui réagit selon qu'on a pensé à
+elle ou non.
+
+**En attente ailleurs** : #47 (l'objet tenu ne revient plus après une reprise —
+régression pré-existante, la moitié du critère de fin de #32), un système de
+**dialogue à choix** qui n'existe pas et que réclament #31, #35 et #29, et dix
+tickets jamais passés en revue (#34 à #45). Guillaume : les rigs de passants, les
+voix, le formulaire de mission.
 
 ---
 
