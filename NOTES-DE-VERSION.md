@@ -16,6 +16,28 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.47.0 — Voir ce que le jeu coûte, pendant qu'on joue
+
+> **À essayer : Échap → Outils de test → « Relevé de performance ».** Un encart
+> apparaît en bas à gauche : temps d'image, 99e centile, pire cas, images ratées,
+> appels de rendu, mémoire. La première ligne **vire au rouge** dès qu'une image
+> est ratée — on ne lit pas un tableau en conduisant.
+
+Trois autres lignes dans le même menu :
+
+- **Foule et trafic** — `aucun / normal / maximum`. Le maximum pose 120 passants
+  et 60 voitures : c'est ce qui montre d'un coup ce que la circulation coûte.
+  Attention, les passants sont désactivés dans le jeu depuis fin juillet pour une
+  bonne raison — leur trottoir se calcule mal quand les rues changent de largeur,
+  et certains marchent sur la chaussée. Les rallumer ici sert précisément à les
+  regarder.
+- **Montrer les collisions** — les formes de collision autour de toi, à 45 m. Il
+  dit combien il en a montré sur combien : « 24 sur 2158 ».
+- **Montrer les lieux nommés** — les 45 destinations écrites en clair, debout
+  dans la ville.
+
+---
+
 ## 0.46.0 — Se déplacer sans marcher
 
 > **À essayer : Échap → Outils de test → « Aller à un lieu nommé… ».** Quarante-cinq

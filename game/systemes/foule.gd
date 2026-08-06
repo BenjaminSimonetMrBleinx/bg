@@ -156,6 +156,21 @@ func _process(delta: float) -> void:
 	_recycler()
 
 
+## Refait la foule avec un autre effectif. Sert aux outils de test : la ville
+## sans personne puis avec le maximum, c'est la seule facon d'isoler ce que la
+## foule coute — et c'est comme ca qu'on a trouve les six images par seconde.
+##
+## ON DETRUIT AVANT DE RECONSTRUIRE : _ready() ajoute des enfants, l'appeler
+## deux fois de suite empilerait deux foules l'une sur l'autre.
+func repeupler(n: int) -> void:
+	for p in _passants:
+		if is_instance_valid(p):
+			p.queue_free()
+	_passants.clear()
+	combien = maxi(0, n)
+	_ready()
+
+
 ## Tous les passants, pour les tests. Une foule qui ne bouge pas ressemble
 ## exactement a une foule qui n'existe pas.
 func passants() -> Array[Pieton]:

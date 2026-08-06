@@ -52,13 +52,31 @@
    ]
   },
   "menu_outils": {
-   "quoi": "Le menu des outils de test, ouvert. Ce qu'on regarde : les onze lignes tiennent dans le cadre, les valeurs sont alignees a droite, et les chevrons signalent ce qui se parcourt a gauche-droite. On l'ouvre par appel plutot qu'a la touche : y arriver au clavier traverse la racine, et la ligne selectionnee dependrait alors d'ou traine le curseur.",
+   "quoi": "Le menu des outils de test, ouvert. Ce qu'on regarde : les seize lignes tiennent dans le cadre, les valeurs sont alignees a droite, et les chevrons signalent ce qui se parcourt a gauche-droite. On l'ouvre par appel plutot qu'a la touche : y arriver au clavier traverse la racine, et la ligne selectionnee dependrait alors d'ou traine le curseur.",
    "fin": 70,
    "etapes": [
     {
      "image": 30,
      "appeler": "Pause",
      "methode": "ouvrir_les_outils"
+    }
+   ]
+  },
+  "jauge_perf": {
+   "quoi": "Le releve de cout affiche en jouant, en bas a gauche. Ce qu'on regarde : il mesure le temps de CHAQUE image comme diag_ville, jamais le compteur d'images par seconde du moteur — et la premiere ligne vire au rouge des qu'une image est ratee, parce qu'on ne lit pas un tableau en conduisant.",
+   "fin": 120,
+   "etapes": [
+    {
+     "image": 20,
+     "appeler": "Dev",
+     "methode": "basculer",
+     "argument": "jauge"
+    },
+    {
+     "image": 22,
+     "appeler": "Dev",
+     "methode": "basculer",
+     "argument": "densite"
     }
    ]
   },

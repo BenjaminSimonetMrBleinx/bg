@@ -93,6 +93,19 @@ func _ready() -> void:
 			% [_agents.size(), noeuds.size()])
 
 
+## Refait la circulation avec un autre effectif. Meme raison que pour la foule :
+## une rue vide et une rue saturee sont les deux mesures qui encadrent le cout.
+##
+## ON DETRUIT AVANT DE RECONSTRUIRE : _ready() ajoute des enfants.
+func repeupler(n: int) -> void:
+	for v in _agents:
+		if is_instance_valid(v):
+			v.queue_free()
+	_agents.clear()
+	combien = maxi(0, n)
+	_ready()
+
+
 ## Les voitures en circulation, pour les tests. Un trafic qui ne bouge pas
 ## ressemble exactement a un trafic qui n'existe pas.
 func agents() -> Array[Circulant]:

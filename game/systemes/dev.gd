@@ -51,16 +51,43 @@ const ENTREES := [
 	{"cle": "outils", "nom": "Donner tous les outils", "genre": ACTION},
 	{"cle": "invulnerable", "nom": "Invulnerable", "genre": BASCULE},
 	{"cle": "soigner", "nom": "Se soigner", "genre": ACTION},
+	{"cle": "densite", "nom": "Foule et trafic", "genre": CHOIX},
+	{"cle": "collisions", "nom": "Montrer les collisions", "genre": BASCULE},
+	{"cle": "reperes", "nom": "Montrer les lieux nommes", "genre": BASCULE},
+	{"cle": "jauge", "nom": "Releve de performance", "genre": BASCULE},
 	{"cle": "resolution", "nom": "Resolution interne", "genre": CHOIX},
 	{"cle": "ambiance", "nom": "Ambiance", "genre": BASCULE},
 	{"cle": "musique", "nom": "Musique", "genre": BASCULE},
 ]
+
+## Les trois crans de peuplement : rien, ce que le jeu pose, et le maximum.
+##
+## LA FOULE EST A ZERO DANS LE JEU, ET C'EST VOULU depuis le 31/07/2026 : la
+## voie des passants se calcule avec un ecart de trottoir UNIQUE, faux des que
+## les rues changent de largeur — six sur vingt-six marchaient sur la chaussee.
+## L'allumer ici montre donc un defaut connu, et c'est justement a ca que sert
+## un outil de test : celui qui reparera les trottoirs a besoin de les voir.
+const DENSITES_NOM := ["aucun", "normal", "maximum"]
+const FOULE := [0, 26, 120]
+const TRAFIC := [0, 10, 60]
+
+## Au-dela de cette distance du joueur, on ne fabrique pas de maillage de
+## controle : la ville en compte des milliers, et les afficher tous ferait
+## tomber le jeu au moment precis ou l'on cherche pourquoi il tombe.
+const COLLISIONS_PORTEE := 45.0
+const COLLISIONS_MAX := 400
 
 @export var reglages: Reglages
 @export var bourse: NodePath
 @export var equipement: NodePath
 @export var joueur: NodePath
 @export var vehicule: NodePath
+@export var foule: NodePath
+@export var trafic: NodePath
+@export var jauge: NodePath
+## La racine du contenu 3D : c'est sous elle qu'on cherche les collisions et
+## qu'on pose les reperes.
+@export var scene_3d: NodePath
 ## Le noeud qui porte le pipeline de rendu — la racine du monde. Son
 ## appliquer() relit reglages.tres a chaud, ce qui est exactement ce qu'il faut
 ## pour changer la resolution sans relancer.
@@ -72,6 +99,16 @@ var _equipement: Equipement
 var _joueur: Joueur
 var _vehicule: Node3D
 var _rendu: Node
+var _foule: Foule
+var _trafic: Trafic
+var _jauge: JaugePerf
+var _scene: Node3D
+
+## Ce qu'on a fabrique pour montrer. Garde pour pouvoir le DEFAIRE : des
+## maillages de controle laisses en place apres extinction sont pires que pas
+## de controle du tout, on croit voir le jeu et on voit l'outil.
+var _montre_collisions: Node3D
+var _montre_reperes: Node3D
 
 
 func _ready() -> void:
@@ -80,6 +117,10 @@ func _ready() -> void:
 	_joueur = get_node_or_null(joueur) as Joueur
 	_vehicule = get_node_or_null(vehicule) as Node3D
 	_rendu = get_node_or_null(rendu)
+	_foule = get_node_or_null(foule) as Foule
+	_trafic = get_node_or_null(trafic) as Trafic
+	_jauge = get_node_or_null(jauge) as JaugePerf
+	_scene = get_node_or_null(scene_3d) as Node3D
 	if reglages != null:
 		_vitesse_normale = reglages.temps_vitesse
 
@@ -111,6 +152,14 @@ func valeur(i: int) -> String:
 			return "oui" if _joueur != null and _joueur.invulnerable else "non"
 		"traverse":
 			return "oui" if _joueur != null and _joueur.traverse else "non"
+		"densite":
+			return DENSITES_NOM[_rang_densite()]
+		"collisions":
+			return "oui" if _montre_collisions != null else "non"
+		"reperes":
+			return "oui" if _montre_reperes != null else "non"
+		"jauge":
+			return "oui" if _jauge != null and _jauge.visible else "non"
 		"ambiance":
 			return "coupee" if _muet(Audio.BUS_AMBIANCE) else "active"
 		"musique":
@@ -126,7 +175,7 @@ func valeur(i: int) -> String:
 ## rien fait, et on appuie trois fois.
 func agir(i: int) -> String:
 	match str(ENTREES[i].get("cle", "")):
-		"temps", "resolution":
+		"temps", "resolution", "densite":
 			# Un choix se parcourt a gauche-droite ; F le fait avancer d'un cran
 			# plutot que de ne rien faire.
 			regler(i, 1)
@@ -157,11 +206,33 @@ func agir(i: int) -> String:
 			return "invulnerable" if _joueur.invulnerable else "vulnerable"
 		"soigner":
 			return _soigner()
+		"collisions":
+			return _basculer_les_collisions()
+		"reperes":
+			return _basculer_les_reperes()
+		"jauge":
+			if _jauge == null:
+				return "pas de jauge"
+			_jauge.visible = not _jauge.visible
+			if _jauge.visible:
+				# On repart de zero : les images d'un menu ouvert ne disent rien
+				# de ce qu'on s'appretait a regarder.
+				_jauge.repartir()
+			return "releve affiche" if _jauge.visible else "releve cache"
 		"ambiance":
 			return _basculer_le_bus(Audio.BUS_AMBIANCE, "ambiance")
 		"musique":
 			return _basculer_le_bus("Musique", "musique")
 	return ""
+
+
+## Declenche une ligne par sa CLE plutot que par son rang. Sert aux captures et
+## aux tests : un rang change des qu'on insere une ligne au-dessus, une cle non.
+func basculer(cle: String) -> String:
+	for i in ENTREES.size():
+		if str(ENTREES[i].get("cle", "")) == cle:
+			return agir(i)
+	return "cle '%s' inconnue" % cle
 
 
 ## A ou D sur la ligne i. Ne concerne que les choix ; ailleurs, F suffit.
@@ -171,6 +242,8 @@ func regler(i: int, sens: int) -> void:
 			_poser_vitesse(_rang_vitesse() + sens)
 		"resolution":
 			_poser_resolution(_rang_resolution() + sens)
+		"densite":
+			_poser_densite(_rang_densite() + sens)
 
 
 # ------------------------------------------------------------------ les lieux
@@ -222,29 +295,31 @@ func _noeud_de_scene(chemin: String) -> Node3D:
 func aller_a(nom: String) -> String:
 	if _joueur == null:
 		return "pas de joueur"
-
-	var ou := Vector3.INF
-	for d in DESTINATIONS:
-		if str(d[0]) != nom:
-			continue
-		var n := _noeud_de_scene(str(d[1]))
-		if n != null:
-			ou = n.global_position
-		break
-
+	var ou := _ou_est(nom)
 	if ou == Vector3.INF:
-		var fiche := Ancrage.trouver(nom)
-		if fiche.is_empty():
-			return "lieu '%s' inconnu" % nom
-		var p: Array = fiche.get("pos", [0, 0, 0])
-		ou = Vector3(float(p[0]), float(p[1]), float(p[2]))
-
+		return "lieu '%s' inconnu" % nom
 	# UN METRE AU-DESSUS, et la vitesse coupee. Une ancre est posee AU SOL : y
 	# deposer une capsule la fait naitre a moitie dans le trottoir, et la
 	# physique l'ejecte a la premiere image.
 	_joueur.global_position = ou + Vector3.UP
 	_joueur.velocity = Vector3.ZERO
 	return "arrive a %s" % nom
+
+
+## Ou se trouve un lieu, destination de l'histoire ou parcelle du generateur, ou
+## Vector3.INF s'il n'existe pas. Les reperes et la teleportation lisent la meme
+## reponse : deux resolutions differentes finiraient par se contredire.
+func _ou_est(nom: String) -> Vector3:
+	for d in DESTINATIONS:
+		if str(d[0]) != nom:
+			continue
+		var n := _noeud_de_scene(str(d[1]))
+		return n.global_position if n != null else Vector3.INF
+	var fiche := Ancrage.trouver(nom)
+	if fiche.is_empty():
+		return Vector3.INF
+	var p: Array = fiche.get("pos", [0, 0, 0])
+	return Vector3(float(p[0]), float(p[1]), float(p[2]))
 
 
 # ------------------------------------------------------------------- le temps
@@ -290,6 +365,127 @@ func _poser_resolution(rang: int) -> void:
 	# appliquer() relit la ressource et reconfigure le viewport a chaud. C'est
 	# le chemin qu'emprunte deja un reglage change dans l'editeur, projet lance.
 	_rendu.call("appliquer")
+
+
+# --------------------------------------------------------------- le peuplement
+
+
+func _rang_densite() -> int:
+	var n := _trafic.combien if _trafic != null else 0
+	if _foule != null:
+		n = maxi(n, _foule.combien)
+	if n <= 0:
+		return 0
+	# Le cran du haut se reconnait au-dela du double du normal, pas a l'egalite :
+	# un effectif regle a la main dans l'editeur ne tomberait sinon dans aucun.
+	return 2 if n > TRAFIC[1] * 2 else 1
+
+
+func _poser_densite(rang: int) -> void:
+	var r := clampi(rang, 0, DENSITES_NOM.size() - 1)
+	if _foule != null:
+		_foule.repeupler(FOULE[r])
+	if _trafic != null:
+		_trafic.repeupler(TRAFIC[r])
+
+
+# ------------------------------------------------------------- ce qu'on montre
+
+
+# LES COLLISIONS, AUTOUR DU JOUEUR SEULEMENT.
+#
+# Godot n'a pas d'interrupteur a chaud : debug_collisions_hint ne vaut qu'a la
+# construction des formes, donc il ne montrerait rien d'une ville deja batie. On
+# fabrique donc un maillage de controle par forme — et surtout pas pour toutes :
+# la ville en compte des milliers, et les afficher en bloc ferait tomber le jeu
+# a l'instant precis ou l'on cherche pourquoi il tombe.
+func _basculer_les_collisions() -> String:
+	if _montre_collisions != null:
+		_montre_collisions.queue_free()
+		_montre_collisions = null
+		return "collisions cachees"
+	if _scene == null or _joueur == null:
+		return "pas de scene"
+
+	var porte := Node3D.new()
+	porte.name = "CollisionsDev"
+	_scene.add_child(porte)
+	_montre_collisions = porte
+
+	var matiere := StandardMaterial3D.new()
+	matiere.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	matiere.albedo_color = Color(0.30, 1.0, 0.45, 0.55)
+	matiere.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	matiere.cull_mode = BaseMaterial3D.CULL_DISABLED
+
+	var formes: Array[CollisionShape3D] = []
+	_recolter(_scene, formes)
+
+	var pose := 0
+	var vus := 0
+	for f in formes:
+		if f.shape == null or f.disabled:
+			continue
+		vus += 1
+		if f.global_position.distance_to(_joueur.global_position) > COLLISIONS_PORTEE:
+			continue
+		if pose >= COLLISIONS_MAX:
+			continue
+		var m := MeshInstance3D.new()
+		m.mesh = f.shape.get_debug_mesh()
+		m.material_override = matiere
+		porte.add_child(m)
+		m.global_transform = f.global_transform
+		pose += 1
+
+	# On DIT ce qu'on a laisse de cote. Un plafond silencieux se lit comme
+	# « tout est montre », et on conclut qu'un mur n'a pas de collision alors
+	# qu'il etait simplement le quatre-cent-unieme.
+	return "%d forme(s) sur %d, a moins de %d m" % [pose, vus, int(COLLISIONS_PORTEE)]
+
+
+func _recolter(n: Node, sortie: Array[CollisionShape3D]) -> void:
+	if n is CollisionShape3D:
+		sortie.append(n)
+	for e in n.get_children():
+		_recolter(e, sortie)
+
+
+# LES LIEUX NOMMES, DEBOUT DANS LA VILLE. Un Label3D plutot qu'un piquet : le
+# nom est ce qu'on cherche — savoir qu'il y a « quelque chose » ici ne sert a
+# rien quand on tient deja la liste de tout ce qui existe.
+func _basculer_les_reperes() -> String:
+	if _montre_reperes != null:
+		_montre_reperes.queue_free()
+		_montre_reperes = null
+		return "reperes caches"
+	if _scene == null:
+		return "pas de scene"
+
+	var porte := Node3D.new()
+	porte.name = "ReperesDev"
+	_scene.add_child(porte)
+	_montre_reperes = porte
+
+	var poses := 0
+	for nom in lieux():
+		var ou := _ou_est(str(nom))
+		if ou == Vector3.INF:
+			continue
+		var e := Label3D.new()
+		e.text = str(nom)
+		e.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		e.no_depth_test = true
+		e.font_size = 96
+		e.pixel_size = 0.008
+		e.modulate = Color(0.95, 0.78, 0.42)
+		e.outline_modulate = Color(0, 0, 0, 0.9)
+		porte.add_child(e)
+		# A hauteur d'homme et demi : au sol le nom se perd dans le trottoir,
+		# trop haut il flotte sans designer quoi que ce soit.
+		e.global_position = ou + Vector3.UP * 2.6
+		poses += 1
+	return "%d repere(s) poses" % poses
 
 
 # ----------------------------------------------------------------- les gestes

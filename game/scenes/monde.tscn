@@ -59,6 +59,7 @@
 [ext_resource type="Texture2D" path="res://assets/images/visage.png" id="43_visage"]
 [ext_resource type="Script" path="res://systemes/sauvegarde.gd" id="44_sauvegarde"]
 [ext_resource type="Script" path="res://systemes/dev.gd" id="45_dev"]
+[ext_resource type="Script" path="res://systemes/jauge_perf.gd" id="46_jauge"]
 
 [sub_resource type="ViewportTexture" id="tex_ecran"]
 viewport_path = NodePath("Rendu")
@@ -407,6 +408,19 @@ reglages = ExtResource("2_reglages")
 sauvegarde = NodePath("../../../Sauvegarde")
 dev = NodePath("../../../Dev")
 
+; Le releve de cout affiche en jouant. Cache par defaut, allume par les outils
+; de test. Il vit DANS le viewport de rendu comme le reste de l'interface : un
+; releve dessine en pleine resolution mentirait sur ce qu'on est en train de
+; regarder.
+[node name="JaugePerf" type="Control" parent="Rendu/Interface"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("46_jauge")
+
 ; L'ecran de fin est DERRIERE le fondu dans l'arbre, donc dessine par-dessus :
 ; le voile de mort doit couvrir le jeu, y compris un fondu de porte en cours.
 [node name="FinDePartie" type="Control" parent="Rendu/Interface"]
@@ -484,6 +498,10 @@ bourse = NodePath("../Bourse")
 equipement = NodePath("../Equipement")
 joueur = NodePath("../Rendu/Scene3D/Joueur")
 vehicule = NodePath("../Rendu/Scene3D/Vehicule")
+foule = NodePath("../Rendu/Scene3D/Foule")
+trafic = NodePath("../Rendu/Scene3D/Trafic")
+jauge = NodePath("../Rendu/Interface/JaugePerf")
+scene_3d = NodePath("../Rendu/Scene3D")
 rendu = NodePath("..")
 equipement = NodePath("../Equipement")
 joueur = NodePath("../Rendu/Scene3D/Joueur")
