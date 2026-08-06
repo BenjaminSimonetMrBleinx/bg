@@ -64,6 +64,17 @@ static func trouver(nom: String) -> Dictionary:
 	return _lieux.get(nom, {})
 
 
+## Tous les lieux nommes, par ordre alphabetique. Sert aux outils de test : une
+## liste ou l'on cherche un nom se parcourt, donc elle se trie. L'ordre du
+## generateur, lui, est celui de la construction — il change a chaque
+## regeneration de la ville.
+static func noms() -> Array:
+	_charger()
+	var sortie: Array = _lieux.keys()
+	sortie.sort()
+	return sortie
+
+
 static func _charger() -> void:
 	if _lu:
 		return

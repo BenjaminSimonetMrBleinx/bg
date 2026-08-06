@@ -23,6 +23,9 @@ extends Node
 const ACTION := "action"
 const BASCULE := "bascule"
 const CHOIX := "choix"
+## Une quatrieme forme : la ligne n'agit pas, elle OUVRE une seconde page. Les
+## quarante et un lieux nommes ne tiennent pas dans un cadre de 384 pixels.
+const PAGE := "page"
 
 ## La vitesse du temps par defaut, celle de reglages.gd : une heure de jeu par
 ## minute reelle. On ne la reecrit pas ici — on la relit au demarrage, pour que
@@ -39,6 +42,8 @@ const RESOLUTIONS_NOM := ["256", "512", "1024"]
 ## le deplacement d'abord, parce que c'est ce qu'on vient chercher.
 const ENTREES := [
 	{"cle": "temps", "nom": "Vitesse du temps", "genre": CHOIX},
+	{"cle": "lieu", "nom": "Aller a un lieu nomme...", "genre": PAGE},
+	{"cle": "traverse", "nom": "Traverser les murs et voler", "genre": BASCULE},
 	{"cle": "voiture", "nom": "Faire venir la voiture", "genre": ACTION},
 	{"cle": "mille", "nom": "Donner 1 000 $", "genre": ACTION},
 	{"cle": "dix_mille", "nom": "Donner 10 000 $", "genre": ACTION},
@@ -104,6 +109,8 @@ func valeur(i: int) -> String:
 			return RESOLUTIONS_NOM[_rang_resolution()]
 		"invulnerable":
 			return "oui" if _joueur != null and _joueur.invulnerable else "non"
+		"traverse":
+			return "oui" if _joueur != null and _joueur.traverse else "non"
 		"ambiance":
 			return "coupee" if _muet(Audio.BUS_AMBIANCE) else "active"
 		"musique":
@@ -124,6 +131,12 @@ func agir(i: int) -> String:
 			# plutot que de ne rien faire.
 			regler(i, 1)
 			return ""
+		"traverse":
+			if _joueur == null:
+				return "pas de joueur"
+			_joueur.traverser(not _joueur.traverse)
+			return "on traverse tout" if _joueur.traverse \
+					else "repose au sol"
 		"voiture":
 			return _amener_la_voiture()
 		"mille":
@@ -158,6 +171,80 @@ func regler(i: int, sens: int) -> void:
 			_poser_vitesse(_rang_vitesse() + sens)
 		"resolution":
 			_poser_resolution(_rang_resolution() + sens)
+
+
+# ------------------------------------------------------------------ les lieux
+
+
+## Les endroits qui comptent, mis EN TETE de la liste.
+##
+## LA LISTE DU GENERATEUR NE SUFFIT PAS, et la premiere capture l'a montre :
+## elle publie des parcelles — terrain_vague_6_7, parking_4_3 — et pas les
+## endroits de l'histoire, qui sont des noeuds de la scene. « Chez Walter » est
+## ce qu'on demande neuf fois sur dix, et il n'y figurait pas.
+##
+## Les positions sont relues SUR LES NOEUDS au moment d'y aller, jamais
+## recopiees ici : la maison de Walter est posee par le generateur, donc elle
+## bouge des qu'une rue change de largeur. C'est exactement le piege que
+## l'ancrage existe pour eviter, et le recopier ici l'aurait reintroduit.
+const DESTINATIONS := [
+	["Chez Walter", "Rendu/Scene3D/Maisons/Walter"],
+	["Chez Jesse", "Rendu/Scene3D/Maisons/Jesse"],
+	["L'Alpine", "Rendu/Scene3D/Alpine"],
+	["Le desert", "Rendu/Scene3D/Desert"],
+]
+
+
+## Les lieux ou l'on peut se rendre : les endroits de l'histoire d'abord, puis
+## les parcelles du generateur, triees. Celles-ci suivent la ville qu'on a
+## fabriquee — une seconde liste ecrite a la main se perimerait a la premiere
+## regeneration.
+func lieux() -> Array:
+	var sortie: Array = []
+	for d in DESTINATIONS:
+		if _noeud_de_scene(str(d[1])) != null:
+			sortie.append(str(d[0]))
+	sortie.append_array(Ancrage.noms())
+	return sortie
+
+
+func _noeud_de_scene(chemin: String) -> Node3D:
+	if _rendu == null:
+		return null
+	return _rendu.get_node_or_null(NodePath(chemin)) as Node3D
+
+
+## Depose le joueur sur un lieu nomme.
+##
+## La voiture ne suit pas : on y va le plus souvent pour REGARDER quelque chose,
+## et faire tomber une berline sur soi a l'arrivee serait le contraire du
+## service rendu. Elle a sa propre ligne pour ca.
+func aller_a(nom: String) -> String:
+	if _joueur == null:
+		return "pas de joueur"
+
+	var ou := Vector3.INF
+	for d in DESTINATIONS:
+		if str(d[0]) != nom:
+			continue
+		var n := _noeud_de_scene(str(d[1]))
+		if n != null:
+			ou = n.global_position
+		break
+
+	if ou == Vector3.INF:
+		var fiche := Ancrage.trouver(nom)
+		if fiche.is_empty():
+			return "lieu '%s' inconnu" % nom
+		var p: Array = fiche.get("pos", [0, 0, 0])
+		ou = Vector3(float(p[0]), float(p[1]), float(p[2]))
+
+	# UN METRE AU-DESSUS, et la vitesse coupee. Une ancre est posee AU SOL : y
+	# deposer une capsule la fait naitre a moitie dans le trottoir, et la
+	# physique l'ejecte a la premiere image.
+	_joueur.global_position = ou + Vector3.UP
+	_joueur.velocity = Vector3.ZERO
+	return "arrive a %s" % nom
 
 
 # ------------------------------------------------------------------- le temps

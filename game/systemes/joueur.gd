@@ -241,7 +241,86 @@ func _ready() -> void:
 		_debout = _capsule.height
 
 
+## Outil de test : on traverse tout et on vole. Pose par le menu des outils, et
+## par rien d'autre — voir traverser().
+var traverse: bool = false
+
+## Vitesse du vol libre, en metres par seconde, et son multiplicateur quand on
+## tient sprint. Ce ne sont pas des nombres de ressenti : personne ne reglera
+## jamais la vitesse d'un outil de deplacement au dixieme pres, et les sortir
+## dans reglages.tres encombrerait un fichier qui parle du JEU.
+const VOL_VITESSE := 18.0
+const VOL_RAPIDE := 3.0
+
+
+## Entre ou sort du mode « traverser les murs ».
+##
+## ON NE PASSE PAS PAR move_and_slide : glisser le long d'un mur EST la
+## collision, donc la seule facon de ne pas le rencontrer est de poser la
+## position soi-meme. La forme est desactivee en plus, sinon on pousse les corps
+## qu'on traverse au lieu de les ignorer.
+func traverser(actif: bool) -> void:
+	if traverse == actif:
+		return
+	traverse = actif
+	velocity = Vector3.ZERO
+	var forme := $Collision as CollisionShape3D
+	if forme != null:
+		forme.disabled = actif
+	if not actif:
+		_se_reposer_au_sol()
+
+
+# ON SORT DEBOUT, JAMAIS DANS UN MUR. Couper le mode a trente metres d'altitude
+# ou au milieu d'un batiment laisse le personnage en chute libre ou coince, et
+# c'est la seule facon dont cet outil pourrait faire perdre le temps qu'il est
+# cense gagner. On cherche donc le sol sous soi et on s'y pose.
+func _se_reposer_au_sol() -> void:
+	var espace := get_world_3d().direct_space_state
+	var requete := PhysicsRayQueryParameters3D.create(
+			global_position + Vector3.UP * 2.0,
+			global_position + Vector3.DOWN * 300.0)
+	requete.exclude = [get_rid()]
+	var touche := espace.intersect_ray(requete)
+	if touche.is_empty():
+		return
+	var sol: Vector3 = touche["position"]
+	global_position = sol + Vector3.UP * 0.05
+
+
+# Le vol libre : avant-arriere sur l'orientation du personnage comme au sol,
+# saut et accroupissement pour monter et descendre — ce sont deja les deux
+# touches qui veulent dire haut et bas.
+func _voler(delta: float) -> void:
+	var pivot := Input.get_axis("gauche", "droite")
+	if absf(pivot) > 0.01:
+		rotation.y -= pivot * deg_to_rad(reglages.pivot_vitesse) * delta
+
+	var devant := -global_transform.basis.z
+	devant.y = 0.0
+	var direction := devant.normalized() * Input.get_axis("frein", "gaz")
+	if Input.is_action_pressed("saut"):
+		direction += Vector3.UP
+	if Input.is_action_pressed("accroupir"):
+		direction += Vector3.DOWN
+
+	velocity = Vector3.ZERO
+	if direction.length_squared() < 0.001:
+		return
+	var vitesse := VOL_VITESSE
+	if Input.is_action_pressed("sprint"):
+		vitesse *= VOL_RAPIDE
+	global_position += direction.normalized() * vitesse * delta
+
+
 func _physics_process(delta: float) -> void:
+	# AVANT TOUT LE RESTE, y compris la gravite : en vol, il n'y a ni sol, ni
+	# geste, ni allure, et laisser tourner la suite ferait jouer une animation
+	# de marche a quelqu'un qui traverse un mur a cinquante metres du sol.
+	if traverse:
+		_voler(delta)
+		return
+
 	if not is_on_floor():
 		velocity.y -= _gravite * delta
 

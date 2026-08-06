@@ -29,7 +29,12 @@ signal recommencer_demande
 @export var dev: NodePath
 
 ## Ou l'on est dans le menu.
-enum Vue { FERME, RACINE, OPTIONS, OUTILS }
+enum Vue { FERME, RACINE, OPTIONS, OUTILS, LIEUX }
+
+## Combien de lieux on montre a la fois. Il y en a quarante et un et le cadre en
+## tient quatorze : la liste defile autour de la ligne choisie plutot que de
+## deborder de l'ecran.
+const LIEUX_VISIBLES := 14
 
 ## Les lignes de la racine, dans l'ordre d'affichage.
 ##
@@ -114,6 +119,7 @@ func ouvrir() -> void:
 	_vue = Vue.RACINE
 	_choix = 0
 	_neuf = true
+	_calme = CALME
 	visible = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	get_tree().paused = true
@@ -132,6 +138,13 @@ func ouvrir_les_outils() -> void:
 	_vue = Vue.OUTILS
 	_choix = 0
 	_echo_restant = 0.0
+
+
+## Ouvre directement la liste des lieux, pour les memes raisons.
+func ouvrir_les_lieux() -> void:
+	ouvrir_les_outils()
+	if _vue == Vue.OUTILS:
+		_vue = Vue.LIEUX
 
 
 func fermer() -> void:
@@ -180,6 +193,10 @@ func _process(delta: float) -> void:
 		return
 	if _neuf:
 		_neuf = false
+		# On note ou est le curseur SANS le suivre : sinon le tout premier
+		# releve se compare a un point d'avant l'ouverture, passe pour un
+		# mouvement, et vole la ligne choisie — precisement ce qu'on evite.
+		_souris_avant = _souris()
 		queue_redraw()
 		return
 	if _echo_restant > 0.0:
@@ -197,6 +214,8 @@ func _taille() -> int:
 			return _lignes().size()
 		Vue.OUTILS:
 			return _taille_outils()
+		Vue.LIEUX:
+			return (_dev.lieux().size() + 1) if _dev != null else 1
 	return CURSEURS.size()
 
 
@@ -247,8 +266,28 @@ func _naviguer(delta: float) -> void:
 			_agir_sur_l_outil()
 		return
 
+	if _vue == Vue.LIEUX:
+		if Input.is_action_just_pressed("interagir"):
+			_aller_au_lieu()
+		return
+
 	if Input.is_action_just_pressed("interagir"):
 		_valider()
+
+
+# F sur la liste des lieux. On FERME derriere soi : on s'y teleporte pour aller
+# regarder quelque chose, et rester devant un menu qui recouvre l'endroit ou
+# l'on vient d'arriver n'a aucun sens.
+func _aller_au_lieu() -> void:
+	if _son() != null:
+		_son().bruit("roue_cran")
+	var noms := _dev.lieux() if _dev != null else []
+	if _dev == null or _choix >= noms.size():
+		_vue = Vue.OUTILS
+		_choix = 0
+		return
+	_dev.aller_a(str(noms[_choix]))
+	fermer()
 
 
 func _revenir_a_la_racine(depuis: String) -> void:
@@ -264,6 +303,11 @@ func _agir_sur_l_outil() -> void:
 		_son().bruit("roue_cran")
 	if _dev == null or _choix >= _dev.nombre():
 		_revenir_a_la_racine("Outils de test")
+		return
+	if _dev.genre(_choix) == Dev.PAGE:
+		_vue = Vue.LIEUX
+		_choix = 0
+		_echo_restant = 0.0
 		return
 	_echo = _dev.agir(_choix)
 	_echo_restant = ECHO_DUREE if _echo != "" else 0.0
@@ -285,6 +329,15 @@ func _agir_sur_l_outil() -> void:
 var _zones: Array[Rect2] = []
 var _clic_avant: bool = false
 
+## Quelle ligne chaque zone represente, quand la liste DEFILE : la troisieme
+## zone dessinee n'est plus la troisieme entree. Vide ailleurs, ou la zone et
+## l'entree portent le meme rang.
+var _rangs: Array[int] = []
+
+
+func _rang_de_zone(i: int) -> int:
+	return _rangs[i] if i < _rangs.size() else i
+
 
 # ON SCRUTE LA SOURIS, on n'ecoute pas _gui_input.
 #
@@ -305,10 +358,35 @@ func _souris() -> Vector2:
 	return fenetre.get_mouse_position() / taille * size
 
 
+## Ou etait le curseur a l'image precedente. Sert a savoir s'il a BOUGE.
+var _souris_avant := Vector2(-9999.0, -9999.0)
+
+## Images pendant lesquelles on ne suit pas encore le curseur apres l'ouverture.
+##
+## La position du curseur est relative a la FENETRE : tant que celle-ci se place
+## — elle s'ouvre sur le second ecran — chaque deplacement de fenetre se lit
+## comme un deplacement de souris. Une capture s'ouvrait ainsi sur son
+## quarante-quatrieme nom. Un dixieme de seconde suffit, et personne ne vise une
+## ligne aussi vite.
+const CALME := 6
+var _calme := 0
+
+
 func _suivre_la_souris() -> void:
 	var p := _souris()
-	var vise := _zone_sous(p)
-	if vise >= 0 and vise != _choix:
+	if _calme > 0:
+		_calme -= 1
+		_souris_avant = p
+		return
+	# LE SURVOL NE COMPTE QUE SI LE CURSEUR BOUGE. Le menu s'ouvre la ou le
+	# curseur se trouvait deja : sans cette condition, une souris posee au hasard
+	# au milieu de l'ecran vole la ligne choisie a l'instant de l'ouverture, et
+	# la premiere entree n'est jamais celle qu'on croit.
+	var bouge := p.distance_squared_to(_souris_avant) > 1.0
+	_souris_avant = p
+	var zone := _zone_sous(p)
+	var vise := _rang_de_zone(zone) if zone >= 0 else -1
+	if bouge and vise >= 0 and vise != _choix:
 		_choix = vise
 		if _son() != null:
 			_son().bruit("roue_cran")
@@ -320,6 +398,8 @@ func _suivre_la_souris() -> void:
 		return
 	if _vue == Vue.RACINE:
 		_valider()
+	elif _vue == Vue.LIEUX:
+		_aller_au_lieu()
 	elif _vue == Vue.OUTILS:
 		# Un choix se clique comme un curseur — moitie gauche, moitie droite ;
 		# tout le reste est un geste, donc un simple clic.
@@ -446,11 +526,18 @@ func _draw() -> void:
 	# Un voile sur tout l'ecran : le jeu est arrete, il faut que ca se voie.
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.02, 0.02, 0.03, 0.72))
 
+	# Chaque page repart de zones vierges, et surtout de rangs vierges : une
+	# correspondance zone-vers-ligne laissee par la liste defilante ferait
+	# cliquer a cote sur la page suivante.
+	_zones.clear()
+	_rangs.clear()
 	match _vue:
 		Vue.RACINE:
 			_dessiner_racine(police)
 		Vue.OUTILS:
 			_dessiner_outils(police)
+		Vue.LIEUX:
+			_dessiner_lieux(police)
 		_:
 			_dessiner_options(police)
 
@@ -560,6 +647,45 @@ func _dessiner_outils(police: Font) -> void:
 	else:
 		_ecrire(police, "W / S choisir    A / D regler    F   agir    Echap   fermer",
 				coin + Vector2(l / 2.0, h - 6.0), 9, Color(0.62, 0.60, 0.56), true)
+
+
+# LA LISTE DES LIEUX, QUI DEFILE. Quarante et un noms ne tiennent pas dans un
+# cadre de 384 pixels : on montre une fenetre de quatorze lignes qui suit la
+# ligne choisie, avec un reperage « 12 / 41 » — sans lui, on ne sait pas si l'on
+# est au debut, au milieu ou a la fin d'une liste dont on ne voit qu'un tiers.
+func _dessiner_lieux(police: Font) -> void:
+	var noms := _dev.lieux() if _dev != null else []
+	var total := noms.size() + 1
+	var fenetre := mini(LIEUX_VISIBLES, total)
+	# La fenetre suit le choix sans jamais deborder : centree tant qu'elle le
+	# peut, callee en haut au debut et en bas a la fin.
+	var premier := clampi(_choix - fenetre / 2, 0, maxi(0, total - fenetre))
+
+	var l := 260.0
+	var pas := 17.0
+	var h := 30.0 + float(fenetre) * pas + 26.0
+	var coin := Vector2((size.x - l) / 2.0, size.y * 0.5 - h / 2.0)
+	_cadre(coin, Vector2(l, h))
+
+	_ecrire(police, "ALLER A...", coin + Vector2(l / 2.0, 20.0), 15,
+			Color(0.949, 0.776, 0.42), true)
+	_ecrire(police, "%d / %d" % [mini(_choix + 1, noms.size()), noms.size()],
+			coin + Vector2(l - 12.0, 20.0), 10, Color(0.62, 0.60, 0.56), false, true)
+
+	for rang in range(premier, premier + fenetre):
+		var i := rang - premier
+		var vise := rang == _choix
+		var y := 40.0 + float(i) * pas
+		_zones.append(Rect2(coin + Vector2(8.0, y - 11.0), Vector2(l - 16.0, pas)))
+		_rangs.append(rang)
+		var etiquette := "Retour" if rang >= noms.size() else str(noms[rang])
+		_ecrire(police, ("> " if vise else "   ") + etiquette,
+				coin + Vector2(12.0, y), 11,
+				Color(0.949, 0.925, 0.867) if vise else Color(0.68, 0.66, 0.62),
+				false)
+
+	_ecrire(police, "W / S choisir      F   s y rendre      Echap   fermer",
+			coin + Vector2(l / 2.0, h - 6.0), 9, Color(0.62, 0.60, 0.56), true)
 
 
 func _cadre(coin: Vector2, taille: Vector2) -> void:

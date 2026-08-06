@@ -62,6 +62,17 @@
     }
    ]
   },
+  "menu_lieux": {
+   "quoi": "La liste des lieux nommes, ouverte. Ce qu'on regarde : quarante et un noms ne tiennent pas dans le cadre, donc la fenetre de quatorze lignes defile autour du choix, et le reperage en haut a droite dit ou l'on en est dans une liste dont on ne voit qu'un tiers.",
+   "fin": 70,
+   "etapes": [
+    {
+     "image": 30,
+     "appeler": "Pause",
+     "methode": "ouvrir_les_lieux"
+    }
+   ]
+  },
   "h06_aube": {
    "quoi": "L'aube : le soleil rase, les lampadaires pas encore eteints.",
    "fin": 90,

@@ -16,6 +16,23 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.46.0 — Se déplacer sans marcher
+
+> **À essayer : Échap → Outils de test → « Aller à un lieu nommé… ».** Quarante-cinq
+> destinations. **Chez Walter**, **chez Jesse**, **l'Alpine** et **le désert** sont
+> en tête ; le reste, ce sont les parcelles de la ville. `F` t'y dépose et referme
+> le menu.
+
+Et **« Traverser les murs et voler »** : tu passes à travers tout, `W`/`S` pour
+avancer, `Espace` pour monter, `Ctrl` pour descendre, `Maj` pour aller trois fois
+plus vite. En le recoupant, tu es **reposé sur la première surface sous toi** — on
+ne ressort jamais coincé dans un mur.
+
+Un détail qui gênait : le menu s'ouvrait sous le curseur et celui-ci volait
+aussitôt la ligne sélectionnée. Le survol ne compte plus que si la souris bouge.
+
+---
+
 ## 0.45.0 — Des outils pour tester sans relancer
 
 > **À essayer : en jeu, Échap → « Outils de test ».** Onze lignes qui
