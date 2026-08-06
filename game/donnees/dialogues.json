@@ -1,4 +1,4 @@
-{
+﻿{
   "_lisez_moi": [
     "Tout le texte parle du jeu vit ici, et nulle part ailleurs.",
     "Une conversation est une liste de repliques. Chaque replique a un 'qui'",
@@ -120,6 +120,22 @@
         { "qui": "?",      "texte": "Aujourd'hui. Il n'aime pas attendre, et moi non plus." },
         { "qui": "?",      "texte": "Vous savez ou nous trouver." },
         { "qui": "Walter", "texte": "... Allo ?" }
+      ]
+    ]
+  },
+
+  "mission_skyler_oeufs": {
+    "nom": "Skyler",
+    "sans_voix": true,
+    "conversations": [
+      [
+        { "qui": "Skyler", "texte": "Walt ? Tu es ou ?" },
+        { "qui": "Walter", "texte": "Je roule. Qu'est-ce qu'il y a ?" },
+        { "qui": "Skyler", "texte": "Il n'y a plus d'oeufs. Junior voulait des pancakes demain matin." },
+        { "qui": "Walter", "texte": "... Des oeufs." },
+        { "qui": "Skyler", "texte": "Tu passes en rentrant ? Ca te fait un detour de rien du tout." },
+        { "qui": "Walter", "texte": "Oui. Oui, je passe." },
+        { "qui": "Skyler", "texte": "Merci. A tout a l'heure." }
       ]
     ]
   },

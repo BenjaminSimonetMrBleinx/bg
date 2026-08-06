@@ -39,14 +39,19 @@ const SONNERIE := 9.0
 ## de rater un test.
 const ARRIVE := 9.0
 
-## Apres combien de secondes de trajet Skyler appelle. On ne guette pas la
-## montee en voiture : le joueur peut partir a pied, et l'appel doit tomber
-## PENDANT le trajet quoi qu'il en soit.
-const AVANT_APPEL := 6.0
+## Apres combien de secondes AU VOLANT Skyler appelle.
+##
+## On attend d'etre dans la voiture, et ce n'est pas un detail : un appel qui
+## tombe pendant qu'on cherche encore ses cles se prend pour un bug. La scene
+## veut Walter au volant, une main sur le telephone, deja parti — c'est la que
+## la demande banale devient couteuse.
+const AVANT_APPEL := 4.0
 
 @export var joueur: NodePath
 @export var desert: NodePath
 @export var maison: NodePath
+@export var controleur: NodePath
+@export var dialogue: NodePath
 
 var _etape: int = Etape.INACTIF
 var _joueur: Node3D
@@ -56,6 +61,8 @@ var _bourse: Bourse
 var _famille: Famille
 var _reputation: Reputation
 var _audio: Audio
+var _controleur: Node
+var _dialogue: Dialogue
 
 var _depuis: float = 0.0
 var _sonne: float = 0.0
@@ -70,6 +77,8 @@ func _ready() -> void:
 	_joueur = get_node_or_null(joueur) as Node3D
 	_desert = get_node_or_null(desert)
 	_maison = get_node_or_null(maison) as Node3D
+	_controleur = get_node_or_null(controleur)
+	_dialogue = get_node_or_null(dialogue) as Dialogue
 	set_process(true)
 	call_deferred("_brancher")
 
@@ -133,7 +142,16 @@ func _process(delta: float) -> void:
 		if Input.is_action_just_pressed("interagir"):
 			_decroche = true
 			_sonne = 0.0
-	elif not _appel_fait and _depuis > AVANT_APPEL:
+			# ON DEMARRE UN VRAI DIALOGUE, et ca regle deux choses d'un coup.
+			#
+			# Le joueur ENTEND Skyler au lieu de voir un message disparaitre — il
+			# avait decroche sans que rien ne se passe. Et le controleur, qui tourne
+			# APRES nous dans l'arbre, voit alors un dialogue en cours : il rend la
+			# main au dialogue au lieu de lire ce meme F comme un « descendre de
+			# voiture ». Sans ca, decrocher ejectait Walter de sa voiture.
+			if _dialogue != null:
+				_dialogue.demarrer("mission_skyler_oeufs")
+	elif not _appel_fait and _au_volant() and _depuis > AVANT_APPEL:
 		_appel_fait = true
 		_sonne = SONNERIE
 		if _audio != null:
@@ -148,6 +166,12 @@ func _process(delta: float) -> void:
 		if _maison != null and _distance(_maison.global_position) < ARRIVE:
 			_solder()
 	queue_redraw()
+
+
+# Est-on au volant ? On interroge le controleur plutot que de deviner : c'est
+# lui qui possede l'etat, et deux sources de verite finissent par diverger.
+func _au_volant() -> bool:
+	return _controleur != null and bool(_controleur.call("au_volant"))
 
 
 func _distance(ou: Vector3) -> float:
