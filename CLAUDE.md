@@ -160,12 +160,29 @@ walkthrough court : ce que ça fait, où c'est, pourquoi comme ça.
 ## Les tickets
 
 Trois familles d'étiquettes : **ce que c'est** (🔨 chantier, ✅ à faire,
-🐛 bug, 💡 idée), **qui doit agir** (⌨️ code, 🎨 Guillaume, 🎮 Benjamin), et
+🐛 bug, 💡 idée), **qui doit agir** (🤖 Claude, 🎨 Guillaume, 🎮 Benjamin), et
 **quand** (🔥 maintenant, 🧊 plus tard).
 
 Chaque ticket **commence par une ligne qui dit à qui il appartient**. Personne
 ne doit avoir à lire un ticket en entier pour savoir s'il l'attend. Les titres
 portent leurs accents ; la règle « pas d'accents » ne vaut que pour le code.
+
+**Le titre suit une forme, et une seule** — décidé le 07/08/2026, après une
+passe où vingt-deux titres sur vingt-quatre ont été refaits :
+
+> `Domaine — ce qui existera quand ce sera fini`
+
+Les domaines : **Économie, Ville, Intérieurs, Monde, Son, Personnages, Missions,
+Famille, Réglage**. Le titre dit le **résultat**, jamais la raison — celle-ci
+est dans le corps, c'est sa place. Ni question, ni jugement, ni formule : un
+titre n'a pas à être joli, il a à être trouvable dans une liste de trente.
+
+**Sauf pour un bug, qui dit le SYMPTÔME** : quand on cherche un bug, on cherche
+ce qu'on a vu, pas ce qu'on obtiendra en le réparant.
+
+Ce que la forme libre coûtait : des titres qui posaient une question déjà
+tranchée depuis dix jours, d'autres qui argumentaient contre leur propre version
+précédente, et aucun moyen de grouper la liste à l'œil.
 
 Un piège qui n'est pas écrit sera repayé au prix fort. Les quatre plus chers de
 ce projet ont tous été payés deux fois.

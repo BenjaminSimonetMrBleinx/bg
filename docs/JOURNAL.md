@@ -107,6 +107,17 @@ intégralement. Et un commentaire de ticket posté sous le **compte pro** sur un
 dépôt perso public : supprimé, reposté du bon côté, et le remote est passé sur
 l'alias SSH perso pour que ça ne se reproduise pas.
 
+**Un board se lit, ou ne se lit pas.** En fin de session, passe complète sur les
+vingt-sept tickets : trois fermés (l'Aztek était livré depuis deux jours, la
+sauvegarde et la finition étaient finies pour ce qu'elles pouvaient être), et
+**vingt-deux titres refaits**. Ils mélangeaient quatre formes — un nom, une
+question, une phrase, une opinion — et se lisaient bien une fois, jamais deux.
+La forme est désormais fixée dans `CLAUDE.md`. Ce que la passe a montré, et
+qu'aucun ticket ne disait : **neuf tickets sur vingt-quatre attendent Guillaume,
+trois attendent une décision de Benjamin.** La moitié du board n'attend pas du
+code, et les deux chantiers qui débloqueraient le plus — #36 et #43 — n'ont
+jamais été ouverts.
+
 ### Où on reprend
 
 **#48 d'abord** : la mission de Tuco est cassée depuis l'ouverture du désert.
