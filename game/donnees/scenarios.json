@@ -62,6 +62,71 @@
     }
    ]
   },
+  "purete_1": {
+   "quoi": "Le cristal au palier 1, brun. La planche des cinq est la seule preuve qui compte : si on ne distingue pas le 2 du 3 en 512x384, c'est rate. Le don attend l'image 240 — la mission POSE l'inventaire a son demarrage, et tout ce qu'on donne avant est efface.",
+   "fin": 320,
+   "etapes": [
+    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
+    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
+    { "image": 60, "placer": "Joueur", "pos": [874, 0.6, -750], "cap": 0 },
+    { "image": 240, "appeler": "Equipement", "methode": "donner", "argument": "meth" },
+    { "image": 245, "appeler": "Equipement", "methode": "equiper_cle", "argument": "meth" },
+    { "image": 248, "appeler": "Purete", "methode": "poser", "argument": 1 },
+    { "image": 250, "camera": [874.75, 1.3, -750.5], "vise": [874.3, 1.12, -750.02] }
+   ]
+  },
+  "purete_2": {
+   "quoi": "Le cristal au palier 2, ambre.",
+   "fin": 320,
+   "etapes": [
+    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
+    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
+    { "image": 60, "placer": "Joueur", "pos": [874, 0.6, -750], "cap": 0 },
+    { "image": 240, "appeler": "Equipement", "methode": "donner", "argument": "meth" },
+    { "image": 245, "appeler": "Equipement", "methode": "equiper_cle", "argument": "meth" },
+    { "image": 248, "appeler": "Purete", "methode": "poser", "argument": 2 },
+    { "image": 250, "camera": [874.75, 1.3, -750.5], "vise": [874.3, 1.12, -750.02] }
+   ]
+  },
+  "purete_3": {
+   "quoi": "Le cristal au palier 3, clair.",
+   "fin": 320,
+   "etapes": [
+    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
+    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
+    { "image": 60, "placer": "Joueur", "pos": [874, 0.6, -750], "cap": 0 },
+    { "image": 240, "appeler": "Equipement", "methode": "donner", "argument": "meth" },
+    { "image": 245, "appeler": "Equipement", "methode": "equiper_cle", "argument": "meth" },
+    { "image": 248, "appeler": "Purete", "methode": "poser", "argument": 3 },
+    { "image": 250, "camera": [874.75, 1.3, -750.5], "vise": [874.3, 1.12, -750.02] }
+   ]
+  },
+  "purete_4": {
+   "quoi": "Le cristal au palier 4, translucide.",
+   "fin": 320,
+   "etapes": [
+    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
+    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
+    { "image": 60, "placer": "Joueur", "pos": [874, 0.6, -750], "cap": 0 },
+    { "image": 240, "appeler": "Equipement", "methode": "donner", "argument": "meth" },
+    { "image": 245, "appeler": "Equipement", "methode": "equiper_cle", "argument": "meth" },
+    { "image": 248, "appeler": "Purete", "methode": "poser", "argument": 4 },
+    { "image": 250, "camera": [874.75, 1.3, -750.5], "vise": [874.3, 1.12, -750.02] }
+   ]
+  },
+  "purete_5": {
+   "quoi": "Le cristal au palier 5, bleu — celui de la serie, le seul qui doive etre reconnaissable au premier coup d'oeil.",
+   "fin": 320,
+   "etapes": [
+    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
+    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
+    { "image": 60, "placer": "Joueur", "pos": [874, 0.6, -750], "cap": 0 },
+    { "image": 240, "appeler": "Equipement", "methode": "donner", "argument": "meth" },
+    { "image": 245, "appeler": "Equipement", "methode": "equiper_cle", "argument": "meth" },
+    { "image": 248, "appeler": "Purete", "methode": "poser", "argument": 5 },
+    { "image": 250, "camera": [874.75, 1.3, -750.5], "vise": [874.3, 1.12, -750.02] }
+   ]
+  },
   "jauge_perf": {
    "quoi": "Le releve de cout affiche en jouant, en bas a gauche. Ce qu'on regarde : il mesure le temps de CHAQUE image comme diag_ville, jamais le compteur d'images par seconde du moteur — et la premiere ligne vire au rouge des qu'une image est ratee, parce qu'on ne lit pas un tableau en conduisant.",
    "fin": 120,

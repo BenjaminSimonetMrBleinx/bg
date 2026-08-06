@@ -60,6 +60,7 @@
 [ext_resource type="Script" path="res://systemes/sauvegarde.gd" id="44_sauvegarde"]
 [ext_resource type="Script" path="res://systemes/dev.gd" id="45_dev"]
 [ext_resource type="Script" path="res://systemes/jauge_perf.gd" id="46_jauge"]
+[ext_resource type="Script" path="res://systemes/purete.gd" id="47_purete"]
 
 [sub_resource type="ViewportTexture" id="tex_ecran"]
 viewport_path = NodePath("Rendu")
@@ -486,7 +487,14 @@ script = ExtResource("34_bourse")
 [node name="Sauvegarde" type="Node" parent="."]
 script = ExtResource("44_sauvegarde")
 bourse = NodePath("../Bourse")
+purete = NodePath("../Purete")
 temps = NodePath("../Temps")
+
+; La purete du produit. Elle ne s'affiche nulle part : elle teinte le cristal
+; tenu en main, et c'est tout ce que le joueur en percoit.
+[node name="Purete" type="Node" parent="."]
+script = ExtResource("47_purete")
+equipement = NodePath("../Equipement")
 
 ; Les outils de test. Il n'appartient pas au jeu : rien ne l'appelle, c'est le
 ; menu pause qui l'affiche et le declenche. Le retirer de la scene fait
@@ -501,6 +509,7 @@ vehicule = NodePath("../Rendu/Scene3D/Vehicule")
 foule = NodePath("../Rendu/Scene3D/Foule")
 trafic = NodePath("../Rendu/Scene3D/Trafic")
 jauge = NodePath("../Rendu/Interface/JaugePerf")
+purete = NodePath("../Purete")
 scene_3d = NodePath("../Rendu/Scene3D")
 rendu = NodePath("..")
 equipement = NodePath("../Equipement")

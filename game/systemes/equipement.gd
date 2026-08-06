@@ -240,6 +240,33 @@ func definir_inventaire(cles: Array) -> void:
 	equiper(RIEN)
 
 
+## Teinte un objet tenu. Le multiplicateur s'applique a la couleur de base du
+## materiau : la matiere et le grain restent, seule la teinte se deplace.
+##
+## ON REPART TOUJOURS DU MATERIAU DU MAILLAGE, jamais de la surcharge posee au
+## passage precedent : relire la surcharge multiplierait la teinte par
+## elle-meme, et le cristal virerait au noir en trois changements de palier.
+func teinter(cle: String, teinte: Color) -> void:
+	var i := _indice_de_cle(cle)
+	if i == RIEN or i >= _noeuds.size() or _noeuds[i] == null:
+		return
+	_teinter(_noeuds[i], teinte)
+
+
+func _teinter(n: Node, teinte: Color) -> void:
+	var mi := n as MeshInstance3D
+	if mi != null and mi.mesh != null:
+		for s in mi.mesh.get_surface_count():
+			var origine := mi.mesh.surface_get_material(s) as StandardMaterial3D
+			if origine == null:
+				continue
+			var copie := origine.duplicate() as StandardMaterial3D
+			copie.albedo_color = teinte
+			mi.set_surface_override_material(s, copie)
+	for e in n.get_children():
+		_teinter(e, teinte)
+
+
 ## TOUTES les cles de outils.json, possedees ou non. Sert aux outils de test :
 ## « donner tout » ne doit pas tenir une seconde liste qui se perimerait des
 ## qu'on ajoute un objet au fichier.

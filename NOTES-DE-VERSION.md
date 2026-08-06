@@ -16,6 +16,24 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.48.0 — La couleur du produit
+
+> **À essayer : Échap → Outils de test → « Pureté du produit ».** Parcours les
+> cinq crans avec `A`/`D`, prends le cristal dans la roue, et regarde-le dans ta
+> main : il change de couleur — brun, ambre, clair, translucide, bleu.
+
+C'est la première brique de la progression : un labo, une couleur, un type de
+client, et les trois avanceront ensemble. **Aucun chiffre n'est affiché nulle
+part** — tu ne verras jamais un pourcentage de pureté, seulement la couleur dans
+ta main. C'est volontaire : un chiffre transformerait un choix en calcul.
+
+Le palier est conservé quand tu sauvegardes et reprends.
+
+Pas encore là : ce que la pureté change au prix, qui accepte de traiter avec toi,
+et ce que coûte une montée de palier.
+
+---
+
 ## 0.47.0 — Voir ce que le jeu coûte, pendant qu'on joue
 
 > **À essayer : Échap → Outils de test → « Relevé de performance ».** Un encart
@@ -886,3 +904,5 @@ de zéro toutes les cinq secondes.
 Le premier jalon, sans numéro : la ville, la conduite, marcher, les maisons et leurs
 habitants, les dialogues doublés, la roue des outils, la visée à la souris, les passants,
 le modèle sculpté de Walter. Le détail est dans [docs/JOURNAL.md](docs/JOURNAL.md).
+
+
