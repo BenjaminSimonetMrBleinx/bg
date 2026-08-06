@@ -16,6 +16,20 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.44.0 — Le titre a le grain du jeu
+
+> **À essayer : lance le jeu et regarde l'écran-titre.** Il passe maintenant par
+> le même rendu que le reste — même définition, même adoucissement. Avant, il
+> était plus net que la première image de jeu qui le suivait, et la promesse
+> tombait dès qu'on appuyait sur « Nouvelle partie ».
+
+Rien d'autre ne bouge à l'écran : le menu se navigue et se clique comme avant.
+
+Toujours à venir sur ce chantier : écran de chargement, cartons de chapitre,
+générique de fin, bilan de fin d'acte.
+
+---
+
 ## 0.43.0 — Un écran-titre
 
 > **À essayer : lance le jeu.** Tu arrives sur un écran-titre — **Nouvelle
