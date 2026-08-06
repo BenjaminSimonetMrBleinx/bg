@@ -58,6 +58,7 @@
 [ext_resource type="Script" path="res://systemes/pause.gd" id="42_pause"]
 [ext_resource type="Texture2D" path="res://assets/images/visage.png" id="43_visage"]
 [ext_resource type="Script" path="res://systemes/sauvegarde.gd" id="44_sauvegarde"]
+[ext_resource type="Script" path="res://systemes/dev.gd" id="45_dev"]
 
 [sub_resource type="ViewportTexture" id="tex_ecran"]
 viewport_path = NodePath("Rendu")
@@ -404,6 +405,7 @@ mouse_filter = 2
 script = ExtResource("42_pause")
 reglages = ExtResource("2_reglages")
 sauvegarde = NodePath("../../../Sauvegarde")
+dev = NodePath("../../../Dev")
 
 ; L'ecran de fin est DERRIERE le fondu dans l'arbre, donc dessine par-dessus :
 ; le voile de mort doit couvrir le jeu, y compris un fondu de porte en cours.
@@ -471,6 +473,18 @@ script = ExtResource("34_bourse")
 script = ExtResource("44_sauvegarde")
 bourse = NodePath("../Bourse")
 temps = NodePath("../Temps")
+
+; Les outils de test. Il n'appartient pas au jeu : rien ne l'appelle, c'est le
+; menu pause qui l'affiche et le declenche. Le retirer de la scene fait
+; disparaitre la ligne du menu, sans rien casser d'autre.
+[node name="Dev" type="Node" parent="."]
+script = ExtResource("45_dev")
+reglages = ExtResource("2_reglages")
+bourse = NodePath("../Bourse")
+equipement = NodePath("../Equipement")
+joueur = NodePath("../Rendu/Scene3D/Joueur")
+vehicule = NodePath("../Rendu/Scene3D/Vehicule")
+rendu = NodePath("..")
 equipement = NodePath("../Equipement")
 joueur = NodePath("../Rendu/Scene3D/Joueur")
 mission = NodePath("../Mission")

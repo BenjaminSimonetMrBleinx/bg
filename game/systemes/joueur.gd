@@ -34,6 +34,11 @@ signal mort
 var pv: float = 100.0
 var _vivant: bool = true
 
+## Outil de test : les coups ne portent plus. Pose par le menu des outils, et
+## jamais par le jeu — c'est pour traverser une fusillade quand on vient
+## verifier autre chose que la fusillade.
+var invulnerable: bool = false
+
 
 func vivant() -> bool:
 	return _vivant
@@ -41,7 +46,7 @@ func vivant() -> bool:
 
 ## Encaisse des degats. Renvoie vrai si le coup a ete fatal.
 func blesser(degats: float) -> bool:
-	if not _vivant or degats <= 0.0:
+	if not _vivant or degats <= 0.0 or invulnerable:
 		return false
 	pv = maxf(0.0, pv - degats)
 	blesse.emit(pv)

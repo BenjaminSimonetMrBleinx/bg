@@ -25,11 +25,19 @@ signal recommencer_demande
 ## sauver, ce qui reste correct - juste sans reprise.
 @export var sauvegarde: NodePath
 
+## Les outils de test. Facultatif : sans eux, la ligne disparait du menu.
+@export var dev: NodePath
+
 ## Ou l'on est dans le menu.
-enum Vue { FERME, RACINE, OPTIONS }
+enum Vue { FERME, RACINE, OPTIONS, OUTILS }
 
 ## Les lignes de la racine, dans l'ordre d'affichage.
-const LIGNES := ["Reprendre", "Options", "Recommencer la mission", "Quitter"]
+##
+## ON DECIDE SUR L'ETIQUETTE, PAS SUR LE RANG. _valider() lisait un numero de
+## ligne : inserer une entree au milieu deplacait silencieusement « Quitter »
+## sur « Recommencer la mission ». Une liste de menu est faite pour bouger.
+const LIGNES := ["Reprendre", "Options", "Outils de test",
+	"Recommencer la mission", "Quitter"]
 
 ## Les curseurs d'options : etiquette, et champ de Reglages qu'ils pilotent.
 ##
@@ -50,6 +58,14 @@ var _vue: int = Vue.FERME
 var _choix: int = 0
 var _audio: Audio
 var _sauvegarde: Sauvegarde
+var _dev: Dev
+
+## Ce que le dernier outil a repondu, et le temps qu'il reste a l'afficher. Un
+## outil qui agit sans rien dire laisse croire qu'il n'a rien fait, et on appuie
+## trois fois.
+var _echo := ""
+var _echo_restant := 0.0
+const ECHO_DUREE := 2.0
 
 
 func _ready() -> void:
@@ -60,6 +76,24 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	set_process(true)
 	_sauvegarde = get_node_or_null(sauvegarde) as Sauvegarde
+	_dev = get_node_or_null(dev) as Dev
+
+
+## Les lignes reellement affichees a la racine : sans outils cables, « Outils de
+## test » n'a pas lieu d'etre propose.
+func _lignes() -> Array:
+	if _dev != null:
+		return LIGNES
+	var sortie: Array = []
+	for l in LIGNES:
+		if l != "Outils de test":
+			sortie.append(l)
+	return sortie
+
+
+## Le nombre de lignes du menu des outils : celles de Dev, plus « Retour ».
+func _taille_outils() -> int:
+	return (_dev.nombre() + 1) if _dev != null else 1
 
 
 func _son() -> Audio:
@@ -85,6 +119,19 @@ func ouvrir() -> void:
 	get_tree().paused = true
 	if _son() != null:
 		_son().bruit("roue_ouvre")
+
+
+## Ouvre directement le menu des outils. Sert aux captures et aux tests : y
+## arriver a la touche suppose de traverser la racine, et la ligne selectionnee
+## depend alors d'ou se trouve le curseur — qu'on ne maitrise pas dans une
+## fenetre de capture.
+func ouvrir_les_outils() -> void:
+	ouvrir()
+	if _dev == null:
+		return
+	_vue = Vue.OUTILS
+	_choix = 0
+	_echo_restant = 0.0
 
 
 func fermer() -> void:
@@ -135,6 +182,8 @@ func _process(delta: float) -> void:
 		_neuf = false
 		queue_redraw()
 		return
+	if _echo_restant > 0.0:
+		_echo_restant = maxf(0.0, _echo_restant - delta)
 	_naviguer(delta)
 	# Apres le clavier : une ligne survolee doit gagner sur une ligne
 	# selectionnee, sinon la selection saute entre les deux.
@@ -142,8 +191,17 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 
+func _taille() -> int:
+	match _vue:
+		Vue.RACINE:
+			return _lignes().size()
+		Vue.OUTILS:
+			return _taille_outils()
+	return CURSEURS.size()
+
+
 func _naviguer(delta: float) -> void:
-	var taille := LIGNES.size() if _vue == Vue.RACINE else CURSEURS.size()
+	var taille := _taille()
 
 	# ECHAP FERME LE MENU, D'OU QU'ON SOIT.
 	#
@@ -169,12 +227,46 @@ func _naviguer(delta: float) -> void:
 	if _vue == Vue.OPTIONS:
 		_regler_en_continu(delta)
 		if Input.is_action_just_pressed("interagir"):
-			_vue = Vue.RACINE
-			_choix = 1
+			_revenir_a_la_racine("Options")
+		return
+
+	if _vue == Vue.OUTILS:
+		# PAS DE REPETITION ICI, contrairement aux volumes : un choix compte
+		# trois valeurs, pas quarante-six crans. Maintenir la touche ferait
+		# defiler la liste entiere sur un appui un peu long.
+		var sens := 0
+		if Input.is_action_just_pressed("droite"):
+			sens = 1
+		elif Input.is_action_just_pressed("gauche"):
+			sens = -1
+		if sens != 0 and _dev != null and _choix < _dev.nombre():
+			_dev.regler(_choix, sens)
+			if _son() != null:
+				_son().bruit("roue_cran")
+		if Input.is_action_just_pressed("interagir"):
+			_agir_sur_l_outil()
 		return
 
 	if Input.is_action_just_pressed("interagir"):
 		_valider()
+
+
+func _revenir_a_la_racine(depuis: String) -> void:
+	_vue = Vue.RACINE
+	_choix = maxi(0, _lignes().find(depuis))
+	_echo_restant = 0.0
+
+
+# F sur une ligne du menu des outils. La derniere ligne est « Retour » et
+# appartient au menu, pas a Dev : celui-ci n'a pas a savoir qu'il est affiche.
+func _agir_sur_l_outil() -> void:
+	if _son() != null:
+		_son().bruit("roue_cran")
+	if _dev == null or _choix >= _dev.nombre():
+		_revenir_a_la_racine("Outils de test")
+		return
+	_echo = _dev.agir(_choix)
+	_echo_restant = ECHO_DUREE if _echo != "" else 0.0
 
 
 # ------------------------------------------------------------------- souris
@@ -228,6 +320,15 @@ func _suivre_la_souris() -> void:
 		return
 	if _vue == Vue.RACINE:
 		_valider()
+	elif _vue == Vue.OUTILS:
+		# Un choix se clique comme un curseur — moitie gauche, moitie droite ;
+		# tout le reste est un geste, donc un simple clic.
+		if _dev != null and vise < _dev.nombre() and _dev.genre(vise) == Dev.CHOIX:
+			_dev.regler(vise, 1 if p.x > _zones[vise].get_center().x else -1)
+			if _son() != null:
+				_son().bruit("roue_cran")
+		else:
+			_agir_sur_l_outil()
 	else:
 		# Sur un curseur, on clique la VALEUR : la moitie gauche baisse, la
 		# droite monte. Faire glisser demanderait de suivre le bouton entre
@@ -286,19 +387,24 @@ func _regler_en_continu(delta: float) -> void:
 func _valider() -> void:
 	if _son() != null:
 		_son().bruit("roue_cran")
-	match _choix:
-		0:
+	var lignes := _lignes()
+	match str(lignes[_choix]) if _choix < lignes.size() else "":
+		"Reprendre":
 			fermer()
-		1:
+		"Options":
 			_vue = Vue.OPTIONS
 			_choix = 0
-		2:
+		"Outils de test":
+			_vue = Vue.OUTILS
+			_choix = 0
+			_echo_restant = 0.0
+		"Recommencer la mission":
 			# On ferme AVANT d'annoncer : la remise en place deplace le joueur
 			# et rejoue une ambiance, et faire ca sur un arbre suspendu laisse
 			# la moitie du travail en attente jusqu'a la reprise.
 			fermer()
 			recommencer_demande.emit()
-		3:
+		"Quitter":
 			# On sauve AVANT de quitter : c'est le moment ou l'on part avec son
 			# argent, son chapeau et son heure, et ou l'on veut les retrouver.
 			if _sauvegarde:
@@ -340,28 +446,32 @@ func _draw() -> void:
 	# Un voile sur tout l'ecran : le jeu est arrete, il faut que ca se voie.
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.02, 0.02, 0.03, 0.72))
 
-	if _vue == Vue.RACINE:
-		_dessiner_racine(police)
-	else:
-		_dessiner_options(police)
+	match _vue:
+		Vue.RACINE:
+			_dessiner_racine(police)
+		Vue.OUTILS:
+			_dessiner_outils(police)
+		_:
+			_dessiner_options(police)
 
 
 func _dessiner_racine(police: Font) -> void:
+	var lignes := _lignes()
 	var l := 200.0
-	var h := 30.0 + float(LIGNES.size()) * 22.0 + 18.0
+	var h := 30.0 + float(lignes.size()) * 22.0 + 18.0
 	var coin := Vector2((size.x - l) / 2.0, size.y * 0.5 - h / 2.0)
 	_cadre(coin, Vector2(l, h))
 
 	_ecrire(police, "PAUSE", coin + Vector2(l / 2.0, 20.0), 15,
 			Color(0.949, 0.776, 0.42), true)
 	_zones.clear()
-	for i in LIGNES.size():
+	for i in lignes.size():
 		_zones.append(Rect2(coin + Vector2(8.0, 32.0 + float(i) * 22.0),
 				Vector2(l - 16.0, 20.0)))
 		var vise := i == _choix
 		# Un chevron, pas une couleur : deux teintes proches ne se distinguent
 		# pas a cette resolution, un caractere en plus se voit toujours.
-		_ecrire(police, ("> " if vise else "   ") + str(LIGNES[i]),
+		_ecrire(police, ("> " if vise else "   ") + str(lignes[i]),
 				coin + Vector2(24.0, 44.0 + float(i) * 22.0), 13,
 				Color(0.949, 0.925, 0.867) if vise else Color(0.68, 0.66, 0.62),
 				false)
@@ -405,16 +515,70 @@ func _dessiner_options(police: Font) -> void:
 			coin + Vector2(l / 2.0, h - 6.0), 9, Color(0.62, 0.60, 0.56), true)
 
 
+# LE MENU DES OUTILS. Une ligne par geste, la valeur a droite quand il y en a
+# une, et « Retour » en dernier. Il est plus large que les autres : les
+# etiquettes y sont des phrases, pas des mots.
+func _dessiner_outils(police: Font) -> void:
+	var n := _taille_outils()
+	var l := 300.0
+	var pas := 17.0
+	var h := 30.0 + float(n) * pas + 26.0
+	var coin := Vector2((size.x - l) / 2.0, size.y * 0.5 - h / 2.0)
+	_cadre(coin, Vector2(l, h))
+
+	_ecrire(police, "OUTILS DE TEST", coin + Vector2(l / 2.0, 20.0), 15,
+			Color(0.949, 0.776, 0.42), true)
+
+	_zones.clear()
+	for i in n:
+		var vise := i == _choix
+		var y := 40.0 + float(i) * pas
+		_zones.append(Rect2(coin + Vector2(8.0, y - 11.0), Vector2(l - 16.0, pas)))
+		var teinte := Color(0.949, 0.925, 0.867) if vise \
+				else Color(0.68, 0.66, 0.62)
+		var etiquette := "Retour" if _dev == null or i >= _dev.nombre() \
+				else _dev.nom(i)
+		_ecrire(police, ("> " if vise else "   ") + etiquette,
+				coin + Vector2(12.0, y), 11, teinte, false)
+		if _dev == null or i >= _dev.nombre():
+			continue
+		var valeur := _dev.valeur(i)
+		if valeur == "":
+			continue
+		# Les chevrons disent que ca se parcourt : sans eux, une valeur affichee
+		# se lit comme un etat qu'on subit et personne n'essaie A ou D.
+		var texte := ("< %s >" % valeur) if _dev.genre(i) == Dev.CHOIX else valeur
+		_ecrire(police, texte, coin + Vector2(l - 14.0, y), 11,
+				Color(0.60, 0.82, 0.44) if vise else Color(0.50, 0.62, 0.42),
+				false, true)
+
+	# L'echo de la derniere action, la ou le bandeau d'aide se trouve d'habitude
+	# — c'est la que l'oeil descend apres avoir appuye.
+	if _echo_restant > 0.0:
+		_ecrire(police, _echo, coin + Vector2(l / 2.0, h - 6.0), 10,
+				Color(0.949, 0.776, 0.42), true)
+	else:
+		_ecrire(police, "W / S choisir    A / D regler    F   agir    Echap   fermer",
+				coin + Vector2(l / 2.0, h - 6.0), 9, Color(0.62, 0.60, 0.56), true)
+
+
 func _cadre(coin: Vector2, taille: Vector2) -> void:
 	draw_rect(Rect2(coin, taille), Color(0.06, 0.06, 0.07, 0.95))
 	draw_rect(Rect2(coin, taille), Color(0.36, 0.33, 0.26, 0.9), false, 1.0)
 
 
+## `droite` cale le texte sur sa FIN plutot que sur son debut : une colonne de
+## valeurs de longueurs differentes ne s'aligne pas autrement.
 func _ecrire(police: Font, texte: String, ou: Vector2, taille: int,
-		couleur: Color, centre: bool) -> void:
+		couleur: Color, centre: bool, droite: bool = false) -> void:
 	var largeur := police.get_string_size(texte, HORIZONTAL_ALIGNMENT_LEFT,
 			-1, taille).x
-	var p := ou - (Vector2(largeur / 2.0, 0.0) if centre else Vector2.ZERO)
+	var decalage := 0.0
+	if centre:
+		decalage = largeur / 2.0
+	elif droite:
+		decalage = largeur
+	var p := ou - Vector2(decalage, 0.0)
 	var ombre := Color(0.0, 0.0, 0.0, couleur.a)
 	for d in [Vector2(-1, 0), Vector2(1, 0), Vector2(0, -1), Vector2(0, 1)]:
 		police.draw_string(get_canvas_item(), p + d, texte,

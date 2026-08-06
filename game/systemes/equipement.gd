@@ -240,6 +240,16 @@ func definir_inventaire(cles: Array) -> void:
 	equiper(RIEN)
 
 
+## TOUTES les cles de outils.json, possedees ou non. Sert aux outils de test :
+## « donner tout » ne doit pas tenir une seconde liste qui se perimerait des
+## qu'on ajoute un objet au fichier.
+func toutes_les_cles() -> Array:
+	var sortie: Array = []
+	for f in _fiches:
+		sortie.append(str(f.get("cle", "")))
+	return sortie
+
+
 ## Les cles de ce qu'on possede, dans l'ordre de la roue. Pour la sauvegarde.
 func cles_possedees() -> Array:
 	var sortie: Array = []

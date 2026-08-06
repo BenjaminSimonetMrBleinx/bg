@@ -51,6 +51,17 @@
    "etapes": [
    ]
   },
+  "menu_outils": {
+   "quoi": "Le menu des outils de test, ouvert. Ce qu'on regarde : les onze lignes tiennent dans le cadre, les valeurs sont alignees a droite, et les chevrons signalent ce qui se parcourt a gauche-droite. On l'ouvre par appel plutot qu'a la touche : y arriver au clavier traverse la racine, et la ligne selectionnee dependrait alors d'ou traine le curseur.",
+   "fin": 70,
+   "etapes": [
+    {
+     "image": 30,
+     "appeler": "Pause",
+     "methode": "ouvrir_les_outils"
+    }
+   ]
+  },
   "h06_aube": {
    "quoi": "L'aube : le soleil rase, les lampadaires pas encore eteints.",
    "fin": 90,

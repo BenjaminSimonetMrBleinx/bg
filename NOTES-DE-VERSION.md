@@ -16,6 +16,30 @@ passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque l
 
 ---
 
+## 0.45.0 — Des outils pour tester sans relancer
+
+> **À essayer : en jeu, Échap → « Outils de test ».** Onze lignes qui
+> t'évitent une relance. `W`/`S` pour choisir, `A`/`D` pour les valeurs entre
+> chevrons, `F` pour déclencher.
+
+Ce qu'il y a dedans : la **vitesse du temps** (figée / normale / ×10 — pour voir
+le cycle jour-nuit sans attendre), **faire venir la voiture** devant toi,
+**donner de l'argent** (1 000, 10 000, ou remise à zéro), **donner tous les
+outils** d'un coup, **l'invulnérabilité**, **se soigner** (et ressusciter si tu
+es mort), la **résolution interne** à chaud (256 / 512 / 1024), et **couper
+l'ambiance ou la musique** séparément.
+
+Chaque action te répond en bas du cadre : sans ça on appuie trois fois en
+croyant qu'il ne s'est rien passé.
+
+Ce n'est pas caché : ceux qui jouent à ce jeu sont ceux qui le testent.
+
+Encore à venir sur ces outils : aller directement à un lieu nommé, traverser
+les murs, régler la densité de foule et de trafic, montrer les collisions et les
+ancrages, et un relevé de performance affiché pendant qu'on joue.
+
+---
+
 ## 0.44.0 — Le titre a le grain du jeu
 
 > **À essayer : lance le jeu et regarde l'écran-titre.** Il passe maintenant par

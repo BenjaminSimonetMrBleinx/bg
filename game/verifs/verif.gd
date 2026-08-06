@@ -148,6 +148,8 @@ func _init() -> void:
 		"Hud": ["_draw"],
 		"Roue": ["ouvrir", "fermer", "ouverte"],
 		"Dialogue": ["demarrer", "avancer", "connait"],
+		"Pause": ["ouvrir", "fermer", "ouverte"],
+		"Dev": ["nombre", "nom", "valeur", "agir", "regler"],
 	}
 	if ps != null:
 		var monde := ps.instantiate()
