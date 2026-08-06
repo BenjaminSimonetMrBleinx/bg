@@ -193,12 +193,17 @@ cap_degres = 180.0
 exige_vehicule = true
 refus = "Il vous faut une voiture pour quitter la ville"
 zone = "camping"
-; Le desert n'existe qu'une fois qu'on sait pourquoi on y va. On pouvait
-; auparavant filer au camping-car des la premiere minute, y trouver un Jesse
-; qui reprochait un retard a une mission pas encore commencee, et revenir sans
-; comprendre ce qu'on venait de voir.
-etape_minimale = "voiture"
-refus_etape = "Rien ne vous attend dans le desert pour l'instant"
+; LE DESERT EST OUVERT A TOUTE HEURE, decide le 07/08/2026.
+;
+; Il etait ferme tant que la mission n'avait pas atteint l'etape « voiture » :
+; on pouvait sinon filer au camping-car des la premiere minute, y trouver un
+; Jesse qui reprochait un retard a une mission pas encore commencee, et revenir
+; sans comprendre ce qu'on venait de voir.
+;
+; Le prix de ce garde-fou s'est revele plus eleve que ce qu'il evitait : il
+; ferme aussi la route a tout ce qui n'est PAS la mission 1 — les missions de
+; test, les captures, l'envie d'aller voir. Une porte fermee par defaut arrete
+; surtout ceux qui avaient une bonne raison de passer.
 
 [node name="Forme" type="CollisionShape3D" parent="Rendu/Scene3D/VersDesert/Zone"]
 shape = SubResource("passage_forme")
