@@ -384,6 +384,19 @@ func _process(delta: float) -> void:
 
 	match _etat:
 		Etat.AU_VOLANT:
+			# UNE CONVERSATION EN COURS CAPTE LA TOUCHE, au volant comme a pied,
+			# comme dans une maison et comme au telephone.
+			#
+			# C'etait le SEUL des quatre etats a ne pas le faire, et personne ne
+			# s'en etait apercu parce qu'aucune conversation ne se declenchait
+			# encore en conduisant. Le premier appel pris au volant est reste
+			# bloque sur sa premiere replique : F ne faisait rien, sinon essayer
+			# de faire descendre Walter de sa voiture.
+			if _dialogue != null and _dialogue.actif():
+				_afficher("F   Suite")
+				if Input.is_action_just_pressed("interagir"):
+					_dialogue.avancer()
+				return
 			_afficher("F   Descendre")
 			if Input.is_action_just_pressed("klaxon") and _audio != null:
 				_audio.bruit_ici("klaxon", _v.global_position)
