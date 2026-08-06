@@ -523,7 +523,6 @@ script = ExtResource("34_bourse")
 script = ExtResource("44_sauvegarde")
 bourse = NodePath("../Bourse")
 purete = NodePath("../Purete")
-service = NodePath("../Rendu/Interface/ServiceTest")
 temps = NodePath("../Temps")
 
 ; La purete du produit. Elle ne s'affiche nulle part : elle teinte le cristal
@@ -579,6 +578,7 @@ sauvegarde = NodePath("../Sauvegarde")
 
 [node name="Controleur" type="Node" parent="."]
 script = ExtResource("8_controleur")
+service = NodePath("../Rendu/Interface/ServiceTest")
 reglages = ExtResource("2_reglages")
 joueur = NodePath("../Rendu/Scene3D/Joueur")
 vehicule = NodePath("../Rendu/Scene3D/Vehicule")

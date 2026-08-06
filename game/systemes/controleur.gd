@@ -1,4 +1,4 @@
-# Bascule entre marcher et conduire.
+﻿# Bascule entre marcher et conduire.
 #
 # Un seul endroit decide qui recoit les commandes, qui la camera suit, et ce
 # que l'invite affiche. Sans ce point unique, l'etat se disperse dans trois
@@ -7,6 +7,8 @@
 extends Node
 
 @export var reglages: Reglages
+## L'interface qui peut s'approprier la touche d'interaction. Facultatif.
+@export var service: NodePath
 @export var joueur: NodePath
 @export var vehicule: NodePath
 @export var camera: NodePath
@@ -390,7 +392,12 @@ func _process(delta: float) -> void:
 			# interrupteur de tableau de bord.
 			if Input.is_action_just_pressed("phares"):
 				_v.basculer_phares()
-			if Input.is_action_just_pressed("interagir"):
+			# ON NE DESCEND PAS QUAND UNE INTERFACE POSSEDE LA TOUCHE. Decrocher
+			# un appel au volant se fait avec F, et F veut aussi dire « sortir de
+			# la voiture » : sans cette question, repondre a Skyler ejectait
+			# Walter sur le bas-cote. Meme mecanisme que pour le menu pause et la
+			# cachette — celui qui possede la touche le dit.
+			if Input.is_action_just_pressed("interagir") and not _touche_prise():
 				_descendre()
 
 		Etat.DEDANS:
@@ -410,6 +417,15 @@ func _process(delta: float) -> void:
 # Une fois ouvert, il suspend l'arbre et se pilote tout seul : il tourne en
 # PROCESS_MODE_ALWAYS, alors que ce controleur, lui, est suspendu comme le
 # reste. C'est ce qui rend le menu sur : rien du jeu ne peut plus repondre.
+# Une interface a-t-elle pris la touche d'interaction pour elle ? Facultatif :
+# sans ServiceTest cable, personne ne la prend et le jeu se comporte comme avant.
+func _touche_prise() -> bool:
+	var s := get_node_or_null(service)
+	if s == null or not s.has_method("absorbe_la_touche"):
+		return false
+	return bool(s.call("absorbe_la_touche"))
+
+
 func _gerer_la_pause() -> bool:
 	if _pause == null:
 		return false

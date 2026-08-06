@@ -24,10 +24,7 @@ class_name ServiceTest
 extends Control
 
 ## Ou l'on en est.
-enum Etape { INACTIF, VERS_JESSE, VERS_MAISON }
-
-## Ce que Walter doit remettre a Jesse.
-const DU := 10
+enum Etape { INACTIF, EN_ROUTE, VERS_MAISON }
 
 ## Combien de temps le telephone sonne avant de renoncer, en secondes. Assez
 ## long pour qu'on ait le temps de decider en conduisant, assez court pour que
@@ -39,23 +36,24 @@ const SONNERIE := 9.0
 ## de rater un test.
 const ARRIVE := 9.0
 
-## Apres combien de secondes AU VOLANT Skyler appelle.
+## Apres combien de secondes AU VOLANT Skyler appelle. Le compte repart a zero
+## chaque fois qu'on descend : ce sont des secondes de CONDUITE, pas des secondes
+## depuis le debut de la mission. La premiere version comptait depuis le depart,
+## donc l'appel tombait a l'instant ou l'on s'asseyait.
 ##
 ## On attend d'etre dans la voiture, et ce n'est pas un detail : un appel qui
 ## tombe pendant qu'on cherche encore ses cles se prend pour un bug. La scene
 ## veut Walter au volant, une main sur le telephone, deja parti — c'est la que
 ## la demande banale devient couteuse.
-const AVANT_APPEL := 4.0
+const AVANT_APPEL := 20.0
 
 @export var joueur: NodePath
-@export var desert: NodePath
 @export var maison: NodePath
 @export var controleur: NodePath
 @export var dialogue: NodePath
 
 var _etape: int = Etape.INACTIF
 var _joueur: Node3D
-var _desert: Node
 var _maison: Node3D
 var _bourse: Bourse
 var _famille: Famille
@@ -65,6 +63,8 @@ var _controleur: Node
 var _dialogue: Dialogue
 
 var _depuis: float = 0.0
+var _en_appel: bool = false
+var _volant_depuis: float = 0.0
 var _sonne: float = 0.0
 var _appel_fait: bool = false
 var _decroche: bool = false
@@ -75,7 +75,6 @@ func _ready() -> void:
 	visible = true
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_joueur = get_node_or_null(joueur) as Node3D
-	_desert = get_node_or_null(desert)
 	_maison = get_node_or_null(maison) as Node3D
 	_controleur = get_node_or_null(controleur)
 	_dialogue = get_node_or_null(dialogue) as Dialogue
@@ -106,14 +105,16 @@ func en_cours() -> bool:
 func demarrer() -> String:
 	if _joueur == null:
 		return "pas de joueur"
-	_etape = Etape.VERS_JESSE
+	_etape = Etape.EN_ROUTE
 	_depuis = 0.0
 	_sonne = 0.0
 	_appel_fait = false
 	_decroche = false
 	_oeufs = false
+	_en_appel = false
+	_volant_depuis = 0.0
 	queue_redraw()
-	return "en route chez Jesse"
+	return "prends la voiture"
 
 
 ## Abandonne en cours de route, sans rien solder.
@@ -133,6 +134,10 @@ func _process(delta: float) -> void:
 	if _etape == Etape.INACTIF or _joueur == null:
 		return
 	_depuis += delta
+	# LE COMPTE REPART A ZERO DES QU'ON DESCEND. Ce sont des secondes de
+	# CONDUITE : la premiere version comptait depuis le debut de la mission, donc
+	# le telephone sonnait a l'instant precis ou l'on s'asseyait au volant.
+	_volant_depuis = (_volant_depuis + delta) if _au_volant() else 0.0
 
 	# LA SONNERIE. Decrocher est une touche, ne rien faire en est une aussi :
 	# c'est la seule facon que le silence soit une reponse et pas un oubli
@@ -150,18 +155,22 @@ func _process(delta: float) -> void:
 			# main au dialogue au lieu de lire ce meme F comme un « descendre de
 			# voiture ». Sans ca, decrocher ejectait Walter de sa voiture.
 			if _dialogue != null:
+				_en_appel = true
+				if not _dialogue.termine.is_connected(_sur_fin_appel):
+					_dialogue.termine.connect(_sur_fin_appel)
 				_dialogue.demarrer("mission_skyler_oeufs")
-	elif not _appel_fait and _au_volant() and _depuis > AVANT_APPEL:
+	elif not _appel_fait and _volant_depuis > AVANT_APPEL:
 		_appel_fait = true
 		_sonne = SONNERIE
 		if _audio != null:
 			_audio.bruit("sonnerie")
 
-	if _etape == Etape.VERS_JESSE:
-		if _distance(_arrivee_desert()) < ARRIVE:
-			if _bourse != null:
-				_bourse.retirer(DU)
-			_etape = Etape.VERS_MAISON
+	# ON NE VA PLUS AU DESERT. La premiere version envoyait porter dix dollars a
+	# Jesse au camping-car : un aller-retour de deux kilometres pour un mecanisme
+	# qui se joue en trente secondes, et rien la-bas ne repondait. La mission est
+	# maintenant un simple trajet — l'appel tombe, on decide, on rentre.
+	if _etape == Etape.EN_ROUTE and _appel_fait and _sonne <= 0.0 and not _en_appel:
+		_etape = Etape.VERS_MAISON
 	elif _etape == Etape.VERS_MAISON:
 		if _maison != null and _distance(_maison.global_position) < ARRIVE:
 			_solder()
@@ -174,14 +183,21 @@ func _au_volant() -> bool:
 	return _controleur != null and bool(_controleur.call("au_volant"))
 
 
+func _sur_fin_appel() -> void:
+	_en_appel = false
+
+
+## LA TOUCHE D'INTERACTION NOUS APPARTIENT pendant la sonnerie et pendant
+## l'appel. Le controleur la lit lui aussi, et au volant elle veut dire
+## « descendre de voiture » : sans cette question, decrocher ejectait Walter sur
+## le bas-cote. C'est le meme mecanisme que pour le menu pause et la cachette —
+## une interface qui possede la touche le DIT, elle ne l'espere pas.
+func absorbe_la_touche() -> bool:
+	return _etape != Etape.INACTIF and (_sonne > 0.0 or _en_appel)
+
+
 func _distance(ou: Vector3) -> float:
 	return _joueur.global_position.distance_to(ou) if ou != Vector3.INF else 9999.0
-
-
-func _arrivee_desert() -> Vector3:
-	if _desert != null and _desert.has_method("arrivee"):
-		return _desert.call("arrivee")
-	return Vector3.INF
 
 
 # LE SOLDE, EN SILENCE. Aucun message, aucun bilan, aucune ligne de dialogue :
@@ -224,7 +240,7 @@ func _draw() -> void:
 	if police == null:
 		return
 
-	var texte := "Porter 10 $ a Jesse, au camping-car" if _etape == Etape.VERS_JESSE \
+	var texte := "Prendre la voiture et rouler" if _etape == Etape.EN_ROUTE \
 			else "Rentrer chez soi"
 	_ecrire(police, texte, Vector2(size.x / 2.0, 62.0), 11,
 			Color(0.62, 0.60, 0.56))
