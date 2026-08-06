@@ -29,6 +29,14 @@ enum Etape { INACTIF, EN_ROUTE, VERS_MAISON }
 ## Combien de temps le telephone sonne avant de renoncer, en secondes. Assez
 ## long pour qu'on ait le temps de decider en conduisant, assez court pour que
 ## ne rien faire soit une reponse.
+## LA SONNERIE EST A NOUS, pas au systeme audio.
+##
+## Audio.bruit() fabrique un lecteur jetable et l'oublie : personne ne peut plus
+## l'arreter. Le telephone continuait donc de sonner apres qu'on avait decroche,
+## ce qui est exactement le contraire de ce que decrocher veut dire. On tient
+## notre propre lecteur pour pouvoir le couper NET.
+const SON_SONNERIE := "res://assets/sons/telephone/phone_ring.wav"
+
 ## Ce que Walter doit remettre a Jesse.
 const DU := 10
 
@@ -66,6 +74,7 @@ var _reputation: Reputation
 var _audio: Audio
 var _controleur: Node
 var _dialogue: Dialogue
+var _lecteur: AudioStreamPlayer
 
 var _depuis: float = 0.0
 var _en_appel: bool = false
@@ -85,6 +94,10 @@ func _ready() -> void:
 	_maison = get_node_or_null(maison) as Node3D
 	_controleur = get_node_or_null(controleur)
 	_dialogue = get_node_or_null(dialogue) as Dialogue
+	_lecteur = AudioStreamPlayer.new()
+	_lecteur.bus = "Interface"
+	_lecteur.stream = ResourceLoader.load(SON_SONNERIE) as AudioStream
+	add_child(_lecteur)
 	set_process(true)
 	call_deferred("_brancher")
 
@@ -152,6 +165,10 @@ func _process(delta: float) -> void:
 	# d'interface.
 	if _sonne > 0.0:
 		_sonne = maxf(0.0, _sonne - delta)
+		# La sonnerie s'arrete aussi quand personne ne repond : un telephone qui
+		# sonne dans le vide finit toujours par se taire.
+		if _sonne <= 0.0:
+			_lecteur.stop()
 		if Input.is_action_just_pressed("interagir"):
 			_decroche = true
 			_sonne = 0.0
@@ -162,6 +179,7 @@ func _process(delta: float) -> void:
 			# APRES nous dans l'arbre, voit alors un dialogue en cours : il rend la
 			# main au dialogue au lieu de lire ce meme F comme un « descendre de
 			# voiture ». Sans ca, decrocher ejectait Walter de sa voiture.
+			_lecteur.stop()
 			if _dialogue != null:
 				_en_appel = true
 				if not _dialogue.termine.is_connected(_sur_fin_appel):
@@ -170,8 +188,7 @@ func _process(delta: float) -> void:
 	elif not _appel_fait and _volant_depuis > AVANT_APPEL:
 		_appel_fait = true
 		_sonne = SONNERIE
-		if _audio != null:
-			_audio.bruit("sonnerie")
+		_lecteur.play()
 
 	# LE DESERT EST UNE DESTINATION, PAS UNE CONDITION.
 	#
@@ -183,8 +200,6 @@ func _process(delta: float) -> void:
 		_vu_jesse = true
 		if _bourse != null:
 			_bourse.retirer(DU)
-		_etape = Etape.VERS_MAISON
-	elif _etape == Etape.EN_ROUTE and _appel_fait and _sonne <= 0.0 and not _en_appel:
 		_etape = Etape.VERS_MAISON
 	if _maison != null and _distance(_maison.global_position) < ARRIVE:
 		_solder()

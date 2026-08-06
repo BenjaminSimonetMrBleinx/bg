@@ -156,6 +156,19 @@ evenement = "courses"
 une_fois = false
 portee = 3.0
 
+; UNE ENSEIGNE VISIBLE DE LOIN. Sans elle, personne ne trouve l'epicerie :
+; l'adresse est une parcelle du generateur au milieu de deux cents metres de
+; strip mall identiques. Un Label3D se lit de la route et suit la camera.
+[node name="Enseigne" type="Label3D" parent="Rendu/Scene3D/Epicerie"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
+text = "EPICERIE"
+billboard = 1
+no_depth_test = true
+font_size = 120
+pixel_size = 0.02
+modulate = Color(0.949, 0.776, 0.42, 1)
+outline_modulate = Color(0, 0, 0, 0.9)
+
 ; Le panneau DESERT et sa fleche. Le noeud ne porte PLUS de coordonnees : il
 ; s'ancre sur le lieu nomme que le generateur publie. Deux elargissements de
 ; rue ont deja depose ce panneau au milieu de la chaussee ; un lieu nomme se
