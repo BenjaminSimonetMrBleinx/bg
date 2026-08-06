@@ -29,6 +29,9 @@ enum Etape { INACTIF, EN_ROUTE, VERS_MAISON }
 ## Combien de temps le telephone sonne avant de renoncer, en secondes. Assez
 ## long pour qu'on ait le temps de decider en conduisant, assez court pour que
 ## ne rien faire soit une reponse.
+## Ce que Walter doit remettre a Jesse.
+const DU := 10
+
 const SONNERIE := 9.0
 
 ## A quelle distance on considere qu'on est arrive. Genereux : ce n'est pas une
@@ -48,12 +51,14 @@ const ARRIVE := 9.0
 const AVANT_APPEL := 20.0
 
 @export var joueur: NodePath
+@export var desert: NodePath
 @export var maison: NodePath
 @export var controleur: NodePath
 @export var dialogue: NodePath
 
 var _etape: int = Etape.INACTIF
 var _joueur: Node3D
+var _desert: Node
 var _maison: Node3D
 var _bourse: Bourse
 var _famille: Famille
@@ -69,12 +74,14 @@ var _sonne: float = 0.0
 var _appel_fait: bool = false
 var _decroche: bool = false
 var _oeufs: bool = false
+var _vu_jesse: bool = false
 
 
 func _ready() -> void:
 	visible = true
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_joueur = get_node_or_null(joueur) as Node3D
+	_desert = get_node_or_null(desert)
 	_maison = get_node_or_null(maison) as Node3D
 	_controleur = get_node_or_null(controleur)
 	_dialogue = get_node_or_null(dialogue) as Dialogue
@@ -113,6 +120,7 @@ func demarrer() -> String:
 	_oeufs = false
 	_en_appel = false
 	_volant_depuis = 0.0
+	_vu_jesse = false
 	queue_redraw()
 	return "prends la voiture"
 
@@ -165,15 +173,21 @@ func _process(delta: float) -> void:
 		if _audio != null:
 			_audio.bruit("sonnerie")
 
-	# ON NE VA PLUS AU DESERT. La premiere version envoyait porter dix dollars a
-	# Jesse au camping-car : un aller-retour de deux kilometres pour un mecanisme
-	# qui se joue en trente secondes, et rien la-bas ne repondait. La mission est
-	# maintenant un simple trajet — l'appel tombe, on decide, on rentre.
-	if _etape == Etape.EN_ROUTE and _appel_fait and _sonne <= 0.0 and not _en_appel:
+	# LE DESERT EST UNE DESTINATION, PAS UNE CONDITION.
+	#
+	# On y va porter dix dollars a Jesse, et c'est le trajet qui donne son sens a
+	# l'appel. Mais rentrer chez soi solde la mission QUOI QU'IL ARRIVE : la
+	# premiere version bloquait tant qu'on n'avait pas touche le camping-car, ce
+	# qui transformait une scene en corvee. On propose un but, on n'enferme pas.
+	if not _vu_jesse and _distance(_arrivee_desert()) < ARRIVE:
+		_vu_jesse = true
+		if _bourse != null:
+			_bourse.retirer(DU)
 		_etape = Etape.VERS_MAISON
-	elif _etape == Etape.VERS_MAISON:
-		if _maison != null and _distance(_maison.global_position) < ARRIVE:
-			_solder()
+	elif _etape == Etape.EN_ROUTE and _appel_fait and _sonne <= 0.0 and not _en_appel:
+		_etape = Etape.VERS_MAISON
+	if _maison != null and _distance(_maison.global_position) < ARRIVE:
+		_solder()
 	queue_redraw()
 
 
@@ -194,6 +208,12 @@ func _sur_fin_appel() -> void:
 ## une interface qui possede la touche le DIT, elle ne l'espere pas.
 func absorbe_la_touche() -> bool:
 	return _etape != Etape.INACTIF and (_sonne > 0.0 or _en_appel)
+
+
+func _arrivee_desert() -> Vector3:
+	if _desert != null and _desert.has_method("arrivee"):
+		return _desert.call("arrivee")
+	return Vector3.INF
 
 
 func _distance(ou: Vector3) -> float:
@@ -240,7 +260,7 @@ func _draw() -> void:
 	if police == null:
 		return
 
-	var texte := "Prendre la voiture et rouler" if _etape == Etape.EN_ROUTE \
+	var texte := "Porter 10 $ a Jesse, au camping-car" if _etape == Etape.EN_ROUTE \
 			else "Rentrer chez soi"
 	_ecrire(police, texte, Vector2(size.x / 2.0, 62.0), 11,
 			Color(0.62, 0.60, 0.56))
