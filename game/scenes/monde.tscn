@@ -63,6 +63,7 @@
 [ext_resource type="Script" path="res://systemes/purete.gd" id="47_purete"]
 [ext_resource type="Script" path="res://systemes/famille.gd" id="48_famille"]
 [ext_resource type="Script" path="res://systemes/reputation.gd" id="49_reputation"]
+[ext_resource type="Script" path="res://systemes/service_test.gd" id="50_service"]
 
 [sub_resource type="ViewportTexture" id="tex_ecran"]
 viewport_path = NodePath("Rendu")
@@ -433,6 +434,18 @@ dev = NodePath("../../../Dev")
 ; de test. Il vit DANS le viewport de rendu comme le reste de l'interface : un
 ; releve dessine en pleine resolution mentirait sur ce qu'on est en train de
 ; regarder.
+[node name="ServiceTest" type="Control" parent="Rendu/Interface"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("50_service")
+joueur = NodePath("../../Scene3D/Joueur")
+desert = NodePath("../../Scene3D/Desert")
+maison = NodePath("../../Scene3D/Maisons/Walter")
+
 [node name="JaugePerf" type="Control" parent="Rendu/Interface"]
 anchors_preset = 15
 anchor_right = 1.0
@@ -508,6 +521,7 @@ script = ExtResource("34_bourse")
 script = ExtResource("44_sauvegarde")
 bourse = NodePath("../Bourse")
 purete = NodePath("../Purete")
+service = NodePath("../Rendu/Interface/ServiceTest")
 temps = NodePath("../Temps")
 
 ; La purete du produit. Elle ne s'affiche nulle part : elle teinte le cristal
@@ -542,6 +556,7 @@ foule = NodePath("../Rendu/Scene3D/Foule")
 trafic = NodePath("../Rendu/Scene3D/Trafic")
 jauge = NodePath("../Rendu/Interface/JaugePerf")
 purete = NodePath("../Purete")
+service = NodePath("../Rendu/Interface/ServiceTest")
 scene_3d = NodePath("../Rendu/Scene3D")
 rendu = NodePath("..")
 equipement = NodePath("../Equipement")

@@ -75,6 +75,32 @@ lieu de sa scène. Aucune des trois ne le signalait.
 
 ---
 
+## 0.48.4 — « Un simple service » : le premier vrai choix du jeu
+
+> **À essayer : Échap → Outils de test → « Déclencher une mission de test… » →
+> « Un simple service ».** Tu dois porter 10 $ à Jesse au camping-car, puis
+> rentrer chez toi. Six secondes après le départ, **Skyler appelle** : il lui
+> faut des œufs. `F` pour décrocher, ou laisse sonner.
+
+**Aucune des trois issues n'est gratuite** — et c'est tout le sujet :
+
+| Ce que tu fais | Famille | Réputation |
+|---|---|---|
+| Tu passes prendre les œufs | **+10** | **−6** — tu arrives en retard |
+| Tu décroches, tu promets, tu files droit | **−10** | **+4** — tu es fiable |
+| Tu ne décroches pas | **−5** | inchangée |
+
+Les deux compteurs bougent **en sens inverse**, côte à côte en haut de l'écran.
+C'est pour ça qu'ils y sont.
+
+**Rien ne t'annonce ce que ça t'a coûté.** Les chiffres bougent en silence, et
+Skyler ne te reparle jamais des œufs si tu as promis et oublié.
+
+L'épicerie est à peu près sur la route de la sortie désert : le détour est réel
+mais court. C'est un choix, pas une punition.
+
+---
+
 ## 0.48.3 — Une épicerie, et de quoi faire remonter la famille
 
 > **À essayer : va au centre commercial au nord de la ville** — il est loin, à

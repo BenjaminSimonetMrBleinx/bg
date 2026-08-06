@@ -43,6 +43,7 @@ const RESOLUTIONS_NOM := ["256", "512", "1024"]
 const ENTREES := [
 	{"cle": "temps", "nom": "Vitesse du temps", "genre": CHOIX},
 	{"cle": "lieu", "nom": "Aller a un lieu nomme...", "genre": PAGE},
+	{"cle": "missions", "nom": "Declencher une mission de test...", "genre": PAGE},
 	{"cle": "traverse", "nom": "Traverser les murs et voler", "genre": BASCULE},
 	{"cle": "voiture", "nom": "Faire venir la voiture", "genre": ACTION},
 	{"cle": "mille", "nom": "Donner 1 000 $", "genre": ACTION},
@@ -89,6 +90,7 @@ const COLLISIONS_MAX := 400
 @export var trafic: NodePath
 @export var jauge: NodePath
 @export var purete: NodePath
+@export var service: NodePath
 ## La racine du contenu 3D : c'est sous elle qu'on cherche les collisions et
 ## qu'on pose les reperes.
 @export var scene_3d: NodePath
@@ -109,6 +111,7 @@ var _jauge: JaugePerf
 var _purete: Purete
 var _famille: Famille
 var _reputation: Reputation
+var _service: ServiceTest
 var _scene: Node3D
 
 ## Ce qu'on a fabrique pour montrer. Garde pour pouvoir le DEFAIRE : des
@@ -130,6 +133,7 @@ func _ready() -> void:
 	_purete = get_node_or_null(purete) as Purete
 	_famille = Famille.courante(self)
 	_reputation = Reputation.courante(self)
+	_service = get_node_or_null(service) as ServiceTest
 	_scene = get_node_or_null(scene_3d) as Node3D
 	if reglages != null:
 		_vitesse_normale = reglages.temps_vitesse
@@ -276,6 +280,46 @@ func regler(i: int, sens: int) -> void:
 			if _famille != null:
 				_famille.ajouter(sens * 10)
 
+
+## Les missions de test. Elles ne s'inserent dans aucun scenario : chacune sert
+## a essayer UN mecanisme en deux minutes, sans attendre que les vraies missions
+## soient ecrites. On en ajoute une ligne ici et rien d'autre.
+const MISSIONS := [
+	["Un simple service", "service"],
+]
+
+
+## Le titre de la page ouverte par une ligne de genre PAGE.
+func page_titre(cle_page: String) -> String:
+	return "MISSIONS DE TEST" if cle_page == "missions" else "ALLER A..."
+
+
+## Ce que la page contient.
+func page_lignes(cle_page: String) -> Array:
+	if cle_page != "missions":
+		return lieux()
+	var sortie: Array = []
+	for m in MISSIONS:
+		sortie.append(str(m[0]))
+	return sortie
+
+
+## F sur la ligne i d'une page. Renvoie [message, fermer_le_menu] : se rendre
+## quelque part demande de refermer pour voir ou l'on arrive, demarrer une
+## mission aussi.
+func page_agir(cle_page: String, i: int) -> Array:
+	var lignes := page_lignes(cle_page)
+	if i < 0 or i >= lignes.size():
+		return ["", false]
+	if cle_page != "missions":
+		return [aller_a(str(lignes[i])), true]
+	if _service == null:
+		return ["pas de mission de test", false]
+	return [_service.demarrer(), true]
+
+
+func cle(i: int) -> String:
+	return str(ENTREES[i].get("cle", ""))
 
 # ------------------------------------------------------------------ les lieux
 

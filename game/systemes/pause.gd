@@ -1,4 +1,4 @@
-# Le menu pause.
+﻿# Le menu pause.
 #
 # Quatre lignes : Reprendre, Options, Recommencer la mission, Quitter. Et un
 # sous-menu d'options ou l'on regle les volumes.
@@ -215,7 +215,7 @@ func _taille() -> int:
 		Vue.OUTILS:
 			return _taille_outils()
 		Vue.LIEUX:
-			return (_dev.lieux().size() + 1) if _dev != null else 1
+			return (_dev.page_lignes(_page).size() + 1) if _dev != null else 1
 	return CURSEURS.size()
 
 
@@ -281,13 +281,16 @@ func _naviguer(delta: float) -> void:
 func _aller_au_lieu() -> void:
 	if _son() != null:
 		_son().bruit("roue_cran")
-	var noms := _dev.lieux() if _dev != null else []
+	var noms := _dev.page_lignes(_page) if _dev != null else []
 	if _dev == null or _choix >= noms.size():
 		_vue = Vue.OUTILS
 		_choix = 0
 		return
-	_dev.aller_a(str(noms[_choix]))
-	fermer()
+	var r: Array = _dev.page_agir(_page, _choix)
+	_echo = str(r[0])
+	_echo_restant = ECHO_DUREE if _echo != "" else 0.0
+	if bool(r[1]):
+		fermer()
 
 
 func _revenir_a_la_racine(depuis: String) -> void:
@@ -305,6 +308,7 @@ func _agir_sur_l_outil() -> void:
 		_revenir_a_la_racine("Outils de test")
 		return
 	if _dev.genre(_choix) == Dev.PAGE:
+		_page = _dev.cle(_choix)
 		_vue = Vue.LIEUX
 		_choix = 0
 		_echo_restant = 0.0
@@ -368,6 +372,11 @@ var _souris_avant := Vector2(-9999.0, -9999.0)
 ## comme un deplacement de souris. Une capture s'ouvrait ainsi sur son
 ## quarante-quatrieme nom. Un dixieme de seconde suffit, et personne ne vise une
 ## ligne aussi vite.
+## La page ouverte, quand on est dans Vue.LIEUX. Une seule vue sert a toutes :
+## les lieux, les missions de test, et ce qu'on ajoutera. C'est Dev qui dit ce
+## qu'elle contient et comment son titre s'ecrit.
+var _page := "lieu"
+
 const CALME := 6
 var _calme := 0
 
@@ -654,7 +663,7 @@ func _dessiner_outils(police: Font) -> void:
 # ligne choisie, avec un reperage « 12 / 41 » — sans lui, on ne sait pas si l'on
 # est au debut, au milieu ou a la fin d'une liste dont on ne voit qu'un tiers.
 func _dessiner_lieux(police: Font) -> void:
-	var noms := _dev.lieux() if _dev != null else []
+	var noms := _dev.page_lignes(_page) if _dev != null else []
 	var total := noms.size() + 1
 	var fenetre := mini(LIEUX_VISIBLES, total)
 	# La fenetre suit le choix sans jamais deborder : centree tant qu'elle le
@@ -667,7 +676,8 @@ func _dessiner_lieux(police: Font) -> void:
 	var coin := Vector2((size.x - l) / 2.0, size.y * 0.5 - h / 2.0)
 	_cadre(coin, Vector2(l, h))
 
-	_ecrire(police, "ALLER A...", coin + Vector2(l / 2.0, 20.0), 15,
+	_ecrire(police, _dev.page_titre(_page) if _dev != null else "...",
+			coin + Vector2(l / 2.0, 20.0), 15,
 			Color(0.949, 0.776, 0.42), true)
 	_ecrire(police, "%d / %d" % [mini(_choix + 1, noms.size()), noms.size()],
 			coin + Vector2(l - 12.0, 20.0), 10, Color(0.62, 0.60, 0.56), false, true)
