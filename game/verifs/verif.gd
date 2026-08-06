@@ -9,7 +9,7 @@ extends SceneTree
 
 const A_VERIFIER := {
 	"reglages": "res://systemes/reglages.tres",
-	"scene principale": "res://scenes/monde.tscn",
+	"monde": "res://scenes/monde.tscn",
 }
 
 func _init() -> void:
@@ -37,12 +37,35 @@ func _init() -> void:
 		else:
 			print("  ok  rendu interne     %d x %d" % [r.largeur_rendu, r.hauteur_rendu])
 
-	# La scene principale doit s'instancier, pas seulement se charger.
+	# LA SCENE D'ENTREE EST CELLE QUE project.godot DECLARE, pas celle qu'on
+	# croit. Ce controle visait monde.tscn en dur ; depuis que l'ecran-titre
+	# precede le monde, il validait une scene qui n'est plus le point d'entree,
+	# et la vraie porte d'entree du jeu n'etait verifiee par personne. Une
+	# verification qui ne suit pas le reglage rassure a cote.
+	var entree := str(ProjectSettings.get_setting("application/run/main_scene", ""))
+	if entree == "":
+		erreurs.append("aucune scene d'entree declaree dans project.godot")
+	elif not ResourceLoader.exists(entree):
+		erreurs.append("scene d'entree introuvable (%s)" % entree)
+	else:
+		var pe := ResourceLoader.load(entree) as PackedScene
+		# Type explicite : sans lui, l'inference echoue sur la branche nulle et
+		# GDScript refuse de compiler le fichier ET tous ceux qui en dependent.
+		var ne: Node = null
+		if pe != null:
+			ne = pe.instantiate()
+		if ne == null:
+			erreurs.append("scene d'entree : instanciation impossible (%s)" % entree)
+		else:
+			print("  ok  %-18s %s" % ["scene d'entree", entree])
+			ne.free()
+
+	# Le monde doit s'instancier, pas seulement se charger.
 	var ps := ResourceLoader.load("res://scenes/monde.tscn") as PackedScene
 	if ps != null:
 		var noeud := ps.instantiate()
 		if noeud == null:
-			erreurs.append("scene principale : instanciation impossible")
+			erreurs.append("monde : instanciation impossible")
 		else:
 			print("  ok  instanciation    %s" % noeud.name)
 			noeud.free()

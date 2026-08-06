@@ -15,19 +15,33 @@
 # comme le menu pause et l'ecran de fin, pour que les trois se ressemblent. Il
 # se clique aussi : ici le curseur est visible, une liste qui l'ignore se lit
 # comme une interface cassee.
+#
+# IL PASSE PAR LE MEME PIPELINE QUE LE JEU. Le menu est dessine dans un
+# SubViewport a la resolution de reglages.tres, puis agrandi - exactement comme
+# le monde et comme tout le reste de l'interface, qui vit deja dans le viewport
+# du jeu. Dessine en pleine resolution, l'ecran-titre etait plus NET que le jeu
+# qu'il annonce : le premier ecran promettait une finesse que la premiere image
+# de jeu dementait.
+#
+# Ce noeud tient l'etat et les actions ; menu_titre.gd tient le dessin.
 class_name Titre
-extends Control
+extends Node
 
 const MONDE := "res://scenes/monde.tscn"
 
 ## Deux vues : la liste racine, et la confirmation d'ecrasement.
 enum Vue { RACINE, CONFIRME }
 
+@export var reglages: Reglages
+
 var _vue: int = Vue.RACINE
 var _choix: int = 0
 var _racine: Array[String] = []
-var _zones: Array[Rect2] = []
 var _clic_avant: bool = false
+
+@onready var _rendu: SubViewport = $Rendu
+@onready var _menu: MenuTitre = $Rendu/Menu
+@onready var _ecran: TextureRect = $Affichage/Ecran
 
 
 func _ready() -> void:
@@ -37,13 +51,29 @@ func _ready() -> void:
 	if "--ou" in OS.get_cmdline_user_args():
 		_lancer_monde()
 		return
-	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	mouse_filter = Control.MOUSE_FILTER_STOP
+	_configurer_ecran()
 	# On sort d'un jeu qui capture la souris ; sur le titre, on la veut visible.
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_reconstruire()
 	set_process(true)
-	queue_redraw()
+
+
+# La resolution et le filtrage viennent de reglages.tres, comme pour le monde :
+# bouger le curseur du rendu interne doit deplacer le titre avec le jeu, sinon
+# les deux divergent au premier reglage et personne ne s'en apercoit avant une
+# capture.
+func _configurer_ecran() -> void:
+	if reglages == null:
+		push_error("titre : aucune ressource Reglages assignee")
+		return
+	_rendu.size = Vector2i(reglages.largeur_rendu, reglages.hauteur_rendu)
+	_rendu.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	_ecran.texture_filter = (
+		CanvasItem.TEXTURE_FILTER_LINEAR if reglages.filtrage_lineaire
+		else CanvasItem.TEXTURE_FILTER_NEAREST
+	)
+	_ecran.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_ecran.stretch_mode = TextureRect.STRETCH_SCALE
 
 
 ## La liste racine, refaite selon ce qui existe : « Reprendre » n'a de sens que
@@ -55,6 +85,7 @@ func _reconstruire() -> void:
 	_racine.append("Nouvelle partie")
 	_racine.append("Quitter")
 	_choix = 0
+	_rafraichir()
 
 
 ## Y a-t-il une partie a reprendre ? On relit le fichier de sauvegarde, dont le
@@ -68,6 +99,14 @@ func options() -> Array:
 	return ["Non", "Oui"] if _vue == Vue.CONFIRME else _racine
 
 
+# Le menu ne va pas chercher l'etat, on le lui donne. Les tests appellent
+# _reconstruire() et valider() sans passer par _ready : le menu peut donc ne pas
+# exister encore quand l'etat change.
+func _rafraichir() -> void:
+	if _menu != null:
+		_menu.montrer(options(), _choix, _vue == Vue.CONFIRME)
+
+
 func _process(_delta: float) -> void:
 	var n := options().size()
 	var bouge := 0
@@ -77,7 +116,7 @@ func _process(_delta: float) -> void:
 		bouge = -1
 	if bouge != 0:
 		_choix = (_choix + bouge + n) % n
-		queue_redraw()
+		_rafraichir()
 	_suivre_la_souris()
 	if Input.is_action_just_pressed("interagir"):
 		valider()
@@ -93,7 +132,6 @@ func valider() -> void:
 		else:
 			_vue = Vue.RACINE
 			_reconstruire()
-			queue_redraw()
 		return
 
 	match _racine[_choix]:
@@ -104,7 +142,7 @@ func valider() -> void:
 			if sauvegarde_existe():
 				_vue = Vue.CONFIRME
 				_choix = 0
-				queue_redraw()
+				_rafraichir()
 			else:
 				_lancer_monde()
 		"Quitter":
@@ -125,62 +163,32 @@ func _lancer_monde() -> void:
 # --------------------------------------------------------------------- souris
 
 
+# LA SOURIS N'ENTRE PAS TOUTE SEULE DANS UN SUBVIEWPORT (piege 9) : le menu
+# dessine a 512x384 pendant que le curseur, lui, se promene dans une fenetre de
+# 1920 de large. Sans conversion, on survole une entree trois fois plus bas que
+# celle qu'on voit.
+#
+# L'ecran est un simple agrandissement plein cadre - pas de bandes noires, pas
+# de recadrage - donc la conversion est un rapport d'echelle et rien d'autre.
+func _souris_dans_le_rendu() -> Vector2:
+	var fenetre := get_window()
+	if fenetre == null:
+		return Vector2(-1.0, -1.0)
+	var cadre := Vector2(fenetre.size)
+	if cadre.x <= 0.0 or cadre.y <= 0.0:
+		return Vector2(-1.0, -1.0)
+	var rendu := Vector2(_rendu.size)
+	return fenetre.get_mouse_position() * (rendu / cadre)
+
+
 func _suivre_la_souris() -> void:
-	var m := get_global_mouse_position()
-	for i in _zones.size():
-		if _zones[i].has_point(m) and _choix != i:
-			_choix = i
-			queue_redraw()
-			break
+	var m := _souris_dans_le_rendu()
+	var sous := _menu.index_sous(m)
+	if sous >= 0 and _choix != sous:
+		_choix = sous
+		_menu.queue_redraw()
 	var clic := Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
-	if clic and not _clic_avant:
-		for i in _zones.size():
-			if _zones[i].has_point(m):
-				_choix = i
-				valider()
-				break
+	if clic and not _clic_avant and sous >= 0:
+		_choix = sous
+		valider()
 	_clic_avant = clic
-
-
-# ---------------------------------------------------------------------- dessin
-
-
-func _draw() -> void:
-	var police := get_theme_default_font()
-	if police == null:
-		return
-	draw_rect(Rect2(Vector2.ZERO, size), Color(0.06, 0.06, 0.05))
-	var cx := size.x / 2.0
-
-	# Le titre, dans l'olive de la case du tableau periodique et l'ambre du
-	# desert - les couleurs de l'interface du jeu.
-	_texte(police, "BREAKING BAD", Vector2(cx, size.y * 0.24), 34,
-			Color(0.52, 0.55, 0.18))
-	_texte(police, "GAME", Vector2(cx, size.y * 0.24 + 32.0), 20,
-			Color(0.78, 0.6, 0.25))
-
-	var liste := options()
-	var depart := size.y * 0.56
-	if _vue == Vue.CONFIRME:
-		_texte(police, "Ecraser la sauvegarde ?", Vector2(cx, depart - 36.0),
-				15, Color(0.85, 0.35, 0.22))
-
-	_zones = []
-	for i in liste.size():
-		var y := depart + float(i) * 28.0
-		var sel := i == _choix
-		var couleur := Color(0.95, 0.78, 0.42) if sel else Color(0.55, 0.53, 0.46)
-		var etiquette: String = ("- " + str(liste[i]) + " -") if sel else str(liste[i])
-		_texte(police, etiquette, Vector2(cx, y), 16, couleur)
-		_zones.append(Rect2(cx - 110.0, y - 3.0, 220.0, 26.0))
-
-
-func _texte(police: Font, texte: String, ou: Vector2, taille: int,
-		couleur: Color) -> void:
-	var largeur := police.get_string_size(texte, HORIZONTAL_ALIGNMENT_LEFT,
-			-1, taille).x
-	var p := ou - Vector2(largeur / 2.0, 0.0)
-	police.draw_string(get_canvas_item(), p + Vector2(1, 1), texte,
-			HORIZONTAL_ALIGNMENT_LEFT, -1, taille, Color(0, 0, 0, couleur.a))
-	police.draw_string(get_canvas_item(), p, texte, HORIZONTAL_ALIGNMENT_LEFT,
-			-1, taille, couleur)

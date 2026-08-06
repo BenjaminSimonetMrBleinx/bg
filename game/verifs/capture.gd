@@ -24,6 +24,7 @@
 extends SceneTree
 
 const SCENARIOS := "res://donnees/scenarios.json"
+const MONDE := "res://scenes/monde.tscn"
 
 var _sortie := ""
 var _frames_a_attendre := 12
@@ -32,6 +33,7 @@ var _cam_pos := Vector3.INF
 var _cam_cible := Vector3.INF
 var _etapes: Array = []
 var _monde: Node
+var _scene_du_scenario := MONDE
 
 
 func _initialize() -> void:
@@ -45,7 +47,14 @@ func _initialize() -> void:
 	if args.has("scenario"):
 		_charger_scenario(args["scenario"])
 
-	var chemin: String = args.get("scene", ProjectSettings.get_setting("application/run/main_scene", ""))
+	# LA SCENE PAR DEFAUT EST LE MONDE, PAS LA SCENE D'ENTREE. Elle a longtemps
+	# suivi main_scene, ce qui revenait au meme — puis l'ecran-titre est passe
+	# devant le monde, et toutes les captures se sont mises a photographier un
+	# menu. Rien ne le signalait : le fichier PNG etait bien ecrit, les scenarios
+	# se deroulaient dans le vide, et il fallait ouvrir l'image pour le voir.
+	# Un scenario qui veut une autre scene la nomme (voir "scene" dans
+	# scenarios.json) ; --scene tranche au-dessus de tout.
+	var chemin: String = args.get("scene", _scene_du_scenario)
 	if chemin == "" or not ResourceLoader.exists(chemin):
 		printerr("capture : scene introuvable (%s)" % chemin)
 		quit(1)
@@ -75,6 +84,9 @@ func _charger_scenario(nom: String) -> void:
 		return
 	var s: Dictionary = tous[nom]
 	_etapes = s.get("etapes", [])
+	# Presque tous se jouent dans le monde ; ceux qui montrent un ecran, comme le
+	# titre, nomment leur scene.
+	_scene_du_scenario = str(s.get("scene", MONDE))
 	# Le scenario impose sa duree : une sonnerie de deux secondes capturee a la
 	# douzieme image ne montre rien, et on croit le mecanisme casse.
 	_frames_a_attendre = int(s.get("fin", _frames_a_attendre))

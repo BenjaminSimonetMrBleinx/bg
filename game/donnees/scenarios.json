@@ -36,9 +36,21 @@
   "  lancer     noeud, vitesse [x,y,z]      donne une vitesse a un corps",
   "",
   "'fin' est l'image ou l'on enregistre. Prevoir large : un fondu de porte dure",
-  "une seconde, une sonnerie deux, et capturer au milieu ne montre rien."
+  "une seconde, une sonnerie deux, et capturer au milieu ne montre rien.",
+  "",
+  "'scene' est facultatif et vaut le monde. Un scenario qui montre un ECRAN —",
+  "le titre, un menu — nomme la sienne. Ne pas confondre avec la scene",
+  "d'ENTREE du jeu : depuis que l'ecran-titre passe devant le monde, suivre",
+  "main_scene ferait photographier un menu a la place de chaque situation."
  ],
  "scenarios": {
+  "titre": {
+   "quoi": "L'ecran-titre tel qu'on le decouvre en lancant le jeu. Ce qu'on regarde : il passe par le meme rendu 512x384 que le jeu, donc il doit avoir le MEME grain. Un titre plus net que la premiere image de jeu promet une finesse que le jeu dement aussitot.",
+   "scene": "res://scenes/titre.tscn",
+   "fin": 40,
+   "etapes": [
+   ]
+  },
   "h06_aube": {
    "quoi": "L'aube : le soleil rase, les lampadaires pas encore eteints.",
    "fin": 90,
