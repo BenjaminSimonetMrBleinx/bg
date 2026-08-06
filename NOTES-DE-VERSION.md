@@ -11,8 +11,31 @@ Les ajustements internes, les remaniements, les corrections de tests n'y sont pa
 Le détail technique vit dans les messages de commit et dans [docs/JOURNAL.md](docs/JOURNAL.md).
 
 Le numéro s'affiche en haut à droite de l'écran. `MAJEUR.MINEUR.CORRECTIF` : **MAJEUR**
-passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** à chaque lot livré,
-**CORRECTIF** pour ce qui répare sans rien ajouter.
+passera à 1 le jour où le jeu se tient de bout en bout, **MINEUR** quand un morceau
+entier du jeu arrive, **CORRECTIF** pour un lot ou une réparation.
+
+**Le mineur monte lentement, et c'est voulu** (décidé le 06/08/2026). Il montait
+à chaque lot ; à ce rythme on atteignait 1.0 avant que le jeu tienne debout, et
+le numéro ne voulait plus rien dire. Un lot livré est désormais un correctif.
+
+---
+
+## 0.48.1 — Les points de famille
+
+> **À essayer : lance le jeu.** Un compteur **Famille** s'affiche en haut à
+> gauche, à côté de l'argent, et il y reste. Il descend tout seul avec les heures
+> qui passent, et il change de couleur quand il devient bas — vert, orange, rouge.
+
+**Un seul compteur, pas un par personne.** Ce qu'il suit, c'est la place qu'on
+laisse à sa vie d'avant. S'occuper d'eux le fait monter, penser aux courses aussi,
+s'occuper de son cancer aussi. Les négliger le fait descendre sans qu'on y touche.
+
+Il est conservé quand tu sauvegardes et reprends. Tu peux le régler depuis les
+outils de test (Échap → Outils de test → « Points de famille ») pour voir les
+trois couleurs.
+
+Pas encore là : les endroits où gagner ces points — les courses, les rendez-vous
+médicaux, les moments passés à la maison. La mécanique existe, les occasions non.
 
 ---
 
@@ -904,5 +927,7 @@ de zéro toutes les cinq secondes.
 Le premier jalon, sans numéro : la ville, la conduite, marcher, les maisons et leurs
 habitants, les dialogues doublés, la roue des outils, la visée à la souris, les passants,
 le modèle sculpté de Walter. Le détail est dans [docs/JOURNAL.md](docs/JOURNAL.md).
+
+
 
 

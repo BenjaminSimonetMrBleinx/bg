@@ -52,6 +52,7 @@ const ENTREES := [
 	{"cle": "invulnerable", "nom": "Invulnerable", "genre": BASCULE},
 	{"cle": "soigner", "nom": "Se soigner", "genre": ACTION},
 	{"cle": "purete", "nom": "Purete du produit", "genre": CHOIX},
+	{"cle": "famille", "nom": "Points de famille", "genre": CHOIX},
 	{"cle": "densite", "nom": "Foule et trafic", "genre": CHOIX},
 	{"cle": "collisions", "nom": "Montrer les collisions", "genre": BASCULE},
 	{"cle": "reperes", "nom": "Montrer les lieux nommes", "genre": BASCULE},
@@ -105,6 +106,7 @@ var _foule: Foule
 var _trafic: Trafic
 var _jauge: JaugePerf
 var _purete: Purete
+var _famille: Famille
 var _scene: Node3D
 
 ## Ce qu'on a fabrique pour montrer. Garde pour pouvoir le DEFAIRE : des
@@ -124,6 +126,7 @@ func _ready() -> void:
 	_trafic = get_node_or_null(trafic) as Trafic
 	_jauge = get_node_or_null(jauge) as JaugePerf
 	_purete = get_node_or_null(purete) as Purete
+	_famille = Famille.courante(self)
 	_scene = get_node_or_null(scene_3d) as Node3D
 	if reglages != null:
 		_vitesse_normale = reglages.temps_vitesse
@@ -163,6 +166,8 @@ func valeur(i: int) -> String:
 			# « 3 / 5 » apprendrait au joueur qu'il y a une echelle, et c'est
 			# exactement ce que la direction du jeu refuse de lui dire.
 			return _purete.nom() if _purete != null else "-"
+		"famille":
+			return str(_famille.points()) if _famille != null else "-"
 		"collisions":
 			return "oui" if _montre_collisions != null else "non"
 		"reperes":
@@ -184,7 +189,7 @@ func valeur(i: int) -> String:
 ## rien fait, et on appuie trois fois.
 func agir(i: int) -> String:
 	match str(ENTREES[i].get("cle", "")):
-		"temps", "resolution", "densite", "purete":
+		"temps", "resolution", "densite", "purete", "famille":
 			# Un choix se parcourt a gauche-droite ; F le fait avancer d'un cran
 			# plutot que de ne rien faire.
 			regler(i, 1)
@@ -256,6 +261,12 @@ func regler(i: int, sens: int) -> void:
 		"purete":
 			if _purete != null:
 				_purete.poser(_purete.palier() + sens)
+		"famille":
+			# Par dix : parcourir cent points un par un au clavier serait
+			# inutilisable, et personne ne regle un compteur de test au point
+			# pres.
+			if _famille != null:
+				_famille.ajouter(sens * 10)
 
 
 # ------------------------------------------------------------------ les lieux

@@ -39,10 +39,19 @@ se cacher plus longtemps**.
 
 ## Les cinq règles
 
-**1. Aucun chiffre n'est montré au joueur.** Ni pureté, ni réputation, ni score
-familial. Tout se perçoit : la couleur du produit, le ton d'une réplique, la
+**1. Aucun chiffre n'est montré au joueur — une seule exception.** Ni pureté, ni
+réputation. Tout se perçoit : la couleur du produit, le ton d'une réplique, la
 lumière d'une pièce, le fait que Walter Junior dise bonjour ou non. Un chiffre
 transforme un choix en optimisation, et le sentiment disparaît.
+
+**L'exception, décidée le 06/08/2026 : les points de famille s'affichent en
+permanence.** Un seul compteur, pas un par personne — ce qu'on suit, c'est la
+place qu'on laisse à sa vie d'avant. S'occuper d'eux le fait monter, penser aux
+courses aussi, s'occuper de son cancer aussi ; les négliger le fait descendre
+tout seul. Il se montre parce que c'est un **compte à rebours qu'on doit pouvoir
+surveiller en conduisant**, pas une note qu'on découvre à la fin — le même
+raisonnement que pour l'argent, qui s'affiche déjà. La règle tient pour tout le
+reste, et cette exception ne s'étend à rien d'autre.
 
 
 > **Exception temporaire, actée le 31/07/2026.** Les points de réputation et de

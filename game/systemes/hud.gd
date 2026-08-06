@@ -33,6 +33,7 @@ var _c: Node
 var _j: Joueur
 var _tir: Tir
 var _bourse: Bourse
+var _famille: Famille
 var _mission: Mission
 
 ## Le montant AFFICHE, qui rattrape le montant reel. Voir trois cent mille
@@ -95,6 +96,7 @@ func _ready() -> void:
 
 func _brancher_la_mission() -> void:
 	_bourse = Bourse.courante(self)
+	_famille = Famille.courante(self)
 	_mission = Mission.courante(self)
 	if _bourse != null:
 		_affiche = float(_bourse.montant())
@@ -292,6 +294,23 @@ func _etat_du_joueur(police: Font) -> void:
 		xa += icone_argent.get_width() + 4.0
 	_ecrire(police, Bourse.ecrire(roundi(_affiche)), Vector2(xa, ya + 3.0), 13,
 			BB_OLIVE, false)
+
+	# LES POINTS DE FAMILLE, a droite de l'argent et en permanence.
+	#
+	# C'est le seul chiffre du jeu qui se montre — decision du 06/08/2026, voir
+	# docs/12-direction.md. Il se lit d'un coup d'oeil en conduisant, donc il
+	# CHANGE DE COULEUR plutot que de demander une comparaison : on ne calcule
+	# pas « 22 sur 100 » au volant, on voit du rouge.
+	if _famille == null:
+		return
+	var p := _famille.points()
+	var teinte := BB_OLIVE
+	if p <= 25:
+		teinte = Color(0.85, 0.35, 0.22)
+	elif p <= 50:
+		teinte = Color(0.85, 0.62, 0.25)
+	_ecrire(police, "Famille %d" % p, Vector2(xa + 74.0, ya + 3.0), 13,
+			teinte, false)
 
 
 # L'OBJECTIF COURANT, en haut a gauche, sous l'argent.

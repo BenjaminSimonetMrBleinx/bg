@@ -32,6 +32,7 @@ const VERSION := 1
 
 var _bourse: Bourse
 var _purete: Purete
+var _famille: Famille
 var _temps: Temps
 var _equipement: Equipement
 var _joueur: Node3D
@@ -41,6 +42,7 @@ var _mission: Mission
 func _ready() -> void:
 	_bourse = get_node_or_null(bourse) as Bourse
 	_purete = get_node_or_null(purete) as Purete
+	_famille = Famille.courante(self)
 	_temps = get_node_or_null(temps) as Temps
 	_equipement = get_node_or_null(equipement) as Equipement
 	_joueur = get_node_or_null(joueur) as Node3D
@@ -81,6 +83,7 @@ func etat() -> Dictionary:
 		# lira sans doute jamais, on se parle en paliers : le jour ou quelqu'un
 		# ouvre la sauvegarde, il n'y trouve pas de pourcentage a optimiser.
 		"purete": _purete.palier() if _purete else 1,
+		"famille": _famille.points() if _famille else Famille.DEPART,
 		"inventaire": {
 			"possedes": _equipement.cles_possedees() if _equipement else [],
 			"tenu": _equipement.cle_equipee() if _equipement else "",
@@ -130,6 +133,8 @@ func appliquer(d: Dictionary) -> void:
 		_bourse.poser(int(d["argent"]))
 	if _purete and d.has("purete"):
 		_purete.poser(int(d["purete"]))
+	if _famille and d.has("famille"):
+		_famille.poser(int(d["famille"]))
 	if _equipement and d.has("inventaire"):
 		var inv: Dictionary = d["inventaire"]
 		_equipement.restaurer(inv.get("possedes", []), str(inv.get("tenu", "")),

@@ -61,6 +61,7 @@
 [ext_resource type="Script" path="res://systemes/dev.gd" id="45_dev"]
 [ext_resource type="Script" path="res://systemes/jauge_perf.gd" id="46_jauge"]
 [ext_resource type="Script" path="res://systemes/purete.gd" id="47_purete"]
+[ext_resource type="Script" path="res://systemes/famille.gd" id="48_famille"]
 
 [sub_resource type="ViewportTexture" id="tex_ecran"]
 viewport_path = NodePath("Rendu")
@@ -495,6 +496,12 @@ temps = NodePath("../Temps")
 [node name="Purete" type="Node" parent="."]
 script = ExtResource("47_purete")
 equipement = NodePath("../Equipement")
+
+; Les points de famille. Un seul compteur pour Skyler, Junior et Hank : ce
+; qu'on suit, c'est la place qu'on laisse a sa vie d'avant. Affiche en
+; permanence dans le HUD — c'est le seul chiffre du jeu qui se montre.
+[node name="Famille" type="Node" parent="."]
+script = ExtResource("48_famille")
 
 ; Les outils de test. Il n'appartient pas au jeu : rien ne l'appelle, c'est le
 ; menu pause qui l'affiche et le declenche. Le retirer de la scene fait
