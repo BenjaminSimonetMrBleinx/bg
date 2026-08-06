@@ -44,14 +44,25 @@ réputation. Tout se perçoit : la couleur du produit, le ton d'une réplique, l
 lumière d'une pièce, le fait que Walter Junior dise bonjour ou non. Un chiffre
 transforme un choix en optimisation, et le sentiment disparaît.
 
-**L'exception, décidée le 06/08/2026 : les points de famille s'affichent en
-permanence.** Un seul compteur, pas un par personne — ce qu'on suit, c'est la
-place qu'on laisse à sa vie d'avant. S'occuper d'eux le fait monter, penser aux
-courses aussi, s'occuper de son cancer aussi ; les négliger le fait descendre
-tout seul. Il se montre parce que c'est un **compte à rebours qu'on doit pouvoir
-surveiller en conduisant**, pas une note qu'on découvre à la fin — le même
-raisonnement que pour l'argent, qui s'affiche déjà. La règle tient pour tout le
-reste, et cette exception ne s'étend à rien d'autre.
+**L'exception, décidée le 06/08/2026 : les TROIS ressources s'affichent en
+permanence.** L'argent, la famille et la réputation de rue. Ce sont des comptes
+à rebours qu'on doit pouvoir surveiller **en conduisant**, pas des notes qu'on
+découvre à la fin — le raisonnement qui valait déjà pour l'argent vaut pour les
+deux autres. Les avoir **côte à côte** est ce qui donne le sujet du jeu à voir
+sans une ligne de dialogue : la réputation monte quand la famille descend.
+
+- **Famille** — un seul compteur, pas un par personne. Ce qu'on suit, c'est la
+  place qu'on laisse à sa vie d'avant. S'occuper d'eux le fait monter, penser
+  aux courses aussi, s'occuper de son cancer aussi ; les négliger le fait
+  descendre tout seul.
+- **Réputation de rue** — une seule valeur, gagnée par un **mélange** : la
+  pureté de ce qu'on livre, la fiabilité des livraisons, la violence assumée, et
+  le fait de cuisiner de sa main. Aucune voie ne suffit seule. Elle **ne se
+  dépense jamais** : elle ouvre.
+
+**La règle tient pour tout le reste.** La pureté reste une couleur dans la main,
+jamais un pourcentage ; l'état de la famille personne par personne, quand il
+existera, restera perçu et non chiffré.
 
 
 > **Exception temporaire, actée le 31/07/2026.** Les points de réputation et de

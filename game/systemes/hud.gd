@@ -1,4 +1,4 @@
-# L'affichage tete haute.
+﻿# L'affichage tete haute.
 #
 # Il vit DANS le SubViewport, donc rendu a 512 x 384 comme le reste. Un texte
 # net superpose a une image basse resolution trahirait immediatement un jeu
@@ -34,6 +34,7 @@ var _j: Joueur
 var _tir: Tir
 var _bourse: Bourse
 var _famille: Famille
+var _reputation: Reputation
 var _mission: Mission
 
 ## Le montant AFFICHE, qui rattrape le montant reel. Voir trois cent mille
@@ -97,6 +98,7 @@ func _ready() -> void:
 func _brancher_la_mission() -> void:
 	_bourse = Bourse.courante(self)
 	_famille = Famille.courante(self)
+	_reputation = Reputation.courante(self)
 	_mission = Mission.courante(self)
 	if _bourse != null:
 		_affiche = float(_bourse.montant())
@@ -311,6 +313,15 @@ func _etat_du_joueur(police: Font) -> void:
 		teinte = Color(0.85, 0.62, 0.25)
 	_ecrire(police, "Famille %d" % p, Vector2(xa + 74.0, ya + 3.0), 13,
 			teinte, false)
+
+	# LA REPUTATION, troisieme et dernier compteur. Elle monte quand la famille
+	# descend — c'est tout le sujet du jeu, et les avoir cote a cote est ce qui
+	# le donne a voir sans une ligne de dialogue.
+	if _reputation == null:
+		return
+	var r := _reputation.points()
+	_ecrire(police, "Rue %d" % r, Vector2(xa + 152.0, ya + 3.0), 13,
+			BB_OLIVE if r < 60 else Color(0.95, 0.78, 0.42), false)
 
 
 # L'OBJECTIF COURANT, en haut a gauche, sous l'argent.

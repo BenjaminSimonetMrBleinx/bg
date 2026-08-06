@@ -29,13 +29,12 @@ Le détail vit dans [docs/12-direction.md](docs/12-direction.md), qui est le
 socle. Ces cinq-là décident de tout et se relisent avant de concevoir quoi que
 ce soit :
 
-1. **Aucun chiffre n'est montré au joueur — sauf les points de famille.** Ni
-   pureté, ni réputation. Tout se perçoit — la couleur du produit, le ton d'une
-   réplique, la lumière d'une pièce. Un chiffre transforme un choix en
-   optimisation. **L'exception est décidée le 06/08/2026** : les points de
-   famille s'affichent en permanence, parce que c'est un compte à rebours qu'on
-   doit pouvoir surveiller en conduisant, pas une note qu'on découvre à la fin.
-   Elle ne s'étend à rien d'autre.
+1. **Aucun chiffre n'est montré au joueur — sauf les trois ressources.**
+   **L'argent, la famille et la réputation** s'affichent en permanence, décision
+   du 06/08/2026 : ce sont des comptes à rebours qu'on surveille en conduisant.
+   Tout le reste se perçoit — la couleur du produit, le ton d'une réplique, la
+   lumière d'une pièce. Un chiffre transforme un choix en optimisation, et
+   l'exception ne s'étend à rien d'autre.
 2. **Un choix sans coût n'est pas un choix.** Si une option est meilleure sur
    tous les plans, il n'y a rien à décider.
 3. **L'argent est un compte à rebours, pas un score.** Il doit être prélevé.

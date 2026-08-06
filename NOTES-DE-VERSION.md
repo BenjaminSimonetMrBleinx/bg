@@ -20,6 +20,75 @@ le numéro ne voulait plus rien dire. Un lot livré est désormais un correctif.
 
 ---
 
+## 📌 Session du 6 août 2026 — de la 0.44 à la 0.48.2
+
+**Ce qu'il faut retenir de la soirée, en une lecture.** Le détail version par
+version est en dessous.
+
+### Les trois compteurs sont à l'écran
+
+`$192` · `Famille 60` · `Rue 10`, en haut à gauche, en permanence.
+
+C'est le **changement de direction de la soirée**, et il renverse la règle n°1
+du projet — qui disait qu'aucun chiffre ne se montre au joueur. La raison :
+ce sont des **comptes à rebours qu'on surveille en conduisant**, pas des notes
+qu'on découvre à la fin. Et les avoir côte à côte donne le sujet du jeu à voir
+sans une ligne de dialogue : **la réputation monte quand la famille descend**.
+
+- **Famille** — un seul compteur pour Skyler, Junior et Hank réunis : la place
+  qu'on laisse à sa vie d'avant. Il descend tout seul avec les heures. Il
+  monterait en s'occupant d'eux, en pensant aux courses, en s'occupant de son
+  cancer — mais **aucun de ces endroits n'existe encore**, donc pour l'instant
+  il ne fait que baisser.
+- **Réputation de rue** — gagnée par un **mélange**, et c'est décidé : la pureté
+  de ce qu'on livre, la fiabilité des livraisons, la violence assumée, et le
+  fait de cuisiner de sa main. Aucune voie ne suffit seule ; un joueur qui ne
+  serait que violent, ou que rigoureux, plafonne. Elle **ne se dépense jamais** :
+  elle ouvre des portes. Le **chapeau la multiplie par 1,5** — coiffé, on est
+  Heisenberg et tout ce qu'on fait se raconte plus vite.
+- **Argent** — inchangé.
+
+### Le produit a une couleur
+
+Le cristal dans ta main change de teinte selon sa pureté : **brun, ambre, clair,
+translucide, bleu**. Celle-là reste sans chiffre — on ne t'annoncera jamais un
+pourcentage, tu regardes ta main.
+
+### Un menu d'outils pour tester sans relancer
+
+**Échap → Outils de test**, dix-huit lignes. Aller à n'importe lequel des 45
+lieux, traverser les murs et voler, régler l'heure, la pureté, la famille, la
+réputation, la densité de foule, voir les collisions, afficher un relevé de
+performance en direct. C'est visible pour tout le monde : ceux qui jouent à ce
+jeu sont ceux qui le testent.
+
+### Et l'écran-titre a enfin le grain du jeu
+
+Il s'affichait plus net que la première image de jeu qui le suivait.
+
+### Ce qui a été réparé sans que ça se voie
+
+Trois vérifications mentaient : le relevé de performance annonçait un
+effondrement qui n'existait pas, `verif` validait une scène qui n'est plus le
+point d'entrée du jeu, et chaque capture de situation photographiait le menu au
+lieu de sa scène. Aucune des trois ne le signalait.
+
+---
+
+## 0.48.2 — La réputation de rue
+
+> **À essayer : regarde le troisième compteur, `Rue`, en haut à gauche.** Règle-le
+> depuis les outils de test pour voir. Mets le porkpie : tout ce que tu gagneras
+> ensuite comptera une fois et demie.
+
+Elle se gagne par un mélange — pureté livrée, fiabilité, violence assumée,
+cuisine faite soi-même — et **ne se dépense jamais** : elle ouvre. Conservée
+dans la sauvegarde.
+
+Pas encore là : les missions et les contacts qu'elle ouvrira.
+
+---
+
 ## 0.48.1 — Les points de famille
 
 > **À essayer : lance le jeu.** Un compteur **Famille** s'affiche en haut à

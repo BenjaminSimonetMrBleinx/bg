@@ -1,4 +1,4 @@
-# Les outils de test.
+﻿# Les outils de test.
 #
 # Tout ce qui sert a ALLER PLUS VITE quand on verifie quelque chose : poser
 # l'heure en marche, se donner de quoi jouer, faire venir la voiture, couper une
@@ -53,6 +53,7 @@ const ENTREES := [
 	{"cle": "soigner", "nom": "Se soigner", "genre": ACTION},
 	{"cle": "purete", "nom": "Purete du produit", "genre": CHOIX},
 	{"cle": "famille", "nom": "Points de famille", "genre": CHOIX},
+	{"cle": "reputation", "nom": "Reputation de rue", "genre": CHOIX},
 	{"cle": "densite", "nom": "Foule et trafic", "genre": CHOIX},
 	{"cle": "collisions", "nom": "Montrer les collisions", "genre": BASCULE},
 	{"cle": "reperes", "nom": "Montrer les lieux nommes", "genre": BASCULE},
@@ -107,6 +108,7 @@ var _trafic: Trafic
 var _jauge: JaugePerf
 var _purete: Purete
 var _famille: Famille
+var _reputation: Reputation
 var _scene: Node3D
 
 ## Ce qu'on a fabrique pour montrer. Garde pour pouvoir le DEFAIRE : des
@@ -127,6 +129,7 @@ func _ready() -> void:
 	_jauge = get_node_or_null(jauge) as JaugePerf
 	_purete = get_node_or_null(purete) as Purete
 	_famille = Famille.courante(self)
+	_reputation = Reputation.courante(self)
 	_scene = get_node_or_null(scene_3d) as Node3D
 	if reglages != null:
 		_vitesse_normale = reglages.temps_vitesse
@@ -168,6 +171,8 @@ func valeur(i: int) -> String:
 			return _purete.nom() if _purete != null else "-"
 		"famille":
 			return str(_famille.points()) if _famille != null else "-"
+		"reputation":
+			return str(_reputation.points()) if _reputation != null else "-"
 		"collisions":
 			return "oui" if _montre_collisions != null else "non"
 		"reperes":
@@ -189,7 +194,7 @@ func valeur(i: int) -> String:
 ## rien fait, et on appuie trois fois.
 func agir(i: int) -> String:
 	match str(ENTREES[i].get("cle", "")):
-		"temps", "resolution", "densite", "purete", "famille":
+		"temps", "resolution", "densite", "purete", "famille", "reputation":
 			# Un choix se parcourt a gauche-droite ; F le fait avancer d'un cran
 			# plutot que de ne rien faire.
 			regler(i, 1)
@@ -261,6 +266,9 @@ func regler(i: int, sens: int) -> void:
 		"purete":
 			if _purete != null:
 				_purete.poser(_purete.palier() + sens)
+		"reputation":
+			if _reputation != null:
+				_reputation.ajouter(sens * 10)
 		"famille":
 			# Par dix : parcourir cent points un par un au clavier serait
 			# inutilisable, et personne ne regle un compteur de test au point
