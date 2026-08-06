@@ -170,6 +170,29 @@ function Exiger($chemin, $nom) {
     if (-not $chemin) { throw "$nom introuvable. Installe-le, ou lance : .\bg.ps1 outils" }
 }
 
+# SUR QUEL ECRAN OUVRIR UNE FENETRE GODOT. Ca vaut pour tout ce qui en ouvre
+# une - jouer, mais aussi les tests, les captures et le releve : chacune d elles
+# s ouvrait sur l ecran principal et faisait reduire ce qui tournait en plein
+# ecran a cote. Une fenetre d outil ne doit jamais interrompre ce qu on fait.
+#
+# On n ouvre sur un autre ecran QUE s il existe : sinon, sur un poste a un seul
+# moniteur, la fenetre s ouvrirait dans le vide. Les deux PC partagent ce
+# script, donc le garde-fou evite qu ils divergent.
+function Get-ArgsEcran {
+    $ecrans = @()
+    try {
+        Add-Type -AssemblyName System.Windows.Forms -ErrorAction Stop
+        $ecrans = @([System.Windows.Forms.Screen]::AllScreens)
+    } catch {}
+    if ($Ecran -ge 0 -and $Ecran -lt $ecrans.Count) {
+        return , @('--screen', "$Ecran")
+    }
+    if ($Ecran -gt 0) {
+        Write-Host ("  (ecran {0} demande, mais {1} ecran(s) detecte(s) : ouverture par defaut)" -f $Ecran, $ecrans.Count) -ForegroundColor Gray
+    }
+    return , @()
+}
+
 # La version vit dans project.godot, et nulle part ailleurs.
 #
 # C est deja le champ que Godot utilise pour l export et les proprietes de
@@ -272,21 +295,7 @@ switch ($Commande) {
         Exiger $Godot 'Godot'
         Set-Build
         Initialize-Projet
-        # On n ouvre sur un autre ecran QUE s il existe : sinon, sur un poste a
-        # un seul moniteur, le jeu s ouvrirait dans le vide. Les deux PC
-        # partagent ce script, donc le garde-fou evite qu il divergent.
-        $argsGodot = @('--path', $Projet)
-        $ecrans = @()
-        try {
-            Add-Type -AssemblyName System.Windows.Forms -ErrorAction Stop
-            $ecrans = @([System.Windows.Forms.Screen]::AllScreens)
-        } catch {}
-        if ($Ecran -ge 0 -and $Ecran -lt $ecrans.Count) {
-            $argsGodot += @('--screen', "$Ecran")
-        }
-        elseif ($Ecran -gt 0) {
-            Write-Host ("  (ecran {0} demande, mais {1} ecran(s) detecte(s) : ouverture par defaut)" -f $Ecran, $ecrans.Count) -ForegroundColor Gray
-        }
+        $argsGodot = @('--path', $Projet) + (Get-ArgsEcran)
         # -Ou depose le joueur ailleurs qu au point de depart. Raccourci de
         # developpement : aller regarder quelque chose a l autre bout de la
         # carte vingt fois dans une soiree coute une minute a chaque fois.
@@ -340,8 +349,8 @@ switch ($Commande) {
 
         if (-not $Scenario) {
             $sortie = Join-Path $Tmp 'capture.png'
-            & $GodotConsole --path $Projet --script 'res://verifs/capture.gd' `
-                -- --sortie $sortie --frames 150
+            & $GodotConsole @('--path', $Projet) @(Get-ArgsEcran) `
+                --script 'res://verifs/capture.gd' -- --sortie $sortie --frames 150
             if (Test-Path $sortie) { Write-Host "-> $sortie" -ForegroundColor Green }
             Write-Host "Situations disponibles : .\bg.ps1 capture -Scenario tous" -ForegroundColor Gray
             break
@@ -367,8 +376,8 @@ switch ($Commande) {
             $sortie = Join-Path $dossier "$s.png"
             Write-Host "`n--- $s ---" -ForegroundColor Cyan
             Write-Host "    $($connus.$s.quoi)" -ForegroundColor Gray
-            & $GodotConsole --path $Projet --script 'res://verifs/capture.gd' `
-                -- --sortie $sortie --scenario $s
+            & $GodotConsole @('--path', $Projet) @(Get-ArgsEcran) `
+                --script 'res://verifs/capture.gd' -- --sortie $sortie --scenario $s
             if (Test-Path $sortie) { Write-Host "  -> $sortie" -ForegroundColor Green }
             else { Write-Host "  rien produit" -ForegroundColor Red }
         }
@@ -563,7 +572,8 @@ switch ($Commande) {
         Exiger $GodotConsole 'Godot (console)'
         Set-Build
         Initialize-Projet
-        & $GodotConsole --path $Projet --script res://verifs/diag_ville.gd -- --heure 22
+        & $GodotConsole @('--path', $Projet) @(Get-ArgsEcran) `
+            --script res://verifs/diag_ville.gd -- --heure 22
     }
 
     'test' {
@@ -818,7 +828,7 @@ switch ($Commande) {
         $echecs = @()
         foreach ($s in $choisies) {
             Write-Host "`n--- $($s.nom) ---" -ForegroundColor Cyan
-            & $GodotConsole --path $Projet --script $s.script
+            & $GodotConsole @('--path', $Projet) @(Get-ArgsEcran) --script $s.script
             if ($LASTEXITCODE -ne 0) { $echecs += $s.nom }
         }
         Write-Host ""

@@ -210,3 +210,36 @@ Le chapeau bascule au milieu du geste, une demi-seconde après le choix. Un test
 qui mesure tout de suite trouve l'objet **précédent** encore visible et conclut
 que tout va bien. Attendre une **condition**, jamais un nombre de trames : le
 mode sans fenêtre ne tourne pas à la vitesse d'un affichage.
+
+---
+
+## 18. Un compteur de moteur n'est pas la mesure qu'il annonce
+
+`diag_ville.gd` a signalé un effondrement du jeu : pire cas tombé de 38 à
+**7 images/seconde**, 8 images ratées sur 180, et **16,5 ms de scripts par
+image**. De quoi ouvrir une session d'optimisation. Le jeu tournait en réalité
+avec vingt-six fois la marge nécessaire, et **zéro** image ratée.
+
+Trois compteurs, trois mensonges — et aucun n'était un bug :
+
+| Ce qu'on lisait | Ce que c'est vraiment |
+|---|---|
+| `Engine.get_frames_per_second()` échantillonné par image | Un compteur **rafraîchi une fois par seconde**. 180 échantillons sur 3 s ne donnent que 3 valeurs : « 8 images ratées » = 8 échantillons pris dans la même seconde basse, et « 7 au pire » = une seconde entière, jamais une image |
+| `Performance.TIME_PROCESS`, lu comme « scripts par image » | Le **maximum de la seconde écoulée**, sur tout le traitement hors physique. Les 16,5 ms valaient une synchro verticale (16,7 ms) — le chiffre disait « le jeu tourne pile à 60 » |
+| 60 images de chauffe | ≈ 1 seconde. Le chargement étant descendu à 0,52 s, la mesure démarrait dans la compilation des shaders et la publiait comme pire cas du jeu |
+
+**La parade.** Mesurer le `delta` de chaque image, soi-même, et couper la
+synchro verticale — sinon toute image qui tient dans le budget sort à 16,7 ms
+et médiane, 99e centile et pire cas affichent le même chiffre. Sortir le **99e
+centile** plutôt que la moyenne, et **l'instant** de chaque pic : trois pics
+collés au début sont un reste de chauffe, trois pics régulièrement espacés sont
+un traitement périodique, et le maximum seul ne permet ni l'une ni l'autre
+lecture.
+
+**Ce que ça rappelle :** la règle d'or dit *une image ou un nombre, jamais une
+conviction*. Elle a un revers — **un nombre n'est une preuve que si on a lu le
+code qui le produit.** Ici l'instrument mesurait sa propre synchro verticale et
+son propre démarrage, et il l'annonçait avec l'aplomb d'un chiffre. C'est la
+première fois que ce projet se trompe dans ce sens-là : d'habitude un outil
+annonce un nombre juste et écrit un fichier faux ; cette fois il n'y avait pas
+de fichier, seulement le nombre, et personne pour le contredire.

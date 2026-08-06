@@ -15,20 +15,39 @@
 extends SceneTree
 
 ## Images laissees passer avant de commencer a chronometrer. Les premieres
-## portent la construction des collisions et l'instanciation du decor : les
-## compter dans une moyenne d'images par seconde donnerait un chiffre qui ne
-## correspond a aucun moment du jeu.
-const CHAUFFE := 60
+## portent la construction des collisions, l'instanciation du decor et la
+## COMPILATION DES SHADERS, qui se fait a la premiere image ou chaque materiau
+## entre dans le champ. Une seconde de chauffe ne suffisait pas : le releve
+## mesurait encore son propre demarrage et le sortait comme un pire cas du jeu.
+const CHAUFFE := 180
 
-## Images mesurees ensuite.
-const MESURE := 180
+## Duree de la mesure. Dix secondes, la ou trois ne laissaient pas a un a-coup
+## periodique le temps de se produire deux fois — et un a-coup vu une seule fois
+## ne se distingue pas d'un accident. On compte en SECONDES et pas en images :
+## sans la synchro verticale le jeu tire des centaines d'images par seconde, et
+## un compte d'images retrecirait la fenetre d'observation juste au moment ou
+## l'on cherche le pic rare.
+const MESURE_MS := 10000.0
+
+## Au-dessus de ce temps, l'image est ratee : c'est le seuil des 30 images par
+## seconde, ecrit en millisecondes parce que c'est ainsi qu'on le mesure.
+const SEUIL_RATEE_MS := 33.3
 
 var _monde: Node
 var _n := 0
 var _debut_ms := 0
 var _chargement_ms := 0
-var _fps: Array[float] = []
 var _heure: float = -1.0
+
+# Une entree par image mesuree, dans l'ordre ou elles sont tombees. L'ORDRE
+# EST LA MOITIE DE L'INFORMATION : un pic a la premiere image mesuree est un
+# reste de demarrage, un pic qui revient toutes les deux secondes est un
+# traitement periodique, et les deux sortent le meme chiffre si on ne garde
+# que le maximum.
+var _cumul_ms := 0.0
+var _image_ms: PackedFloat32Array = PackedFloat32Array()
+var _scripts_ms: PackedFloat32Array = PackedFloat32Array()
+var _physique_ms: PackedFloat32Array = PackedFloat32Array()
 
 
 func _initialize() -> void:
@@ -42,6 +61,19 @@ func _initialize() -> void:
 	for i in OS.get_cmdline_user_args().size() - 1:
 		if OS.get_cmdline_user_args()[i] == "--heure":
 			_heure = float(OS.get_cmdline_user_args()[i + 1])
+	# LA SYNCHRO VERTICALE S'ENLEVE POUR MESURER. Avec elle, toute image qui
+	# tient dans le budget sort a 16,7 ms — median, 99e centile et pire cas
+	# affichent le meme chiffre, et on ne sait pas s'il restait dix
+	# millisecondes de marge ou une demie. Le joueur, lui, la garde : ce releve
+	# ne dit pas ce qu'il voit, il dit ce que la ville coute.
+	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+	Engine.max_fps = 0
+	# ET LA FENETRE NE REPREND PAS LE PREMIER PLAN. Le releve tourne dix
+	# secondes pendant qu'on fait autre chose : s'il s'impose devant, il fait
+	# reduire ce qui tournait en plein ecran a cote. Godot n'a pas d'option en
+	# ligne de commande pour naitre sans focus — il le prend a la creation, une
+	# fois — mais au moins il ne le reprend plus ensuite.
+	DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_NO_FOCUS, true)
 	_debut_ms = Time.get_ticks_msec()
 	var ps := ResourceLoader.load("res://scenes/monde.tscn") as PackedScene
 	_monde = ps.instantiate()
@@ -52,7 +84,7 @@ func _initialize() -> void:
 	_chargement_ms = Time.get_ticks_msec() - _debut_ms
 
 
-func _process(_d: float) -> bool:
+func _process(delta: float) -> bool:
 	_n += 1
 	# L'heure se pose APRES le demarrage du scenario, pas avant : il applique
 	# l'heure de depart de la mission sur sa premiere image differee, et il
@@ -62,8 +94,30 @@ func _process(_d: float) -> bool:
 		if t != null:
 			t.regler(_heure)
 	if _n > CHAUFFE:
-		_fps.append(Engine.get_frames_per_second())
-	if _n < CHAUFFE + MESURE:
+		# ON MESURE LE TEMPS D'UNE IMAGE, PAS LE COMPTEUR D'IMAGES PAR SECONDE.
+		# Engine.get_frames_per_second() est rafraichi une fois par seconde :
+		# l'echantillonner a chaque image rend cent fois la meme valeur, et
+		# "huit images sous les 30" ne veut alors pas dire huit images ratees,
+		# mais huit echantillons pris dans la meme seconde basse. Le delta, lui,
+		# mesure une image et une seule. C'est ce qui a fait lire un
+		# effondrement du pire cas sur la 0.43 la ou il y avait, peut-etre,
+		# une seconde de demarrage.
+		_image_ms.append(delta * 1000.0)
+		_cumul_ms += delta * 1000.0
+		# CES DEUX COMPTEURS-LA SONT DES PICS, ET ILS NE SE RAFRAICHISSENT
+		# QU'UNE FOIS PAR SECONDE : le moteur y range le MAXIMUM observe pendant
+		# la seconde ecoulee, pas le cout de l'image en cours. Les echantillonner
+		# image par image rend mille fois la meme valeur, et pendant la premiere
+		# seconde c'est encore celle du chargement. C'est ce chiffre qu'on a lu
+		# comme "16,5 ms de scripts par image" sur la 0.43 — c'etait le
+		# maximum d'une seconde, et il valait la duree d'une synchro verticale.
+		# On jette donc la premiere seconde, et on n'en garde que le pire.
+		if _cumul_ms > 1000.0:
+			_scripts_ms.append(1000.0 * Performance.get_monitor(
+					Performance.TIME_PROCESS))
+			_physique_ms.append(1000.0 * Performance.get_monitor(
+					Performance.TIME_PHYSICS_PROCESS))
+	if _cumul_ms < MESURE_MS:
 		return false
 	_rapport()
 	return true
@@ -82,19 +136,6 @@ func _rapport() -> void:
 	var etendue := 0.0
 	if ville != null and "etendue" in ville:
 		etendue = ville.get("etendue")
-
-	# Les images par seconde : la MOYENNE ne suffit pas. Une ville qui tourne a
-	# soixante en moyenne mais tombe a douze en tournant un coin de rue est
-	# injouable, et la moyenne ne le dit pas. On sort donc aussi le pire.
-	var moyenne := 0.0
-	var pire := 9999.0
-	var sous_30 := 0
-	for f in _fps:
-		moyenne += f
-		pire = minf(pire, f)
-		if f < 30.0:
-			sous_30 += 1
-	moyenne = moyenne / maxf(float(_fps.size()), 1.0)
 
 	print("")
 	print("--- la ville ---")
@@ -120,23 +161,42 @@ func _rapport() -> void:
 		var premier := foule.get_child(0) as Node3D
 		print("  le premier en     %s" % str(premier.global_position.round()))
 
+	# Le nombre d'images ratees compte plus que la pire : une seule image a
+	# 110 ms est un accident qu'on ne sent pas, dix par seconde sont un jeu qui
+	# saccade. La moyenne ne distingue ni l'une ni l'autre — le 99e centile,
+	# lui, repond a la seule question qui compte : est-ce que ca s'est senti.
+	var median := _centile(_image_ms, 0.5)
+	var p99 := _centile(_image_ms, 0.99)
+	var pire := _centile(_image_ms, 1.0)
+	var ratees := 0
+	for t in _image_ms:
+		if t > SEUIL_RATEE_MS:
+			ratees += 1
+
 	print("")
 	print("--- ce que ca coute ---")
 	print("  chargement       %d ms" % _chargement_ms)
-	# Le nombre d'images ratees compte plus que la pire : une seule image a
-	# 110 ms est un accident qu'on ne sent pas, dix par seconde sont un jeu qui
-	# saccade. La moyenne ne distingue pas les deux.
-	print("  images/seconde   %.0f en moyenne, %.0f au pire" % [moyenne, pire])
-	print("  images ratees    %d sur %d sous les 30 im/s" % [sous_30, _fps.size()])
+	print("  mesure           %d images apres %d de chauffe, sur %.1f s" % [
+			_image_ms.size(), CHAUFFE, _duree_ms() / 1000.0])
+	print("  temps d'image    %.1f ms median (%.0f im/s), %.1f ms au 99e centile, %.1f ms au pire" % [
+			median, 1000.0 / maxf(median, 0.001), p99, pire])
+	print("  images ratees    %d sur %d au-dessus de %.0f ms" % [
+			ratees, _image_ms.size(), SEUIL_RATEE_MS])
+	print("  les trois pires  %s" % _quand_les_pires(3))
 	print("  memoire          %.0f Mo" % (float(
 			Performance.get_monitor(Performance.MEMORY_STATIC)) / 1048576.0))
 	# OU passe le temps. Sans ces trois lignes, un chiffre d'images par seconde
 	# ne dit pas quoi corriger : on peut aussi bien retirer des lampadaires
 	# pendant que ce sont les passants qui coutent.
-	print("  scripts          %.1f ms/image" % (1000.0 * Performance.get_monitor(
-			Performance.TIME_PROCESS)))
-	print("  physique         %.1f ms/image" % (1000.0 * Performance.get_monitor(
-			Performance.TIME_PHYSICS_PROCESS)))
+	#
+	# "TRAITEMENT" ET PAS "SCRIPTS" : TIME_PROCESS mesure toute l'image hors
+	# physique — le _process de chaque noeud, mais aussi ce que le moteur
+	# prepare pour le rendu. Le lire comme du temps de GDScript fait accuser le
+	# code d'un cout qui est celui du decor.
+	print("  traitement       %.1f ms/image median, %.1f au pire" % [
+			_centile(_scripts_ms, 0.5), _centile(_scripts_ms, 1.0)])
+	print("  physique         %.1f ms/image median, %.1f au pire" % [
+			_centile(_physique_ms, 0.5), _centile(_physique_ms, 1.0)])
 	print("  corps physiques  %d actifs" % int(Performance.get_monitor(
 			Performance.PHYSICS_3D_ACTIVE_OBJECTS)))
 	print("  collisions       %d paires" % int(Performance.get_monitor(
@@ -147,6 +207,45 @@ func _rapport() -> void:
 			Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)))
 	print("")
 	quit(0)
+
+
+# Le centile se lit sur une COPIE triee : l'ordre du releve dit quand chaque
+# pic est tombe, et le trier sur place effacerait ce que la fonction suivante
+# va chercher.
+func _centile(v: PackedFloat32Array, p: float) -> float:
+	if v.is_empty():
+		return 0.0
+	var trie := v.duplicate()
+	trie.sort()
+	var dernier := float(trie.size() - 1)
+	return trie[int(clampf(round(p * dernier), 0.0, dernier))]
+
+
+func _duree_ms() -> float:
+	return _cumul_ms
+
+
+# QUAND les pires images sont tombees, en secondes depuis le debut de la mesure.
+# Trois pics colles au debut sont un reste de chauffe ; trois pics regulierement
+# espaces sont un traitement periodique ; trois pics au hasard sont le decor
+# qu'on traverse. Le maximum seul ne permet aucune de ces trois lectures.
+func _quand_les_pires(combien: int) -> String:
+	if _image_ms.is_empty():
+		return "-"
+	var instants := PackedFloat32Array()
+	var cumul := 0.0
+	for t in _image_ms:
+		cumul += t
+		instants.append(cumul)
+	var rangs: Array = []
+	for i in _image_ms.size():
+		rangs.append([_image_ms[i], i])
+	rangs.sort_custom(func(a, b): return float(a[0]) > float(b[0]))
+	var lignes: Array[String] = []
+	for i in mini(combien, rangs.size()):
+		var rang: int = rangs[i][1]
+		lignes.append("%.0f ms a %.1f s" % [_image_ms[rang], instants[rang] / 1000.0])
+	return ", ".join(lignes)
 
 
 # Les passants ne sont pas dans un porte-noeuds unique : on les compte par leur

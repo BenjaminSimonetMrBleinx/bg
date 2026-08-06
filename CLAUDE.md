@@ -58,6 +58,11 @@ même façon — un outil annonce un nombre juste et écrit un fichier faux. Voi
 imprimés. J'ai conclu trois fois de suite « la voiture est dans le bon sens »
 sur une image ambiguë ; elle était à l'envers.
 
+**Et son revers : un nombre n'est une preuve que si j'ai lu le code qui le
+produit.** Un relevé de performance a annoncé un effondrement du jeu ; il
+mesurait sa propre synchro verticale. Avant de corriger ce qu'un instrument
+dénonce, vérifier l'instrument — voir le piège 18.
+
 **Tout nombre de ressenti vit dans `reglages.tres`.** Une constante de feeling
 cachée dans un script est un bug de méthode, même si le résultat est bon.
 
