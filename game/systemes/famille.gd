@@ -59,6 +59,28 @@ func _ready() -> void:
 	add_to_group(GROUPE)
 	_heure_avant = Reglages.heure
 	change.emit(points())
+	# DIFFERE : les points d'interaction se construisent avec la scene, et
+	# certains vivent dans la mission, instanciee apres nous.
+	call_deferred("_brancher_les_points")
+
+
+# TOUT POINT D'INTERACTION DONT L'EVENEMENT EST UNE ATTENTION NOUS ALIMENTE.
+#
+# On ne cable pas l'epicerie a la main : le jour ou l'on pose un second magasin,
+# ou un rendez-vous medical, ou un fauteuil dans le salon, il suffit d'ecrire
+# `evenement = "courses"` dans la scene. Aucun code a ajouter — c'est la
+# difference entre une mecanique et une liste d'endroits.
+func _brancher_les_points() -> void:
+	for n in get_tree().get_nodes_in_group(Point.GROUPE):
+		var p := n as Point
+		if p == null or not GAINS.has(p.evenement):
+			continue
+		if not p.utilise.is_connected(_sur_point):
+			p.utilise.connect(_sur_point)
+
+
+func _sur_point(p: Point) -> void:
+	merci(p.evenement)
 
 
 func _process(_delta: float) -> void:

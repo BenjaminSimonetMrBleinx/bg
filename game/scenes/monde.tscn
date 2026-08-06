@@ -137,6 +137,24 @@ lieu = "alpine"
 
 [node name="Caisse" parent="Rendu/Scene3D/Alpine" instance=ExtResource("31_alpine")]
 
+; L EPICERIE, au centre commercial le plus ELOIGNE du point de depart : 283 m,
+; a l autre bout de la ville. La distance est le sujet — une course qui ne
+; detourne pas n est pas un choix, c est un bouton. Voir #31.
+;
+; Reutilisable a l infini : faire les courses n est pas un evenement de mission,
+; c est quelque chose qu on refait ou qu on neglige.
+[node name="Epicerie" type="Node3D" parent="Rendu/Scene3D"]
+script = ExtResource("30_ancrage")
+lieu = "strip_mall_0_4"
+suivre_le_cap = false
+
+[node name="Courses" type="Node3D" parent="Rendu/Scene3D/Epicerie"]
+script = ExtResource("39_point")
+invite = "Faire les courses"
+evenement = "courses"
+une_fois = false
+portee = 3.0
+
 ; Le panneau DESERT et sa fleche. Le noeud ne porte PLUS de coordonnees : il
 ; s'ancre sur le lieu nomme que le generateur publie. Deux elargissements de
 ; rue ont deja depose ce panneau au milieu de la chaussee ; un lieu nomme se

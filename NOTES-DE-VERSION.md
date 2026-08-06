@@ -75,6 +75,23 @@ lieu de sa scène. Aucune des trois ne le signalait.
 
 ---
 
+## 0.48.3 — Une épicerie, et de quoi faire remonter la famille
+
+> **À essayer : va au centre commercial au nord de la ville** — il est loin, à
+> près de trois cents mètres du point de départ. Une invite **« Faire les
+> courses »** t'y attend, et le compteur **Famille** monte de dix. Tu peux y
+> retourner autant de fois que tu veux.
+
+C'est la première façon de faire **monter** ce compteur : jusqu'ici il ne faisait
+que descendre. Et sa distance est le sujet — une course qui ne détourne de rien
+n'est pas un choix, c'est un bouton.
+
+N'importe quel point d'interaction peut désormais nourrir la famille : il suffit
+qu'il porte le bon événement. Le jour où on pose un rendez-vous médical ou un
+fauteuil dans le salon, il n'y a pas une ligne de code à écrire.
+
+---
+
 ## 0.48.2 — La réputation de rue
 
 > **À essayer : regarde le troisième compteur, `Rue`, en haut à gauche.** Règle-le
