@@ -248,6 +248,11 @@ const DEPARTS := {
 	# parcelle reservee.
 	"jesse": {"devant": "Jesse"},
 	"walter": {"devant": "Walter"},
+	# Au camping-car, face au flanc ou se trouve la porte. On demande sa
+	# position au desert plutot que de l'ecrire : c'est tout le sujet du
+	# 07/08/2026, ou Jesse et la porte trainaient vingt-neuf metres en arriere
+	# parce que deux coordonnees avaient ete recopiees a la main.
+	"camping": {"lieu": "camping_car", "ecart": Vector3(0.0, 0.4, 7.0)},
 }
 
 
@@ -287,6 +292,27 @@ func _depart_de_developpement() -> void:
 			camd.call("recaler")
 		print("controleur : depart de developpement devant chez %s" % d["devant"])
 		return
+	if d.has("lieu"):
+		var desert := Desert.courant(self)
+		if desert == null:
+			push_warning("controleur : aucun desert dans la scene")
+			return
+		var p := desert.lieu(str(d["lieu"]))
+		if p == Vector3.INF:
+			push_warning("controleur : le desert ne publie aucun lieu '%s'"
+					% d["lieu"])
+			return
+		_j.global_position = p + (d.get("ecart", Vector3.UP * 0.4) as Vector3)
+		_j.velocity = Vector3.ZERO
+		# Cap zero : l'avant d'un noeud Godot est -Z, donc on regarde vers le
+		# vehicule pose devant nous.
+		_j.rotation.y = 0.0
+		var caml := get_viewport().get_camera_3d()
+		if caml != null and caml.has_method("recaler"):
+			caml.call("recaler")
+		print("controleur : depart de developpement au lieu '%s'" % d["lieu"])
+		return
+
 	_j.global_position = d["pos"]
 	_j.velocity = Vector3.ZERO
 	_j.rotation.y = deg_to_rad(float(d["cap"]))
