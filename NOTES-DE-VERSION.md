@@ -64,10 +64,12 @@ deux cas.
 
 ### Et ce qui reste cassé, dit franchement
 
-**On ne peut pas courir** (#54) : la touche n'a probablement jamais été branchée.
 **Reprendre une partie ne dit pas où l'on arrive** (#55) — nouveau, et c'est le
 revers de la sauvegarde réparée. **La tôle du camping-car ondule** (#52) : c'est
 un scan, ça se répare chez Guillaume.
+
+*(Un troisième bug avait été ouvert — « on ne peut pas courir » — puis fermé : on
+court très bien, l'erreur venait d'un diagnostic mené sur une liste incomplète.)*
 
 ---
 

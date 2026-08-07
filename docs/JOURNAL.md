@@ -105,10 +105,13 @@ demi-tour vers l'épicerie : tout ça est mesuré et capturé, rien n'est *vécu
 **Deux bugs trouvés dans les trois premières minutes de test**, et c'est la
 meilleure preuve que jouer trouve ce que tester ne trouve pas :
 
-- **#54 — on ne peut pas courir.** L'allure `course` existe dans `demarche.gd`
-  avec ses clips, mais `project.godot` ne déclare aucune action « courir ». Le
-  README l'annonce pourtant depuis toujours. À établir avant de corriger : que
-  ce soit bien l'entrée qui manque, et non l'allure décidée ailleurs.
+- ~~**#54 — on ne peut pas courir.**~~ **Fausse alerte, et l'erreur était de mon
+  côté.** L'action existe et s'appelle `sprint`. J'avais conclu d'une **liste
+  d'actions tronquée par ma propre commande** — `sprint` venait quatre lignes
+  après la coupure — et je cherchais « courir », le mot du README, alors que le
+  code dit `sprint`. Que j'avais lu dix minutes plus tôt dans `joueur.gd`, sans
+  faire le lien. **Une absence ne prouve rien tant que la recherche n'est pas
+  complète** ; c'est passé dans `CLAUDE.md`.
 - **#55 — reprendre ne dit pas où l'on arrive.** Revers direct de la sauvegarde
   réparée : pendant quinze versions, « Reprendre » et « Nouvelle partie »
   donnaient le même début. Le point à vérifier en premier : une partie reprise

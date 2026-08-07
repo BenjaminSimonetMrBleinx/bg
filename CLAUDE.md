@@ -73,6 +73,14 @@ Devant un test qui passe, demander **quel geste du joueur il reproduit** — s'i
 commence par placer quelque chose à la main, il ne vérifie pas qu'on peut y
 arriver, et c'est presque toujours la question. Piège 19.
 
+**Une absence ne prouve rien tant que la recherche n'est pas complète.** J'ai
+ouvert un bug « on ne peut pas courir » sur une liste d'actions tronquée par ma
+propre commande : `sprint` venait quatre lignes après la coupure. Et je cherchais
+« courir », le mot du README, alors que le code dit `sprint` — que j'avais lu dix
+minutes plus tôt sans faire le lien. **Avant de conclure qu'une chose n'existe
+pas : vérifier que la liste est entière, et chercher le mot du CODE, pas celui de
+la doc.**
+
 **Tout nombre de ressenti vit dans `reglages.tres`.** Une constante de feeling
 cachée dans un script est un bug de méthode, même si le résultat est bon.
 
