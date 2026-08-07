@@ -1,0 +1,51 @@
+name: 💬 J'écris un dialogue
+description: Des répliques à mettre dans le jeu — une conversation, un appel
+labels: ["✅ à faire", "🎨 Guillaume"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Écris les répliques telles qu'elles seront dites.** Elles partent
+        dans `donnees/dialogues.json` presque mot pour mot.
+
+        Deux contraintes, et c'est tout : l'écran fait 512 pixels de large et
+        le cadre affiche **trois lignes** — donc des répliques courtes. Et le
+        ton reste lent, sale, provincial : personne ne fait de mot d'esprit.
+
+  - type: input
+    id: qui
+    attributes:
+      label: Qui parle ?
+      placeholder: Skyler et Walter
+    validations: { required: true }
+
+  - type: textarea
+    id: quand
+    attributes:
+      label: Ça se déclenche quand ?
+      description: >
+        Le moment précis. « Quand on rentre à la maison avec les courses »,
+        « au téléphone, en roulant ». Si ça dépend d'une condition, dis-la.
+    validations: { required: true }
+
+  - type: textarea
+    id: repliques
+    attributes:
+      label: Les répliques
+      description: Une par ligne, avec qui parle devant.
+      placeholder: |
+        Skyler : Tu es passé à l'épicerie.
+        Walter : Il n'y avait plus d'œufs.
+        Skyler : Non, il n'y en avait plus. Junior voulait des pancakes.
+      render: text
+    validations: { required: true }
+
+  - type: dropdown
+    id: voix
+    attributes:
+      label: Et la voix ?
+      options:
+        - Texte seul pour l'instant
+        - Je l'enregistre, elle arrive
+        - Elle est déjà déposée dans livraisons/voix/
+    validations: { required: true }

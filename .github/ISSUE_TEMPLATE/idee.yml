@@ -1,16 +1,22 @@
-name: J'ai une idee
-description: Quelque chose qui rendrait le jeu meilleur
-title: "[Idee] "
-labels: ["idee"]
+name: 💡 J'ai une idée
+description: Quelque chose qui rendrait le jeu meilleur. Même vague.
+labels: ["💡 idée", "🧊 plus tard"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Pas décidé, pas promis — c'est le bon endroit pour ce qui n'est pas
+        encore mûr. On y pioche quand on en a marre du cœur du jeu.
+
   - type: textarea
     id: idee
     attributes:
-      label: Ton idee
-      description: En quelques lignes. Meme vague, meme pas sur — c'est le bon endroit.
+      label: Ton idée
+      description: En quelques lignes. Même pas sûr, même à moitié.
     validations: { required: true }
+
   - type: textarea
     id: pourquoi
     attributes:
       label: Pourquoi ce serait mieux ?
-      description: Ce que ca change pour celui qui joue.
+      description: Ce que ça change pour celui qui joue.

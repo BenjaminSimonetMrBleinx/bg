@@ -1,33 +1,33 @@
-name: Il manque quelque chose
-description: Un son, une voix, un modele, une animation dont le jeu a besoin
-title: "[Manque] "
-labels: ["a-faire"]
+name: 🎨 Il manque quelque chose
+description: Un son, une voix, un modèle, une animation dont le jeu a besoin
+labels: ["✅ à faire", "🎨 Guillaume"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Le plus souvent ouvert par l'assistant, quand le code attend un
+        fichier qui n'existe pas encore.
+
   - type: dropdown
     id: type
     attributes:
-      label: Type
-      options: [Son, Voix, Modele, Animation, Texture, Info, Autre]
+      label: De quoi ?
+      options: [Son, Voix, Modèle 3D, Animation, Texture, Une information, Autre]
     validations: { required: true }
-  - type: dropdown
-    id: priorite
-    attributes:
-      label: Priorite
-      options: [Haute, Moyenne, Basse]
-    validations: { required: true }
+
   - type: textarea
     id: attendu
     attributes:
       label: Ce qu'on attend
-      description: Le detail. Combien de fichiers, quelle duree, pour quel moment du jeu.
+      description: >
+        Le détail qui évite un aller-retour : combien de fichiers, quelle
+        durée, pour quel moment du jeu. Pour un modèle, viser ~8 000 triangles
+        et une seule texture couleur — voir `docs/03-conventions-assets.md`.
     validations: { required: true }
-  - type: input
-    id: format
-    attributes:
-      label: Format
-      placeholder: WAV 44,1 kHz mono / GLB rigge / PNG
+
   - type: input
     id: ou
     attributes:
-      label: Ou le poser
+      label: Où le poser
       placeholder: livraisons/sons/
+    validations: { required: true }

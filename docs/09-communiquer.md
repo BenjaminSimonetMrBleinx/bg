@@ -2,7 +2,7 @@
 
 **Un seul endroit : les tickets du dépôt.**
 
-👉 **https://github.com/BenjaminSimonetMrBleinx/bg/issues**
+👉 **https://github.com/benjibleinx-perso/bg/issues**
 
 Les bugs, les idées, les features à venir, ce qu'il manque, ce qui est prioritaire, et ce
 que l'assistant attend de vous. Tout. Il n'y a pas de second endroit, et c'est la seule
@@ -10,23 +10,34 @@ règle qui compte : dès qu'une information vit à deux endroits, l'un des deux 
 
 ---
 
-## Les cinq portes
+## Les six portes
 
 Le bouton **New issue** propose un formulaire selon ce que tu viens faire. Aucun ne demande
-de classer quoi que ce soit — les étiquettes et l'ordre sont posés après coup.
+de classer quoi que ce soit : chacun **pose déjà les étiquettes qui vont bien** — le type,
+à qui c'est, et si c'est pour maintenant. Il n'y a rien à trier derrière.
 
 | Tu veux… | Le formulaire | Qui s'en sert |
 |---|---|---|
-| Signaler que ça ne marche pas | **J'ai trouvé un bug** | Ceux qui testent |
-| Proposer quelque chose | **J'ai une idée** | Tout le monde |
-| Lancer une mission, un système | **Je propose une feature** | Benjamin |
-| Dire qu'un fichier est prêt | **Je livre un fichier** | Guillaume |
-| — | ouvert par l'assistant | quand il manque quelque chose |
+| Signaler que ça ne marche pas | 🐛 **J'ai trouvé un bug** | Ceux qui testent |
+| Proposer quelque chose, même vague | 💡 **J'ai une idée** | Tout le monde |
+| Lancer une mission, un système | 🔨 **Je propose une feature** | Benjamin |
+| Écrire des répliques | 💬 **J'écris un dialogue** | Guillaume |
+| Dire qu'un fichier est prêt | 📦 **Je livre un fichier** | Guillaume |
+| Réclamer un son, un modèle, une voix | 🎨 **Il manque quelque chose** | L'assistant |
+
+**Le titre compte plus qu'on ne croit.** Il suit une forme, et une seule :
+`Domaine — ce qui existera quand ce sera fini`. Sauf pour un bug, qui dit le **symptôme** :
+quand on cherche un bug, on cherche ce qu'on a vu, pas ce qu'on obtiendra en le réparant.
+
+> Cette forme a été fixée après une passe où **vingt-deux titres sur vingt-quatre** ont dû
+> être refaits. Ils mélangeaient quatre styles — un nom, une question, une phrase, une
+> opinion — et se lisaient bien une fois, jamais deux.
 
 ### Signaler un bug
 
-Trois questions : *qu'est-ce que tu faisais, qu'est-ce qui s'est passé, une capture ?*
-Plus la version, affichée **en haut à droite de l'écran** en tout petit.
+Quatre choses, dont trois se remplissent en dix secondes : *où ça se passe, qu'est-ce qui
+s'est passé, quelle version, une capture ?* La version est affichée **en haut à droite de
+l'écran** en tout petit — c'est elle qui dit si le bug est déjà corrigé.
 
 Avant d'écrire, regarde la liste : si le bug y est déjà, un commentaire « chez moi aussi »
 vaut mieux qu'un doublon. Tu recevras un mail quand il sera corrigé.
@@ -34,12 +45,11 @@ vaut mieux qu'un doublon. Tu recevras un mail quand il sera corrigé.
 ### Proposer une feature
 
 Le brief de la mission 1 a produit quinze étapes et quatre décors en une soirée. C'est le
-format, et le formulaire pose les quatre questions qui comptent :
+format, et le formulaire pose les questions qui comptent :
 
 1. **Ça sert à quoi, pour le joueur ?**
-2. **Qu'est-ce qu'on peut faire qu'on ne pouvait pas avant ?**
-3. **À quoi on voit que c'est fini ?**
-4. **Des références ?**
+2. **À quoi on voit que c'est fini ?**
+3. **Des références ?**
 
 > **La troisième est celle qui manque le plus souvent.** Le brief de la mission 1 intitulait
 > son étape 9 « Cacher la Meth » et son contenu parlait de cacher l'**argent**. Il a fallu
@@ -50,11 +60,25 @@ Ensuite, tout se passe **dans le ticket** : l'assistant répond en commentaire a
 découpage, ce que ça coûte et ses questions. Quand c'est bâti, il ferme en expliquant ce
 qui a été fait, et le brief reste attaché à la feature pour toujours.
 
+### Écrire un dialogue
+
+Les répliques partent dans `donnees/dialogues.json` presque mot pour mot : écris-les telles
+qu'elles seront dites. Deux contraintes, et c'est tout — le cadre affiche **trois lignes**
+sur un écran de 512 pixels, donc court ; et le ton reste lent, sale, provincial.
+
+Le formulaire demande **quand ça se déclenche**, et c'est la question qui coûte le plus cher
+quand elle manque : des répliques sans moment sont du texte qu'on ne peut brancher nulle
+part.
+
 ### Livrer un fichier
 
 Tu déposes dans `livraisons/` (voir son [LISEZ-MOI](../livraisons/LISEZ-MOI.md)), tu envoies
 avec `.\livrer.ps1`, et tu ouvres un ticket **Je livre un fichier** en disant à quel besoin
 ça répond. Le ticket se ferme quand c'est intégré — et tu reçois un mail.
+
+**Ce ticket n'est pas une formalité.** Le camping-car est resté dans `livraisons/` pendant
+des semaines pendant que deux commentaires du code affirmaient qu'il était en jeu. Sans
+ticket, un fichier déposé peut dormir sans que personne le sache.
 
 ---
 

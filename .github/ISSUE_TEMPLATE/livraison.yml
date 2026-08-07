@@ -1,22 +1,33 @@
-name: Je livre un fichier
-description: Pour Guillaume — dire qu'un fichier est depose et pret a integrer
-title: "[Livre] "
-labels: ["a-integrer"]
+name: 📦 Je livre un fichier
+description: Pour Guillaume — un son, un modèle, une voix est déposé et prêt
+labels: ["✅ à faire", "🎨 Guillaume", "🔥 maintenant"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Dépose le fichier dans `livraisons/`, puis `.\go.ps1`. Ce ticket sert
+        à dire qu'il est prêt — sans lui, il peut dormir des semaines sans que
+        personne le sache. C'est arrivé au camping-car.
+
   - type: input
     id: fichier
     attributes:
       label: Le fichier
-      description: Son chemin dans livraisons/, tel que tu l'as depose.
-      placeholder: livraisons/sons/this_is_not_meth.wav
+      description: Son chemin dans `livraisons/`, tel que tu l'as déposé.
+      placeholder: livraisons/modeles/camping_car.glb
     validations: { required: true }
+
   - type: input
     id: ticket
     attributes:
-      label: Ca repond a quel ticket ?
-      placeholder: "#3, ou rien si c'est nouveau"
+      label: Ça répond à quel ticket ?
+      placeholder: "#37, ou rien si c'est nouveau"
+
   - type: textarea
     id: note
     attributes:
       label: Ta note
-      description: Ce que tu as fait, ce dont tu n'es pas sur, ce qui t'a pose probleme.
+      description: >
+        Ce que tu as fait, ce dont tu n'es pas sûr, ce qui t'a posé problème.
+        Pour un modèle, dis combien de triangles et quelles textures si tu le
+        sais — ça évite un aller-retour.

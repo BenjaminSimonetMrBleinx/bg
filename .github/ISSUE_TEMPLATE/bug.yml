@@ -1,31 +1,56 @@
-name: J'ai trouve un bug
-description: Quelque chose ne marche pas, ou ne marche pas comme prevu
-title: "[Bug] "
-labels: ["bug"]
+name: 🐛 J'ai trouvé un bug
+description: Quelque chose ne marche pas, ou pas comme prévu
+labels: ["🐛 bug", "🔥 maintenant"]
 body:
   - type: markdown
     attributes:
-      value: "Merci. Trois questions, ca suffit — ne cherche pas a classer quoi que ce soit."
-  - type: textarea
-    id: faisait
+      value: |
+        **Le titre : dis ce que tu as VU**, pas ce qu'il faudrait réparer.
+        « Jesse parle hors contexte au camping-car » — on cherche un bug avec
+        ce qu'on a sous les yeux.
+
+        Si le bug est déjà dans la liste, un commentaire « chez moi aussi »
+        vaut mieux qu'un doublon.
+
+  - type: dropdown
+    id: domaine
     attributes:
-      label: Qu'est-ce que tu faisais ?
-      placeholder: Je roulais vers le desert, je venais de parler a Jesse...
+      label: Ça se passe où ?
+      options:
+        - Ville
+        - Désert
+        - Intérieurs
+        - Missions
+        - Personnages
+        - Son
+        - Voiture
+        - Interface et menus
+        - Je ne sais pas
     validations: { required: true }
+
   - type: textarea
     id: passe
     attributes:
-      label: Qu'est-ce qui s'est passe ?
-      description: Et ce que tu attendais a la place, si tu le sais.
+      label: Qu'est-ce qui s'est passé ?
+      description: Et ce que tu attendais à la place, si tu le sais.
+      placeholder: |
+        Je roulais vers le désert, je venais de parler à Jesse chez lui.
+        Arrivé au camping-car, il m'a dit que j'étais en retard — alors que
+        je n'avais encore rien commencé.
     validations: { required: true }
+
   - type: input
     id: version
     attributes:
       label: Quelle version ?
-      description: Elle est affichee en haut a droite de l'ecran, en tout petit.
-      placeholder: v0.27.3
+      description: Affichée en haut à droite de l'écran, en tout petit.
+      placeholder: v0.48.13
+    validations: { required: true }
+
   - type: textarea
     id: image
     attributes:
       label: Une capture ?
-      description: Glisse-la ici. Facultatif, mais ca vaut souvent dix lignes.
+      description: >
+        Glisse-la ici. Facultatif — mais dans ce projet, presque tout ce qui a
+        été trouvé l'a été sur une image.
