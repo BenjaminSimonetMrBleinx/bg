@@ -1312,20 +1312,21 @@
    ]
   },
   "camping_car": {
-   "quoi": "Le camping-car de pres, seul point de repere de la zone.",
+   "quoi": "Le camping-car de pres, seul point de repere de la zone. La vue le SUIT : elle est posee autour de lui, pas a l'endroit ou il se trouvait un jour.",
    "fin": 60,
    "etapes": [
     {
      "image": 30,
+     "autour": "CampingCar",
      "camera": [
-      866,
+      -11,
       4,
-      -792
+      12
      ],
      "vise": [
-      877,
+      0,
       1.5,
-      -804
+      0
      ]
     }
    ]
@@ -1385,29 +1386,31 @@
    ]
   },
   "camping_car_porte": {
-   "quoi": "Le camping-car vu de haut, avec Walter pose sur le point d'entree. Le modele est livre par Guillaume et son orientation vient d'un lacet impose a l'import : cette vue est le seul moyen de verifier que la porte du modele tombe bien la ou le jeu propose d'entrer.",
+   "quoi": "Le camping-car vu en plongee, avec Walter pose sur le point d'entree : on doit le voir DEHORS et contre le flanc, pas sur le toit ni dans la tole. La vue etait a la verticale exacte, donc sans haut ni bas — une image ou l'on ne pouvait rien trancher. Elle visait en plus des coordonnees ecrites a la main et photographiait du sable a vingt-neuf metres du vehicule. Le modele montre est CELUI DU GENERATEUR : celui livre par Guillaume n'a jamais ete integre, et tant qu'il ne l'est pas cette vue ne peut pas dire si les deux portes coincident.",
    "fin": 70,
    "etapes": [
     {
      "image": 20,
+     "autour": "CampingCar",
      "placer": "Joueur",
      "pos": [
-      875.0,
+      -2.0,
       0.4,
-      -803.0
+      1.0
      ]
     },
     {
      "image": 30,
+     "autour": "CampingCar",
      "camera": [
-      877,
-      14,
-      -804
+      -1,
+      9,
+      9
      ],
      "vise": [
-      877,
       0,
-      -803.5
+      1,
+      0
      ]
     }
    ]

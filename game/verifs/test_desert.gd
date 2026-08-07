@@ -92,22 +92,68 @@ func _scenario() -> void:
 	if not touche.is_empty():
 		print("       sol a y = %.2f" % (touche["position"] as Vector3).y)
 
-	var cc := _desert.get_node_or_null("CampingCar")
+	var cc := _desert.get_node_or_null("CampingCar") as Node3D
 	_verifier(cc != null, "le camping-car est pose dans la zone")
 
-	# LA MISSION DOIT ETRE ARRIVEE A L'ETAPE DU DESERT.
+	# CE QUI DOIT ETRE CONTRE LE CAMPING-CAR L'EST-IL VRAIMENT ?
 	#
-	# Le passage est desormais ferme tant qu'on n'a pas parle a Jesse : on
-	# pouvait auparavant filer au camping-car des la premiere minute et y
-	# trouver un Jesse reprochant un retard a une mission pas encore commencee.
-	# Ce test-ci ne mesure pas ce verrou, il mesure le voyage — on avance donc
-	# la mission jusqu'a l'etape qui ouvre la route, par les memes evenements
-	# que le jeu.
+	# Le controle qui manquait, et il a coute une semaine. Jesse et la porte
+	# d'entree portaient des coordonnees recopiees de la constante de secours de
+	# desert.gd ; le generateur, lui, publie le vehicule vingt-neuf metres plus
+	# loin. Personne ne l'a vu — le desert etait ferme, et aucun test ne mesurait
+	# la distance entre deux choses censees se toucher.
+	#
+	# Six metres : le camping-car en fait neuf de long. Ce qui est a son flanc
+	# est a moins de six metres de son centre. Ce qui est a vingt-neuf est
+	# ailleurs, et sur la piste.
+	if cc != null:
+		for attendu in [["JesseDehors", "Jesse"], ["PorteCampingCar", "la porte"]]:
+			var n := _trouver(_monde, str(attendu[0])) as Node3D
+			if n == null:
+				_verifier(false, "%s existe" % attendu[1])
+				continue
+			var d := n.global_position.distance_to(cc.global_position)
+			_verifier(d < 6.0,
+					"%s est contre le camping-car (%.1f m)" % [attendu[1], d])
+
+	# JESSE SE TAIT TANT QUE RIEN NE L'A AMENE LA.
+	#
+	# Le desert est ouvert a toute heure depuis le 07/08 : on peut arriver ici
+	# sans avoir rien commence. Sa conversation s'ouvre sur « Vous etes en
+	# retard », et il la jouait a quelqu'un qui n'avait pas encore quitte sa
+	# maison — il reprochait un retard a une mission qui n'existait pas.
+	#
+	# On interroge le personnage, pas l'affichage : offert() est ce que le
+	# controleur consulte avant de proposer « F Parler a ». Le mesurer ici, c'est
+	# mesurer la meme chose que le joueur voit.
+	print("\n--- Jesse ne parle pas hors mission ---")
 	var m := Mission.courante(_monde)
+	var jesse := _trouver(_monde, "JesseDehors") as Pnj
+	_verifier(jesse != null, "Jesse est dans la scene")
+	# Une partie reprise peut deja etre engagee. On ne saute pas le controle en
+	# silence pour autant : un test qui se tait quand il ne peut pas conclure se
+	# lit comme un test qui a conclu.
+	var engagee := m != null and (m.a_l_etape("voiture") or m.passee("voiture"))
+	if jesse != null and not engagee:
+		_verifier(not jesse.offert(m),
+				"a l'etape '%s', il n'a rien a dire"
+						% ("aucune" if m == null else m.cle_etape()))
+	elif jesse != null:
+		print("       partie deja engagee a l'etape '%s' : silence non mesurable"
+				% m.cle_etape())
+
+	# LA MISSION AVANCE JUSQU'A L'ETAPE DU DESERT.
+	#
+	# Le passage n'est plus ferme, mais le voyage se mesure quand meme dans les
+	# conditions du jeu : on va au desert parce qu'une mission nous y envoie.
+	# Par les memes evenements que le jeu, jamais en forcant l'etape.
 	if m != null:
 		m.evenement("dialogue:mission_tuco_appel")
 		m.evenement("dialogue:mission_jesse_maison")
 		print("       mission a l'etape '%s'" % m.cle_etape())
+		if jesse != null:
+			_verifier(jesse.offert(m),
+					"une fois la mission en route, il a de nouveau quelque chose a dire")
 
 	print("\n--- a pied, on est refuse ---")
 	var zone := _trouver(_monde, "VersDesert").get_node("Zone") as Passage
@@ -165,6 +211,22 @@ func _scenario() -> void:
 	# precedent s'arretait juste avant, et passait au vert.
 	print("\n--- on repart, et on RESTE en ville ---")
 	var retour := _desert.get_node("RetourVille") as Passage
+
+	# LA SORTIE EST-ELLE LA OU L'ON ATTERRIT ?
+	#
+	# Elle etait ecrite en dur dans monde.tscn, vingt-six metres a cote de
+	# l'arrivee publiee : hors de la piste, et introuvable en roulant. Ce test
+	# ne pouvait pas le voir, parce qu'il TELEPORTE la voiture dessus avant de
+	# mesurer quoi que ce soit — une verification qui se place elle-meme au bon
+	# endroit valide toujours.
+	#
+	# La teleportation reste : elle sert a controler le rebond, plus bas, et
+	# c'est le seul moyen d'y arriver a coup sur. Ce qu'on ajoute ici, c'est la
+	# question qu'elle empechait de poser.
+	var ecart := retour.global_position.distance_to(arrivee)
+	_verifier(ecart < 15.0,
+			"la sortie est a portee du point d'arrivee (%.1f m)" % ecart)
+
 	_vehicule.global_position = retour.global_position + Vector3.DOWN * 0.5
 	_vehicule.linear_velocity = Vector3.ZERO
 	garde = 0

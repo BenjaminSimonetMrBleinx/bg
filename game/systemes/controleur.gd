@@ -1060,11 +1060,12 @@ func _point_proche() -> Point:
 # maisons sont geres par la maison elle-meme et ne sont pas dans ce groupe
 # quand on est dehors — ils sont a six cents metres.
 func _pnj_proche() -> Pnj:
+	var m := Mission.courante(self)
 	var meilleur: Pnj = null
 	var mini := reglages.portee_dialogue
 	for n in get_tree().get_nodes_in_group(Pnj.GROUPE):
 		var p := n as Pnj
-		if p == null or p.abattu or p.cle == "":
+		if p == null or not p.offert(m):
 			continue
 		if _dialogue == null or not _dialogue.connait(p.cle):
 			continue

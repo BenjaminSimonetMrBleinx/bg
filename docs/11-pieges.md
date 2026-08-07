@@ -243,3 +243,35 @@ son propre démarrage, et il l'annonçait avec l'aplomb d'un chiffre. C'est la
 première fois que ce projet se trompe dans ce sens-là : d'habitude un outil
 annonce un nombre juste et écrit un fichier faux ; cette fois il n'y avait pas
 de fichier, seulement le nombre, et personne pour le contredire.
+
+---
+
+## 19. Une vérification qui se place elle-même au bon endroit valide toujours
+
+`test_desert.gd` contrôlait qu'on peut repartir du désert. Il **téléportait la
+voiture sur la zone de retour**, puis vérifiait qu'elle rentrait en ville. Il
+passait au vert depuis une semaine pendant que la zone était à **vingt-six
+mètres de la piste**, donc introuvable en roulant.
+
+Le test ne mesurait pas ce qu'il annonçait. Il mesurait ce qui se passe *une
+fois qu'on y est* — c'est-à-dire la seule partie qui n'était pas cassée.
+
+Même famille, même soirée, trois fois :
+
+| L'instrument | Ce qu'il annonçait | Ce qu'il mesurait |
+|---|---|---|
+| `test_desert.gd` | « on peut repartir » | ce qui arrive quand on est déjà sur la sortie |
+| Situation `camping_car_porte` | « la porte du jeu tombe sur la porte du modèle » | du sable, à 29 m du véhicule, en écrivant un PNG valide |
+| La même, vue à la verticale exacte | une géométrie | une image **sans haut ni bas** : caméra au-dessus visant droit en dessous, l'orientation n'est plus définie et rien n'y est trancheable |
+
+**La parade.** Avant de croire un test qui passe, se demander **quel geste du
+joueur il reproduit**. S'il commence par placer quelque chose à la main, il ne
+vérifie pas qu'on peut y arriver — et « on peut y arriver » est presque toujours
+la question. Ajouter alors la mesure que le placement empêchait de poser : ici,
+la distance entre la sortie et le point d'arrivée, en mètres imprimés.
+
+**Le corollaire pour les captures.** Une vue qui vise des coordonnées écrites à
+la main se périme le jour où le générateur bouge ce qu'elle photographie, et
+elle ne le dit pas. Une vue se pose **autour de ce qu'elle montre** — c'est ce
+que fait `autour` dans `scenarios.json`. Et jamais à la verticale exacte : il
+faut un angle, sinon l'image n'a pas d'orientation et on y lit ce qu'on veut.

@@ -129,13 +129,35 @@ func _jouer_les_etapes() -> void:
 			continue
 		var etape: Dictionary = e
 
+		# CADRER UN OBJET PLUTOT QU'UN ENDROIT.
+		#
+		# Avec « autour », les positions de l'etape — camera, vise, pos — sont
+		# des DECALAGES par rapport a ce noeud au lieu de coordonnees du monde.
+		#
+		# Ce n'est pas du confort. La situation camping_car_porte existait pour
+		# verifier que la porte du jeu tombe sur la porte du modele ; elle
+		# visait (877, -804), une coordonnee recopiee a la main. Le generateur
+		# a depuis pose le camping-car vingt-neuf metres plus loin, et la
+		# situation a continue de rendre un PNG parfaitement valide — du sable.
+		# Une vue qui ne suit pas ce qu'elle photographie finit par prouver le
+		# contraire de ce qu'on lui demande.
+		var origine := Vector3.ZERO
+		if etape.has("autour"):
+			var a := _trouver(_monde, str(etape["autour"])) as Node3D
+			if a == null:
+				printerr("capture : noeud '%s' introuvable, etape ignoree"
+						% etape["autour"])
+				continue
+			origine = a.global_position
+
 		if etape.has("placer"):
 			var n := _trouver(_monde, str(etape["placer"])) as Node3D
 			if n == null:
 				printerr("capture : noeud '%s' introuvable" % etape["placer"])
 				continue
 			var p: Array = etape.get("pos", [0, 0, 0])
-			n.global_position = Vector3(float(p[0]), float(p[1]), float(p[2]))
+			n.global_position = origine \
+					+ Vector3(float(p[0]), float(p[1]), float(p[2]))
 			if etape.has("cap"):
 				n.rotation = Vector3(0.0, deg_to_rad(float(etape["cap"])), 0.0)
 			# Une masse lancee qu'on repose garde sa vitesse et derive pendant
@@ -182,10 +204,11 @@ func _jouer_les_etapes() -> void:
 
 		if etape.has("camera"):
 			var c: Array = etape["camera"]
-			_cam_pos = Vector3(float(c[0]), float(c[1]), float(c[2]))
+			_cam_pos = origine + Vector3(float(c[0]), float(c[1]), float(c[2]))
 			if etape.has("vise"):
 				var v: Array = etape["vise"]
-				_cam_cible = Vector3(float(v[0]), float(v[1]), float(v[2]))
+				_cam_cible = origine \
+						+ Vector3(float(v[0]), float(v[1]), float(v[2]))
 			_placer_camera()
 
 

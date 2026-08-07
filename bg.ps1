@@ -656,7 +656,8 @@ switch ($Commande) {
                script = 'res://verifs/test_desert.gd'
                couvre = @('systemes/desert', 'systemes/passage', 'systemes/controleur',
                           'gen_desert', 'assets/desert', 'systemes/hud',
-                          'systemes/audio', 'assets/sons/ambiance') }
+                          'systemes/audio', 'assets/sons/ambiance',
+                          'systemes/ancrage', 'systemes/pnj', 'scenes/mission1') }
             @{ cle = 'telephone'; nom = 'le telephone'
                script = 'res://verifs/test_telephone.gd'
                couvre = @('systemes/telephone', 'systemes/controleur',

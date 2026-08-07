@@ -131,15 +131,43 @@ Aucune ne se voyait en jouant, et c'est bien le problème :
 
 ### Ce qui est cassé, et qu'on répare la prochaine fois
 
-**Ouvrir le désert a cassé la mission de Tuco.** Jesse t'accueille au camping-car
-avec « Vous êtes en retard » alors que rien n'a commencé, il est posé sur la
-route, et on n'entre plus dans le camping-car. C'est écrit en entier dans le
-ticket #48 — la bonne correction n'est pas de refermer le désert, c'est de faire
-taire Jesse tant que la mission ne l'a pas amené là.
+**Le désert était cassé — c'est réparé en 0.48.11**, juste en dessous. Trois
+pannes, dont deux qui traînaient depuis une semaine sans que personne puisse les
+voir.
 
-**Et l'épicerie est encore un bouton** : on peut appuyer en boucle et monter la
+**L'épicerie est encore un bouton** : on peut appuyer en boucle et monter la
 famille à cent sans bouger. Ce sera une vraie course — quatre dollars, une boîte
 d'œufs dans l'inventaire, et Skyler qui réagit quand tu rentres. Ticket #49.
+
+---
+
+## 0.48.11 — Le désert redevient un endroit où l'on va, et d'où l'on revient
+
+> **À essayer : va au désert avant d'avoir commencé quoi que ce soit.** Jesse est
+> là, debout contre le flanc du camping-car — et il ne dit rien. Il n'a aucune
+> raison de te parler tant que rien ne t'a envoyé là. Lance la mission ensuite,
+> reviens : cette fois il t'accueille.
+
+**Trois choses réparées, et une seule était de la veille.**
+
+- **Jesse te reprochait un retard hors mission.** Il t'accueillait avec « Vous
+  êtes en retard » alors que tu n'avais pas encore quitté ta maison. C'était le
+  seul dégât de l'ouverture du désert.
+- **Jesse et la porte d'entrée étaient à vingt-neuf mètres du camping-car**, en
+  plein milieu de la piste. Ça datait du jour où le désert a pris son relief, il
+  y a une semaine : le camping-car a bougé, ce qui devait le suivre est resté.
+- **On ne pouvait plus ressortir du désert.** La zone qui te ramène en ville
+  était à vingt-six mètres de la piste, donc introuvable en roulant — alors même
+  que la flèche peinte au sol, elle, était au bon endroit et te la promettait.
+
+**Ce que ça change pour la suite :** ce qui doit être collé au camping-car s'y
+colle désormais tout seul, et la sortie se pose avec la flèche qui l'annonce. Le
+jour où le désert sera régénéré, plus rien ne restera en arrière.
+
+**Ce qui n'est PAS réparé, et qu'il faut savoir :** le camping-car que tu vois
+est toujours celui fabriqué par le générateur, pas le tien. Ton modèle n'a jamais
+été intégré au jeu — il attend dans `livraisons/`. C'est un ticket à part, parce
+qu'il pèse 17 Mo et qu'il faut d'abord regarder ensemble ce qu'on en garde.
 
 ---
 

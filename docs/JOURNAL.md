@@ -13,6 +13,100 @@ raconte la session.
 
 ---
 
+## Session du 7 aout 2026 — un bug, cinq symptomes, et un remede qui dormait a cote du malade
+
+**Début** : 07/08, sur `v0.48.10`. **Fin** : sur `v0.48.11`, et une release enfin
+publiée.
+
+### Ce qui était demandé
+
+Reprendre par #48, comme le journal de la veille le disait : la mission de Tuco
+est cassée depuis l'ouverture du désert.
+
+### Ce qui est livré
+
+**0.48.11**, en deux lots, et un ticket ouvert exprès pour ne pas mélanger les
+deux :
+
+| Lot | Quoi |
+|---|---|
+| **#48** | `Pnj` a un garde-fou de mission. Jesse se tait tant que rien ne l'a amené au camping-car |
+| **#50** | Jesse, la porte et la sortie du désert s'ancrent sur les lieux publiés au lieu de les recopier. Trois distances mesurées par le test |
+| — | Les situations de capture du camping-car se posent **autour** du véhicule (`autour` dans `scenarios.json`) |
+| — | **Release `v0.48.11` publiée**. La dernière datait du 5 août en 0.40.0 : Guillaume téléchargeait un jeu sans les trois compteurs, sans écran-titre et sans sauvegarde |
+
+Côté tickets : **#48 fermé**, **#50 créé et fermé**, **#51 ouvert** (le
+camping-car livré, pour Guillaume).
+
+### Les surprises
+
+**Un ticket peut décrire cinq pannes et n'en contenir qu'une.** #48 listait cinq
+symptômes. Un seul venait de l'ouverture du désert — celui du titre. Les trois
+suivants avaient **une seule cause commune, vieille de huit jours**, et le
+cinquième n'était pas une panne mais un travail jamais fait. La veille déjà,
+cinq tickets décrivaient un travail déjà fait ; cette fois c'est l'inverse dans
+le même ticket. **Diagnostiquer avant de corriger a coûté vingt minutes et
+évité de refermer le désert pour rien.**
+
+**Le code annonçait sa propre panne, en majuscules.** `desert.gd` écrit
+*« CETTE VALEUR EST UN SECOURS, PAS LA SOURCE »* au-dessus de la constante du
+camping-car. `gen_desert.py` écrit *« les deux doivent bouger ensemble ; s'ils
+divergent, un cactus repousse dans le véhicule »*. Les deux disaient exactement
+ce qui allait arriver, et c'est arrivé : la scène de mission avait recopié la
+constante de secours, le générateur a déplacé le véhicule de vingt-neuf mètres,
+Jesse est resté en arrière — **au milieu de la piste**. Deuxième session
+consécutive où un commentaire prédit une panne et se lit comme une décoration.
+
+**Le remède existait déjà, à côté du malade.** `systemes/ancrage.gd` fait
+précisément ce qui manquait : poser un nœud sur un lieu publié par le
+générateur. Son en-tête raconte la même histoire — payée deux fois dans la
+ville, une chaussée élargie puis un trottoir élargi, un panneau retrouvé au
+milieu de la route. Le désert avait la même maladie et pas le remède, à un
+champ près. Il a suffi d'apprendre à `Ancrage` qu'il existe deux cartes.
+
+**Trois vérifications regardaient à côté, et elles étaient au vert.** Le test du
+désert **téléportait la voiture sur la zone de sortie** avant de vérifier qu'on
+peut repartir : il mesurait la seule partie qui n'était pas cassée. La capture
+censée prouver que la porte du jeu tombe sur la porte du modèle visait des
+coordonnées écrites à la main, et photographiait du sable à vingt-neuf mètres du
+véhicule. Et une fois recalée, elle était **à la verticale exacte** — une image
+sans haut ni bas, où l'on ne peut rien trancher. C'est le piège 19, et c'est la
+troisième soirée d'affilée qu'un instrument de ce projet se révèle aveugle.
+
+**Le camping-car de Guillaume n'a jamais été dans le jeu.** Le `.glb` chargé
+contient les maillages `Caisse`, `Pneu`, `Vitre` — les noms que produit
+`gen_desert.py`. Le modèle livré, 17 Mo, dort dans `livraisons/` depuis le
+début. Deux commentaires du code affirmaient pourtant le contraire, dont celui
+qui expliquait en détail comment la porte avait été replacée « parce que le
+modèle livré est plus long de deux mètres ». **Un commentaire qui décrit un
+asset se périme sans bruit** : personne ne relit un commentaire pour vérifier
+qu'il est encore vrai.
+
+**Guillaume attendait un exe qui n'existait pas.** Trois de ses tickets sont en
+🔥 depuis le 6 août — les voix, les passants, le formulaire de mission. La
+dernière release téléchargeable datait du 5 août : onze versions de retard. Un
+bump sans tag ne livre rien, et personne ne s'en aperçoit du côté qui bumpe.
+
+### Où on reprend
+
+**#49** : l'épicerie est encore un bouton qu'on peut marteler. Quatre dollars,
+une boîte d'œufs dans l'inventaire, les points donnés **en rentrant**, et Skyler
+qui réagit selon qu'on a pensé à elle. C'est le prochain, et il est cadré.
+
+**Avant ça, une manette** : la mission 1 de bout en bout. Les tests valident
+l'enchaînement des quinze étapes et le voyage aller-retour en conduite réelle,
+mais jouer trouve ce que tester ne trouve pas — la session précédente l'a
+rappelé cinq fois de suite.
+
+**En attente ailleurs** : #47 (l'objet tenu ne revient plus après une reprise),
+#51 (le camping-car livré — il pèse 17 Mo, la charte en demande beaucoup moins,
+et ça se décide à deux), un système de **dialogue à choix** que réclament #31,
+#35 et #29, et dix tickets jamais passés en revue (#34 à #45). Guillaume : les
+rigs de passants, les voix, le formulaire de mission — et maintenant il a un jeu
+à jour pour les écrire.
+
+---
+
 ## Session du 6 au 7 aout 2026 — les trois compteurs, et cinq instruments qui mentaient
 
 **Début** : 06/08, sur `v0.43.0`. **Fin** : sur `v0.48.10`, onze versions plus tard.

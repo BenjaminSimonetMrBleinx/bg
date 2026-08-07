@@ -66,6 +66,13 @@ produit.** Un relevé de performance a annoncé un effondrement du jeu ; il
 mesurait sa propre synchro verticale. Avant de corriger ce qu'un instrument
 dénonce, vérifier l'instrument — voir le piège 18.
 
+**Une vérification qui se place elle-même au bon endroit valide toujours.** Un
+test téléportait la voiture sur la sortie du désert avant de vérifier qu'on peut
+repartir ; la sortie était introuvable depuis une semaine, et il était au vert.
+Devant un test qui passe, demander **quel geste du joueur il reproduit** — s'il
+commence par placer quelque chose à la main, il ne vérifie pas qu'on peut y
+arriver, et c'est presque toujours la question. Piège 19.
+
 **Tout nombre de ressenti vit dans `reglages.tres`.** Une constante de feeling
 cachée dans un script est un bug de méthode, même si le résultat est bon.
 
@@ -149,7 +156,11 @@ walkthrough court : ce que ça fait, où c'est, pourquoi comme ça.
 ## Le rituel de fin de session
 
 1. `livraisons/` rangé, `.tmp/` vidé de ce qui n'est pas régénérable.
-2. Un bump si quelque chose de jouable a changé, avec sa note de version.
+2. Un bump si quelque chose de jouable a changé, avec sa note de version — **et
+   son tag poussé**. Onze versions ont été bumpées sans jamais être taguées :
+   Guillaume a téléchargé pendant deux jours un jeu sans écran-titre ni
+   sauvegarde, et trois de ses tickets 🔥 attendaient qu'il voie ce qui existait
+   déjà. Un bump sans tag ne livre rien, et ça ne se voit pas du côté qui bumpe.
 3. **Une entrée dans [docs/JOURNAL.md](docs/JOURNAL.md)** : début, fin, ce
    qu'on voulait, ce qu'on a livré, les surprises, et où on reprend. Les
    surprises sont le cœur — c'est ce qu'on relit dans trois semaines.

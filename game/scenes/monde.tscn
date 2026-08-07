@@ -110,12 +110,17 @@ script = ExtResource("23_desert")
 reglages = ExtResource("2_reglages")
 geometrie = ExtResource("25_sol_desert")
 camping_car = ExtResource("26_camping_car")
+retour = NodePath("RetourVille")
 
 ; Le passage du retour, sur la piste juste derriere le point d'arrivee. Il
 ; n'exige pas de vehicule : quelqu'un qui descend de voiture la-bas resterait
 ; coince, et un cul-de-sac est un bug meme quand il est logique.
+;
+; SANS TRANSFORM : c'est desert.gd qui le pose, sur l'arrivee qu'il publie.
+; Il etait ecrit ici a x = 0 quand l'arrivee reelle est a x = -26, donc a
+; vingt-six metres de la piste et de la fleche qui l'annonce. On entrait au
+; desert et on n'en sortait plus.
 [node name="RetourVille" type="Area3D" parent="Rendu/Scene3D/Desert"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 156)
 collision_layer = 0
 collision_mask = 7
 script = ExtResource("24_passage")

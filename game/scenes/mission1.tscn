@@ -11,11 +11,13 @@
 ;   QG interieur            (-1200, -900)
 ;
 ; Le camping-car EXTERIEUR n'est pas ici : il existe deja dans le desert, pose
-; par desert.gd a (877, -804). On lui ajoute seulement Jesse et sa porte.
+; par desert.gd la ou gen_desert.py le publie. On lui ajoute seulement Jesse et
+; sa porte — et on ne recopie PAS ses coordonnees, on s'ancre dessus.
 
-[gd_scene load_steps=32 format=3 uid="uid://bgmission1t001"]
+[gd_scene load_steps=33 format=3 uid="uid://bgmission1t001"]
 
 [ext_resource type="Script" path="res://systemes/pnj.gd" id="1_pnj"]
+[ext_resource type="Script" path="res://systemes/ancrage.gd" id="14_ancrage"]
 [ext_resource type="Script" path="res://systemes/point.gd" id="2_point"]
 [ext_resource type="Script" path="res://systemes/passage.gd" id="3_passage"]
 [ext_resource type="PackedScene" path="res://assets/lieux/campingcar_interieur.glb" id="4_cc_int"]
@@ -149,14 +151,41 @@ size = Vector3(0.7, 0.55, 0.7)
 ; Jesse attend a la porte. Le camping-car est tourne de 108 degres ; on se
 ; place a cote de son flanc, la ou est la porte.
 
+; ON S'ANCRE SUR LE CAMPING-CAR, ON NE RECOPIE PLUS SA POSITION.
+;
+; Ce noeud portait (877, 0, -804), c'est-a-dire la constante de SECOURS de
+; desert.gd — celle dont son propre en-tete dit qu'elle « n'est pas la source ».
+; Depuis que le generateur publie ses lieux, le camping-car est a (904, -804) :
+; vingt-neuf metres plus loin. Jesse et la porte sont restes en arriere, au
+; milieu de la piste, et on a passe une semaine a croire que le desert etait
+; casse alors que seule cette ligne l'etait.
+;
+; Sans transform : la position vient de l'ancrage et de nulle part ailleurs.
+; Dans l'editeur le decor apparait donc a l'origine du monde, et c'est voulu —
+; une coordonnee ecrite ici finirait par etre crue.
 [node name="CampingLab" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 877, 0, -804)
+script = ExtResource("14_ancrage")
+lieu = "camping_car"
+carte = "desert"
+suivre_le_cap = false
 
+; IL SE TAIT TANT QUE RIEN NE L'A AMENE LA.
+;
+; Son dialogue commence par « Vous etes en retard » : il n'a de sens qu'une
+; fois la mission lancee. Depuis que le desert est ouvert a toute heure, on
+; peut arriver ici sans avoir rien commence, et il reprochait alors un retard
+; a une mission qui n'existait pas.
+;
+; « voiture » est l'etape ou la mission envoie chercher la voiture pour partir
+; au desert — c'est exactement ce que portait le garde-fou du passage avant
+; qu'on l'ouvre. La condition a change de place, pas de sens : elle est passee
+; de la porte au personnage, et c'est la qu'elle aurait toujours du etre.
 [node name="JesseDehors" type="Node3D" parent="CampingLab"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, 0, 2.6)
 script = ExtResource("1_pnj")
 cle = "mission_jesse_camping"
 geometrie = ExtResource("7_jesse")
+etape_minimale = "voiture"
 
 ; SUR LE FLANC, PAS SUR LE CAPOT.
 ;

@@ -11,7 +11,20 @@
 # pour un dixieme du prix. La limite est connue : tout tient en memoire en meme
 # temps. A deux zones et deux interieurs c'est gratuit ; a vingt il faudra
 # faire le vrai travail, et ce jour-la on saura ce qu'on y met.
+class_name Desert
 extends Node3D
+
+## La zone du desert de la scene courante, retrouvee par son groupe. Comme
+## Mission.courante() et pour la meme raison : ce qui a besoin de savoir ou est
+## le camping-car ne doit pas connaitre le chemin du noeud dans l'arbre.
+const GROUPE := "desert"
+
+
+static func courant(depuis: Node) -> Desert:
+	if depuis == null or not depuis.is_inside_tree():
+		return null
+	return depuis.get_tree().get_first_node_in_group(GROUPE) as Desert
+
 
 @export var reglages: Reglages
 
@@ -20,6 +33,19 @@ extends Node3D
 
 ## Le camping-car. Decor : on ne le conduit pas.
 @export var camping_car: PackedScene
+
+## LE PASSAGE DU RETOUR VERS LA VILLE, pose par ce script et non par la scene.
+##
+## Il etait ecrit en dur a x = 0 dans monde.tscn, alors que l'arrivee publiee
+## est a x = -26 : vingt-six metres de sable entre la fleche qui annonce le
+## retour et la zone qui ramene vraiment. On arrivait au desert et on n'en
+## ressortait plus.
+##
+## La fleche et le panneau avaient ete recales sur arrivee() le jour ou l'on a
+## compris le probleme ; la zone, elle, a ete oubliee dans la meme correction.
+## C'est le meme argument qu'en tete de arrivee() : deux coordonnees ecrites a
+## deux endroits finissent toujours par diverger.
+@export var retour: NodePath
 
 const DECOR := "res://assets/decor/%s.glb"
 
@@ -48,6 +74,7 @@ const CAP_CAMPING_CAR := 108.0
 const LIEUX := "res://assets/desert/desert_lieux.json"
 
 var _lieux: Dictionary = {}
+var _lieux_lus: bool = false
 var _decor: Array = []
 
 
@@ -133,7 +160,15 @@ func _poser_decor() -> void:
 
 ## Un lieu du desert, en coordonnees du MONDE. Vector3.INF si inconnu — les
 ## missions demandent par nom et ne recopient jamais de coordonnees.
+##
+## Les lieux se chargent A LA DEMANDE si personne ne l'a encore fait. Sans ca,
+## la reponse depend de l'ordre dans lequel Godot appelle les _ready : ce qui
+## s'ancre ici est declare ailleurs dans la scene, et le jour ou quelqu'un
+## deplace un noeud, un camping-car atterrit a l'origine du monde sans qu'une
+## seule ligne ait change.
 func lieu(nom: String) -> Vector3:
+	if not _lieux_lus:
+		_charger_les_lieux()
 	if not _lieux.has(nom):
 		return Vector3.INF
 	var p: Array = _lieux[nom]
@@ -141,6 +176,7 @@ func lieu(nom: String) -> Vector3:
 
 
 func _charger_les_lieux() -> void:
+	_lieux_lus = true
 	if not FileAccess.file_exists(LIEUX):
 		push_warning("desert : %s absent, positions de secours. Regenerer : "
 				% LIEUX + "blender -b -P outils/gen_desert.py")
@@ -155,6 +191,7 @@ func _charger_les_lieux() -> void:
 
 
 func _ready() -> void:
+	add_to_group(GROUPE)
 	if geometrie == null:
 		push_error("desert : aucune geometrie assignee. Regenerer : "
 				+ "blender -b -P outils/gen_desert.py")
@@ -199,6 +236,25 @@ func _ready() -> void:
 	# le point d'arrivee : il dit ou mene la route qu'il signale, et il disait
 	# donc au joueur deja dans le desert qu'il allait au desert.
 	_poser("panneau_albuquerque", ici + Vector3(10.5, -0.4, 9.0), 0.0)
+	_poser_le_retour(ici)
+
+
+## La sortie se pose AVEC LA FLECHE QUI L'ANNONCE, six metres derriere le point
+## d'arrivee. Le joueur arrive dos a elle : il ne repart pas par accident, et
+## il la trouve en faisant demi-tour, la ou la fleche pointe.
+##
+## La hauteur reprend celle que portait la scene — la forme fait trois metres,
+## centree a un metre du sol.
+const RETOUR := Vector3(0.0, 0.6, 6.0)
+
+
+func _poser_le_retour(ici: Vector3) -> void:
+	var n := get_node_or_null(retour) as Node3D
+	if n == null:
+		push_warning("desert : aucun passage de retour assigne, la zone est un "
+				+ "cul-de-sac. Renseigner 'retour' sur le noeud Desert.")
+		return
+	n.position = ici + RETOUR
 
 
 # Meme dispositif que pour la ville : les collisions sont fabriquees a la

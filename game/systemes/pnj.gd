@@ -25,6 +25,17 @@ extends Node3D
 ## Distance a laquelle il remarque le joueur, en metres.
 @export_range(0.5, 12.0, 0.1) var attention: float = 4.5
 
+## Il n'a quelque chose a dire QU'A PARTIR de cette etape de la mission.
+## Vide = il parle toujours, ce qui reste le cas de la plupart.
+##
+## Le meme champ que Point.etape_minimale, et il manquait ici. Un Pnj parlait
+## des qu'on etait a portee, quel que soit l'etat du jeu : Jesse reprochait un
+## retard devant le camping-car a quelqu'un qui n'avait pas encore commence la
+## mission. Ce n'est pas Jesse qui etait mal ecrit — c'est que rien, dans ce
+## fichier, ne pouvait le faire taire. Le passage ferme vers le desert cachait
+## le trou ; l'ouvrir l'a montre.
+@export var etape_minimale: String = ""
+
 var _cible: Node3D
 var _cap_repos: float = 0.0
 
@@ -124,6 +135,25 @@ func abattre() -> void:
 		return
 	abattu = true
 	set_process(false)
+
+
+## A-t-il quelque chose a dire maintenant ?
+##
+## Meme role que Point.offert, moins la distance : c'est le controleur qui
+## mesure, parce que la portee de dialogue est un reglage commun et pas une
+## propriete de ce personnage.
+##
+## Sans mission en cours, un personnage garde-fou se tait. C'est le meme choix
+## que Point : mieux vaut un decor muet qu'un decor qui raconte une histoire
+## qui n'a pas commence.
+func offert(mission: Mission) -> bool:
+	if abattu or cle == "":
+		return false
+	if etape_minimale == "":
+		return true
+	if mission == null:
+		return false
+	return mission.a_l_etape(etape_minimale) or mission.passee(etape_minimale)
 
 
 ## Le joueur a surveiller. Passe par la maison, qui sait qui joue.

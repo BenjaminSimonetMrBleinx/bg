@@ -21,8 +21,22 @@ class_name Ancrage
 extends Node3D
 
 ## Le nom du lieu, tel que le generateur le publie. Voir la cle "lieux" dans
-## assets/ville/ville_lampes.json.
+## assets/ville/ville_lampes.json — ou dans assets/desert/desert_lieux.json
+## quand carte vaut "desert".
 @export var lieu: String = ""
+
+## SUR QUELLE CARTE CHERCHER CE LIEU.
+##
+## Le desert publie ses lieux exactement comme la ville, et souffrait du meme
+## mal sans avoir le remede : Jesse et la porte du camping-car etaient poses a
+## des coordonnees recopiees de la constante de secours de desert.gd, laquelle
+## annonce elle-meme n'etre « pas la source ». Le generateur a depuis pose le
+## vehicule vingt-neuf metres plus loin ; Jesse est reste, au milieu de la
+## piste, a reprocher un retard a personne.
+##
+## On ne relit pas desert_lieux.json ici : Desert le lit deja, et lui seul sait
+## ou la zone est posee dans le monde. On lui demande.
+@export_enum("ville", "desert") var carte: String = "ville"
 
 ## Applique aussi l'orientation du lieu, pas seulement sa position.
 @export var suivre_le_cap: bool = true
@@ -42,6 +56,9 @@ static var _lu: bool = false
 func _ready() -> void:
 	if lieu == "":
 		return
+	if carte == "desert":
+		_ancrer_au_desert()
+		return
 	var fiche := trouver(lieu)
 	if fiche.is_empty():
 		push_error("ancrage : aucun lieu nomme '%s'. Connus : %s"
@@ -56,6 +73,27 @@ func _ready() -> void:
 	# droite » reste a droite quelle que soit l'orientation de la rue.
 	var tourne := decalage.rotated(Vector3.UP, cap if suivre_le_cap else 0.0)
 	global_position = Vector3(float(p[0]), float(p[1]), float(p[2])) + tourne
+
+
+# Les lieux du desert n'ont pas de cap publie : ce sont des positions, et
+# l'orientation reste posee dans la scene. Le decalage suit donc la rotation du
+# noeud lui-meme plutot que celle d'un lieu qui n'en a pas.
+#
+# ON NE REPLIE PAS SUR LA POSITION DE LA SCENE EN CAS D'ECHEC. Un ancrage rate
+# qui laisse le noeud ou il etait, c'est exactement la panne qu'on repare :
+# quelque chose reste a une vieille place et rien ne le dit. Mieux vaut une
+# erreur dans la console qu'un Jesse sur la chaussee.
+func _ancrer_au_desert() -> void:
+	var d := Desert.courant(self)
+	if d == null:
+		push_error("ancrage : aucun desert dans la scene, lieu '%s' non pose" % lieu)
+		return
+	var p := d.lieu(lieu)
+	if p == Vector3.INF:
+		push_error("ancrage : le desert ne publie aucun lieu '%s'. Regenerer : "
+				% lieu + "blender -b -P outils/gen_desert.py")
+		return
+	global_position = p + decalage.rotated(Vector3.UP, rotation.y)
 
 
 ## La fiche d'un lieu, ou un dictionnaire vide.
