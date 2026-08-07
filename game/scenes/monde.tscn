@@ -82,6 +82,24 @@ border_color = Color(0.322, 0.298, 0.243, 1)
 [sub_resource type="BoxShape3D" id="passage_forme"]
 size = Vector3(9, 3, 5)
 
+; LA LATTE DESCELLEE, ENFIN VISIBLE.
+;
+; Elle etait un noeud NU : aucune geometrie, rien a l'ecran. Le tuto disait
+; « une latte du mur n'est pas comme les autres » et il n'y avait pas de latte
+; du tout — juste un point d'interaction invisible, a portee d'un metre
+; quatre-vingt-dix, dans un salon de quatorze metres sur dix.
+;
+; C'est le meme defaut que l'epicerie sans enseigne : une adresse exacte que
+; rien ne signale n'est pas une adresse. Une planche en saillie de cinq
+; centimetres, un peu plus sombre que le bardage, suffit — on la voit sans
+; qu'elle crie.
+[sub_resource type="BoxMesh" id="latte_forme"]
+size = Vector3(0.05, 0.95, 0.3)
+
+[sub_resource type="StandardMaterial3D" id="latte_mat"]
+albedo_color = Color(0.396, 0.286, 0.196, 1)
+roughness = 0.95
+
 [node name="Monde" type="Node"]
 script = ExtResource("1_rendu")
 reglages = ExtResource("2_reglages")
@@ -293,14 +311,29 @@ lumiere_energie = 2.6
 ; Elle est posee ICI et pas dans mission1.tscn parce qu'elle appartient a un
 ; decor qui existait avant la mission : l'interieur de la maison, a
 ; (26, -20) + (-600, 600).
+; CONTRE LE MUR, ET A COTE DE LA BIBLIOTHEQUE.
+;
+; Elle etait posee a (-2,6 ; 3,4) dans le repere de la piece : a un metre
+; soixante du mur le plus proche, au milieu du vide, et a deux metres
+; soixante-dix de l'endroit ou l'on entre — donc hors de portee des qu'on
+; passe la porte, sans rien autour pour donner envie d'aller voir.
+;
+; Elle est desormais collee au mur de gauche, a un metre soixante de la
+; bibliotheque : le seul gros meuble du salon, et donc le seul repere qu'on
+; puisse donner sans afficher de panneau. On cherche « la latte pres de la
+; bibliotheque », pas « une latte quelque part ».
 [node name="LatteDescellee" type="Node3D" parent="Rendu/Scene3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -576.6, 1, 583.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -580.98, 0.9, 581.2)
 script = ExtResource("39_point")
 invite = "Cacher votre argent"
 evenement = "action:cachette"
 etape = "cacher"
 une_fois = false
 portee = 1.9
+
+[node name="Planche" type="MeshInstance3D" parent="Rendu/Scene3D/LatteDescellee"]
+mesh = SubResource("latte_forme")
+surface_material_override/0 = SubResource("latte_mat")
 
 ; LE PLAN DE TRAVAIL DE LA CUISINE, ou l'on pose les courses.
 ;

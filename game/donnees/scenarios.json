@@ -1385,6 +1385,14 @@
     }
    ]
   },
+  "cachette": {
+   "quoi": "La latte descellee dans le salon de Walter, contre le mur de gauche a cote de la bibliotheque. Ce qu'on regarde : on la VOIT. Elle etait un noeud sans geometrie, au milieu du vide, et personne ne la trouvait en jouant — le tuto annonce pourtant « une latte du mur n'est pas comme les autres ».",
+   "fin": 300,
+   "etapes": [
+    { "image": 250, "placer": "Joueur", "pos": [-579.5, 0.4, 581.2], "cap": 90 },
+    { "image": 270, "camera": [-578.2, 1.7, 582.6], "vise": [-580.9, 1.0, 581.2] }
+   ]
+  },
   "poser_les_courses": {
    "quoi": "Le plan de travail de la cuisine, avec la boite d'oeufs en main : l'invite « Poser les courses » doit s'afficher. C'est le seul endroit du jeu ou les points de famille montent — l'epicerie, elle, ne fait plus que vendre. La partie s'ouvrant chez Walter, on n'a pas a entrer : on se pose devant le meuble.",
    "fin": 300,
