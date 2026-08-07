@@ -141,6 +141,37 @@ d'œufs dans l'inventaire, et Skyler qui réagit quand tu rentres. Ticket #49.
 
 ---
 
+## 0.49.0 — Skyler appelle pendant que tu roules
+
+> **À essayer : lance la mission 1 et prends la voiture après avoir parlé à
+> Jesse chez lui.** Au bout d'une vingtaine de secondes de conduite vers le
+> désert, le téléphone sonne.
+
+![L'appel, au volant](docs/images/appel-skyler.png)
+
+**Tu peux décrocher (`F`), raccrocher (`T`), ou laisser sonner.** Les trois sont
+des réponses, et aucune n'est gratuite.
+
+Si tu décroches, Skyler te demande de passer prendre des œufs. Et là commence le
+vrai sujet : **l'épicerie est en ville, le camping-car à neuf cents mètres.**
+
+- **Tu fais demi-tour tout de suite** → tu arrives en retard au camping-car.
+  Jesse le remarque, il voit la boîte dans ta main, et ta réputation de rue en
+  prend un coup. Tuco aussi la remarquera, plus tard.
+- **Tu promets et tu files droit** → il te reste toute la mission pour y penser
+  au retour. Ou pour oublier.
+- **Tu ne réponds pas** → cinq points de famille, sans un mot.
+
+**Rien ne t'annonce ces coûts.** Les compteurs bougent, personne ne commente —
+sauf Jesse et Tuco quand ils voient la boîte. C'était le point qui manquait : un
+compteur qui tombe sans que personne en parle passe pour un bug.
+
+**Ce que ça remplace.** La mission de test « Un simple service » disparaît des
+outils de test : elle existait pour essayer ce mécanisme avant que les vraies
+missions soient écrites. Elles le sont.
+
+---
+
 ## 0.48.14 — On trouve enfin la cachette, et le klaxon s'entend
 
 > **Si tu télécharges le jeu pour y jouer, prends celle-ci.** Les deux

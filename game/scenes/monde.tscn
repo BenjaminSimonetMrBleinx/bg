@@ -63,7 +63,7 @@
 [ext_resource type="Script" path="res://systemes/purete.gd" id="47_purete"]
 [ext_resource type="Script" path="res://systemes/famille.gd" id="48_famille"]
 [ext_resource type="Script" path="res://systemes/reputation.gd" id="49_reputation"]
-[ext_resource type="Script" path="res://systemes/service_test.gd" id="50_service"]
+[ext_resource type="Script" path="res://systemes/appel.gd" id="50_appel"]
 
 [sub_resource type="ViewportTexture" id="tex_ecran"]
 viewport_path = NodePath("Rendu")
@@ -533,21 +533,32 @@ reglages = ExtResource("2_reglages")
 sauvegarde = NodePath("../../../Sauvegarde")
 dev = NodePath("../../../Dev")
 
-; Le releve de cout affiche en jouant. Cache par defaut, allume par les outils
-; de test. Il vit DANS le viewport de rendu comme le reste de l'interface : un
-; releve dessine en pleine resolution mentirait sur ce qu'on est en train de
-; regarder.
-[node name="ServiceTest" type="Control" parent="Rendu/Interface"]
+; L'APPEL DE SKYLER, PENDANT QU'ON ROULE VERS LE DESERT.
+;
+; Il remplace « Un simple service », la mission de test qui servait a eprouver
+; ce mecanisme avant que les vraies missions existent. Elle existe : le banc
+; est retire et l'appel entre dans la mission 1.
+;
+; L'ETAPE choisie est « camping » — Rejoindre le labo dans le desert. C'est le
+; seul long trajet de la mission, et le seul moment ou une demande banale
+; devient couteuse : l'epicerie est en ville, le camping-car a neuf cents
+; metres. Honorer l'appel tout de suite veut dire faire demi-tour et arriver en
+; retard ; le remettre a plus tard veut dire risquer d'oublier.
+;
+; VINGT SECONDES AU VOLANT, et le compte repart a zero des qu'on descend. Un
+; appel qui tombe pendant qu'on cherche encore ses cles se prend pour un bug.
+[node name="AppelSkyler" type="Control" parent="Rendu/Interface"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-script = ExtResource("50_service")
+script = ExtResource("50_appel")
+etape = "camping"
+conversation = "mission_skyler_oeufs"
+apres_secondes = 20.0
 joueur = NodePath("../../Scene3D/Joueur")
-desert = NodePath("../../Scene3D/Desert")
-maison = NodePath("../../Scene3D/Maisons/Walter")
 controleur = NodePath("../../../Controleur")
 dialogue = NodePath("../../../Dialogue")
 
@@ -660,7 +671,6 @@ foule = NodePath("../Rendu/Scene3D/Foule")
 trafic = NodePath("../Rendu/Scene3D/Trafic")
 jauge = NodePath("../Rendu/Interface/JaugePerf")
 purete = NodePath("../Purete")
-service = NodePath("../Rendu/Interface/ServiceTest")
 scene_3d = NodePath("../Rendu/Scene3D")
 rendu = NodePath("..")
 equipement = NodePath("../Equipement")
@@ -681,7 +691,7 @@ sauvegarde = NodePath("../Sauvegarde")
 
 [node name="Controleur" type="Node" parent="."]
 script = ExtResource("8_controleur")
-service = NodePath("../Rendu/Interface/ServiceTest")
+service = NodePath("../Rendu/Interface/AppelSkyler")
 reglages = ExtResource("2_reglages")
 joueur = NodePath("../Rendu/Scene3D/Joueur")
 vehicule = NodePath("../Rendu/Scene3D/Vehicule")

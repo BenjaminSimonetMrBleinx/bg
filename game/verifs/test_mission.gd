@@ -80,6 +80,7 @@ func _scenario() -> void:
 	_les_cles(mission, dialogue, equipement)
 	_la_cachette(mission, bourse)
 	_les_courses(equipement, dialogue)
+	_l_appel(dialogue)
 
 	print("")
 	if _erreurs.is_empty():
@@ -425,3 +426,55 @@ func _les_courses(equipement: Equipement, dialogue: Dialogue) -> void:
 			"Skyler a une reponse quand on a pense a elle")
 	_verifier(dialogue.connait("skyler_courses_non"),
 			"et une autre quand on a oublie")
+
+
+# L'APPEL DE SKYLER, PENDANT QU'ON ROULE VERS LE DESERT.
+#
+# Ce qui se mesure ici : qu'il soit branche sur la bonne etape, que raccrocher
+# coute, et surtout QUE LES VARIANTES DE DIALOGUE FASSENT AVANCER LA MISSION.
+#
+# Ce dernier point est le seul qui pouvait tout casser en silence.
+# dialogue_fini() emet « dialogue:<cle> » : jouer la version de Jesse avec les
+# oeufs emettait une cle inconnue de la mission, donc l'etape « jesse_dehors »
+# ne passait plus. Prendre les courses aurait BLOQUE la mission 1, et le
+# symptome serait apparu trois ecrans plus loin, sans rapport visible avec les
+# oeufs.
+#
+# On ne DECLENCHE pas l'appel ici : decrocher ouvre une conversation, et une
+# conversation ne s'ouvre pas dans cette suite — voir le piege 22.
+func _l_appel(dialogue: Dialogue) -> void:
+	print("\n--- l'appel de Skyler ---")
+	var appel := _trouver(_monde, "AppelSkyler") as Appel
+	_verifier(appel != null, "l'appel est pose dans la scene")
+	if appel == null:
+		return
+
+	_verifier(appel.etape == "camping",
+			"il tombe a l'etape '%s' — le trajet vers le desert" % appel.etape)
+	_verifier(dialogue.connait(appel.conversation),
+			"et sa conversation existe ('%s')" % appel.conversation)
+	_verifier(appel.apres_secondes > 0.0,
+			"il attend %.0f s de conduite" % appel.apres_secondes)
+
+	var famille := _trouver(_monde, "Famille") as Famille
+	if famille != null and appel.cout_ignore > 0:
+		famille.poser(50)
+		appel.sonner_maintenant()
+		appel.raccrocher()
+		_verifier(famille.points() == 50 - appel.cout_ignore,
+				"raccrocher sans repondre coute %d (50 -> %d)"
+						% [appel.cout_ignore, famille.points()])
+
+	# LES DEUX FACONS DE VOIR LA BOITE D'OEUFS.
+	_verifier(dialogue.connait("mission_jesse_camping_oeufs"),
+			"Jesse a une version ou il voit les courses")
+	_verifier(dialogue.connait("mission_tuco_vente_oeufs"),
+			"Tuco aussi")
+	_verifier(Scenario.VARIANTES.get("mission_jesse_camping_oeufs", "")
+					== "mission_jesse_camping",
+			"celle de Jesse fait avancer la mission comme l'originale")
+	_verifier(Scenario.OUVERTURES.get("mission_tuco_vente_oeufs", "")
+					== "mission_tuco_vente",
+			"celle de Tuco enchaine sur la vraie vente au lieu de la remplacer")
+	_verifier(Reputation.PERTES.has("retard"),
+			"et arriver en retard a un prix (%d)" % int(Reputation.PERTES.get("retard", 0)))

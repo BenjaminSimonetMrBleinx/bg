@@ -423,7 +423,22 @@ func _process(delta: float) -> void:
 				if Input.is_action_just_pressed("interagir"):
 					_dialogue.avancer()
 				return
-			_afficher("F   Descendre")
+			# ON NE LE PROPOSE PAS NON PLUS QUAND LA TOUCHE EST PRISE.
+			#
+			# L'action, plus bas, etait deja protegee. L'invite, elle, restait
+			# affichee : pendant que le telephone sonnait, l'ecran proposait
+			# « F Decrocher   T Raccrocher » ET « F Descendre » a deux lignes
+			# d'ecart. Deux F pour deux choses differentes, dont une qui ne se
+			# serait pas produite.
+			#
+			# Vu a la capture, jamais en lisant le code — la protection etait
+			# bien la, et c'est ce qui rendait le defaut invisible.
+			#
+			# ON EFFACE, ON NE SE CONTENTE PAS DE NE PLUS ECRIRE : l'invite garde
+			# son dernier texte tant que personne ne lui en donne un autre. Ne
+			# plus appeler _afficher() laissait donc « F Descendre » a l'ecran,
+			# et la premiere correction n'a rien change du tout.
+			_afficher("" if _touche_prise() else "F   Descendre")
 			if Input.is_action_just_pressed("klaxon") and _audio != null:
 				_audio.bruit_ici("klaxon", _v.global_position)
 			# Les phares se commandent, et seulement au volant : c'est la
@@ -457,7 +472,9 @@ func _process(delta: float) -> void:
 # PROCESS_MODE_ALWAYS, alors que ce controleur, lui, est suspendu comme le
 # reste. C'est ce qui rend le menu sur : rien du jeu ne peut plus repondre.
 # Une interface a-t-elle pris la touche d'interaction pour elle ? Facultatif :
-# sans ServiceTest cable, personne ne la prend et le jeu se comporte comme avant.
+# sans rien de cable, personne ne la prend et le jeu se comporte comme avant.
+# C'est l'appel de Skyler qui s'en sert — au volant, F veut dire « descendre de
+# voiture », et sans cette question decrocher ejectait Walter sur le bas-cote.
 func _touche_prise() -> bool:
 	var s := get_node_or_null(service)
 	if s == null or not s.has_method("absorbe_la_touche"):
@@ -1140,7 +1157,17 @@ func _utiliser(p: Point) -> void:
 		if _scenario != null:
 			_scenario.ouvrir_la_cachette()
 		return
-	if p.dialogue != "" and _dialogue != null and _dialogue.demarrer(p.dialogue):
+	# LE DIALOGUE D'UN POINT PASSE PAR LE SCENARIO, comme celui d'un personnage.
+	#
+	# Il partait droit au systeme de dialogue, donc aucune substitution ne
+	# pouvait s'y appliquer : Tuco ne pouvait pas voir la boite d'oeufs qu'on
+	# lui apporte, parce qu'on lui parle par un point d'interaction et non en
+	# l'abordant. Deux chemins pour ouvrir une conversation, un seul qui savait
+	# la choisir.
+	var cle_dialogue := p.dialogue
+	if cle_dialogue != "" and _scenario != null:
+		cle_dialogue = _scenario.dialogue_pour(cle_dialogue)
+	if cle_dialogue != "" and _dialogue != null and _dialogue.demarrer(cle_dialogue):
 		# On ne bloque PAS le joueur : chez Tuco, la scene se joue autour de
 		# lui pendant qu'il peut encore marcher, et c'est ce qui la rend
 		# tendue plutot que regardee.

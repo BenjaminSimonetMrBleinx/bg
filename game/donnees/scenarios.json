@@ -1385,6 +1385,16 @@
     }
    ]
   },
+  "appel_skyler": {
+   "quoi": "Le telephone sonne pendant qu'on roule vers le desert. Ce qu'on regarde : les DEUX touches proposees — decrocher et raccrocher. Sans l'invite, personne ne devine que raccrocher existe, et un refus qu'on ne peut pas exprimer n'est pas un choix. On force la sonnerie : attendre vingt secondes de conduite ne se photographie pas.",
+   "fin": 120,
+   "etapes": [
+    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
+    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
+    { "image": 40, "appeler": "Controleur", "methode": "_monter" },
+    { "image": 70, "appeler": "AppelSkyler", "methode": "sonner_maintenant" }
+   ]
+  },
   "cachette": {
    "quoi": "La latte descellee dans le salon de Walter, contre le mur de gauche a cote de la bibliotheque. Ce qu'on regarde : on la VOIT. Elle etait un noeud sans geometrie, au milieu du vide, et personne ne la trouvait en jouant — le tuto annonce pourtant « une latte du mur n'est pas comme les autres ».",
    "fin": 300,

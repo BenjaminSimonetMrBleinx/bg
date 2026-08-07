@@ -50,6 +50,22 @@ Windows affichera un avertissement « éditeur inconnu » : l'exécutable n'est 
 signé, et le faire signer coûte plus cher que le jeu ne vaut. **Informations
 complémentaires → Exécuter quand même.**
 
+### Mettre à jour
+
+**Retélécharge le `.zip` au même endroit et remplace le dossier.** Il n'y a pas
+de mise à jour automatique, et il n'y en aura pas : le jeu change plusieurs fois
+par semaine, un lien suffit.
+
+**Ta partie en cours n'est pas perdue.** Elle est enregistrée à part, dans
+`%APPDATA%\Godot\app_userdata\Breaking Bad Game\`, jamais dans le dossier du
+jeu — tu peux supprimer l'ancien dossier entier sans y penser.
+
+Ce qui a changé est dans [`NOTES-DE-VERSION.md`](NOTES-DE-VERSION.md), écrit
+pour celui qui joue : ce qu'on peut essayer, et les bugs qui gênaient vraiment.
+
+> `MISE_A_JOUR.bat` ne sert **pas** à ça : il est réservé à ceux qui ont cloné le
+> dépôt pour développer ou livrer des assets.
+
 ## Jouer depuis les sources
 
 Pour ceux qui développent ou qui livrent des assets.

@@ -84,6 +84,23 @@ func fait() -> bool:
 	return _fait
 
 
+## FAIRE SONNER TOUT DE SUITE, sans attendre les vingt secondes de conduite.
+##
+## Pour les captures et les tests : un mecanisme qui ne se declenche qu'apres
+## vingt secondes au volant ne se verifie pas — on ne photographie pas une
+## attente, et une suite headless ne conduit pas. Sans cette porte, la seule
+## facon de regarder l'invite aurait ete de jouer.
+func sonner_maintenant() -> String:
+	if _sonne > 0.0:
+		return "ca sonne deja"
+	_fait = true
+	_sonne = duree_sonnerie
+	if _lecteur != null:
+		_lecteur.play()
+	queue_redraw()
+	return "le telephone sonne"
+
+
 ## Tout remettre a zero. Recommencer une partie doit redonner un telephone qui
 ## n'a pas encore sonne.
 func reinitialiser() -> void:
@@ -130,12 +147,12 @@ func _pendant_la_sonnerie(delta: float) -> void:
 		_repondre()
 		return
 	if Input.is_action_just_pressed("telephone"):
-		_raccrocher()
+		raccrocher()
 		return
 
 	# Un telephone qui sonne dans le vide finit toujours par se taire.
 	if _sonne <= 0.0:
-		_raccrocher()
+		raccrocher()
 	queue_redraw()
 
 
@@ -157,9 +174,14 @@ func _repondre() -> void:
 	queue_redraw()
 
 
-# On n'a pas repondu. Le compteur bouge, RIEN NE L'ANNONCE : c'est ce qui fait
-# mal, et c'est la meme regle que partout ailleurs dans ce jeu.
-func _raccrocher() -> void:
+## On n'a pas repondu. Le compteur bouge, RIEN NE L'ANNONCE : c'est ce qui fait
+## mal, et c'est la meme regle que partout ailleurs dans ce jeu.
+##
+## Publique, parce que c'est un GESTE du joueur au meme titre que decrocher —
+## et parce que c'est la seule moitie de l'appel qu'une suite de tests puisse
+## verifier : l'autre ouvre une conversation, et une conversation ne s'ouvre pas
+## dans un test (piege 22).
+func raccrocher() -> void:
 	_sonne = 0.0
 	_lecteur.stop()
 	if not _decroche and cout_ignore > 0:

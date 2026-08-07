@@ -360,22 +360,83 @@ const REMPLACEMENTS := {
 }
 
 
+## CE QU'ON DIT AUTREMENT QUAND WALTER PORTE QUELQUE CHOSE.
+##
+## Jesse et Tuco voient la boite d'oeufs. Ils ne la commentent pas par
+## coquetterie : c'est la seule facon que le detour se SENTE. La reputation
+## baisse au meme moment, et un compteur qui tombe sans que personne en parle
+## passe pour un bug — c'est deja la regle pour tout le reste du jeu, sauf que
+## la, il y a quelqu'un en face.
+const REMPLACEMENTS_OBJET := {
+	"mission_jesse_camping": [["oeufs", "mission_jesse_camping_oeufs"]],
+	"mission_tuco_vente": [["oeufs", "mission_tuco_vente_oeufs"]],
+}
+
+## LES VARIANTES COMPTENT COMME LEUR ORIGINAL.
+##
+## dialogue_fini() emet « dialogue:<cle> », et c'est ce qui fait avancer la
+## mission : l'etape « jesse_dehors » se valide par
+## « dialogue:mission_jesse_camping ». Sans cette table, jouer la version avec
+## les oeufs emettait une cle que la mission ne connait pas — on tenait la
+## bonne conversation et l'etape ne passait jamais.
+##
+## Autrement dit : prendre les courses aurait BLOQUE la mission 1, et le
+## symptome serait apparu trois ecrans plus loin.
+const VARIANTES := {
+	"mission_jesse_camping_oeufs": "mission_jesse_camping",
+}
+
+## CE QUI N'EST QU'UNE OUVERTURE, ET CE QUI SUIT.
+##
+## Chez Tuco, la boite d'oeufs ne remplace pas la scene : elle l'introduit. La
+## vente fait vingt repliques et porte DEUX effets — l'argent et la fouille —
+## et la recopier pour trois lignes d'ouverture aurait donne deux scenes
+## centrales a maintenir. Le jour ou l'une change, l'autre ment.
+##
+## On joue donc l'ouverture, puis on enchaine sur la vraie. L'evenement de
+## mission part a la fin de CELLE-CI, comme d'habitude : rien d'autre a prevoir.
+const OUVERTURES := {
+	"mission_tuco_vente_oeufs": "mission_tuco_vente",
+}
+
+
 ## La conversation a jouer pour ce personnage, maintenant. Renvoie la cle
 ## d'origine s'il n'y a rien de special.
+##
+## L'ETAPE PASSE AVANT L'OBJET. Une fois la marchandise en poche, Jesse doit
+## dire « qu'est-ce que vous attendez » meme si l'on porte encore les courses :
+## ce qui a change entre-temps compte plus que ce qu'on tient.
 func dialogue_pour(cle: String) -> String:
-	if _mission == null or not REMPLACEMENTS.has(cle):
+	if _mission == null:
 		return cle
-	for regle in REMPLACEMENTS[cle]:
-		if _mission.a_l_etape(str(regle[0])):
-			return str(regle[1])
+	if REMPLACEMENTS.has(cle):
+		for regle in REMPLACEMENTS[cle]:
+			if _mission.a_l_etape(str(regle[0])):
+				return str(regle[1])
+	if REMPLACEMENTS_OBJET.has(cle) and _equipement != null:
+		for regle in REMPLACEMENTS_OBJET[cle]:
+			if _equipement.possede(str(regle[0])):
+				return str(regle[1])
 	return cle
 
 
 ## Une conversation vient de se terminer. Renvoie vrai si elle a fait avancer
 ## la mission — le controleur n'a alors rien d'autre a faire.
-func dialogue_fini(cle: String) -> bool:
+func dialogue_fini(cle_jouee: String) -> bool:
+	# UNE OUVERTURE ENCHAINE SUR SA SCENE, et n'emet rien elle-meme.
+	#
+	# Tuco vient de remarquer la boite d'oeufs ; la vente commence maintenant.
+	# On rend vrai pour dire au controleur qu'on a pris la main : sans ca il
+	# croirait la conversation close et rendrait le joueur a ses commandes au
+	# milieu du bureau de Tuco.
+	if OUVERTURES.has(cle_jouee) and _dialogue != null:
+		_dialogue.demarrer(str(OUVERTURES[cle_jouee]))
+		return true
 	if _mission == null:
 		return false
+	# Une variante fait avancer la mission comme son original. Voir VARIANTES :
+	# c'est ce qui evite que prendre les courses bloque la mission 1.
+	var cle := str(VARIANTES.get(cle_jouee, cle_jouee))
 	# L'argent et la fouille NE SONT PLUS ICI : ils se declenchent sur la
 	# replique qui les annonce — voir _sur_effet et le champ 'effet' dans
 	# donnees/dialogues.json. Les faire a la fin de la conversation les
@@ -514,8 +575,32 @@ func zone_atteinte(nom: String) -> void:
 	# jouent en fin d'apres-midi, quelle que soit l'heure a laquelle on y va.
 	if HEURES.has(nom):
 		_regler_l_heure(float(HEURES[nom]))
+	if nom == "camping":
+		_arriver_au_camping_car()
 	if _mission != null:
 		_mission.evenement("zone:" + nom)
+
+
+# ARRIVER AVEC LES COURSES SE PAIE.
+#
+# Si Walter debarque au camping-car avec la boite d'oeufs, c'est qu'il a fait
+# demi-tour pour passer a l'epicerie : Jesse a attendu, et Tuco attend derriere
+# lui. Le detour coute donc de la reputation de rue.
+#
+# Sans ce cout, prendre les oeufs serait meilleur sur tous les plans — et un
+# choix sans cout n'est pas un choix. C'est la regle numero deux de la
+# direction, et c'est tout le sujet de l'appel de Skyler : le detour coute du
+# temps, le retard coute une reputation.
+#
+# ON NE L'ANNONCE PAS, MAIS QUELQU'UN LE DIT. Le compteur baisse en silence,
+# comme tout le reste ; ce qui l'explique, c'est Jesse qui voit la boite —
+# voir REMPLACEMENTS_OBJET.
+func _arriver_au_camping_car() -> void:
+	if _equipement == null or not _equipement.possede("oeufs"):
+		return
+	var r := Reputation.courante(self)
+	if r != null:
+		r.tant_pis("retard")
 
 
 # ------------------------------------------------------------------- Jesse

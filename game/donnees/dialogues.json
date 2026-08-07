@@ -215,6 +215,69 @@
     ]
   },
 
+  "mission_jesse_camping_oeufs": {
+    "nom": "Jesse",
+    "sans_voix": true,
+    "_note": [
+      "MEME MOMENT, MAIS WALTER PORTE LA BOITE D'OEUFS.",
+      "",
+      "Il s'est arrete a l'epicerie en route : Jesse a attendu pour de bon, et",
+      "la reputation de rue vient de baisser. Sans cette version, le compteur",
+      "tombait sans que personne en parle — et un compteur qui bouge en",
+      "silence passe pour un bug.",
+      "",
+      "Jesse ne fait pas de morale : il constate, et c'est pire. Le detour est",
+      "nomme, la boite est nommee, et on enchaine — la scene ne s'arrete pas",
+      "dessus.",
+      "",
+      "Elle vaut « dialogue:mission_jesse_camping » pour la mission : voir",
+      "VARIANTES dans systemes/scenario.gd. Sans cette equivalence, prendre",
+      "les courses bloquait la mission 1."
+    ],
+    "conversations": [
+      [
+        { "qui": "Jesse",  "texte": "Vous etes en retard." },
+        { "qui": "Walter", "texte": "J'ai eu un empechement." },
+        { "qui": "Jesse",  "texte": "Un empechement." },
+        { "qui": "Jesse",  "texte": "... C'est quoi, dans votre main ?" },
+        { "qui": "Walter", "texte": "Des oeufs." },
+        { "qui": "Jesse",  "texte": "Des oeufs. Tuco attend, et vous avez fait les courses." },
+        { "qui": "Walter", "texte": "Junior voulait des pancakes." },
+        { "qui": "Jesse",  "texte": "Genial. Allons cuisiner, alors. L'autre cuisine." }
+      ]
+    ]
+  },
+
+  "mission_tuco_vente_oeufs": {
+    "nom": "Tuco",
+    "sans_voix": true,
+    "_note": [
+      "UNE OUVERTURE, PAS UNE SECONDE SCENE.",
+      "",
+      "Walter arrive chez Tuco avec la boite d'oeufs encore sur lui. Tuco",
+      "remarque tout — c'est ce qui le rend dangereux — et il ne s'enerve pas :",
+      "il s'amuse. C'est exactement pour ca qu'on n'est pas tranquille.",
+      "",
+      "CETTE FICHE NE REMPLACE PAS mission_tuco_vente, ELLE LA PRECEDE. Le",
+      "scenario enchaine sur la vraie scene des que celle-ci se termine — voir",
+      "dialogue_fini() dans systemes/scenario.gd.",
+      "",
+      "C'est ce qui evite de dupliquer vingt repliques et deux effets. Une",
+      "scene centrale recopiee pour trois lignes d'ouverture, c'est deux scenes",
+      "a maintenir, et le jour ou l'une change, l'autre ment."
+    ],
+    "conversations": [
+      [
+        { "qui": "Tuco",   "texte": "Le voila ! Le chimiste !" },
+        { "qui": "Tuco",   "texte": "... Attends. C'est quoi, ca ?" },
+        { "qui": "Walter", "texte": "Des oeufs." },
+        { "qui": "Tuco",   "texte": "Des oeufs. Tu as fait tes courses avant de venir me voir." },
+        { "qui": "Tuco",   "texte": "Ca veut dire qu'il y a une maison quelque part. Une femme, peut-etre." },
+        { "qui": "Walter", "texte": "Vous vouliez votre commande." }
+      ]
+    ]
+  },
+
   "mission_jesse_occupe": {
     "nom": "Jesse",
     "sans_voix": true,

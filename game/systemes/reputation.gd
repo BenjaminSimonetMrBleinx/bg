@@ -53,6 +53,14 @@ const PERTES = {
 	"recul": 8,
 	"delegue": 3,
 	"livraison_ratee": 6,
+	# ARRIVER EN RETARD PARCE QU'ON EST PASSE FAIRE LES COURSES.
+	#
+	# Moins cher qu'une livraison ratee : on arrive, mais on a fait attendre.
+	# C'est le prix du detour de la mission 1 — sans lui, prendre les oeufs
+	# serait meilleur sur tous les plans, et un choix sans cout n'est pas un
+	# choix. Les deux compteurs bougent alors en sens inverse, cote a cote a
+	# l'ecran : la famille monte quand on rentre, la rue baisse quand on tarde.
+	"retard": 5,
 }
 
 ## Ce que la purete ajoute a une livraison, par palier au-dessus du premier.

@@ -13,7 +13,90 @@ raconte la session.
 
 ---
 
-## Session du 7 aout 2026 — un remede qui dormait a cote du malade, et un camping-car qui n'etait jamais entre
+## Session du 7 aout 2026, deuxieme partie — la premiere fois qu'on JOUE
+
+**Début** : sur `v0.48.13`. **Fin** : sur `v0.49.0`, et trois releases publiées
+dans la soirée.
+
+### Ce qui était demandé
+
+Tester la mission 1 manette en main, puis fusionner deux choses qui existaient
+séparément : l'appel de Skyler, éprouvé dans une mission de test, et la boucle
+des courses, livrée le soir même.
+
+### Ce qui est livré
+
+| Version | Quoi |
+|---|---|
+| **0.48.14** | La cachette se voit et se trouve ; le klaxon s'entend |
+| **0.49.0** | **#53** — Skyler appelle pendant qu'on roule vers le désert. `F` décroche, `T` raccroche, laisser sonner coûte cinq points. Arriver avec les courses coûte une réputation, et Jesse comme Tuco le remarquent |
+
+Les formulaires de tickets ont aussi été remis d'aplomb, et tous les liens du
+dépôt corrigés — ils pointaient encore vers le dépôt **pro** d'avant le
+transfert, y compris le corps de chaque release publiée.
+
+### Les surprises
+
+**Trois parcours de test sur trois, sans un défaut.** Le désert, les courses et
+la mission 1 de bout en bout : tout ce qui avait été livré à l'aveugle dans la
+journée s'est révélé juste en jouant. C'est la première fois de ce projet.
+
+**Et le seul vrai blocage n'était pas une régression.** La cachette de fin de
+mission était introuvable — non pas cassée, mais **jamais trouvable** : aucune
+géométrie, posée à un mètre soixante du mur, à deux mètres soixante-dix en biais
+de la porte, dans un salon de quatorze mètres sur dix. Le tuto annonçait pourtant
+« une latte du mur n'est pas comme les autres ». C'est exactement le défaut de
+l'épicerie sans enseigne, corrigé la veille : **une adresse exacte que rien ne
+signale n'est pas une adresse.** Elle est désormais visible et collée près de la
+bibliothèque, le seul repère du salon.
+
+**Le klaxon ne s'entendait pas, et ce n'était ni le code ni l'atténuation.** Le
+fichier culmine à **16 % de l'échelle** quand la portière est à 99 %. Mesuré sur
+les `.wav`, pas deviné. Le rattrapage vit maintenant dans `sons.json` : un gain
+par mécanisme, en données, plutôt qu'un fichier livré réécrit. Quatorze fichiers
+sur soixante-quatre sont sous 40 % — seuls ceux qui gênent en jouant auront une
+ligne.
+
+**Une variante de dialogue peut bloquer une mission, et le symptôme apparaît
+trois écrans plus loin.** `dialogue_fini()` émet « dialogue:\<clé\> », et c'est
+ce qui fait avancer la mission. Jouer la version de Jesse où il voit les œufs
+émettait donc une clé inconnue : **prendre les courses aurait bloqué la mission
+1**, sans aucun rapport visible avec les œufs. Vu avant de coder, en lisant
+comment l'événement est émis — pas en jouant.
+
+**Une scène centrale ne se duplique pas pour trois lignes.** Tuco devait
+remarquer la boîte, mais sa scène fait vingt répliques et porte deux effets,
+l'argent et la fouille. La recopier aurait donné deux scènes à maintenir, et le
+jour où l'une change, l'autre ment. On joue donc une **ouverture** courte, et le
+scénario enchaîne sur la vraie — zéro duplication.
+
+**Une protection peut être correcte et le résultat faux quand même.** Pendant
+que le téléphone sonnait, l'écran proposait « F Décrocher / T Raccrocher » **et**
+« F Descendre ». L'action était bien protégée depuis le début ; c'est l'invite
+qui restait. Et la première correction — ne plus appeler `_afficher()` — n'a rien
+changé : **l'invite garde son dernier texte tant que personne ne lui en donne un
+autre.** Il fallait l'effacer, pas se taire. Vu à la capture, deux fois.
+
+**Deux suites de tests sont cassées, et ce n'est pas nous.** `sons` et
+`sauvegarde` s'arrêtent sans un mot. Vérifié en revenant à la version livrée : le
+même arrêt, sans nos changements. C'est le réflexe du piège 22 — refaire le geste
+avec quelque chose qui marchait déjà — et il a servi trois fois dans la soirée.
+
+### Où on reprend
+
+**Une passe globale sur le dépôt**, demandée en fin de session : épurer,
+homogénéiser, clarifier. Avec une question de fond derrière — **comment organiser
+le travail sans un backlog verbeux qu'on ne fera jamais.** Des objectifs clairs,
+un ordre de priorité, des testeurs, des processus courts. À creuser en
+s'appuyant sur la façon dont les jeux se développent vraiment : dans quel ordre,
+comment on teste, comment on traite la 3D et les voix.
+
+**Les deux suites cassées** — `sons` et `sauvegarde` — n'ont pas été
+diagnostiquées, seulement disculpées.
+
+**Et toujours la manette** : l'appel de Skyler n'a jamais été joué en conditions
+réelles. Les vingt secondes de conduite, le choix de décrocher ou pas, le
+demi-tour vers l'épicerie : tout ça est mesuré et capturé, rien n'est *vécu*.
 
 **Début** : 07/08, sur `v0.48.10`. **Fin** : sur `v0.48.12`, deux releases
 publiées après deux jours de silence.
