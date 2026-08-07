@@ -34,6 +34,13 @@ param(
     [double]$Hauteur = 0.0,
     [double]$Lacet = 0.0,
 
+    # Pour 'integrer' : le degraissage au budget du jeu. Voir la charte dans
+    # docs\03-conventions-assets.md, et le banc de comparaison graphique quand
+    # le niveau se discute — plus beau ne se tranche pas dans le vide.
+    [int]$Triangles = 0,
+    [int]$TextureMax = 0,
+    [switch]$Plat,
+
     [int]$Blocs = 2,
 
     # Ou deposer le joueur au lancement : 'banc', 'desert', 'jesse',
@@ -403,9 +410,20 @@ switch ($Commande) {
         Push-Location $Racine
         try {
             Write-Host "`n--- integration de $(Split-Path $Fichier -Leaf) ---" -ForegroundColor Cyan
+            # LE DEGRAISSAGE PASSE PAR ICI, ou il ne passe pas du tout.
+            #
+            # Un modele livre arrive au budget de son auteur : le camping-car
+            # de Guillaume pesait 17 828 triangles et 15 Mo de textures PBR,
+            # pour un jeu ou une maison en fait 50 a 300. Sans ces options,
+            # integrer aurait rendu le fichier tel quel et le dossier se
+            # serait rempli d assets hors charte, un par livraison.
+            $degraissage = @()
+            if ($Triangles -gt 0)  { $degraissage += @('--triangles', $Triangles) }
+            if ($TextureMax -gt 0) { $degraissage += @('--texture-max', $TextureMax) }
+            if ($Plat)             { $degraissage += '--plat' }
             & $Blender -b -P outils/importer_modele.py -- `
                 --fichier $Fichier --sortie $Vers `
-                --hauteur $Hauteur --lacet $Lacet
+                --hauteur $Hauteur --lacet $Lacet @degraissage
             if ($LASTEXITCODE -ne 0) { throw "l import a echoue" }
 
             # La seconde passe ne sert que pour les modeles RIGGES : sans

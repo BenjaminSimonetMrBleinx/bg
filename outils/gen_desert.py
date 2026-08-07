@@ -538,9 +538,24 @@ def main() -> None:
         faces, lieux = terrain(mats, dunes)
         return faces + cactus(mats, a.seed, dunes)
 
+    # LE CAMPING-CAR N EST PLUS FABRIQUE ICI, et c est deliberé.
+    #
+    # Il est desormais le modele livre par Guillaume, integre le 07/08/2026 par
+    # `bg.ps1 integrer` vers ce meme chemin. Le laisser dans cette table
+    # signifiait qu un `generer` lance pour une tout autre raison — un cactus,
+    # une dune, la couleur de l asphalte — ecrasait sa livraison sans rien
+    # dire. C est le piege 11, et il a deja coute le Jesse de Guillaume.
+    #
+    # Le generateur garde ce qu il est seul a savoir : OU se trouve le
+    # camping-car. camping_car_xy() suit la piste qui serpente, et la position
+    # continue d etre publiee dans desert_lieux.json. Le terrain au
+    # generateur, les objets a Guillaume.
+    #
+    # La fonction camping_car() est conservee juste en dessous : elle sait
+    # rebatir une caisse de secours si la livraison venait a manquer, et ses
+    # cotes documentent l encombrement attendu.
     for nom, besoins, batir in [
         ("desert", ["desert", "asphalte", "cactus"], batir_desert),
-        ("camping_car", ["camping_car", "vitre", "pneu"], camping_car),
     ]:
         bpy.ops.wm.read_factory_settings(use_empty=True)
         mats = {m: materiau(m, textures) for m in besoins}

@@ -13,15 +13,16 @@ raconte la session.
 
 ---
 
-## Session du 7 aout 2026 — un bug, cinq symptomes, et un remede qui dormait a cote du malade
+## Session du 7 aout 2026 — un remede qui dormait a cote du malade, et un camping-car qui n'etait jamais entre
 
-**Début** : 07/08, sur `v0.48.10`. **Fin** : sur `v0.48.11`, et une release enfin
-publiée.
+**Début** : 07/08, sur `v0.48.10`. **Fin** : sur `v0.48.12`, deux releases
+publiées après deux jours de silence.
 
 ### Ce qui était demandé
 
 Reprendre par #48, comme le journal de la veille le disait : la mission de Tuco
-est cassée depuis l'ouverture du désert.
+est cassée depuis l'ouverture du désert. Puis, une fois #48 clos, finir #51 — le
+camping-car de Guillaume, jamais intégré.
 
 ### Ce qui est livré
 
@@ -34,9 +35,9 @@ deux :
 | **#50** | Jesse, la porte et la sortie du désert s'ancrent sur les lieux publiés au lieu de les recopier. Trois distances mesurées par le test |
 | — | Les situations de capture du camping-car se posent **autour** du véhicule (`autour` dans `scenarios.json`) |
 | — | **Release `v0.48.11` publiée**. La dernière datait du 5 août en 0.40.0 : Guillaume téléchargeait un jeu sans les trois compteurs, sans écran-titre et sans sauvegarde |
+| **#51** | **0.48.12** — le camping-car de Guillaume entre dans le jeu, dégraissé à 8 000 triangles ; `integrer` sait désormais dégraisser ; le générateur ne fabrique plus de camping-car |
 
-Côté tickets : **#48 fermé**, **#50 créé et fermé**, **#51 ouvert** (le
-camping-car livré, pour Guillaume).
+Côté tickets : **#48, #50 et #51 fermés**.
 
 ### Les surprises
 
@@ -87,6 +88,40 @@ qu'il est encore vrai.
 dernière release téléchargeable datait du 5 août : onze versions de retard. Un
 bump sans tag ne livre rien, et personne ne s'en aperçoit du côté qui bumpe.
 
+**Le budget d'un asset se mesure, il ne se décide pas.** Le camping-car livré
+pesait 17 828 triangles pour un budget de 2 000, et la question « on garde
+quoi ? » n'avait aucune bonne réponse sur le papier. Cinq niveaux ont été
+produits et posés côte à côte sur le banc graphique du désert — l'outil existait
+depuis longtemps et n'avait jamais servi à ça. La planche a tranché en une
+image : **à 2 000 la carrosserie se froisse et devient une épave**, à 4 000 la
+jupe reste bosselée, et **à partir de 8 000 la silhouette cesse de bouger**.
+Entre 8 000 et 17 828, plus de différence visible — huit fois le poids pour
+rien. Aucun de ces trois faits n'était devinable.
+
+**Un modèle entièrement blanc, et sa couleur était pourtant là.** En jetant les
+canaux PBR inutiles, on avait débranché la texture émissive — sans écrire de
+valeur à la place. L'entrée « émission » du shader vaut blanc plein par défaut :
+la texture ne faisait que la moduler, et le lien coupé a **découvert** ce blanc
+au lieu de l'annuler. Trois variantes sont sorties comme des blocs de neige.
+**Débrancher n'est pas neutraliser** — piège 20, trouvé en lisant le bloc
+`materials` du fichier produit, pas dans Blender.
+
+**Une image et un test se sont contredits, et les deux avaient raison.** La
+capture montrait Walter dehors, contre le flanc, devant la porte ; le test
+annonçait le point d'entrée à 1,20 m **dans** la coque. La coque est aussi la
+collision : la physique avait éjecté Walter du volume avant la prise de vue.
+**L'image montrait où il finit, pas où on l'avait mis.** C'est le piège 21, et
+c'est le contraire exact de la règle d'or — ici l'image mentait et le nombre
+disait vrai. La leçon n'est pas de préférer l'un à l'autre : quand les deux se
+contredisent, ils ne répondent pas à la même question, et il faut trouver
+laquelle avant de corriger.
+
+**Un avertissement de dépréciation suffit à casser une commande.** `bg.ps1
+integrer` a échoué net sur un `DeprecationWarning` de Blender 5.2 : PowerShell
+traite la moindre ligne de stderr d'un binaire natif comme une erreur. Le script
+Python marchait parfaitement. Un outil qui marche mais qu'on ne peut plus
+appeler est un outil cassé.
+
 ### Où on reprend
 
 **#49** : l'épicerie est encore un bouton qu'on peut marteler. Quatre dollars,
@@ -99,11 +134,15 @@ mais jouer trouve ce que tester ne trouve pas — la session précédente l'a
 rappelé cinq fois de suite.
 
 **En attente ailleurs** : #47 (l'objet tenu ne revient plus après une reprise),
-#51 (le camping-car livré — il pèse 17 Mo, la charte en demande beaucoup moins,
-et ça se décide à deux), un système de **dialogue à choix** que réclament #31,
-#35 et #29, et dix tickets jamais passés en revue (#34 à #45). Guillaume : les
-rigs de passants, les voix, le formulaire de mission — et maintenant il a un jeu
-à jour pour les écrire.
+un système de **dialogue à choix** que réclament #31, #35 et #29, et dix tickets
+jamais passés en revue (#34 à #45). Guillaume : les rigs de passants, les voix,
+le formulaire de mission — et maintenant il a un jeu à jour pour les écrire, avec
+son camping-car dedans.
+
+**Une chose à surveiller** : la chaîne d'intégration sait dégraisser, mais elle
+ne le fait que si on le lui demande. Le prochain modèle livré passera au budget
+de son auteur si personne ne pense aux options. La charte porte l'exception des
+repères ; elle ne porte pas encore de garde-fou automatique.
 
 ---
 

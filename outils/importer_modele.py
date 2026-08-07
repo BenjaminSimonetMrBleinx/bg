@@ -48,6 +48,13 @@ def arguments() -> argparse.Namespace:
                     help="rotation autour de la verticale, en degres")
     ap.add_argument("--couleur", default="",
                     help="texture a appliquer, prise dans .tmp/textures")
+    ap.add_argument("--triangles", type=int, default=0,
+                    help="decime jusqu a ce nombre de triangles, 0 pour ne pas toucher")
+    ap.add_argument("--texture-max", type=int, default=0, dest="texture_max",
+                    help="cote maximal des textures en pixels, 0 pour ne pas toucher")
+    ap.add_argument("--plat", action="store_true",
+                    help="ne garde que la couleur de base : jette la normale, "
+                         "le metallique, la rugosite et l emission")
     return ap.parse_args(argv)
 
 
@@ -83,6 +90,120 @@ def boite(objets) -> tuple:
                 mini[i] = min(mini[i], p[i])
                 maxi[i] = max(maxi[i], p[i])
     return mini, maxi
+
+
+def triangles_de(obj) -> int:
+    """Le compte en TRIANGLES, pas en faces.
+
+    Un quad est une face et deux triangles. Compter les faces sous-estime un
+    modele modelise proprement d un facteur deux, et c est le budget en
+    triangles que la charte fixe.
+    """
+    return sum(len(p.vertices) - 2 for p in obj.data.polygons)
+
+
+def decimer(obj, cible: int) -> None:
+    """Ramene le maillage a la cible, et DIT ce qu il a obtenu.
+
+    Le decimateur ne tombe jamais pile sur le nombre demande : il effondre des
+    aretes jusqu a approcher le ratio. On imprime donc le resultat reel, parce
+    que c est lui qui compte et pas la consigne.
+    """
+    avant = triangles_de(obj)
+    if cible <= 0 or avant <= cible:
+        print("triangles %d, sous la cible : rien a decimer" % avant)
+        return
+    m = obj.modifiers.new("decimation", "DECIMATE")
+    m.decimate_type = "COLLAPSE"
+    m.ratio = cible / avant
+    bpy.ops.object.modifier_apply(modifier=m.name)
+    print("decimation %d -> %d triangles (cible %d)"
+          % (avant, triangles_de(obj), cible))
+
+
+def aplatir(mat) -> None:
+    """Ne garde que la couleur de base d un materiau.
+
+    Le rendu du jeu est plat : pas de normale, pas de metallique, pas de
+    rugosite par texture. Un modele livre en PBR complet arrive avec quatre
+    images dont trois ne seront jamais lues â€” elles ne changeraient rien a
+    l ecran et pesent l essentiel du fichier.
+
+    On coupe TOUT ce qui entre dans le shader sauf la couleur de base, plutot
+    que d enumerer les noms des entrees : ils changent d une version de Blender
+    a l autre, et une liste qui vieillit laisse passer ce qu elle ne connait
+    pas.
+    """
+    # ON INTERROGE node_tree, PAS use_nodes.
+    #
+    # `Material.use_nodes` est deprecie et disparait en Blender 6 : l appeler
+    # ecrit un avertissement sur la sortie d ERREUR, ce qui suffit a faire
+    # echouer `bg.ps1 integrer` — PowerShell traite la moindre ligne de stderr
+    # d un binaire natif comme une erreur. Un outil qui marche mais qu on ne
+    # peut plus appeler est un outil casse.
+    if mat is None or mat.node_tree is None:
+        return
+    principal = next((n for n in mat.node_tree.nodes
+                      if n.type == "BSDF_PRINCIPLED"), None)
+    if principal is None:
+        return
+    for lien in list(mat.node_tree.links):
+        if lien.to_node == principal and lien.to_socket.name != "Base Color":
+            mat.node_tree.links.remove(lien)
+    principal.inputs["Metallic"].default_value = 0.0
+    principal.inputs["Roughness"].default_value = 0.95
+
+    # COUPER UN LIEN NE REMET PAS LA VALEUR PAR DEFAUT — il decouvre celle qui
+    # etait dessous, et elle n a jamais servi.
+    #
+    # L emission du Principled vaut blanc, force 1. Tant qu une texture
+    # emissive y est branchee, elle module cette valeur et tout va bien. Le
+    # lien coupe, il reste un blanc plein : le materiau EMET, l export ecrit
+    # emissiveFactor [1, 1, 1], et le modele apparait entierement blanc dans le
+    # jeu — sa couleur de base est bien la, elle est juste noyee. Trois
+    # variantes sont sorties comme des blocs de neige avant qu on lise le
+    # materiau du fichier produit.
+    for nom in ("Emission Strength",):
+        if nom in principal.inputs:
+            principal.inputs[nom].default_value = 0.0
+    for nom in ("Emission Color", "Emission"):
+        if nom in principal.inputs:
+            try:
+                principal.inputs[nom].default_value = (0.0, 0.0, 0.0, 1.0)
+            except (TypeError, ValueError):
+                pass
+    # LES ORPHELINS SE SUPPRIMENT EN CASCADE, et il faut boucler.
+    #
+    # Une normale passe par un noeud Normal Map avant d atteindre le shader :
+    # couper le lien final rend ce noeud orphelin, mais l image reste accrochee
+    # A LUI et parait donc encore utilisee. Une seule passe laissait ainsi deux
+    # textures dans la scene â€” l export ne les prenait pas, mais le
+    # redimensionnement les traitait et la sortie annoncait trois textures pour
+    # un fichier qui n en contient qu une.
+    encore = True
+    while encore:
+        encore = False
+        for n in list(mat.node_tree.nodes):
+            if n.type in ("TEX_IMAGE", "NORMAL_MAP", "SEPARATE_COLOR", "MAPPING",
+                          "TEX_COORD") and not any(s.is_linked for s in n.outputs):
+                mat.node_tree.nodes.remove(n)
+                encore = True
+
+
+def reduire_les_textures(mat, maxi: int) -> None:
+    """Ramene chaque image a un cote maximal, en puissance de deux."""
+    if mat is None or mat.node_tree is None or maxi <= 0:
+        return
+    for n in mat.node_tree.nodes:
+        if n.type != "TEX_IMAGE" or n.image is None:
+            continue
+        largeur, hauteur = n.image.size
+        if max(largeur, hauteur) <= maxi:
+            continue
+        f = maxi / max(largeur, hauteur)
+        n.image.scale(max(1, int(largeur * f)), max(1, int(hauteur * f)))
+        print("texture   %s : %dx%d -> %dx%d"
+              % (n.image.name, largeur, hauteur, *n.image.size))
 
 
 def main() -> None:
@@ -196,6 +317,18 @@ def main() -> None:
         obj.data.materials.clear()
         obj.data.materials.append(mat)
 
+    # LE DEGRAISSAGE VIENT EN DERNIER, une fois la geometrie posee.
+    #
+    # Un modele livre arrive au budget de son auteur, pas a celui du jeu. Ce
+    # projet vise le rendu PS2 : la charte parle de contraintes esthetiques et
+    # non de performance, et un vehicule beaucoup plus fin que les maisons
+    # autour de lui se voit davantage qu un modele rate.
+    decimer(obj, a.triangles)
+    for mat in obj.data.materials:
+        if a.plat:
+            aplatir(mat)
+        reduire_les_textures(mat, a.texture_max)
+
     sortie = Path(a.sortie)
     if not sortie.is_absolute():
         sortie = racine / sortie
@@ -218,6 +351,14 @@ def main() -> None:
     mini, maxi = boite([obj])
     print("godot     X %.2f  Y %.2f  Z %.2f" % (
         maxi[0] - mini[0], maxi[2] - mini[2], maxi[1] - mini[1]))
+    # ON MESURE LE FICHIER ECRIT, pas la scene qui l a produit. C est la regle
+    # la plus chere du projet, et elle a ete apprise quatre fois : un outil
+    # annonce un nombre juste et ecrit un fichier faux.
+    if sortie.exists():
+        print("produit   %.2f Mo, %d triangles dans la scene"
+              % (sortie.stat().st_size / 1048576.0, triangles_de(obj)))
+    else:
+        raise SystemExit("rien n a ete ecrit : %s" % sortie)
     print("sortie    %s" % sortie)
 
 

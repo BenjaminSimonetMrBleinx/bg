@@ -66,6 +66,38 @@ Les WAV passent par Git LFS, déjà configuré. Pour situer : une boucle moteur 
 Ce ne sont pas des plafonds de performance — une machine moderne encaisserait cent fois
 plus. Ce sont des **contraintes esthétiques** : au-delà, ça ne ressemble plus à un jeu PS2.
 
+### L'exception des repères — décidée le 07/08/2026
+
+**Un objet qui est le seul point de repère de sa zone a droit à quatre fois son budget.**
+Le camping-car du désert est à **8 000 triangles** et une texture **1024**, contre 2 000 et
+128 pour la règle générale.
+
+Ce n'est pas un renoncement, c'est une mesure. Le modèle livré par Guillaume en faisait
+17 828, et les cinq niveaux ont été comparés **dans le jeu**, côte à côte sur le banc
+graphique du désert :
+
+![Les cinq niveaux du camping-car](images/camping-car-niveaux.png)
+
+Ce que la planche montre, et qu'aucun chiffre n'aurait dit :
+
+- à **2 000**, la décimation mange les surfaces planes : le flanc ondule et les montants de
+  fenêtre se tordent. Ce n'est plus un camping-car sale, c'est une épave accidentée ;
+- à **4 000**, la jupe et le bas de caisse restent bosselés — précisément le côté par lequel
+  on entre ;
+- à **8 000**, la silhouette est propre et **cesse de bouger** : entre 8 000 et les 17 828
+  d'origine, on ne distingue plus la géométrie. Tout ce qui reste se joue sur la texture,
+  et elle coûte huit fois moins cher (2,1 Mo contre 16,2).
+
+**La règle qu'on en tire :** le saut de qualité se trouve, il ne se devine pas. Avant de
+choisir un budget pour un asset qui compte, produire trois niveaux et les regarder — c'est
+à ça que sert le banc, et ça coûte une soirée de moins qu'un mauvais choix.
+
+**Ce que l'exception ne couvre pas :** le décor ordinaire. Une maison reste entre 50 et 300
+triangles. Un camping-car à 8 000 au milieu de maisons à 200 se remarque, et c'est voulu —
+c'est le seul objet du désert, on roule vingt secondes pour l'atteindre et on s'en approche
+à pied. Étendre ça au mobilier de rue ferait perdre le grain du jeu sans que personne y
+gagne.
+
 ### Textures
 
 - **128 × 128** par défaut, **256 × 256** pour un asset héros qu'on regarde de près,

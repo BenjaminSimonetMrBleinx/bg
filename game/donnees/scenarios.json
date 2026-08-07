@@ -1319,13 +1319,13 @@
      "image": 30,
      "autour": "CampingCar",
      "camera": [
-      -11,
-      4,
-      12
+      -2,
+      11,
+      11
      ],
      "vise": [
       0,
-      1.5,
+      1,
       0
      ]
     }
@@ -1386,7 +1386,7 @@
    ]
   },
   "camping_car_porte": {
-   "quoi": "Le camping-car vu en plongee, avec Walter pose sur le point d'entree : on doit le voir DEHORS et contre le flanc, pas sur le toit ni dans la tole. La vue etait a la verticale exacte, donc sans haut ni bas — une image ou l'on ne pouvait rien trancher. Elle visait en plus des coordonnees ecrites a la main et photographiait du sable a vingt-neuf metres du vehicule. Le modele montre est CELUI DU GENERATEUR : celui livre par Guillaume n'a jamais ete integre, et tant qu'il ne l'est pas cette vue ne peut pas dire si les deux portes coincident.",
+   "quoi": "Walter pose sur le point d'entree, vu de face contre le flanc : la SEULE question est de savoir si la porte du jeu tombe sur la porte du modele. La vue etait large et en plongee, ce qui montrait bien qu'il etait dehors mais ne tranchait pas celle-la. Elle a d'abord vise des coordonnees ecrites a la main et photographie du sable a vingt-neuf metres du vehicule, puis elle a ete posee a la verticale exacte — une image sans haut ni bas.",
    "fin": 70,
    "etapes": [
     {
@@ -1394,9 +1394,9 @@
      "autour": "CampingCar",
      "placer": "Joueur",
      "pos": [
-      -2.0,
+      1.75,
       0.4,
-      1.0
+      1.27
      ]
     },
     {
@@ -1404,13 +1404,13 @@
      "autour": "CampingCar",
      "camera": [
       -1,
-      9,
+      2.4,
       9
      ],
      "vise": [
-      0,
-      1,
-      0
+      -1.5,
+      1.4,
+      0.5
      ]
     }
    ]

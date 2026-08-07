@@ -275,3 +275,47 @@ la main se périme le jour où le générateur bouge ce qu'elle photographie, et
 elle ne le dit pas. Une vue se pose **autour de ce qu'elle montre** — c'est ce
 que fait `autour` dans `scenarios.json`. Et jamais à la verticale exacte : il
 faut un angle, sinon l'image n'a pas d'orientation et on y lit ce qu'on veut.
+
+---
+
+## 20. Couper un lien ne remet pas la valeur par défaut, il découvre celle du dessous
+
+Trois variantes du camping-car sont sorties **entièrement blanches**, alors que
+leur texture de couleur était bien dans le fichier et correctement liée.
+
+La cause : en jetant les canaux PBR inutiles, on avait coupé le lien de la
+texture **émissive** vers le shader. Or l'entrée « émission » d'un Principled
+vaut blanc, force 1, par défaut — la texture ne faisait que la moduler. Le lien
+coupé, il restait un blanc plein : le matériau émettait, l'export écrivait
+`emissiveFactor: [1, 1, 1]`, et la couleur de base était noyée dessous.
+
+**La parade.** Après avoir débranché une entrée, **écrire la valeur neutre**
+qu'on veut voir à la place. Débrancher n'est pas neutraliser.
+
+**Comment on l'a trouvé** : en lisant le bloc `materials` du `.glb` produit, pas
+en regardant Blender. La scène Blender était juste ; c'est le fichier qui
+portait le défaut, et c'est encore la règle numéro un du projet.
+
+---
+
+## 21. Une capture montre où un objet FINIT, pas où on l'a posé
+
+Le point d'entrée du camping-car a été placé, puis photographié avec Walter
+dessus : l'image le montrait **dehors, contre le flanc, devant la porte**.
+Impeccable. Le test, lui, annonçait le point **1,20 m à l'intérieur de la
+coque**.
+
+Les deux avaient raison. La coque du véhicule est aussi sa **collision** : la
+capsule du joueur, téléportée dans le volume, en avait été **éjectée par la
+physique** dans les images qui précèdent la prise de vue. La photo montrait
+l'endroit où Walter s'était stabilisé, pas celui où on l'avait mis.
+
+**La parade.** Un scénario qui `place` quelque chose puis photographie ne prouve
+la position que si rien ne peut la corriger entre-temps. Pour un point qui doit
+être *atteignable*, mesurer la géométrie — `test_desert.gd` interroge désormais
+la boîte de la coque et imprime la marge en mètres, négative dedans, positive
+dehors.
+
+**Et la leçon de méthode :** quand une image et un nombre se contredisent, aucun
+des deux ne ment forcément. Ils ne répondent simplement pas à la même question,
+et il faut trouver laquelle avant de corriger quoi que ce soit.

@@ -115,6 +115,7 @@ func _scenario() -> void:
 			var d := n.global_position.distance_to(cc.global_position)
 			_verifier(d < 6.0,
 					"%s est contre le camping-car (%.1f m)" % [attendu[1], d])
+			_verifier_dehors(cc, n, str(attendu[1]))
 
 	# JESSE SE TAIT TANT QUE RIEN NE L'A AMENE LA.
 	#
@@ -252,6 +253,42 @@ func _scenario() -> void:
 	else:
 		printerr("TEST DESERT ECHOUE : %d probleme(s)" % _erreurs.size())
 		quit(1)
+
+
+# CONTRE LA TOLE, PAS DEDANS.
+#
+# « A moins de six metres du centre » ne suffit pas : un camping-car fait neuf
+# metres de long sur trois de large, et la moitie de cette sphere est a
+# l'interieur. Jesse s'y est retrouve en beaute — invisible sur deux captures,
+# encastre dans la cellule.
+#
+# On interroge la COQUE, la boite que desert.gd calque sur l'encombrement reel
+# du modele. Elle est mesuree sur la geometrie livree, donc elle suit le
+# vehicule quand celui-ci change — et il a change deux fois.
+#
+# La marge est imprimee dans les deux cas : savoir de combien on est dehors
+# vaut mieux que savoir qu'on l'est.
+func _verifier_dehors(cc: Node3D, n: Node3D, quoi: String) -> void:
+	var coque := cc.get_node_or_null("Coque")
+	if coque == null or coque.get_child_count() == 0:
+		_verifier(false, "le camping-car a une coque a interroger")
+		return
+	var forme := coque.get_child(0) as CollisionShape3D
+	var boite := forme.shape as BoxShape3D
+	if forme == null or boite == null:
+		_verifier(false, "la coque est bien une boite")
+		return
+	var p := cc.to_local(n.global_position) - forme.position
+	var demi := boite.size * 0.5
+	# La marge horizontale : negative dedans, positive dehors. On ignore la
+	# verticale — quelqu'un pose au sol est toujours « sous » le toit.
+	var marge := maxf(absf(p.x) - demi.x, absf(p.z) - demi.z)
+	_verifier(marge > 0.0,
+			"%s est DEHORS (%.2f m de la tole)" % [quoi, marge])
+	# De quoi corriger sans tatonner : ou le point tombe dans le repere du
+	# vehicule, et de combien la caisse deborde.
+	print("       %s : local (%.2f, %.2f), demi-caisse (%.2f, %.2f)"
+			% [quoi, p.x, p.z, demi.x, demi.z])
 
 
 func _trouver(n: Node, nom: String) -> Node:

@@ -141,6 +141,42 @@ d'œufs dans l'inventaire, et Skyler qui réagit quand tu rentres. Ticket #49.
 
 ---
 
+## 0.48.12 — Le camping-car de Guillaume est dans le jeu
+
+> **À essayer : va au désert et approche-toi du camping-car.** Ce n'est plus la
+> caisse à 130 triangles fabriquée par le générateur — c'est **ton modèle**. Il
+> y est enfin, et la porte du jeu tombe sur ta porte.
+
+![Le camping-car livré, et le point d'entrée](docs/images/camping-car-porte.png)
+
+**Il n'y avait jamais été.** Le fichier dormait dans `livraisons/` depuis le
+début, pendant que deux commentaires du code affirmaient le contraire. Ce qu'on
+voyait en jouant, c'était une boîte grise.
+
+**Ce qui a changé pour l'intégrer :**
+
+- Le modèle est **dégraissé au budget du jeu** : 8 000 triangles au lieu de
+  17 828, une seule texture 1024 au lieu de quatre en 2048. Il pèse 2,1 Mo au
+  lieu de 16,2.
+- Le générateur du désert **ne fabrique plus de camping-car**. Il ne peut donc
+  plus écraser ta livraison — c'est ce qui était arrivé à ton Jesse.
+- Jesse et la porte d'entrée ont été replacés sur le vrai véhicule : la porte
+  tombait trois mètres à côté, devant une trappe de soute.
+
+**Pourquoi 8 000 et pas 17 828.** Les cinq niveaux ont été comparés dans le jeu,
+côte à côte — voir `docs/03-conventions-assets.md`, la planche y est. En dessous
+de 4 000, la carrosserie se froisse et ça fait épave. À partir de 8 000, la
+silhouette ne bouge plus : entre 8 000 et ton modèle complet, on ne voit plus la
+différence de géométrie. Le reste se jouait sur la texture, huit fois moins
+chère.
+
+**Pour la prochaine livraison, si tu veux gagner du temps :** vise ~8 000
+triangles et une seule texture couleur. La normale, le metallic/roughness et
+l'émissive ne sont pas lues par le rendu du jeu — il est plat, comme sur PS2.
+Ça ne change rien à l'écran et ça divise le poids par huit.
+
+---
+
 ## 0.48.11 — Le désert redevient un endroit où l'on va, et d'où l'on revient
 
 > **À essayer : va au désert avant d'avoir commencé quoi que ce soit.** Jesse est

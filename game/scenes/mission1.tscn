@@ -181,23 +181,31 @@ suivre_le_cap = false
 ; qu'on l'ouvre. La condition a change de place, pas de sens : elle est passee
 ; de la porte au personnage, et c'est la qu'elle aurait toujours du etre.
 [node name="JesseDehors" type="Node3D" parent="CampingLab"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, 0, 2.6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.02, 0, 2.0)
 script = ExtResource("1_pnj")
 cle = "mission_jesse_camping"
 geometrie = ExtResource("7_jesse")
 etape_minimale = "voiture"
 
-; SUR LE FLANC, PAS SUR LE CAPOT.
+; SUR LA PORTE DU MODELE, ET NULLE PART AILLEURS.
 ;
-; Le camping-car etait une boite generee de sept metres ; c'est maintenant le
-; modele livre par Guillaume, plus long de deux metres et oriente autrement.
-; L'ancien point d'entree, pose a 3,40 m vers +Z, se retrouvait devant le
-; PARE-BRISE : on entrait par le nez du vehicule.
+; Le camping-car a ete DEUX FOIS un autre vehicule : une boite generee de sept
+; metres, puis — depuis le 07/08/2026 seulement — le modele livre par
+; Guillaume, long de 9,20 m et oriente autrement. A chaque fois le point
+; d'entree est reste ou il etait.
 ;
-; Verifie a l'image, et c'est le seul moyen de le verifier :
+; Le commentaire precedent affirmait deja que ce point avait ete cale sur le
+; modele livre. C'etait faux : la livraison n'avait jamais ete integree, et la
+; capture censee le prouver photographiait du sable a vingt-neuf metres de la.
+;
+; Cette position-ci a ete trouvee A L'IMAGE, en posant Walter et en regardant
+; ou il tombait : trois metres a gauche de la vraie porte, devant une trappe de
+; soute. La porte du modele a une fenetre et une marche, on ne peut pas la
+; confondre.
+;
 ;   .\bg.ps1 capture -Scenario camping_car_porte
 [node name="PorteCampingCar" type="Node3D" parent="CampingLab"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.0, 0, 1.0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.75, 0, 1.27)
 script = ExtResource("2_point")
 invite = "Entrer dans le camping-car"
 etape_minimale = "entrer_camping"
