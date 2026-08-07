@@ -42,7 +42,7 @@ ton chemin contient `OneDrive`, choisis autre chose.
 ### Récupérer le projet
 
 ```powershell
-git clone https://github.com/BenjaminSimonetMrBleinx/bg.git
+git clone https://github.com/benjibleinx-perso/bg.git
 cd bg
 ```
 

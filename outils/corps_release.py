@@ -15,7 +15,7 @@ motif = r"(?ms)^## %s\b.*?(?=^## |\Z)" % re.escape(version)
 trouve = re.search(motif, notes)
 section = trouve.group(0).strip() if trouve else "Voir NOTES-DE-VERSION.md."
 
-depot = "https://github.com/BenjaminSimonetMrBleinx/bg"
+depot = "https://github.com/benjibleinx-perso/bg"
 zip_ = "BG-%s-windows.zip" % version
 lien = "%s/releases/download/v%s/%s" % (depot, version, zip_)
 

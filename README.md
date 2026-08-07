@@ -40,7 +40,7 @@ F. Rien de ce qui a été fait n'en dépendait. La suite, si.
 
 ## Jouer — sans rien installer
 
-**[→ Télécharger la dernière version](https://github.com/BenjaminSimonetMrBleinx/bg/releases/latest)**
+**[→ Télécharger la dernière version](https://github.com/benjibleinx-perso/bg/releases/latest)**
 
 Un `.zip`, un `.exe` dedans, double-clic. Pas de Godot, pas de Blender, pas de
 Python, pas de compte, rien à cloner. C'est ce qu'il faut à quelqu'un qui veut
@@ -96,15 +96,15 @@ Rééquiper l'outil qu'on tient déjà le range — c'est le seul moyen de reven
 
 ## Un bug, une idée, une envie
 
-**Tout se passe au même endroit : [les tickets](https://github.com/BenjaminSimonetMrBleinx/bg/issues).**
+**Tout se passe au même endroit : [les tickets](https://github.com/benjibleinx-perso/bg/issues).**
 
 Le bouton **New issue** propose un formulaire selon ce que tu viens faire — signaler un bug,
-proposer une idée, lancer une feature, dire qu'un fichier est prêt. Aucun ne demande de
-classer quoi que ce soit.
+proposer une idée, lancer une feature, écrire un dialogue, dire qu'un fichier est prêt.
+Aucun ne demande de classer quoi que ce soit : chacun pose déjà ses étiquettes.
 
-La **[feuille de route](https://github.com/BenjaminSimonetMrBleinx/bg/issues/22)** est
-épinglée en haut de la liste : ce qui est prévu, dans l'ordre, et ce que l'assistant attend
-de vous pour avancer.
+Les tickets 🔥 **maintenant** sont ce sur quoi on travaille ; les 🧊 **plus tard** attendent.
+Le propriétaire est sur l'étiquette : 🤖 pour le code, 🎨 pour Guillaume, 🎮 pour une
+décision de Benjamin.
 
 Le mode d'emploi complet : [`docs/09-communiquer.md`](docs/09-communiquer.md).
 
@@ -276,7 +276,7 @@ partir d'une nouvelle session.
 winget install --id Git.Git -e
 # fermer PowerShell, en rouvrir un
 cd $HOME\Documents
-git clone https://github.com/BenjaminSimonetMrBleinx/bg.git
+git clone https://github.com/benjibleinx-perso/bg.git
 cd bg
 .\go.ps1
 ```

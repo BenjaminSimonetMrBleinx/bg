@@ -7,7 +7,7 @@ dans `game/`, transformé par les outils, et la source reste ici.
 
 ## Ce qu'on attend de toi, c'est dans les tickets
 
-**https://github.com/BenjaminSimonetMrBleinx/bg/issues**
+**https://github.com/benjibleinx-perso/bg/issues**
 
 Une ligne = une chose qui manque au jeu : le detail, le format, et le dossier ou la poser.
 Filtre sur l'etiquette `a-faire` pour ne voir que ce qui te concerne. Ca se lit tres bien
