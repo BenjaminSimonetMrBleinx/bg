@@ -34,6 +34,7 @@
 
   "gain_argent": ["mission/gain_argent.wav"],
   "achat": ["mission/caisse.wav"],
+
   "victoire": ["mission/victoire.wav"],
   "coup_de_feu": [
    "mission/coup_de_feu_01.wav",
@@ -141,5 +142,29 @@
   "  roue_maintien   tenue tant que la roue des outils est ouverte",
   "",
   "Tous les fichiers livres sont maintenant branches."
- ]
+ ],
+
+ "_lisez_moi_gains": [
+  "LE NIVEAU DE CHAQUE MECANISME, en decibels. Absent = 0, c'est-a-dire le",
+  "fichier tel qu'il a ete livre.",
+  "",
+  "POURQUOI CETTE SECTION EXISTE. Les sons ne sont pas arrives au meme",
+  "niveau, et l'ecart est enorme : la portiere culmine a 99 % de l'echelle,",
+  "le klaxon a 16 %. En jouant, le klaxon s'entendait a peine — ce n'etait ni",
+  "l'attenuation 3D ni le bus, c'etait le fichier. Mesure, pas devine.",
+  "",
+  "On corrige ici plutot qu'en reecrivant le .wav : un fichier livre ne se",
+  "retouche pas sans le dire, et un gain en donnees se regle a l'oreille sans",
+  "rien regenerer. Le jour ou un son arrive au bon niveau, on retire sa ligne.",
+  "",
+  "+6 dB double le volume percu. Rester sous +18 : au-dela on entend le",
+  "souffle du fichier autant que le son.",
+  "",
+  "Quatorze fichiers sur soixante-quatre sont sous 40 % de crete. Seuls ceux",
+  "qui GENENT en jouant ont une ligne ici — le reste attend la manette."
+ ],
+
+ "gains": {
+  "klaxon": 14.0
+ }
 }

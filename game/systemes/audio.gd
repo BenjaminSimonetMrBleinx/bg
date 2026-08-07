@@ -49,6 +49,10 @@ var _banque: Dictionary = {}
 ## lequel repete volontiers.
 var _derniere: Dictionary = {}
 
+## nom de mecanisme -> gain en dB. Rattrape les ecarts de niveau entre sons
+## livres. Absent = 0 dB, c'est-a-dire le fichier tel qu'il est.
+var _gains: Dictionary = {}
+
 ## Noms reclames qui n'existent pas dans la banque. On ne rale qu'une fois
 ## par nom, sinon un son manquant dans une boucle noie la console.
 var _inconnus: Dictionary = {}
@@ -219,16 +223,23 @@ static func courant(depuis: Node) -> Audio:
 ## Bruitage ponctuel non positionne : interface, dialogue. Le lecteur se
 ## supprime tout seul, on n'a pas a le gerer.
 func jouer(flux: AudioStream, bus: String = BUS_INTERFACE,
-		hauteur: float = 1.0) -> void:
+		hauteur: float = 1.0, gain_db: float = 0.0) -> void:
 	if flux == null:
 		return
 	var p := AudioStreamPlayer.new()
 	p.stream = flux
 	p.bus = bus
 	p.pitch_scale = hauteur
+	p.volume_db = gain_db
 	add_child(p)
 	p.finished.connect(p.queue_free)
 	p.play()
+
+
+## Le gain declare pour un mecanisme, en dB. Zero par defaut : un son sans
+## ligne dans "gains" se joue tel qu'il a ete livre.
+func gain_de(nom: String) -> float:
+	return float(_gains.get(nom, 0.0))
 
 
 # ---------------------------------------------------------------- la banque
@@ -269,6 +280,20 @@ func _charger_banque() -> void:
 		if ResourceLoader.exists(chemin):
 			ambiances_interieures[nom] = ResourceLoader.load(chemin) as AudioStream
 
+	# LES GAINS, en decibels, par mecanisme.
+	#
+	# Les sons livres n'ont pas tous ete enregistres au meme niveau, et l'ecart
+	# est enorme : la portiere culmine a 99 % de l'echelle, le klaxon a 16 %.
+	# En jeu, le klaxon s'entendait a peine — mesure sur les fichiers, pas
+	# devinee, et ce n'etait ni l'attenuation 3D ni le bus.
+	#
+	# On corrige ICI plutot qu'en reecrivant le .wav : un fichier livre ne se
+	# retouche pas sans le dire, et un gain en donnees se regle a l'oreille sans
+	# rien regenerer. Le jour ou un vrai son arrive au bon niveau, on retire sa
+	# ligne et rien d'autre ne bouge.
+	for nom in (lu as Dictionary).get("gains", {}):
+		_gains[str(nom)] = float((lu as Dictionary)["gains"][nom])
+
 	var variantes := 0
 	for nom in _banque:
 		variantes += (_banque[nom] as Array).size()
@@ -285,7 +310,7 @@ func _charger_banque() -> void:
 func bruit(nom: String, bus: String = BUS_INTERFACE, hauteur: float = 1.0) -> void:
 	var flux := _tirer(nom)
 	if flux != null:
-		jouer(flux, bus, hauteur)
+		jouer(flux, bus, hauteur, gain_de(nom))
 
 
 ## Meme chose, mais emis DEPUIS un point du monde. Une portiere qui claque
@@ -298,6 +323,7 @@ func bruit_ici(nom: String, position: Vector3, hauteur: float = 1.0) -> void:
 	p.stream = flux
 	p.bus = BUS_EFFETS
 	p.pitch_scale = hauteur
+	p.volume_db = gain_de(nom)
 	p.unit_size = reglages.son_portee
 	p.max_distance = reglages.son_distance_max
 	add_child(p)

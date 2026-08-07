@@ -111,6 +111,17 @@ func _la_banque() -> void:
 	for cle in ["livre", "chapeau", "meth"]:
 		_verifier(_audio.connait("objet_%s" % cle), "'objet_%s'" % cle)
 
+	# LES GAINS SONT LUS, et pas seulement declares.
+	#
+	# Le klaxon a ete enregistre a 16 % de l'echelle quand la portiere culmine
+	# a 99 % : en jouant, on ne l'entendait pas. Le rattrapage vit dans
+	# sons.json, et une section que personne ne relit est une section qu'on
+	# croit active alors qu'une faute de frappe l'a rendue muette.
+	_verifier(_audio.gain_de("klaxon") > 0.0,
+			"le klaxon est remonte (%+.0f dB)" % _audio.gain_de("klaxon"))
+	_verifier(_audio.gain_de("portiere_ouvre") == 0.0,
+			"et un son deja au bon niveau n'est pas touche")
+
 	print("\n--- les nappes durent, et s'arretent ---")
 	# Une nappe ne se distingue d'un bruitage que par sa FIN : les deux
 	# demarrent pareil. Ce qui compte est donc qu'elle tienne, qu'un second
