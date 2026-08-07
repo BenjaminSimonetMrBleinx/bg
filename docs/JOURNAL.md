@@ -30,6 +30,8 @@ des courses, livrée le soir même.
 |---|---|
 | **0.48.14** | La cachette se voit et se trouve ; le klaxon s'entend |
 | **0.49.0** | **#53** — Skyler appelle pendant qu'on roule vers le désert. `F` décroche, `T` raccroche, laisser sonner coûte cinq points. Arriver avec les courses coûte une réputation, et Jesse comme Tuco le remarquent |
+| — | **#47** — la sauvegarde ne gardait que l'argent et l'heure. Trois liens manquaient dans la scène |
+| **0.50.0** | **#20** — le puits économique : cuisiner, livrer, être payé, recommencer. Le prix suit la pureté |
 
 Les formulaires de tickets ont aussi été remis d'aplomb, et tous les liens du
 dépôt corrigés — ils pointaient encore vers le dépôt **pro** d'avant le
@@ -97,6 +99,37 @@ diagnostiquées, seulement disculpées.
 **Et toujours la manette** : l'appel de Skyler n'a jamais été joué en conditions
 réelles. Les vingt secondes de conduite, le choix de décrocher ou pas, le
 demi-tour vers l'épicerie : tout ça est mesuré et capturé, rien n'est *vécu*.
+
+### Ce qui est laissé en route, et où le reprendre
+
+**Deux bugs trouvés dans les trois premières minutes de test**, et c'est la
+meilleure preuve que jouer trouve ce que tester ne trouve pas :
+
+- **#54 — on ne peut pas courir.** L'allure `course` existe dans `demarche.gd`
+  avec ses clips, mais `project.godot` ne déclare aucune action « courir ». Le
+  README l'annonce pourtant depuis toujours. À établir avant de corriger : que
+  ce soit bien l'entrée qui manque, et non l'allure décidée ailleurs.
+- **#55 — reprendre ne dit pas où l'on arrive.** Revers direct de la sauvegarde
+  réparée : pendant quinze versions, « Reprendre » et « Nouvelle partie »
+  donnaient le même début. Le point à vérifier en premier : une partie reprise
+  **au volant** repose-t-elle Walter dans sa voiture, ou à côté ? La position est
+  restaurée, l'état « au volant » ne l'est pas.
+
+**La passe d'organisation, demandée et pas faite.** Le classement était prêt —
+3 « maintenant », 5 « ensuite », le reste en feuille de route — et il a été mis
+de côté pour traiter les tickets plutôt que les archiver. Restent à écrire : la
+feuille de route (`docs/17-feuille-de-route.md`), la méthode (WIP de trois par
+personne, `maintenant`/`ensuite`, plus de backlog verbeux) et la fiche de test
+par version. La recherche est faite et résumée dans la conversation : **vertical
+slice** (la mission 1 en est une, elle n'a jamais été nommée ainsi), limite de
+travail en cours plutôt que tri de backlog, playtest sur un ou deux aspects à la
+fois, et pas de sprints — le flux continu colle à deux personnes qui codent le
+soir.
+
+**Les sept tickets 🤖 restants ne sont pas bloqués par du code**, mais par des
+choix de contenu : les précurseurs de #27, où vivent Junior et Hank pour #29, le
+système de témoins de #35, les quatre missions de #36. Les faire sans décision,
+c'est livrer un jeu que Benjamin découvrirait.
 
 **Début** : 07/08, sur `v0.48.10`. **Fin** : sur `v0.48.12`, deux releases
 publiées après deux jours de silence.

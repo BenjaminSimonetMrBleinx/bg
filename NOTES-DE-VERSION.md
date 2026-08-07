@@ -20,6 +20,57 @@ le numéro ne voulait plus rien dire. Un lot livré est désormais un correctif.
 
 ---
 
+## 📌 La session du 7 août 2026 — de la 0.48.10 à la 0.50.0
+
+**Neuf versions, et la première fois qu'on JOUE.** Le détail est en dessous ;
+voilà ce qu'il faut en retenir.
+
+---
+
+### Ce que tu peux faire ce soir et que tu ne pouvais pas hier
+
+**Skyler t'appelle pendant que tu roules vers le désert.** Tu décroches (`F`),
+tu raccroches (`T`), ou tu laisses sonner. Elle veut des œufs. L'épicerie est en
+ville, le camping-car à neuf cents mètres — et c'est là que ça devient
+intéressant : faire demi-tour, c'est arriver en retard, et **Jesse le remarque**.
+Tuco aussi, plus tard.
+
+**Tu peux gagner ta vie sans mission.** Une fois la mission 1 finie, l'atelier du
+camping-car resserre. Tu cuisines, tu vas livrer à un contact sur un terrain
+vague, tu es payé — et **le prix suit la pureté** : 300 $ pour du brun, 900 $
+pour du bleu. Rien ne l'affiche.
+
+**Tu rapportes les courses à la maison.** L'épicerie ne donne plus de points sur
+place : elle vend une boîte d'œufs, quatre dollars, et les points ne tombent que
+quand tu la poses sur le plan de travail de ta cuisine. Skyler réagit — dans les
+deux cas.
+
+---
+
+### Trois choses qui étaient cassées depuis longtemps
+
+- **La sauvegarde ne gardait que la moitié.** L'argent et l'heure revenaient ;
+  ni l'inventaire, ni la position, ni l'avancement. Trois liens manquaient dans
+  la scène **depuis quinze versions**. Ce qui a fait croire qu'elle marchait,
+  c'est que la moitié qui fonctionnait était la moitié visible.
+- **La cachette était introuvable**, et elle bloquait la fin de la mission. Elle
+  n'avait aucune planche à l'écran et flottait à un mètre soixante du mur, dans
+  un salon de quatorze mètres sur dix.
+- **Le camping-car n'était pas là.** Jesse et la porte d'entrée étaient à
+  vingt-neuf mètres du véhicule, en plein milieu de la piste, depuis le jour où
+  le désert a pris son relief.
+
+---
+
+### Et ce qui reste cassé, dit franchement
+
+**On ne peut pas courir** (#54) : la touche n'a probablement jamais été branchée.
+**Reprendre une partie ne dit pas où l'on arrive** (#55) — nouveau, et c'est le
+revers de la sauvegarde réparée. **La tôle du camping-car ondule** (#52) : c'est
+un scan, ça se répare chez Guillaume.
+
+---
+
 ## 📌 La session du 6 au 7 août 2026 — de la 0.43 à la 0.48.10
 
 **Onze versions en une soirée.** Voilà ce qu'il faut en retenir, en une lecture.
