@@ -633,11 +633,28 @@ script = ExtResource("34_bourse")
 ; Sauvegarder et reprendre. Se cable sur les systemes qui portent l'etat a
 ; ecrire : l'heure, l'argent, l'inventaire, la position, la mission. Le monde,
 ; lui, ne se sauve pas - il se regenere.
+; TROIS LIENS MANQUAIENT, ET LA SAUVEGARDE NE SAUVAIT QUE LA MOITIE.
+;
+; Le script attend six chemins ; la scene n'en donnait que trois. Sans
+; equipement, joueur et mission, le fichier s'ecrivait sans inventaire, sans
+; position et avec « mission etape 0 » — quel que soit l'etat reel — et la
+; reprise ne pouvait evidemment rien rendre de tout ca.
+;
+; L'argent et l'heure revenaient, eux. C'est ce qui a fait croire pendant
+; quinze versions que la sauvegarde marchait : ce qu'on verifiait d'un coup
+; d'oeil au lancement etait precisement la moitie qui fonctionnait.
+;
+; Le critere de fin de #32 disait pourtant tout : « quitter avec 3 000 $, un
+; chapeau sur la tete, a 21 h — relancer et retrouver exactement ca ». Le
+; chapeau n'est jamais revenu.
 [node name="Sauvegarde" type="Node" parent="."]
 script = ExtResource("44_sauvegarde")
 bourse = NodePath("../Bourse")
 purete = NodePath("../Purete")
 temps = NodePath("../Temps")
+equipement = NodePath("../Equipement")
+joueur = NodePath("../Rendu/Scene3D/Joueur")
+mission = NodePath("../Mission")
 
 ; La purete du produit. Elle ne s'affiche nulle part : elle teinte le cristal
 ; tenu en main, et c'est tout ce que le joueur en percoit.

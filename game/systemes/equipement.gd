@@ -307,13 +307,25 @@ func restaurer(possedes: Array, tenu: String, portes: Array) -> void:
 		var ip := _indice_de_cle(str(c))
 		if ip != RIEN:
 			_portes[ip] = true
-	# Ce qu'on tient en main, lui, se pose par la voie normale : elle est
-	# instantanee, et gere le visuel comme l'etat.
+	# CE QU'ON TIENT SE POSE AUSSI DIRECTEMENT, et c'etait tout le bug.
+	#
+	# Il passait par equiper(), qui applique la regle de la roue : rechoisir ce
+	# qu'on a deja en main le RANGE. Cette regle est juste pour un joueur qui
+	# appuie — c'est le seul moyen de revenir aux mains vides — et fausse pour
+	# une restauration, ou l'on DECRIT un etat au lieu de faire un geste.
+	#
+	# Le port, lui, etait deja pose directement, deux lignes plus haut, et pour
+	# exactement la meme raison. C'etait la seule des deux voies qui differait,
+	# et c'est celle qui echouait : l'argent, l'heure, la position et l'etape
+	# revenaient ; ce qu'on tenait en main, non.
 	if tenu != "":
 		var it := _indice_de_cle(tenu)
 		if it != RIEN:
-			equiper(_rang_de(it))
+			_actif = it
 	_montrer()
+	# Le HUD et la roue apprennent l'etat retrouve. Sans ce signal, l'objet est
+	# bien en main mais rien a l'ecran ne le dit.
+	change.emit(actif())
 
 
 func possede(cle: String) -> bool:
