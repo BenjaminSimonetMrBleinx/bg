@@ -40,6 +40,18 @@ signal utilise(point: Point)
 ## Un nom de la banque — voir donnees/sons.json — jamais un fichier.
 @export var son: String = ""
 
+## CE QU'IL FAUT AVOIR SUR SOI pour que ce point se propose. Vide = rien.
+##
+## Le pendant exact de `donne` : l'acheteur de marchandise ne s'affiche que si
+## l'on a de quoi lui vendre. Sans ce champ, on lit « Livrer la marchandise »
+## les mains vides et on appuie pour rien — l'invite promet alors quelque chose
+## qu'elle ne peut pas tenir.
+##
+## Ce n'est PAS le point qui consomme l'objet : il annonce son evenement, et le
+## scenario decide. Un point qui viderait l'inventaire saurait aussi le
+## remplir, et on aurait deux inventaires.
+@export var exige: String = ""
+
 ## Le point n'existe QUE pendant cette etape de la mission. Vide = toujours.
 ##
 ## C'est ce qui empeche de cuisiner avant d'etre arrive, et de vider la

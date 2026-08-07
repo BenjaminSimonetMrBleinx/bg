@@ -161,6 +161,38 @@ lieu = "alpine"
 
 [node name="Caisse" parent="Rendu/Scene3D/Alpine" instance=ExtResource("31_alpine")]
 
+; LE CONTACT, sur un terrain vague a l'ecart.
+;
+; Le puits economique du jeu, hors mission : on cuisine au camping-car, on
+; vient livrer ici, on est paye, on recommence. Sans lui, l'argent n'arrive que
+; par les missions et il n'y a aucune raison de rejouer entre deux.
+;
+; PAS D'ENSEIGNE, ET UNE VOITURE A LA PLACE. Un deal ne s'annonce pas — mais un
+; lieu que rien ne signale ne se trouve pas non plus, et ce projet l'a appris
+; trois fois : l'epicerie sans enseigne, la cachette sans latte, le camping-car
+; a vingt-neuf metres de sa porte. Une berline garee sur un terrain vague se
+; repere de la route et ne dit rien de ce qu'on y fait.
+;
+; Le point n'apparait QUE si l'on porte de la marchandise (`exige`). Les mains
+; vides, il n'y a qu'une voiture garee — ce qui est exactement ce qu'un passant
+; doit voir.
+[node name="Contact" type="Node3D" parent="Rendu/Scene3D"]
+script = ExtResource("30_ancrage")
+lieu = "terrain_vague_3_7"
+suivre_le_cap = false
+
+[node name="Berline" parent="Rendu/Scene3D/Contact" instance=ExtResource("31_alpine")]
+transform = Transform3D(0.94, 0, -0.342, 0, 1, 0, 0.342, 0, 0.94, 0, 0, 0)
+
+[node name="Livrer" type="Node3D" parent="Rendu/Scene3D/Contact"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.2, 0, 1.4)
+script = ExtResource("39_point")
+invite = "Livrer la marchandise"
+evenement = "action:livraison"
+exige = "meth"
+une_fois = false
+portee = 2.6
+
 ; L EPICERIE, au centre commercial le plus ELOIGNE du point de depart : 283 m,
 ; a l autre bout de la ville. La distance est le sujet — une course qui ne
 ; detourne pas n est pas un choix, c est un bouton. Voir #31.

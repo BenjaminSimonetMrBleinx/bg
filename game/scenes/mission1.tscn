@@ -371,6 +371,29 @@ donne = "botte"
 etape = "cuisiner"
 portee = 1.9
 
+; LE MEME ATELIER, UNE FOIS LA MISSION FINIE.
+;
+; Celui du dessus n'existe QUE pendant l'etape « cuisiner » : c'est ce qui
+; empeche de cuisiner avant d'etre arrive. Une fois la mission bouclee, il
+; disparaissait avec elle et le camping-car devenait un decor — on ne pouvait
+; plus rien produire, donc plus rien vendre.
+;
+; Celui-ci prend le relais a partir de la derniere etape et ne s'epuise pas.
+; Il rend de la marchandise, pas la botte secrete : la botte etait une scene,
+; la meth est un metier.
+;
+; Sa teinte suit le palier de purete sans qu'on ait rien a dire — systemes/
+; purete.gd teinte l'objet « meth » partout ou il apparait.
+[node name="AtelierLibre" type="Node3D" parent="CampingCarInterieur"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.85, 1, 3.8)
+script = ExtResource("2_point")
+invite = "Cuisiner"
+evenement = "action:cuisine_libre"
+donne = "meth"
+etape_minimale = "cacher"
+une_fois = false
+portee = 1.9
+
 ; Dans la planche de bord, cote passager. On l'atteint depuis l'allee, DERRIERE
 ; les sieges : ils sont solides desormais, et la portee doit donc couvrir la
 ; profondeur d'un siege.

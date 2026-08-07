@@ -1092,6 +1092,11 @@ func _point_proche() -> Point:
 		var p := n as Point
 		if p == null or not p.offert(_j, m):
 			continue
+		# CE QU'IL FAUT AVOIR SUR SOI. Le point porte la condition, le scenario
+		# possede l'inventaire : on lui demande plutot que de tenir une seconde
+		# liste de ce que Walter transporte.
+		if p.exige != "" and (_scenario == null or not _scenario.possede(p.exige)):
+			continue
 		var d := p.distance(_j)
 		if d < mini:
 			mini = d

@@ -533,12 +533,64 @@ func point_utilise(p: Point) -> void:
 		_dialogue.demarrer("mission_jesse_botte")
 	if p.evenement == "action:botte_bureau":
 		_faire_exploser()
+	if p.evenement == "action:livraison":
+		livrer_la_marchandise()
 	if p.evenement == "action:courses_posees":
 		var avec := poser_les_courses()
 		if _dialogue != null:
 			_dialogue.demarrer("skyler_courses_oui" if avec else "skyler_courses_non")
 	if p.evenement != "" and _mission != null:
 		_mission.evenement(p.evenement)
+
+
+## Walter a-t-il cet objet sur lui ? Le controleur s'en sert pour n'afficher
+## l'invite d'un point que si sa condition est remplie — l'acheteur de
+## marchandise ne se propose pas les mains vides.
+func possede(cle: String) -> bool:
+	return _equipement != null and _equipement.possede(cle)
+
+
+## CE QUE VAUT UNE LIVRAISON, avant la purete.
+##
+## Trois cents dollars le sachet au palier 1. Tuco paie trois cent mille pour
+## une commande entiere ; un contact de rue achete l'unite, et la difference
+## d'echelle est le sujet — c'est ce qui donne envie de monter.
+const PRIX_DE_BASE := 300
+
+## Ce que chaque palier au-dessus du premier ajoute, en pourcentage du prix de
+## base. Du brun au bleu, la valeur triple : livrer du bon se paie, et c'est la
+## seule facon de sentir la purete sans jamais l'afficher.
+const PAR_PALIER := 0.5
+
+
+## ON VEND CE QU'ON A CUISINE, ET LE PRIX DIT LA QUALITE.
+##
+## Le puits economique du jeu, hors mission : cuisiner, livrer, etre paye,
+## recommencer. Sans lui, l'argent n'arrive que par les missions et il n'y a
+## aucune raison de rejouer entre deux.
+##
+## RIEN N'ANNONCE LE PRIX A L'AVANCE. On livre, la bourse monte, et c'est en
+## comparant deux livraisons qu'on comprend que la purete se paie. Un ecran de
+## vente avec un cours affiche transformerait une scene en tableur.
+func livrer_la_marchandise() -> void:
+	if _equipement == null or not _equipement.possede("meth"):
+		return
+	var palier := 1
+	var p := Purete.courante(self)
+	if p != null:
+		palier = p.palier()
+	var prix := roundi(PRIX_DE_BASE * (1.0 + PAR_PALIER * float(palier - 1)))
+
+	_equipement.retirer("meth")
+	if _bourse != null:
+		_bourse.ajouter(prix)
+	# La reputation suit la purete par le meme chemin que le prix : livrer du
+	# bleu se raconte, livrer du brun se paie et s'oublie.
+	var r := Reputation.courante(self)
+	if r != null:
+		r.livre(palier)
+	if _controleur != null:
+		_controleur.call("annoncer", "Marchandise livree")
 
 
 ## LES COURSES SE PAIENT A L'EPICERIE ET SE COMPTENT A LA MAISON.

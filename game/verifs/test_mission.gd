@@ -21,6 +21,18 @@ var _monde: Node
 
 
 func _initialize() -> void:
+	# ON PART D'UNE PARTIE NEUVE, ET IL FAUT LE DIRE AVANT DE CHARGER LA SCENE.
+	#
+	# Depuis que la sauvegarde restaure vraiment la position et l'inventaire —
+	# elle n'en gardait que la moitie —, une partie qui traine sur la machine
+	# replace le joueur ou il s'etait arrete. « La partie s'ouvre dans le salon »
+	# devenait alors faux, pour une bonne raison : on reprend ou l'on etait.
+	#
+	# Le fichier se supprime ICI parce que Sauvegarde le relit dans son _ready,
+	# donc avant la premiere ligne du scenario de test. Effacer plus tard
+	# n'annulerait rien.
+	if FileAccess.file_exists("user://partie.json"):
+		DirAccess.remove_absolute("user://partie.json")
 	var ps := ResourceLoader.load("res://scenes/monde.tscn") as PackedScene
 	_monde = ps.instantiate()
 	root.add_child(_monde)
@@ -81,6 +93,7 @@ func _scenario() -> void:
 	_la_cachette(mission, bourse)
 	_les_courses(equipement, dialogue)
 	_l_appel(dialogue)
+	_le_puits(equipement, bourse)
 
 	print("")
 	if _erreurs.is_empty():
@@ -426,6 +439,64 @@ func _les_courses(equipement: Equipement, dialogue: Dialogue) -> void:
 			"Skyler a une reponse quand on a pense a elle")
 	_verifier(dialogue.connait("skyler_courses_non"),
 			"et une autre quand on a oublie")
+
+
+# CUISINER, LIVRER, ETRE PAYE, RECOMMENCER.
+#
+# Le puits economique hors mission. Ce qui se mesure : que le cycle EXISTE en
+# entier — un atelier qui resserve apres la mission, un acheteur qui ne se
+# propose que si l'on a de quoi vendre, et un prix qui suit la purete.
+#
+# LE PRIX EST LE POINT QUI COMPTE. Rien ne l'affiche au joueur : c'est en
+# comparant deux livraisons qu'il doit sentir que la qualite se paie. Si les
+# deux paliers rapportaient pareil, la purete deviendrait un chiffre decoratif
+# et personne ne s'en apercevrait avant des semaines.
+func _le_puits(equipement: Equipement, bourse: Bourse) -> void:
+	print("\n--- cuisiner, livrer, recommencer ---")
+	var atelier := _point_nomme("AtelierLibre")
+	var contact := _point_nomme("Livrer")
+	_verifier(atelier != null, "l'atelier resserre une fois la mission finie")
+	_verifier(contact != null, "et il y a quelqu'un a qui vendre")
+	if atelier == null or contact == null:
+		return
+
+	_verifier(atelier.donne == "meth", "l'atelier rend de la marchandise")
+	_verifier(not atelier.une_fois, "et il ne s'epuise pas")
+	_verifier(contact.exige == "meth",
+			"l'acheteur ne se propose que si l'on porte de quoi vendre")
+
+	var scenario := _trouver(_monde, "Scenario") as Scenario
+	var purete := _trouver(_monde, "Purete") as Purete
+	if scenario == null or purete == null:
+		_verifier(false, "le scenario et la purete repondent")
+		return
+
+	# LES MAINS VIDES, ON NE VEND RIEN. Sans ce garde, appuyer sur un acheteur
+	# sans marchandise creditait le prix de base : de l'argent gratuit.
+	#
+	# On retire explicitement : les controles precedents manipulent l'inventaire,
+	# et un test qui suppose l'etat laisse par le test d'avant se met a dependre
+	# de leur ordre.
+	equipement.retirer("meth")
+	bourse.poser(0)
+	scenario.livrer_la_marchandise()
+	_verifier(bourse.montant() == 0, "les mains vides, livrer ne rapporte rien")
+
+	# Au palier 1, puis au palier 5 : le meme geste, deux prix.
+	purete.poser(1)
+	equipement.donner("meth")
+	scenario.livrer_la_marchandise()
+	var brun := bourse.montant()
+	_verifier(brun > 0, "livrer du brun paie (%d $)" % brun)
+	_verifier(not equipement.possede("meth"), "et la marchandise part")
+
+	bourse.poser(0)
+	purete.poser(5)
+	equipement.donner("meth")
+	scenario.livrer_la_marchandise()
+	var bleu := bourse.montant()
+	_verifier(bleu > brun,
+			"et livrer du bleu paie davantage (%d contre %d)" % [bleu, brun])
 
 
 # L'APPEL DE SKYLER, PENDANT QU'ON ROULE VERS LE DESERT.

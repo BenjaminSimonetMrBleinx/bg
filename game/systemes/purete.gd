@@ -51,11 +51,24 @@ const TEINTS := ["meth"]
 
 @export var equipement: NodePath
 
+## Le groupe par lequel on nous trouve, comme la bourse, la famille et la
+## reputation. Le prix d'une livraison depend de la purete, et le scenario n'a
+## pas a connaitre le chemin de ce noeud dans l'arbre pour le demander.
+const GROUPE := "purete"
+
+
+static func courante(depuis: Node) -> Purete:
+	if depuis == null or not depuis.is_inside_tree():
+		return null
+	return depuis.get_tree().get_first_node_in_group(GROUPE) as Purete
+
+
 var _rang: int = 0
 var _equipement: Equipement
 
 
 func _ready() -> void:
+	add_to_group(GROUPE)
 	_equipement = get_node_or_null(equipement) as Equipement
 	_appliquer()
 

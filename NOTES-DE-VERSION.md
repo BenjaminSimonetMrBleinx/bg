@@ -141,6 +141,31 @@ d'œufs dans l'inventaire, et Skyler qui réagit quand tu rentres. Ticket #49.
 
 ---
 
+## 0.50.0 — Cuisiner, livrer, être payé, recommencer
+
+> **À essayer : finis la mission 1, puis retourne au camping-car.** L'atelier
+> resserre. Cuisine, et va vendre.
+
+**Le jeu a enfin une raison de continuer après la mission.** Jusqu'ici, l'argent
+n'arrivait que par les missions : la dernière finie, il ne restait rien à faire.
+
+- **L'atelier du camping-car resserre** une fois la mission bouclée, et il ne
+  s'épuise pas. Il rend de la marchandise, pas la botte secrète — la botte était
+  une scène, la meth est un métier.
+- **Un contact attend sur un terrain vague**, à l'écart. Une berline garée, rien
+  d'autre : un deal ne s'annonce pas. Tu ne verras l'invite que si tu portes de
+  quoi vendre — les mains vides, il n'y a qu'une voiture.
+- **Le prix suit la pureté.** Du brun au bleu, la valeur **triple**. Rien ne
+  l'affiche : c'est en comparant deux livraisons que ça se comprend.
+
+**Et la sauvegarde marche enfin en entier.** Elle ne gardait que l'argent et
+l'heure : ni l'inventaire, ni la position, ni l'avancement de la mission. Trois
+lignes manquaient dans la scène depuis quinze versions. Le critère annoncé en
+0.41 était pourtant clair — *« quitter avec 3 000 $, un chapeau sur la tête, à
+21 h, et retrouver exactement ça »*. Le chapeau n'était jamais revenu.
+
+---
+
 ## 0.49.0 — Skyler appelle pendant que tu roules
 
 > **À essayer : lance la mission 1 et prends la voiture après avoir parlé à
