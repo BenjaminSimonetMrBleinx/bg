@@ -1,6 +1,6 @@
 name: 🐛 J'ai trouvé un bug
 description: Quelque chose ne marche pas, ou pas comme prévu
-labels: ["🐛 bug", "🔥 maintenant"]
+labels: ["🐛 bug", "🤖 Claude", "🔥 maintenant"]
 body:
   - type: markdown
     attributes:

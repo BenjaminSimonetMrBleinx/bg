@@ -195,5 +195,19 @@ Ce que la forme libre coûtait : des titres qui posaient une question déjà
 tranchée depuis dix jours, d'autres qui argumentaient contre leur propre version
 précédente, et aucun moyen de grouper la liste à l'œil.
 
+**Le corps suit quatre temps, et je les tiens.** Les formulaires
+(`.github/ISSUE_TEMPLATE/`) cadrent ce que Benjamin et Guillaume écrivent ;
+ils ne s'appliquent pas quand j'ouvre un ticket en ligne de commande, donc
+c'est ici que ma forme est écrite :
+
+1. **À qui c'est**, en une ligne, avant tout le reste ;
+2. **le constat, avec sa preuve** — un chiffre mesuré, une capture, un extrait
+   de test. Jamais « il semble que » ;
+3. **ce qu'on demande**, en cases à cocher ;
+4. **comment on voit que c'est fait** — la question qui manque le plus souvent,
+   et celle qui m'oblige à savoir ce que je cherche.
+
+Un ticket qui ne dit pas comment on le vérifie se ferme sur une impression.
+
 Un piège qui n'est pas écrit sera repayé au prix fort. Les quatre plus chers de
 ce projet ont tous été payés deux fois.
