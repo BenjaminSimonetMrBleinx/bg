@@ -112,7 +112,7 @@ func _brancher() -> void:
 	# c'est lui qui le dit. Une seconde source de verite finirait par diverger.
 	for n in get_tree().get_nodes_in_group(Point.GROUPE):
 		var p := n as Point
-		if p != null and p.evenement == "courses" \
+		if p != null and p.evenement == "achat_courses" \
 				and not p.utilise.is_connected(_sur_courses):
 			p.utilise.connect(_sur_courses)
 
@@ -244,11 +244,16 @@ func _solder() -> void:
 	_etape = Etape.INACTIF
 	_sonne = 0.0
 	if _oeufs:
-		# ON N'AJOUTE RIEN A LA FAMILLE ICI : l'epicerie l'a deja fait quand on
-		# s'y est arrete. Le compter une seconde fois donnerait +20 pour un seul
-		# geste, et surtout ferait mentir le compteur — il aurait bouge deux fois
-		# pour la meme chose. Ce que la mission ajoute, c'est le COUT : on arrive
-		# en retard, et le retard se paie en reputation.
+		# ON N'AJOUTE RIEN A LA FAMILLE ICI, et la raison a change.
+		#
+		# Elle etait : l'epicerie l'a deja fait sur place. Elle est desormais :
+		# l'epicerie ne donne plus rien du tout — elle vend une boite d'oeufs, et
+		# les points ne tombent qu'une fois la boite posee sur le plan de travail
+		# de la cuisine. Si le joueur s'est arrete faire ses courses au lieu de
+		# livrer, il a la boite dans les mains et rien de plus.
+		#
+		# Ce que la mission ajoute reste le COUT : on arrive en retard, et le
+		# retard se paie en reputation.
 		if _reputation != null:
 			_reputation.tant_pis("livraison_ratee")
 	elif _decroche:

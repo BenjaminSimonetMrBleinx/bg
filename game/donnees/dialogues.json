@@ -161,6 +161,46 @@
     ]
   },
 
+  "skyler_courses_oui": {
+    "nom": "Skyler",
+    "sans_voix": true,
+    "_note": [
+      "On rentre avec la boite d'oeufs et on la pose sur le plan de travail.",
+      "C'est le seul endroit du jeu ou les points de famille montent.",
+      "",
+      "Elle ne remercie pas longtemps, et c'est voulu : une gratitude appuyee",
+      "ferait de la course une transaction. Ce qui doit rester, c'est qu'elle a",
+      "REMARQUE — et qu'elle enchaine aussitot sur autre chose."
+    ],
+    "conversations": [
+      [
+        { "qui": "Skyler", "texte": "Tu es passe a l'epicerie." },
+        { "qui": "Walter", "texte": "Il n'y avait plus d'oeufs." },
+        { "qui": "Skyler", "texte": "Non, il n'y en avait plus. Junior voulait des pancakes." }
+      ]
+    ]
+  },
+
+  "skyler_courses_non": {
+    "nom": "Skyler",
+    "sans_voix": true,
+    "_note": [
+      "Les mains vides. Aucun point ne tombe, mais quelque chose se dit — sinon",
+      "oublier ne couterait rien, et un choix sans cout n'est pas un choix.",
+      "",
+      "Elle ne reproche pas : elle constate, et elle ira elle-meme. C'est plus",
+      "lourd qu'un reproche, et c'est le ton de la serie."
+    ],
+    "conversations": [
+      [
+        { "qui": "Walter", "texte": "Je suis rentre." },
+        { "qui": "Skyler", "texte": "Les oeufs ?" },
+        { "qui": "Walter", "texte": "Je... j'ai oublie." },
+        { "qui": "Skyler", "texte": "Ce n'est pas grave. J'irai demain matin." }
+      ]
+    ]
+  },
+
   "mission_jesse_camping": {
     "nom": "Jesse",
     "sans_voix": true,

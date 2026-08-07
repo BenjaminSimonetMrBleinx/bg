@@ -33,6 +33,7 @@
   "objet_meth": ["interface/item_meth.wav"],
 
   "gain_argent": ["mission/gain_argent.wav"],
+  "achat": ["mission/caisse.wav"],
   "victoire": ["mission/victoire.wav"],
   "coup_de_feu": [
    "mission/coup_de_feu_01.wav",

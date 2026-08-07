@@ -472,8 +472,40 @@ func point_utilise(p: Point) -> void:
 		_dialogue.demarrer("mission_jesse_botte")
 	if p.evenement == "action:botte_bureau":
 		_faire_exploser()
+	if p.evenement == "action:courses_posees":
+		var avec := poser_les_courses()
+		if _dialogue != null:
+			_dialogue.demarrer("skyler_courses_oui" if avec else "skyler_courses_non")
 	if p.evenement != "" and _mission != null:
 		_mission.evenement(p.evenement)
+
+
+## LES COURSES SE PAIENT A L'EPICERIE ET SE COMPTENT A LA MAISON.
+##
+## Toute la mecanique tient dans cette dissociation. L'epicerie prend quatre
+## dollars et rend une boite ; ce plan de travail est le seul endroit du jeu ou
+## les points de famille arrivent. Entre les deux, deux cent quatre-vingts
+## metres pendant lesquels on peut mourir, se faire prendre, ou simplement ne
+## jamais rentrer.
+##
+## Renvoie vrai si on avait de quoi poser. LES MAINS VIDES, ON RENTRE QUAND
+## MEME — et c'est l'appelant qui fait alors parler Skyler. Si oublier ne
+## produisait rien, oublier ne couterait rien, et un choix sans cout n'est pas
+## un choix.
+##
+## PUBLIQUE, ET SANS LE DIALOGUE, POUR ETRE MESURABLE. La suite de tests ne
+## peut pas ouvrir de conversation : le lecteur de voix n'y est pas branche et
+## Godot s'arrete net — verifie en y demarrant une fiche qui existe depuis des
+## semaines. La partie qui compte se teste donc ici, et le fait qu'on PARLE se
+## verifie autrement : les deux fiches existent, et point_utilise choisit.
+func poser_les_courses() -> bool:
+	var avec := _equipement != null and _equipement.possede("oeufs")
+	if avec:
+		_equipement.retirer("oeufs")
+		var famille := Famille.courante(self)
+		if famille != null:
+			famille.merci("courses")
+	return avec
 
 
 ## On est arrive quelque part. Le controleur l'annonce apres chaque passage.

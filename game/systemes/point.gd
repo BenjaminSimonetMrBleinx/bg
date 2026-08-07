@@ -24,6 +24,22 @@ signal utilise(point: Point)
 ## L'objet donne au joueur, s'il y en a un. Sa cle dans outils.json.
 @export var donne: String = ""
 
+## CE QUE CA COUTE, en dollars. Zero = gratuit, ce qui reste le cas general.
+##
+## L'epicerie s'en sert : les courses etaient un bouton qui faisait monter la
+## famille sans rien prelever, donc on pouvait le marteler sur place. Un geste
+## qui ne coute rien n'est pas un choix — c'est la regle numero deux du projet.
+##
+## Comme `donne`, ce champ est une DONNEE : le point ne touche pas a la bourse,
+## il annonce son prix et le controleur decide. Un point qui saurait retirer de
+## l'argent saurait aussi le rendre, et on aurait deux caisses.
+@export var coute: int = 0
+
+## Le mecanisme sonore joue quand ca marche. Vide = silencieux.
+##
+## Un nom de la banque — voir donnees/sons.json — jamais un fichier.
+@export var son: String = ""
+
 ## Le point n'existe QUE pendant cette etape de la mission. Vide = toujours.
 ##
 ## C'est ce qui empeche de cuisiner avant d'etre arrive, et de vider la

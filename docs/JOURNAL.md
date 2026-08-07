@@ -36,8 +36,10 @@ deux :
 | — | Les situations de capture du camping-car se posent **autour** du véhicule (`autour` dans `scenarios.json`) |
 | — | **Release `v0.48.11` publiée**. La dernière datait du 5 août en 0.40.0 : Guillaume téléchargeait un jeu sans les trois compteurs, sans écran-titre et sans sauvegarde |
 | **#51** | **0.48.12** — le camping-car de Guillaume entre dans le jeu, dégraissé à 8 000 triangles ; `integrer` sait désormais dégraisser ; le générateur ne fabrique plus de camping-car |
+| **#49** | **0.48.13** — l'épicerie vend (4 $, un son, une boîte d'œufs) et la cuisine compte : les points de famille ne tombent qu'en posant la boîte sur le plan de travail, et Skyler répond dans les deux cas |
 
-Côté tickets : **#48, #50 et #51 fermés**.
+Côté tickets : **#48, #49, #50 et #51 fermés**, **#52 ouvert** pour Guillaume
+(la tôle du camping-car ondule à la source).
 
 ### Les surprises
 
@@ -122,27 +124,60 @@ traite la moindre ligne de stderr d'un binaire natif comme une erreur. Le script
 Python marchait parfaitement. Un outil qui marche mais qu'on ne peut plus
 appeler est un outil cassé.
 
+**Le modèle de Guillaume est un scan, et ça se voyait depuis le début.** La tôle
+du camping-car ondule sur toute sa surface. Trois versions posées côte à côte —
+le fichier brut, le brut aplati, et celui du jeu à 8 000 triangles — sont
+**identiques** : les bosses sont dans la livraison, pas dans la décimation. Sa
+signature le disait déjà (un maillage d'un bloc, une texture 2048 avec normale
+et metallic/roughness). C'est #52, avec la capture et le tableau des essais, et
+ça se répare chez lui : un nettoyage dans Blender battra toujours un lissage
+automatique.
+
+**Python n'existe pas sur cette machine.** `bg.ps1 generer` est donc
+inutilisable tel quel — l'alias du Store répond mais n'exécute rien. Blender
+embarque un Python 3.13 complet, et les générateurs n'utilisent que la
+bibliothèque standard : `…\Blender 5.2\5.2\python\bin\python.exe` les fait
+tourner tels quels. À câbler dans `bg.ps1` en repli, un jour.
+
+**Un générateur relancé écrase ce qu'on ne lui a pas demandé.** `gen_sons.py`
+réécrivait ses cinq fichiers à chaque appel : ajouter la caisse enregistreuse en
+a écrasé quatre autres. Restaurés dans la minute, et le script accepte
+maintenant un `--nom`, comme `gen_objets`. Le piège 11, encore, dans sa version
+la plus bête — et la troisième fois qu'il se présente dans ce projet.
+
+**Deux vérifications se sont tues, et ce n'était pas le contenu neuf.** La
+capture et la suite `mission` s'arrêtaient net, sans message, dès qu'un dialogue
+s'ouvrait. On l'a mesuré en démarrant une fiche vieille de plusieurs semaines au
+même endroit : même arrêt. C'est le piège 22 — **avant de croire qu'un ajout
+casse un test, refaire le geste avec quelque chose qui marchait déjà.** La
+mécanique des courses a été sortie du dialogue pour redevenir mesurable.
+
 ### Où on reprend
 
-**#49** : l'épicerie est encore un bouton qu'on peut marteler. Quatre dollars,
-une boîte d'œufs dans l'inventaire, les points donnés **en rentrant**, et Skyler
-qui réagit selon qu'on a pensé à elle. C'est le prochain, et il est cadré.
-
-**Avant ça, une manette** : la mission 1 de bout en bout. Les tests valident
-l'enchaînement des quinze étapes et le voyage aller-retour en conduite réelle,
-mais jouer trouve ce que tester ne trouve pas — la session précédente l'a
-rappelé cinq fois de suite.
+**Une manette, d'abord.** Trois choses n'ont été vues par personne en jouant : la
+mission 1 de bout en bout, le trajet complet épicerie → maison, et le refus de
+l'épicerie quand on n'a pas les quatre dollars. Les tests couvrent la mécanique
+et les distances ; ils ne disent rien du plaisir qu'il y a — ou pas — à faire ce
+détour. C'est exactement le genre de chose que seule la manette tranche, et le
+réglage des dix points de famille en dépend.
 
 **En attente ailleurs** : #47 (l'objet tenu ne revient plus après une reprise),
 un système de **dialogue à choix** que réclament #31, #35 et #29, et dix tickets
-jamais passés en revue (#34 à #45). Guillaume : les rigs de passants, les voix,
-le formulaire de mission — et maintenant il a un jeu à jour pour les écrire, avec
-son camping-car dedans.
+jamais passés en revue (#34 à #45). Guillaume : #52 (la tôle du camping-car),
+les rigs de passants, les voix, le formulaire de mission — et il a maintenant un
+jeu à jour pour les écrire.
 
-**Une chose à surveiller** : la chaîne d'intégration sait dégraisser, mais elle
-ne le fait que si on le lui demande. Le prochain modèle livré passera au budget
-de son auteur si personne ne pense aux options. La charte porte l'exception des
-repères ; elle ne porte pas encore de garde-fou automatique.
+**Trois choses à surveiller :**
+
+- la chaîne d'intégration sait dégraisser, mais **seulement si on le lui
+  demande** : le prochain modèle livré passera au budget de son auteur si
+  personne ne pense aux options. La charte porte l'exception des repères, pas de
+  garde-fou automatique ;
+- `bg.ps1 generer` est **inutilisable sur cette machine** faute de Python. Le
+  contournement est connu (celui de Blender), il n'est pas câblé ;
+- les deux réactions de Skyler **n'ont pas de voix** et sont marquées muettes
+  assumées. Elles marchent, mais la maison est le seul endroit du jeu où l'on
+  parle sans entendre personne.
 
 ---
 

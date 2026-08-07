@@ -174,6 +174,28 @@ def livre(mats) -> int:
     return total
 
 
+def oeufs(mats) -> int:
+    """La boite d'oeufs des courses, fermee.
+
+    Les six alveoles bombees du couvercle sont ce qui la distingue d'une
+    brique a cette taille. Sans elles, l'objet tenu en main se lit comme un
+    parpaing beige et personne ne comprend ce que Walter rapporte.
+    """
+    total = 0
+    m = Maillage("Boite", mats["carton"])
+    m.boite(-0.150, -0.055, 0.0, 0.150, 0.055, 0.038)       # le fond
+    m.boite(-0.148, -0.053, 0.036, 0.148, 0.053, 0.060)     # le couvercle
+    total += m.finir()
+
+    a = Maillage("Alveoles", mats["carton_clair"])
+    for i in range(3):
+        x = -0.092 + i * 0.092
+        for y in (-0.026, 0.026):
+            a.boite(x - 0.030, y - 0.021, 0.058, x + 0.030, y + 0.021, 0.072)
+    total += a.finir()
+    return total
+
+
 def chapeau(mats) -> int:
     """Le porkpie. Deux volumes : un bord large et plat, une calotte basse.
     C'est la silhouette la plus reconnaissable de la serie, et elle tient
@@ -205,6 +227,7 @@ OBJETS = {
     "meth": (meth, ["cristal", "cristal_clair"]),
     "botte": (botte, ["cristal_blanc", "cristal_blanc_vif"]),
     "livre": (livre, ["couverture", "pages"]),
+    "oeufs": (oeufs, ["carton", "carton_clair"]),
 }
 
 

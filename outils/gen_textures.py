@@ -1332,6 +1332,12 @@ def main() -> None:
         ("cristal_blanc_vif", (250, 250, 248), 0.10, False),
         ("couverture", (96, 62, 46), 0.10, False),
         ("pages", (226, 218, 196), 0.06, True),
+        # La boite d'oeufs des courses. Un carton recycle, gris-beige et mat :
+        # c'est la seule chose que Walter rapporte de sa vie normale, et elle
+        # doit se lire comme un objet de supermarche au milieu d'une roue qui
+        # contient un revolver et deux cristaux.
+        ("carton", (176, 152, 118), 0.13, False),
+        ("carton_clair", (198, 178, 146), 0.11, False),
         ("feutre", (48, 46, 48), 0.08, False),
         ("feutre_sombre", (30, 28, 30), 0.08, False),
         # --- la mission : le labo, et le QG de Tuco ---

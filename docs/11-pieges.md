@@ -319,3 +319,30 @@ dehors.
 **Et la leçon de méthode :** quand une image et un nombre se contredisent, aucun
 des deux ne ment forcément. Ils ne répondent simplement pas à la même question,
 et il faut trouver laquelle avant de corriger quoi que ce soit.
+
+---
+
+## 22. Une conversation ne s'ouvre ni en capture, ni dans la suite `mission`
+
+Deux vérifications de la boucle des courses se sont arrêtées **sans un mot** :
+Godot quittait, aucun message d'erreur, aucune trace. Le point commun : les deux
+finissaient par ouvrir un dialogue.
+
+- La situation de capture appuyait sur la touche d'interaction devant le plan de
+  travail. La conversation s'ouvrait, l'image n'était jamais prise.
+- La suite `mission` appelait `point_utilise()`, qui démarre la réponse de
+  Skyler.
+
+**Ce n'était pas le contenu neuf.** On l'a mesuré en démarrant `telephone_skyler`
+— une fiche qui existe depuis des semaines — au même endroit : même arrêt net.
+C'est le contexte qui ne le supporte pas, pas la fiche.
+
+**La parade.** Séparer ce qui se mesure de ce qui se joue. `poser_les_courses()`
+est publique, fait le retrait et le crédit, et renvoie si on avait de quoi ; le
+dialogue vit dans `point_utilise()`, une ligne au-dessus. Le test vérifie la
+mécanique et se contente de contrôler que les deux fiches **existent** —
+`dialogue.connait()` ne les ouvre pas.
+
+**Le réflexe général :** avant de conclure qu'un ajout casse un test, refaire le
+même geste avec quelque chose qui marchait déjà. Ça coûte une exécution et ça
+évite de réécrire du code qui n'avait rien.

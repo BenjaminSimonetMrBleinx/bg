@@ -141,6 +141,39 @@ d'œufs dans l'inventaire, et Skyler qui réagit quand tu rentres. Ticket #49.
 
 ---
 
+## 0.48.13 — L'épicerie vend, la cuisine compte
+
+> **À essayer : va faire les courses, puis rentre chez toi et pose-les sur le
+> plan de travail de la cuisine.** Skyler réagit. Recommence sans être passé à
+> l'épicerie : elle réagit aussi, mais pas pareil.
+
+![La boîte d'œufs en main](docs/images/boite-oeufs.png)
+
+**L'épicerie était un bouton.** On pouvait appuyer en boucle devant le comptoir
+et monter la famille à cent sans bouger de place : le compteur devenait une
+manivelle, et les deux cent quatre-vingts mètres de détour ne voulaient plus
+rien dire.
+
+**Maintenant elle vend.** Quatre dollars sortent de la poche, une caisse
+enregistreuse s'entend au comptoir, et tu repars avec une **boîte d'œufs dans
+les mains** — un objet de la roue, comme le revolver ou le chapeau. Si tu n'as
+pas les quatre dollars, elle refuse et le dit.
+
+**Et c'est en rentrant que ça compte.** Les points de famille ne tombent plus à
+l'épicerie : ils tombent quand tu poses la boîte sur le plan de travail de ta
+cuisine, et seulement si tu l'as encore.
+
+![Poser les courses](docs/images/poser-les-courses.png)
+
+**Ce que ça change vraiment :** la course devient perdable. Tu peux acheter puis
+mourir, ou oublier de rentrer, ou rentrer les mains vides. Acheter n'est plus la
+récompense — rentrer avec l'est.
+
+**Skyler répond dans les deux cas.** Avec les œufs, elle a remarqué. Sans, elle
+ne fait pas de reproche : elle dit qu'elle ira elle-même. C'est plus lourd.
+
+---
+
 ## 0.48.12 — Le camping-car de Guillaume est dans le jeu
 
 > **À essayer : va au désert et approche-toi du camping-car.** Ce n'est plus la

@@ -1103,10 +1103,39 @@ func _pnj_proche() -> Pnj:
 
 
 func _utiliser(p: Point) -> void:
+	# ON VERIFIE L'ARGENT AVANT, ON LE PRELEVE APRES.
+	#
+	# Les deux moities comptent, et pour deux raisons opposees :
+	#
+	#   - verifier avant, parce que declencher() CONSOMME le point — il se marque
+	#     fait, disparait s'il est a usage unique, et emet son signal. Payer
+	#     ensuite laisserait un point consomme pour un achat qu'on refuse ;
+	#   - prelever apres, parce qu'un point peut refuser de lui-meme, et il rend
+	#     alors son refus SANS se consommer. L'argent, lui, serait deja parti :
+	#     on aurait paye pour s'entendre dire non.
+	var caisse: Bourse = null
+	if p.coute > 0:
+		caisse = Bourse.courante(self)
+		if caisse == null or caisse.montant() < p.coute:
+			annoncer("Il vous faut %s" % Bourse.ecrire(p.coute))
+			return
+
 	var refus := p.declencher()
 	if refus != "":
 		annoncer(refus)
 		return
+
+	if caisse != null:
+		caisse.retirer(p.coute)
+
+	# LE SON EST EMIS DEPUIS LE POINT, pas dans l'oreille du joueur. Une caisse
+	# enregistreuse s'entend au comptoir : c'est ce qui fait qu'on a agi QUELQUE
+	# PART plutot qu'appuye sur une touche.
+	if p.son != "":
+		var audio := Audio.courant(self)
+		if audio != null:
+			audio.bruit_ici(p.son, p.global_position)
+
 	if p.evenement == "action:cachette":
 		if _scenario != null:
 			_scenario.ouvrir_la_cachette()

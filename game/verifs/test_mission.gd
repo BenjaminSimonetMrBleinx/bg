@@ -79,6 +79,7 @@ func _scenario() -> void:
 	_le_deroule(mission)
 	_les_cles(mission, dialogue, equipement)
 	_la_cachette(mission, bourse)
+	_les_courses(equipement, dialogue)
 
 	print("")
 	if _erreurs.is_empty():
@@ -358,3 +359,69 @@ func _la_cachette(mission: Mission, bourse: Bourse) -> void:
 	_verifier(scenario.refus_de_sortie() == "",
 			"avec %s, elle s'ouvre" % Bourse.ecrire(plafond - 1))
 	print("       plafond : %s" % Bourse.ecrire(plafond))
+
+
+func _point_nomme(nom: String) -> Point:
+	for n in _monde.get_tree().get_nodes_in_group(Point.GROUPE):
+		if n.name == nom:
+			return n as Point
+	return null
+
+
+# LES COURSES : ACHETER N'EST PAS LA RECOMPENSE, RENTRER AVEC L'EST.
+#
+# L'epicerie donnait dix points de famille sur place, sans rien prelever et sans
+# rien remettre : on pouvait appuyer en boucle devant le comptoir et monter la
+# famille a cent sans bouger. Le compteur devenait une manivelle.
+#
+# Ce controle verrouille la dissociation — le magasin VEND, la cuisine COMPTE —
+# et surtout la ligne qui casse tout si on la reecrit : tant que l'evenement de
+# l'epicerie figure dans Famille.GAINS, Famille se rebranche dessus toute seule.
+# C'est une mecanique generique, et c'est precisement ce qui la rend facile a
+# reactiver sans le vouloir.
+func _les_courses(equipement: Equipement, dialogue: Dialogue) -> void:
+	print("\n--- les courses ---")
+	var epicerie := _point_nomme("Courses")
+	var plan := _point_nomme("PlanDeTravail")
+	_verifier(epicerie != null, "l'epicerie a son point d'interaction")
+	_verifier(plan != null, "la cuisine a son plan de travail")
+	if epicerie == null or plan == null:
+		return
+
+	_verifier(epicerie.coute > 0,
+			"faire les courses coute quelque chose ($%d)" % epicerie.coute)
+	_verifier(epicerie.donne == "oeufs", "et rend une boite d'oeufs")
+	_verifier(epicerie.son != "", "avec un son au comptoir ('%s')" % epicerie.son)
+	_verifier(not Famille.GAINS.has(epicerie.evenement),
+			"l'epicerie ne credite plus la famille ('%s')" % epicerie.evenement)
+
+	var famille := _trouver(_monde, "Famille") as Famille
+	var scenario := _trouver(_monde, "Scenario") as Scenario
+	if famille == null or scenario == null:
+		_verifier(false, "la famille et le scenario repondent")
+		return
+
+	# On pose l'inventaire et le compteur a la main : ce test mesure la
+	# MECANIQUE, pas les deux cent quatre-vingts metres de trajet.
+	equipement.donner("oeufs")
+	famille.poser(50)
+	_verifier(scenario.poser_les_courses(), "on pose la boite sur le plan de travail")
+	_verifier(not equipement.possede("oeufs"), "elle quitte l'inventaire")
+	_verifier(famille.points() > 50,
+			"et la famille monte (50 -> %d)" % famille.points())
+
+	# LES MAINS VIDES, ET DEUX FOIS DE SUITE. C'est le geste qu'on martelait a
+	# l'epicerie : il ne doit rien produire, quel que soit le nombre d'appuis.
+	var avant := famille.points()
+	_verifier(not scenario.poser_les_courses(), "les mains vides, le geste ne prend pas")
+	scenario.poser_les_courses()
+	_verifier(famille.points() == avant,
+			"et rien ne monte, meme repete (%d)" % famille.points())
+
+	# ON NE PEUT PAS OUVRIR DE CONVERSATION ICI — voir poser_les_courses(). On
+	# verifie donc que les deux reponses de Skyler EXISTENT ; laquelle se joue
+	# est decide par point_utilise, juste au-dessus, en une ligne.
+	_verifier(dialogue.connait("skyler_courses_oui"),
+			"Skyler a une reponse quand on a pense a elle")
+	_verifier(dialogue.connait("skyler_courses_non"),
+			"et une autre quand on a oublie")

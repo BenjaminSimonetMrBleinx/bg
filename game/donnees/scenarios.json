@@ -1385,6 +1385,27 @@
     }
    ]
   },
+  "poser_les_courses": {
+   "quoi": "Le plan de travail de la cuisine, avec la boite d'oeufs en main : l'invite « Poser les courses » doit s'afficher. C'est le seul endroit du jeu ou les points de famille montent — l'epicerie, elle, ne fait plus que vendre. La partie s'ouvrant chez Walter, on n'a pas a entrer : on se pose devant le meuble.",
+   "fin": 300,
+   "etapes": [
+    { "image": 240, "appeler": "Equipement", "methode": "donner", "argument": "oeufs" },
+    { "image": 250, "placer": "Joueur", "pos": [-578.6, 0.4, 577.3], "cap": 0 },
+    { "image": 270, "camera": [-577.0, 1.75, 578.8], "vise": [-578.6, 1.05, 576.3] }
+   ]
+  },
+  "oeufs_en_main": {
+   "quoi": "La boite d'oeufs des courses, tenue en main. Ce qu'on regarde : les six alveoles bombees du couvercle, seules a la distinguer d'une brique beige a cette taille. Meme mise en place que les cristaux — la mission POSE l'inventaire a son demarrage, donc on donne l'objet apres.",
+   "fin": 320,
+   "etapes": [
+    { "image": 18, "placer": "Joueur", "pos": [23.5, 0.4, -12] },
+    { "image": 20, "appeler": "Controleur", "methode": "sortir_du_batiment" },
+    { "image": 60, "placer": "Joueur", "pos": [874, 0.6, -750], "cap": 0 },
+    { "image": 240, "appeler": "Equipement", "methode": "donner", "argument": "oeufs" },
+    { "image": 245, "appeler": "Equipement", "methode": "equiper_cle", "argument": "oeufs" },
+    { "image": 250, "camera": [874.9, 1.35, -750.6], "vise": [874.3, 1.08, -749.95] }
+   ]
+  },
   "camping_car_porte": {
    "quoi": "Walter pose sur le point d'entree, vu de face contre le flanc : la SEULE question est de savoir si la porte du jeu tombe sur la porte du modele. La vue etait large et en plongee, ce qui montrait bien qu'il etait dehors mais ne tranchait pas celle-la. Elle a d'abord vise des coordonnees ecrites a la main et photographie du sable a vingt-neuf metres du vehicule, puis elle a ete posee a la verticale exacte — une image sans haut ni bas.",
    "fin": 70,

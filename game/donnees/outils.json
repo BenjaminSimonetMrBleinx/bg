@@ -41,6 +41,14 @@
       "echelle": 1.0
     },
     {
+      "cle": "oeufs",
+      "nom": "Boite d'oeufs",
+      "ancrage": "MainD",
+      "position": [0.0, -0.04, 0.0],
+      "rotation": [180.0, 0.0, 0.0],
+      "echelle": 1.0
+    },
+    {
       "cle": "botte",
       "nom": "Botte secrete",
       "ancrage": "MainD",

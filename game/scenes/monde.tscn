@@ -154,10 +154,28 @@ script = ExtResource("30_ancrage")
 lieu = "strip_mall_0_4"
 suivre_le_cap = false
 
+; ACHETER N'EST PLUS LA RECOMPENSE — C'EST RENTRER AVEC.
+;
+; Ce point donnait dix points de famille sur place, sans rien prelever et sans
+; rien remettre. On pouvait donc appuyer en boucle devant l'epicerie et monter
+; la famille a cent sans bouger : le compteur devenait une manivelle, et le
+; detour de deux cent quatre-vingts metres ne voulait plus rien dire.
+;
+; Desormais il vend. Quatre dollars sortent de la poche, une caisse
+; enregistreuse s'entend au comptoir, et on repart avec une boite d'oeufs DANS
+; LES MAINS. Le geste devient transportable et perdable — on peut acheter puis
+; mourir, ou oublier de rentrer.
+;
+; L'evenement n'est plus « courses » : c'est ce nom qui faisait crediter la
+; famille, parce qu'elle branche tout point dont l'evenement est une attention
+; connue. Le credit a demenage a la maison, sur le plan de travail.
 [node name="Courses" type="Node3D" parent="Rendu/Scene3D/Epicerie"]
 script = ExtResource("39_point")
 invite = "Faire les courses"
-evenement = "courses"
+evenement = "achat_courses"
+donne = "oeufs"
+coute = 4
+son = "achat"
 une_fois = false
 portee = 3.0
 
@@ -281,6 +299,35 @@ script = ExtResource("39_point")
 invite = "Cacher votre argent"
 evenement = "action:cachette"
 etape = "cacher"
+une_fois = false
+portee = 1.9
+
+; LE PLAN DE TRAVAIL DE LA CUISINE, ou l'on pose les courses.
+;
+; C'EST ICI QUE LES POINTS DE FAMILLE TOMBENT, et plus a l'epicerie. Acheter
+; n'est pas la recompense : rentrer avec l'est. Entre les deux il y a deux cent
+; quatre-vingts metres, une boite qu'on peut perdre en mourant, et un detour
+; qu'on peut oublier de faire.
+;
+; Le geste plutot que le seuil : tout ce qui compte dans ce jeu se fait en
+; appuyant sur F quelque part. Une porte franchie qui crediterait toute seule
+; demanderait en plus un garde-fou contre l'aller-retour en boucle — le
+; probleme qu'on repare precisement ici.
+;
+; Le point est TOUJOURS propose, meme les mains vides : c'est ce qui permet a
+; Skyler de repondre quelque chose quand on n'a rien rapporte. Sans oeufs il ne
+; donne aucun point, il fait seulement parler.
+;
+; Coordonnees du MONDE, comme la latte descellee juste au-dessus et pour la
+; meme raison : l'interieur de Walter est a (26, -20) + (-600, 600), et il ne
+; bouge pas — la maison occupe une parcelle RESERVEE du generateur. Le plan de
+; travail est le long du mur du fond, releve dans gen_maison.py : (-4,6 ; 4,2)
+; en convention Blender, ou l'axe Y s'inverse a l'export.
+[node name="PlanDeTravail" type="Node3D" parent="Rendu/Scene3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -578.6, 0.95, 576.1)
+script = ExtResource("39_point")
+invite = "Poser les courses"
+evenement = "action:courses_posees"
 une_fois = false
 portee = 1.9
 

@@ -94,6 +94,46 @@ def melanger(*couches: list[float]) -> list[float]:
     return sortie
 
 
+def ton(frequence: float, duree: float, amplitude: float = 1.0) -> list[float]:
+    """Une sinusoide. Tout ce qui TINTE part de la, la ou tout ce qui claque
+    part du bruit blanc."""
+    n = int(duree * TAUX)
+    return [amplitude * math.sin(2.0 * math.pi * frequence * i / TAUX)
+            for i in range(n)]
+
+
+def silence(duree: float) -> list[float]:
+    return [0.0] * int(duree * TAUX)
+
+
+def apres(retard: float, source: list[float]) -> list[float]:
+    """Decale un son dans le temps. Une caisse enregistreuse n'est pas un
+    accord : c'est un declic PUIS une cloche, et l'ecart entre les deux est ce
+    qui fait qu'on reconnait le geste."""
+    return silence(retard) + source
+
+
+def caisse(graine: int) -> list[float]:
+    """La caisse enregistreuse de l'epicerie.
+
+    Un declic de touche, puis le tiroir : deux notes de cloche a la quinte,
+    qui decroissent ensemble. C'est le son qu'on entend quand on PAIE — le
+    projet en avait deja un pour quand on encaisse (`gain_argent`), et les
+    reutiliser l'un pour l'autre aurait rendu le signal ambigu : on ne saurait
+    plus, a l'oreille, si l'argent est entre ou sorti.
+
+    Bouchon de synthese, comme tout ce fichier. Il se remplace en deposant un
+    fichier du meme nom.
+    """
+    declic = enveloppe(passe_bas(bruit(0.045, graine), 6000.0, 1400.0),
+                       0.0006, 0.045, 3.0)
+    cloche_a = enveloppe(ton(1318.5, 0.55, 0.42), 0.003, 0.55, 2.2)
+    cloche_b = enveloppe(ton(1975.5, 0.50, 0.26), 0.003, 0.50, 2.4)
+    return melanger(declic,
+                    apres(0.055, cloche_a),
+                    apres(0.062, cloche_b))
+
+
 def coup_de_feu(graine: int) -> list[float]:
     """Un .38 : claquement sec, une pointe de corps, et une queue de piece."""
     claque = enveloppe(passe_bas(bruit(0.09, graine), 9000.0, 900.0),
@@ -146,16 +186,37 @@ def explosion(graine: int) -> list[float]:
 def main() -> None:
     ap = argparse.ArgumentParser(description="Sons de synthese provisoires")
     ap.add_argument("--sortie", default="game/assets/sons/mission")
+    # UN NOM, ET PAS TOUTE LA BANQUE À CHAQUE FOIS.
+    #
+    # Ce script reecrivait ses cinq fichiers a chaque appel. Ajouter un son en
+    # ecrasait donc quatre autres — et le jour ou l'un d'eux aura ete remplace
+    # par un vrai enregistrement, on le perdra sans que rien ne le signale.
+    # C'est le piege 11, et il a deja coute deux modeles livres.
+    ap.add_argument("--nom", default="tous",
+                    help="un son, ou 'tous'. Voir les cles ci-dessous.")
     a = ap.parse_args()
     dossier = Path(a.sortie)
+
+    recettes = {
+        "coups_de_feu": lambda: [
+            (dossier / ("coup_de_feu_0%d.wav" % (i + 1)), coup_de_feu(1000 + i))
+            for i in range(3)],
+        "fusillade": lambda: [(dossier / "fusillade.wav", rafale(4242))],
+        "explosion": lambda: [(dossier / "explosion.wav", explosion(777))],
+        "caisse": lambda: [(dossier / "caisse.wav", caisse(31))],
+    }
+    if a.nom != "tous" and a.nom not in recettes:
+        raise SystemExit("son inconnu : %s. Connus : %s, tous"
+                         % (a.nom, ", ".join(sorted(recettes))))
 
     print("")
     print("  Sons de SYNTHESE, en attendant les vrais.")
     print("")
-    for i in range(3):
-        ecrire(dossier / ("coup_de_feu_0%d.wav" % (i + 1)), coup_de_feu(1000 + i))
-    ecrire(dossier / "fusillade.wav", rafale(4242))
-    ecrire(dossier / "explosion.wav", explosion(777))
+    for nom, recette in recettes.items():
+        if a.nom not in ("tous", nom):
+            continue
+        for chemin, echantillons in recette():
+            ecrire(chemin, echantillons)
     print("")
 
 
