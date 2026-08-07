@@ -141,6 +141,29 @@ d'œufs dans l'inventaire, et Skyler qui réagit quand tu rentres. Ticket #49.
 
 ---
 
+## 0.48.14 — On trouve enfin la cachette, et le klaxon s'entend
+
+> **Si tu télécharges le jeu pour y jouer, prends celle-ci.** Les deux
+> corrections viennent d'une vraie partie, jouée de bout en bout.
+
+**La cachette était introuvable, et elle bloquait la fin de la mission.** La
+latte descellée du salon n'existait qu'en tant que point invisible : aucune
+planche à l'écran, posée à un mètre soixante du mur le plus proche, au milieu
+d'un salon de quatorze mètres sur dix. Le tuto annonçait pourtant « une latte du
+mur n'est pas comme les autres ».
+
+Elle est maintenant **contre le mur de gauche, à côté de la bibliothèque**, et
+on la voit : une planche un peu plus sombre que le reste. Cherche près de la
+bibliothèque.
+
+![La cachette](docs/images/cachette.png)
+
+**Le klaxon s'entend.** Il était enregistré six fois moins fort que le bruit de
+portière — mesuré sur les fichiers, pas deviné. Il est remonté au niveau des
+autres.
+
+---
+
 ## 0.48.13 — L'épicerie vend, la cuisine compte
 
 > **À essayer : va faire les courses, puis rentre chez toi et pose-les sur le
