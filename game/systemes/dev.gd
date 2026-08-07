@@ -45,6 +45,7 @@ const ENTREES := [
 	{"cle": "lieu", "nom": "Aller a un lieu nomme...", "genre": PAGE},
 	{"cle": "traverse", "nom": "Traverser les murs et voler", "genre": BASCULE},
 	{"cle": "voiture", "nom": "Faire venir la voiture", "genre": ACTION},
+	{"cle": "fin_mission", "nom": "Derouler la mission jusqu'a la fin", "genre": ACTION},
 	{"cle": "mille", "nom": "Donner 1 000 $", "genre": ACTION},
 	{"cle": "dix_mille", "nom": "Donner 10 000 $", "genre": ACTION},
 	{"cle": "sans_le_sou", "nom": "Remettre l'argent a zero", "genre": ACTION},
@@ -142,6 +143,30 @@ func nombre() -> int:
 	return ENTREES.size()
 
 
+# DEROULER LA MISSION SANS LA JOUER.
+#
+# Le puits economique — l'atelier qui resserre, le contact qui achete — n'ouvre
+# qu'une fois la mission 1 bouclee. Le verifier demandait donc vingt-cinq
+# minutes de jeu A CHAQUE ESSAI, ce qui revient a ne pas le verifier.
+#
+# On avance par les MEMES EVENEMENTS que le jeu, jamais en posant l'index : une
+# etape franchie autrement n'aurait declenche aucune des consequences qui
+# l'accompagnent, et l'etat obtenu ne ressemblerait a aucun etat atteignable en
+# jouant. Le garde-fou compte les tours plutot que de faire confiance : une
+# etape sans emetteur bloquerait la boucle pour toujours.
+func _finir_la_mission() -> String:
+	var m := Mission.courante(self)
+	if m == null:
+		return "pas de mission"
+	var garde := 0
+	while not m.finie() and garde < 40:
+		garde += 1
+		var quoi := str(m.etape().get("valide_par", ""))
+		if quoi == "" or not m.evenement(quoi):
+			return "bloque a l'etape '%s'" % m.cle_etape()
+	return "mission deroulee" if m.finie() else "boucle interrompue"
+
+
 func nom(i: int) -> String:
 	return str(ENTREES[i].get("nom", ""))
 
@@ -207,6 +232,8 @@ func agir(i: int) -> String:
 					else "repose au sol"
 		"voiture":
 			return _amener_la_voiture()
+		"fin_mission":
+			return _finir_la_mission()
 		"mille":
 			return _donner_argent(1000)
 		"dix_mille":
