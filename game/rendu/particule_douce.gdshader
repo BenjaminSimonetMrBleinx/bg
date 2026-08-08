@@ -11,7 +11,7 @@
 //   2. Le sprite n'a aucune forme. Une bouffee de vapeur n'est pas un carre.
 //
 // Aucune texture : la forme est calculee. C'est la meme logique que
-// ciel_nuit.gdshader, qui fabrique ses etoiles plutot que de les peindre — et
+// ciel_nuit.gdshader, qui fabrique ses etoiles plutot que de les peindre - et
 // la meme fonction de hachage, pour n'en avoir qu'une dans le projet.
 //
 // depth_draw_never : une particule ne doit jamais cacher celle qui est derriere.
@@ -36,6 +36,12 @@ uniform float grain_echelle : hint_range(1.0, 32.0) = 6.0;
 
 uniform sampler2D profondeur : hint_depth_texture, filter_linear_mipmap;
 
+// INSTANCE_CUSTOM N'EXISTE QUE DANS vertex(). Le lire dans fragment() donne
+// « Unknown identifier » a la compilation - il faut le faire passer par un
+// varying. Le shader se charge quand meme, la scene aussi, et c'est la sortie
+// d'erreur qui le dit : exactement le genre de panne qui passe inapercue.
+varying flat vec4 particule;
+
 
 float hache(vec3 p) {
 	p = fract(p * 0.3183099 + vec3(0.71, 0.113, 0.419));
@@ -58,36 +64,62 @@ float bruit(vec3 p) {
 }
 
 
+// LE BILLBOARD SE FAIT ICI, ET PAS DANS LE MATERIAU.
+//
+// Un StandardMaterial3D a une case « billboard » ; un ShaderMaterial n'en a
+// pas, il faut l'ecrire. Sans ca le quad garde l'orientation que lui donne le
+// systeme de particules, et on voit une carte a jouer de profil des qu'on
+// tourne autour.
+//
+// On remplace la rotation du modele par celle de la camera, en gardant la
+// translation (colonne 3) et l'echelle (les longueurs des trois premieres
+// colonnes) - sans ce second passage, toutes les particules reviendraient a la
+// taille 1 et le reglage scale_min/scale_max du processeur ne servirait plus.
+void vertex() {
+	particule = INSTANCE_CUSTOM;
+	MODELVIEW_MATRIX = VIEW_MATRIX * mat4(
+			INV_VIEW_MATRIX[0],
+			INV_VIEW_MATRIX[1],
+			INV_VIEW_MATRIX[2],
+			MODEL_MATRIX[3]);
+	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(
+			vec4(length(MODEL_MATRIX[0].xyz), 0.0, 0.0, 0.0),
+			vec4(0.0, length(MODEL_MATRIX[1].xyz), 0.0, 0.0),
+			vec4(0.0, 0.0, length(MODEL_MATRIX[2].xyz), 0.0),
+			vec4(0.0, 0.0, 0.0, 1.0));
+}
+
+
 void fragment() {
 	// LA FORME. Un disque aux bords fondus plutot qu'un carre : c'est ce qui
 	// fait la difference entre « une bouffee » et « un sprite ».
 	vec2 c = UV - vec2(0.5);
 	float a = 1.0 - smoothstep(0.18, 0.5, length(c));
 
-	// LE GRAIN. INSTANCE_CUSTOM.x differe d'une particule a l'autre : sans lui
-	// les cent bouffees d'un jet portent exactement le meme motif, et le jet
+	// LE GRAIN. La composante x differe d'une particule a l'autre : sans elle
+	// les dix-huit bouffees du jet portent exactement le meme motif, et le jet
 	// se lit comme une repetition au lieu d'un nuage.
 	if (grain > 0.001) {
-		float n = bruit(vec3(UV * grain_echelle, INSTANCE_CUSTOM.x * 37.0));
+		float n = bruit(vec3(UV * grain_echelle, particule.x * 37.0));
 		a *= mix(1.0, n, grain);
 	}
 
-	// LE CYCLE DE VIE. GPUParticles3D ecrit l'age normalise dans
-	// INSTANCE_CUSTOM.y. On monte vite et on redescend lentement : une vapeur
-	// apparait d'un coup au bec du ballon et se dissipe en montant.
-	float age = INSTANCE_CUSTOM.y;
+	// LE CYCLE DE VIE. GPUParticles3D ecrit l'age normalise dans la composante
+	// y. On monte vite et on redescend lentement : une vapeur apparait d'un
+	// coup au bec du ballon et se dissipe en montant.
+	float age = particule.y;
 	a *= smoothstep(0.0, 0.12, age) * (1.0 - smoothstep(0.35, 1.0, age));
 
 	// LE FONDU DE CONTACT, la vraie raison d'etre de ce shader.
 	//
 	// On lit la profondeur de ce qui est DEJA dessine a cet endroit de l'ecran
-	// et on la compare a la notre. Quand les deux se rapprochent — c'est-a-dire
-	// quand le quad entre dans la paillasse — l'opacite tombe, et l'arete
+	// et on la compare a la notre. Quand les deux se rapprochent - c'est-a-dire
+	// quand le quad entre dans la paillasse - l'opacite tombe, et l'arete
 	// disparait au lieu de couper le nuage en deux.
 	//
 	// La profondeur du tampon est non lineaire : il faut la reprojeter pour
-	// que « dix-huit centimetres » veuille dire dix-huit centimetres partout,
-	// et pas seulement au ras de la camera.
+	// que « vingt-deux centimetres » veuille dire vingt-deux centimetres
+	// partout, et pas seulement au ras de la camera.
 	if (douceur_contact > 0.001) {
 		float brut = texture(profondeur, SCREEN_UV).r;
 		vec3 ndc = vec3(SCREEN_UV * 2.0 - 1.0, brut);
