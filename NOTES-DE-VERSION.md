@@ -58,7 +58,15 @@ différence — sauf au chargement.
 
 ### Ce que ça coûte
 
-Rien de mesurable : **0,6 ms par image avant, 0,7 après**, sur les 33 disponibles.
+**Rien de mesurable.** Au centre de la ville, à 22 h, tous effets coupés : 3,0 ms
+par image. Avec tout ce qui précède allumé : **2,8 ms**, sur les 33 disponibles.
+L'écart est dans le bruit.
+
+*(Ce paragraphe annonçait d'abord « 0,6 ms avant, 0,7 après ». Les deux chiffres
+étaient réels, mais pris à deux endroits différents de la ville — le relevé se
+faisait là où la dernière partie s'était arrêtée. Il mesure maintenant toujours
+au même point. La conclusion, elle, n'a pas changé.)*
+
 Si ça rame chez toi, dis-le tout de suite — c'est le genre de chose qui ne se voit
 pas depuis la machine qui l'a fabriqué.
 

@@ -19,6 +19,7 @@
 [ext_resource type="Shader" path="res://rendu/particule_douce.gdshader" id="50_vapeur"]
 [ext_resource type="PackedScene" path="res://assets/decor/verrerie.glb" id="51_verrerie"]
 [ext_resource type="PackedScene" path="res://assets/decor/bidons_chimie.glb" id="52_bidons"]
+[ext_resource type="Script" path="res://systemes/verrerie_vitree.gd" id="53_verre"]
 
 [ext_resource type="Script" path="res://systemes/pnj.gd" id="1_pnj"]
 [ext_resource type="Script" path="res://systemes/ancrage.gd" id="14_ancrage"]
@@ -299,6 +300,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 300, 0, 1200)
 ; lampe centrale a ses deux bouts dans le noir, ce qui est exactement l'endroit
 ; ou se trouvent Jesse et le poste de conduite. La teinte tire sur le jaune
 ; sale : c'est un neon de camping-car, pas un plafonnier de salon.
+; Donne un materiau de verre aux cylindres et aux cones du decor genere. Un
+; ShaderMaterial ne se cuit pas dans un .glb : il faut le poser au chargement.
+[node name="VerrerieVitree" type="Node" parent="CampingCarInterieur"]
+script = ExtResource("53_verre")
+
 [node name="Plafonnier" type="OmniLight3D" parent="CampingCarInterieur"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.85, 2.2)
 light_color = Color(1, 0.937, 0.788, 1)

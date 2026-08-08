@@ -473,3 +473,52 @@ nombre faux** — un appelant qui compare à une cible croirait au nombre.
 Le garde-fou ajouté au même moment : `integrer` **relit le fichier écrit** et
 refuse si la hauteur ne correspond pas à 1 % près. C'est lui qui a rendu les
 trois bugs visibles au lieu de les laisser passer en silence.
+
+---
+
+## 26. `diag` mesurait un endroit différent à chaque fois
+
+**Le piège 18 pour la troisième fois, et c'est celui qui coûte le plus cher en
+mauvaises conclusions.**
+
+Deux relevés consécutifs, sans qu'une ligne de code ait bougé entre les deux :
+
+```
+temps d'image  0.7 ms median,  125 appels de rendu
+temps d'image  5.0 ms median,  906 appels de rendu
+```
+
+Un facteur sept. J'en ai conclu qu'un shader de verre coûtait quatre
+millisecondes, et j'ai commencé à le démonter. Il ne coûte rien : mesuré avec et
+sans, à quelques minutes d'écart, **4,8 contre 5,0 ms**.
+
+**La cause :** `monde.tscn` **reprend la sauvegarde** à son chargement. Le relevé
+se fait donc là où la dernière partie s'est arrêtée. Et comme chaque
+`bg.ps1 capture` joue une situation puis sauvegarde en partant, l'endroit change
+tout seul entre deux `diag`. En périphérie de la ville : 22 appels de rendu. En
+plein centre : 906.
+
+**La parade.** `diag_ville.gd` pose maintenant le joueur à un **point fixe**,
+`(0, 1.5, 0)`, à la même image que l'heure. Deux relevés consécutifs donnent
+2,4 et 2,8 ms — cohérents.
+
+Le point est en dur et **pas un lieu nommé** : les noms viennent du générateur et
+changent avec la graine. `terrain_vague_3_7` existait le matin et plus
+l'après-midi (voir piège 23). `--lieu <nom>` reste disponible pour mesurer
+ailleurs volontairement.
+
+### Ce que ça a coûté en affirmations fausses
+
+La note de version de la 0.51.0 annonçait « 0,6 ms avant, 0,7 après ». Les deux
+chiffres étaient réels et la conclusion était juste — **la refonte ne coûte
+rien** — mais ils décrivaient deux endroits différents et ne se comparaient pas.
+
+La mesure honnête, faite au même point en coupant les effets par réglage :
+
+| | Temps d'image | Appels de rendu |
+|---|---|---|
+| Effets coupés | 3,0 ms | 751 |
+| **0.51.0 complète** | **2,8 ms** | 786 |
+
+L'écart est dans le bruit. **Une mesure de performance ne vaut que si l'on peut
+dire où elle a été prise.**

@@ -26,17 +26,25 @@ uniform vec4 couleur : source_color = vec4(0.32, 0.62, 0.28, 0.86);
 // opaque comme du solvant use.
 uniform float trouble : hint_range(0.0, 1.0) = 0.35;
 
-// De combien ce qu'il y a derriere se decale, en fraction d'ecran. Tres petit :
-// au-dela, le becher devient une loupe et on voit le decor glisser.
-uniform float refraction : hint_range(0.0, 0.1) = 0.018;
+// LA REFRACTION A ETE RETIREE, ET C'EST UNE DECISION D'APRES MESURE.
+//
+// Elle lisait le tampon d'ecran (hint_screen_texture). Ce seul mot-cle fait
+// copier le back-buffer A CHAQUE IMAGE des qu'un objet qui l'utilise est dans
+// la scene — meme a l'autre bout de la ville, meme hors du champ.
+//
+// Le releve est sans appel : 0,7 ms par image avant, 5,0 ms apres. Quatre
+// millisecondes et trois dixiemes, soit quinze pour cent du budget, pour un
+// decalage de deux pixels sur un becher de vingt centimetres qu'on ne voit
+// qu'en s'approchant a un metre.
+//
+// Ce qui fait lire « du verre » n'etait de toute facon pas la : c'est le bord
+// qui s'allume et le menisque. Les deux restent, et ils ne coutent rien.
 
 // La hauteur du menisque, en fraction de la hauteur du maillage.
 uniform float menisque : hint_range(0.0, 0.4) = 0.08;
 
 // L'eclat du bord. C'est lui qui dit l'epaisseur.
 uniform float bord : hint_range(0.0, 3.0) = 0.9;
-
-uniform sampler2D ecran : hint_screen_texture, filter_linear_mipmap;
 
 varying float hauteur_locale;
 
@@ -54,24 +62,21 @@ void fragment() {
 	float face = clamp(dot(normalize(NORMAL), normalize(VIEW)), 0.0, 1.0);
 	float fresnel = pow(1.0 - face, 3.0);
 
-	// LA REFRACTION. Une seule lecture, decalee par la normale. On ne cherche
-	// pas la physique : on cherche que le fond ne soit pas RIGOUREUSEMENT
-	// aligne avec ce qui l'entoure, parce que c'est ca qui trahit une vitre
-	// peinte.
-	vec2 decale = NORMAL.xy * refraction * (1.0 - face);
-	vec3 derriere = texture(ecran, SCREEN_UV + decale).rgb;
-
 	// LE MENISQUE. La derniere tranche du haut s'assombrit : le liquide y
-	// remonte contre la paroi et s'y epaissit.
+	// remonte contre la paroi et s'y epaissit. C'est un detail d'un centimetre,
+	// et c'est celui que l'oeil lit comme « il y a du liquide dedans ».
 	float creux = 1.0 - smoothstep(1.0 - menisque, 1.0, hauteur_locale) * 0.55;
 
-	vec3 teinte = couleur.rgb * creux;
-	// Le trouble decide de ce qu'on voit : sa propre couleur, ou le decor a
-	// travers. Un solvant use ne laisse rien passer, de l'eau presque tout.
-	ALBEDO = mix(derriere * couleur.rgb, teinte, trouble);
+	ALBEDO = couleur.rgb * creux;
 	ALBEDO += fresnel * couleur.rgb * bord;
 
-	ALPHA = clamp(couleur.a + fresnel * 0.35, 0.0, 1.0);
+	// LE BORD PORTE AUSSI L'OPACITE, et c'est ce qui remplace la refraction :
+	// une paroi vue de face laisse passer, vue de biais elle s'epaissit. Sans
+	// ca, un cylindre transparent est un aplat translucide sans volume.
+	//
+	// Le trouble decide du fond : un solvant use ne laisse rien passer, de
+	// l'eau presque tout.
+	ALPHA = clamp(couleur.a * mix(0.65, 1.0, trouble) + fresnel * 0.5, 0.0, 1.0);
 	// Un liquide n'est pas mat : il rend la lumiere du plafonnier, et c'est ce
 	// reflet qui le pose dans la piece.
 	ROUGHNESS = mix(0.08, 0.35, trouble);

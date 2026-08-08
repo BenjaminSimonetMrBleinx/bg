@@ -39,6 +39,25 @@ var _debut_ms := 0
 var _chargement_ms := 0
 var _heure: float = -1.0
 
+## LE LIEU OU L'ON MESURE, et sans lui deux releves ne se comparent pas.
+##
+## Piege paye le 08/08/2026 : monde.tscn REPREND LA SAUVEGARDE a son
+## chargement, donc le releve se fait la ou le joueur se trouvait la derniere
+## fois. Or chaque capture joue une partie et sauvegarde en partant. Deux
+## `diag` a dix minutes d'ecart mesuraient donc deux endroits differents de la
+## ville — 22 appels de rendu en peripherie, 906 en plein centre — et l'ecart
+## a ete lu comme le cout d'un shader qui, mesure proprement, ne coute rien.
+##
+##   .\bg.ps1 diag                  <- toujours au meme endroit, comparable
+##   godot ... -- --lieu banc       <- ailleurs, si on veut mesurer ailleurs
+##
+## Le defaut est le CENTRE DE LA VILLE, en dur. Pas un lieu nomme : les noms
+## viennent du generateur et changent avec la graine — « terrain_vague_3_7 »
+## existait le matin et plus l'apres-midi. Une position fixe, elle, ne bouge
+## jamais, et c'est tout ce qu'on demande a un point de mesure.
+const OU_MESURER := Vector3(0.0, 1.5, 0.0)
+var _lieu: String = ""
+
 # Une entree par image mesuree, dans l'ordre ou elles sont tombees. L'ORDRE
 # EST LA MOITIE DE L'INFORMATION : un pic a la premiere image mesuree est un
 # reste de demarrage, un pic qui revient toutes les deux secondes est un
@@ -61,6 +80,8 @@ func _initialize() -> void:
 	for i in OS.get_cmdline_user_args().size() - 1:
 		if OS.get_cmdline_user_args()[i] == "--heure":
 			_heure = float(OS.get_cmdline_user_args()[i + 1])
+		if OS.get_cmdline_user_args()[i] == "--lieu":
+			_lieu = str(OS.get_cmdline_user_args()[i + 1])
 	# LA SYNCHRO VERTICALE S'ENLEVE POUR MESURER. Avec elle, toute image qui
 	# tient dans le budget sort a 16,7 ms — median, 99e centile et pire cas
 	# affichent le meme chiffre, et on ne sait pas s'il restait dix
@@ -93,6 +114,12 @@ func _process(delta: float) -> bool:
 		var t := root.get_tree().get_first_node_in_group(Temps.GROUPE) as Temps
 		if t != null:
 			t.regler(_heure)
+	# LE JOUEUR SE POSE AU MEME ENDROIT A CHAQUE RELEVE, sinon rien ne se
+	# compare. On le fait a la meme image que l'heure et pour la meme raison :
+	# la reprise de sauvegarde s'applique sur une image differee et ecraserait
+	# la position sans rien dire.
+	if _n == 20:
+		_poser_le_joueur()
 	if _n > CHAUFFE:
 		# ON MESURE LE TEMPS D'UNE IMAGE, PAS LE COMPTEUR D'IMAGES PAR SECONDE.
 		# Engine.get_frames_per_second() est rafraichi une fois par seconde :
@@ -212,6 +239,35 @@ func _rapport() -> void:
 # Le centile se lit sur une COPIE triee : l'ordre du releve dit quand chaque
 # pic est tombe, et le trier sur place effacerait ce que la fonction suivante
 # va chercher.
+# ON POSE LE JOUEUR, SINON ON MESURE UN ENDROIT AU HASARD.
+#
+# monde.tscn reprend la sauvegarde a son chargement : sans ce placement, le
+# releve se fait la ou la derniere partie s'est arretee. Et comme chaque capture
+# joue puis sauvegarde, l'endroit change tout seul entre deux `diag`.
+#
+# L'ecart n'est pas anecdotique : 22 appels de rendu en peripherie contre 906 en
+# plein centre. Deux releves consecutifs pouvaient afficher 0,7 ms et 5,0 ms
+# sans qu'une ligne de code ait bouge — et j'ai attribue la difference a un
+# shader qui, mesure des deux cotes, ne coute rien.
+func _poser_le_joueur() -> void:
+	var j := _trouver(_monde, "Joueur") as Node3D
+	if j == null:
+		print("  (joueur introuvable : le releve se fait ou la sauvegarde l'a laisse)")
+		return
+	if _lieu != "":
+		var fiche := Ancrage.trouver(_lieu)
+		if fiche.is_empty():
+			print("  lieu '%s' inconnu, on mesure au centre" % _lieu)
+		else:
+			var p: Array = fiche.get("pos", [0, 0, 0])
+			j.global_position = Vector3(float(p[0]), float(p[1]) + 1.5, float(p[2]))
+			print("  mesure au lieu    %s" % _lieu)
+			return
+	j.global_position = OU_MESURER
+	print("  mesure au point   %s (fixe, pour que deux releves se comparent)"
+			% str(OU_MESURER))
+
+
 func _centile(v: PackedFloat32Array, p: float) -> float:
 	if v.is_empty():
 		return 0.0
