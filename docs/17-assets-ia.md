@@ -154,6 +154,38 @@ touche volontairement ni au maillage ni aux textures : **on ne le modifie pas**.
 
 ---
 
+## Un modèle bon peut avoir l'air raté — regardez-le de près
+
+Le premier montage de distillation posé sur la paillasse est sorti **blanc et
+sans détail**. J'ai cru à un mauvais modèle, puis au piège 20 (une émission qui
+noie la couleur), puis à une texture ratée. Le matériau était propre, et la
+texture contenait bien son liquide ambré et son métal.
+
+**Il était simplement caché.** `gen_lieux` sème ses cylindres entre x = −1,48 et
+−1,28 sur ce plateau ; le modèle était posé à −1,39, donc pile derrière. On n'en
+voyait que le haut du condenseur dépasser. Déplacé à −1,18, sur la bande avant
+restée libre, il se lit d'un coup.
+
+**Deux conséquences pour la suite :**
+
+1. **Un objet de 48 cm ne se juge pas depuis le couloir.** Il y tient dans
+   soixante pixels. Le scénario `labo_paillasse` existe pour ça — en ajouter un
+   par décor plutôt que de conclure sur une vue d'ensemble.
+2. **Vérifier ce que le générateur occupe déjà** avant de poser un modèle. Les
+   collisions de `mission1.tscn` sont écrites à la main et la géométrie vient de
+   `gen_lieux.py` : elles peuvent décrire deux mondes différents. `verifs/ou_est.gd`
+   imprime l'emprise réelle de chaque maillage en coordonnées monde, et c'est
+   lui qui a tranché.
+
+## Ce que la génération 3D ne rend pas bien
+
+**Le verre transparent.** Tripo le rend en opaque : il ne voit qu'une forme
+claire. Le ballon du montage marche parce qu'il contient un liquide ambré qui
+lui donne une couleur ; un bécher vide serait un bloc blanc.
+
+Pour le verre vide, la géométrie simple plus `rendu/liquide.gdshader` — qui a le
+Fresnel et le ménisque — donnera mieux qu'un modèle généré, et pour zéro crédit.
+
 ## Les trois règles qui évitent des dégâts déjà payés
 
 **Un asset généré ne doit jamais figurer dans la table d'un générateur.** Le

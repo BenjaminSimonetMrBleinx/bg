@@ -1148,6 +1148,26 @@
     }
    ]
   },
+  "labo_paillasse": {
+   "quoi": "La paillasse de gauche vue de pres, la ou se pose la verrerie. Un montage de distillation fait 48 cm : depuis le couloir il tient dans soixante pixels et se confond avec tout ce qui l'entoure. C'est la seule vue ou l'on peut dire si un modele d'objet est bon ou rate.",
+   "fin": 80,
+   "etapes": [
+    {
+     "image": 30,
+     "camera": [
+      299.35,
+      1.22,
+      1202.5
+     ],
+     "vise": [
+      298.61,
+      1.16,
+      1202.5
+     ]
+    }
+   ]
+  },
+
   "labo_interieur": {
    "quoi": "L'interieur du camping-car : le couloir, la paillasse, la verrerie, les bidons.",
    "fin": 80,
