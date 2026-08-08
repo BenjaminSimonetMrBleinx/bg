@@ -386,8 +386,23 @@ game/assets` a tout rendu. Si la génération avait été commitée, la ville é
 perdue — elle n'existe que comme fichier, sa graine ne suffit pas à la refaire
 sans son nombre de blocs.
 
-**Ce qui reste à faire :** retrouver le nombre de blocs, et l'écrire comme défaut
-dans `bg.ps1`. Un défaut qui détruit est pire qu'une erreur.
+**Réglé le jour même.** Le nombre a été retrouvé en générant 7, 8 et 9 **dans un
+dossier à part** — `gen_ville.py` accepte `--sortie`, donc on peut chercher sans
+rien risquer — et en comparant l'étendue publiée :
+
+| `--blocs` | Étendue | Lampadaires |
+|---|---|---|
+| 7 | 466 m | 384 |
+| **8** | **519 m** | **526** |
+| 9 | 576 m | 658 |
+
+Huit tombe pile, et la graine 505 était déjà la bonne. `bg.ps1` a maintenant
+`[int]$Blocs = 8`, et la valeur est commentée avec la raison — sans quoi elle
+redeviendra un nombre magique que le prochain changera.
+
+**La leçon générale : un défaut qui détruit est pire qu'une erreur.** Une commande
+qui refuse de tourner se corrige en une minute ; une commande qui tourne et
+remplace le travail par autre chose ne se voit que trois sessions plus tard.
 
 ---
 

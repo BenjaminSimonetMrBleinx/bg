@@ -42,7 +42,18 @@ param(
     [switch]$Heros,
     [switch]$Plat,
 
-    [int]$Blocs = 2,
+    # HUIT, ET C'EST LA VILLE DU DEPOT — pas une preference.
+    #
+    # Le defaut valait 2 et personne ne s'en servait : la ville versionnee a
+    # toujours ete generee autrement, sans que le nombre soit ecrit nulle part.
+    # Un `generer` lance pour monter les textures l'a donc remplacee par une
+    # ville quatre fois plus petite, sans une seule erreur — 519 m devenus 137,
+    # 526 lampadaires devenus 32. Voir le piege 23.
+    #
+    # Retrouve le 08/08/2026 en generant 7, 8 et 9 dans un dossier a part et en
+    # comparant l'etendue publiee : 466 m, 519 m, 576 m. Huit tombe pile, et
+    # rend aussi les 526 lampadaires. La graine 505 etait deja bonne.
+    [int]$Blocs = 8,
 
     # Ou deposer le joueur au lancement : 'banc', 'desert', 'jesse',
     # 'walter'. Voir DEPARTS dans systemes/controleur.gd.
