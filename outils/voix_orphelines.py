@@ -37,6 +37,21 @@ def empreinte(texte):
     return hashlib.md5(texte.encode("utf-8")).hexdigest()[:10]
 
 
+def prononce(replique):
+    """Doit produire exactement la meme chaine que Dialogue._prononce().
+
+    Si les deux divergent, ce script prend pour orphelins des fichiers que le
+    jeu reclame, et les supprime. C'est la fonction la plus dangereuse d'ici.
+    """
+    vo = replique.get("vo") or ""
+    if not vo:
+        return replique.get("texte", "")
+    jeu = replique.get("jeu") or ""
+    if not jeu:
+        return vo
+    return "[%s] %s" % (jeu, vo)
+
+
 dialogues = json.load(io.open(DONNEES, encoding="utf-8-sig"))
 
 reclames = set()
@@ -47,8 +62,7 @@ for cle, fiche in dialogues.items():
         for r in conv:
             if not isinstance(r, dict):
                 continue
-            # Meme choix que Dialogue._prononce() : la VO si elle existe.
-            dit = r.get("vo") or r.get("texte", "")
+            dit = prononce(r)
             if not dit:
                 continue
             reclames.add("%s_%s.wav" % (simplifier(r.get("qui", "")),

@@ -20,6 +20,27 @@ le numéro ne voulait plus rien dire. Un lot livré est désormais un correctif.
 
 ---
 
+## 0.54.0 — Le téléphone sonne comme un téléphone, et les voix jouent
+
+**Ce qu'il faut essayer** : va au QG de Tuco et parle au type qui garde la
+porte. Puis reprends la mission depuis le début pour l'appel du matin.
+
+**Tuco répond par l'interphone, et ça s'entend.** Sa voix sort d'un
+haut-parleur de portier — étroite, sale, et elle sature quand il hurle de le
+laisser entrer. Avant, il avait l'air d'être debout à côté de toi.
+
+**Pareil au téléphone.** L'inconnu qui appelle au nom de Salamanca et Skyler qui
+réclame les œufs passent par une vraie ligne : 300 à 3400 Hz, la bande que
+transmet un combiné. Toi, non — tu es dans la pièce, ta voix ne traverse rien.
+
+**Et les voix jouent, maintenant.** Soixante et onze répliques ont été
+redirigées une par une : Tuco explose au lieu de monter, Jesse râle à chaque
+phrase, Skyler est chaleureuse et fatiguée, le garde s'ennuie. Walter reste
+contenu — c'est le personnage, pas un oubli : il n'a d'intention que là où la
+scène lui en donne une.
+
+---
+
 ## 0.53.0 — Tout le monde parle anglais, et tu lis en français
 
 **Ce qu'il faut essayer** : joue la mission 1 et écoute. Puis va parler à Skyler

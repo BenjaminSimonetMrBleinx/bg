@@ -172,13 +172,28 @@ func _montrer() -> void:
 ## Reecrire la VO change le fichier ; retoucher une virgule du sous-titre ne
 ## jette pas une prise qui reste juste.
 ##
+## 'jeu' EST LA DIRECTION D'ACTEUR, et elle compte dans l'empreinte.
+##
+## Le champ porte une intention — « furious », « exasperated », « quiet, tense »
+## — que le moteur de synthese interprete sans la prononcer. Elle fait donc
+## partie de ce qui est ENREGISTRE, au meme titre que les mots : la meme phrase
+## dite calmement ou en hurlant sont deux prises differentes, et elles ne
+## peuvent pas partager un nom de fichier.
+##
+## Consequence voulue : changer l'intention d'une replique la fait regenerer
+## toute seule, et laisser 'jeu' vide rend exactement l'empreinte d'avant. Les
+## repliques deja doublees ne bougent donc pas tant qu'on ne les dirige pas.
+##
 ## Une replique sans 'vo' retombe sur 'texte' : c'est le cas des repliques pas
 ## encore traduites, et elles gardent leur voix francaise en attendant.
 static func _prononce(replique: Dictionary) -> String:
 	var vo := str(replique.get("vo", ""))
-	if vo != "":
+	if vo == "":
+		return str(replique.get("texte", ""))
+	var jeu := str(replique.get("jeu", ""))
+	if jeu == "":
 		return vo
-	return str(replique.get("texte", ""))
+	return "[%s] %s" % [jeu, vo]
 
 
 # Joue l'enregistrement de cette replique, s'il existe.

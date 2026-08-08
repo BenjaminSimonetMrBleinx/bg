@@ -1,4 +1,4 @@
-{
+﻿{
  "_lisez_moi": [
   "LE CASTING DES VOIX ANGLAISES.",
   "",
@@ -20,9 +20,19 @@
   "             (audio_voices_list). C'est ce qu'on passe a audio_tts.",
   "  nom        le nom lisible, pour qu'on sache de qui on parle",
   "  pourquoi   ce qui a fait choisir celle-la et pas une autre",
-  "  stabilite  0 a 1. BAS = plus expressif et plus instable. Tuco est a 0,2",
-  "             parce qu'il doit deraper ; Walter a 0,6 parce qu'il se tient.",
+  "  stabilite  0 a 1. BAS = plus expressif et plus instable. Tuco est au plus",
+  "             bas parce qu'il doit deraper ; Walter plus haut parce qu'il se",
+  "             tient. TOUTES ONT BAISSE le 08/08/2026 : au premier jet les voix",
+  "             etaient justes de timbre et plates de jeu. Une stabilite haute",
+  "             ne rend pas une voix plus sure, elle la rend monocorde.",
   "  valide     true quand Benjamin l'a ecoutee et gardee",
+  "",
+  "LA DIRECTION D'ACTEUR NE VIT PAS ICI. Elle est replique par replique, dans",
+  "le champ 'jeu' de dialogues.json — « furious », « exasperated », « quiet,",
+  "tense ». Le moteur l'interprete sans la prononcer, et elle compte dans",
+  "l'empreinte qui nomme le fichier : rediriger une replique la fait regenerer",
+  "toute seule. La stabilite dit comment un personnage parle EN GENERAL, le",
+  "champ 'jeu' dit ce qu'il vit a cette phrase-la.",
   "",
   "Les essais de casting vivent dans livraisons/ia/casting/, hors de git.",
   "Regenerer une voix : passer par le MCP Magnific, audio_tts."
@@ -35,42 +45,42 @@
    "voix": 388,
    "nom": "Michael Brooks",
    "pourquoi": "« honnete et direct, centre et controle ». Walter avant Heisenberg est un homme qui se contient : la voix devait tenir, pas impressionner.",
-   "stabilite": 0.6,
+   "stabilite": 0.35,
    "valide": true
   },
   "Jesse": {
    "voix": 591,
    "nom": "Ethan Cole",
    "pourquoi": "« cynique mais romantique, blesse mais plein d'espoir, sincere a en souffrir ». Le premier essai (Logan Christopher) etait trop propre et trop formel — c'etait le reproche exact.",
-   "stabilite": 0.25,
+   "stabilite": 0.1,
    "valide": true
   },
   "Tuco": {
    "voix": 79,
    "nom": "Roberto Perez",
    "pourquoi": "accent mexicain de Mexico City. Le modele est multilingue, donc il parle anglais AVEC son accent. Le premier essai (Benjamin Parker) etait puissant mais ni assez fou ni assez latino.",
-   "stabilite": 0.2,
+   "stabilite": 0.05,
    "valide": true
   },
   "Skyler": {
    "voix": 291,
    "nom": "Emma Johnson",
    "pourquoi": "« chaleureuse et abordable, narration ». Proposition, pas encore ecoutee.",
-   "stabilite": 0.5,
+   "stabilite": 0.3,
    "valide": false
   },
   "Garde": {
    "voix": 533,
    "nom": "Zeke Rivers",
    "pourquoi": "« decontracte et polyvalent, taille pour le jeu video ». Proposition, pas encore ecoutee.",
-   "stabilite": 0.4,
+   "stabilite": 0.25,
    "valide": false
   },
   "?": {
    "voix": 441,
    "nom": "Noah Reed",
    "pourquoi": "« grave, resonant, legerement rauque, direct et autoritaire ». C'est l'inconnu qui appelle au nom de Salamanca : on ne doit pas savoir qui c'est, seulement que ce n'est pas negociable. Proposition, pas encore ecoutee.",
-   "stabilite": 0.45,
+   "stabilite": 0.3,
    "valide": false
   }
  }

@@ -361,11 +361,73 @@ compte tombe juste.
 
 ---
 
+## Sixième partie — l'appareil, et la direction d'acteur
+
+**Livré** : `0.54.0`. Deux retours à l'écoute, deux natures de problème.
+
+### « Si c'est du téléphone, le son doit être cohérent »
+
+Le sous-titre français disait déjà **« (interphone) »** devant trois répliques
+de Tuco. La scène le savait ; le son l'ignorait. On entendait le patron aussi
+présent que l'homme qui garde la porte.
+
+Deux bus dans `default_bus_layout.tres`, et **le traitement se fait en jeu, pas
+à la génération**. Trois raisons, et la troisième est celle qui compte : le
+fichier reste la **voix pure**. Un filtre cuit dans le `.wav` serait invisible —
+dans six mois, personne ne saurait si une voix est sourde à cause de l'appareil
+ou parce que la prise était mauvaise.
+
+Mesuré, l'énergie sous 300 Hz : **−13,9 dB** sur le téléphone de Jesse,
+**−17,5 dB** sur l'interphone de Tuco. Le filtre agit, et l'interphone coupe
+plus fort que la ligne — conforme à l'intention.
+
+**La règle qui décide seule : seul le correspondant est filtré.** Walter est le
+joueur, il est dans la pièce, sa voix ne traverse rien même quand c'est lui qui
+tient le combiné. Les deux erreurs possibles — un canal oublié, un canal posé
+sur Walter — sont **muettes** toutes les deux, d'où `verifier_canaux.py`.
+
+### « Ça manque un peu de vie »
+
+Deux leviers, et un seul suffisait rarement. La **stabilité** a baissé pour tous
+les rôles — une stabilité haute ne rend pas une voix plus sûre, elle la rend
+monocorde. Et surtout un champ **`jeu`** par réplique, la direction d'acteur :
+`furious`, `exasperated`, `quiet, tense`. Le moteur l'interprète sans la
+prononcer.
+
+**Elle compte dans l'empreinte**, et c'est le point d'architecture de la
+session : la même phrase dite calmement ou en hurlant sont deux prises
+différentes, elles ne peuvent pas partager un nom de fichier. Conséquence
+voulue — rediriger une réplique la fait régénérer toute seule, et laisser `jeu`
+vide rend exactement l'empreinte d'avant. Rétrocompatible sans rien déclarer.
+
+**Walter n'a pas été dirigé partout, et c'est délibéré.** Lui coller une
+intention sur chaque phrase le rendrait emphatique, le contraire de ce qu'il est
+au début. Il n'en a que là où la scène lui en donne une : quand il ment, quand
+il tient tête, quand il cède.
+
+71 répliques régénérées, ~640 crédits. **Reste ~16 300.**
+
+### Les surprises
+
+**24. Deux erreurs de virgule dans le même script.** Poser `"jeu"` après `"vo"`
+demandait de savoir si un champ suivait : la virgule se **déplace**, elle ne se
+duplique pas. Le premier jet a produit `"jeu": "..."` suivi de `"canal"` sans
+séparateur — 74 insertions, un JSON cassé, et la seule alerte était le
+`json.load` de contrôle en fin de script. **Écrire ce contrôle valait tout le
+reste** : sans lui, le fichier partait cassé et tout le monde devenait muet.
+
+**25. Une mesure fausse publiée, puis corrigée.** J'ai affiché « 1 » comme
+énergie dans les graves pour les quatre paires : ma regex attrapait le *1* de
+« RMS level dB » au lieu de la valeur qui suit les deux-points. Le chiffre était
+absurde et je l'ai montré avant de le relire.
+
+---
+
 ## Où on reprend
 
 1. **Faire écouter trois voix non validées** — Skyler, l'homme de main, et
-   l'inconnu au téléphone. Elles sont générées et en place ; si l'une sonne
-   faux, `casting.json` change et on régénère ce rôle.
+   l'inconnu au téléphone. Elles sont générées, dirigées et en place ; si l'une
+   sonne faux, `casting.json` change et on régénère ce rôle.
 2. **Le cadrage de la cinématique** se valide en **jouant**, pas en capture :
    `capture.gd` impose sa propre caméra.
 3. Le décor du **QG de Tuco** : lambris texturé, mais un seul homme sur trois et

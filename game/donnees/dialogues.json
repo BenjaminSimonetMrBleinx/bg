@@ -183,17 +183,20 @@
           "qui": "?",
           "texte": "Heisenberg. C'est bien a qui je pense ?",
           "vo": "Heisenberg. That is who I think it is?",
+          "jeu": "calm, certain",
           "canal": "telephone"
         },
         {
           "qui": "Walter",
           "texte": "Qui est a l'appareil ?",
-          "vo": "Who is this?"
+          "vo": "Who is this?",
+          "jeu": "wary"
         },
         {
           "qui": "?",
           "texte": "Je travaille pour M. Salamanca. Il attend sa commande.",
           "vo": "I work for Mister Salamanca. He is waiting on his order.",
+          "jeu": "flat",
           "canal": "telephone"
         },
         {
@@ -205,18 +208,21 @@
           "qui": "?",
           "texte": "Aujourd'hui. Il n'aime pas attendre, et moi non plus.",
           "vo": "Today. He does not like waiting. Neither do I.",
+          "jeu": "cold",
           "canal": "telephone"
         },
         {
           "qui": "?",
           "texte": "Vous savez ou nous trouver.",
           "vo": "You know where to find us.",
+          "jeu": "final",
           "canal": "telephone"
         },
         {
           "qui": "Walter",
           "texte": "... Allo ?",
-          "vo": "Hello? ... Hello?"
+          "vo": "Hello? ... Hello?",
+          "jeu": "uneasy"
         }
       ]
     ]
@@ -229,6 +235,7 @@
           "qui": "Skyler",
           "texte": "Walt ? Tu es ou ?",
           "vo": "Walt? Where are you?",
+          "jeu": "warm",
           "canal": "telephone"
         },
         {
@@ -240,17 +247,20 @@
           "qui": "Skyler",
           "texte": "Il n'y a plus d'oeufs. Junior voulait des pancakes demain matin.",
           "vo": "We're out of eggs. Junior wanted pancakes in the morning.",
+          "jeu": "casual",
           "canal": "telephone"
         },
         {
           "qui": "Walter",
           "texte": "... Des oeufs.",
-          "vo": "Eggs."
+          "vo": "Eggs.",
+          "jeu": "distracted"
         },
         {
           "qui": "Skyler",
           "texte": "Tu passes en rentrant ? Ca te fait un detour de rien du tout.",
           "vo": "Can you stop on your way back? It's barely a detour.",
+          "jeu": "gently coaxing",
           "canal": "telephone"
         },
         {
@@ -262,6 +272,7 @@
           "qui": "Skyler",
           "texte": "Merci. A tout a l'heure.",
           "vo": "Thank you. See you later.",
+          "jeu": "warm, tired",
           "canal": "telephone"
         }
       ]
@@ -274,7 +285,8 @@
         {
           "qui": "Jesse",
           "texte": "Yo, vous avez une tete de deterre.",
-          "vo": "Yo, you look like hell."
+          "vo": "Yo, you look like hell.",
+          "jeu": "casual"
         },
         {
           "qui": "Walter",
@@ -284,7 +296,8 @@
         {
           "qui": "Jesse",
           "texte": "Aujourd'hui ? On n'a pas de quoi ! Il nous manque la moitie des precurseurs !",
-          "vo": "Today? No way, man! We're missing half the precursors!"
+          "vo": "Today? No way, man! We're missing half the precursors!",
+          "jeu": "panicked"
         },
         {
           "qui": "Walter",
@@ -294,42 +307,50 @@
         {
           "qui": "Jesse",
           "texte": "Alors on lui dit quoi ? On lui dit non a Tuco Salamanca ?",
-          "vo": "So what do we tell him? We say no to Tuco Salamanca?"
+          "vo": "So what do we tell him? We say no to Tuco Salamanca?",
+          "jeu": "incredulous"
         },
         {
           "qui": "Walter",
           "texte": "On ne lui dit rien. On livre.",
-          "vo": "We tell him nothing. We deliver."
+          "vo": "We tell him nothing. We deliver.",
+          "jeu": "firm"
         },
         {
           "qui": "Jesse",
           "texte": "Avec quoi ?!",
-          "vo": "With what?!"
+          "vo": "With what?!",
+          "jeu": "exasperated"
         },
         {
           "qui": "Walter",
           "texte": "J'ai une idee. Une botte secrete.",
-          "vo": "I have an idea. An ace up our sleeve."
+          "vo": "I have an idea. An ace up our sleeve.",
+          "jeu": "quietly confident"
         },
         {
           "qui": "Jesse",
           "texte": "... J'aime pas quand vous dites ca.",
-          "vo": "I hate it when you say that."
+          "vo": "I hate it when you say that.",
+          "jeu": "weary"
         },
         {
           "qui": "Walter",
           "texte": "Fais-moi confiance.",
-          "vo": "Trust me."
+          "vo": "Trust me.",
+          "jeu": "quiet, tense"
         },
         {
           "qui": "Jesse",
           "texte": "Bon. Le camping-car, dans le desert. J'y vais devant.",
-          "vo": "Fine. The RV, out in the desert. I'll head out first."
+          "vo": "Fine. The RV, out in the desert. I'll head out first.",
+          "jeu": "resigned"
         },
         {
           "qui": "Jesse",
           "texte": "Et soyez a l'heure, pour une fois.",
-          "vo": "And be on time, for once."
+          "vo": "And be on time, for once.",
+          "jeu": "irritated"
         }
       ]
     ]
@@ -359,7 +380,8 @@
         {
           "qui": "Skyler",
           "texte": "Non, il n'y en avait plus. Junior voulait des pancakes.",
-          "vo": "No, they were out. Junior wanted pancakes."
+          "vo": "No, they were out. Junior wanted pancakes.",
+          "jeu": "matter-of-fact"
         }
       ]
     ]
@@ -383,17 +405,20 @@
         {
           "qui": "Skyler",
           "texte": "Les oeufs ?",
-          "vo": "The eggs?"
+          "vo": "The eggs?",
+          "jeu": "hopeful"
         },
         {
           "qui": "Walter",
           "texte": "Je... j'ai oublie.",
-          "vo": "I... I forgot."
+          "vo": "I... I forgot.",
+          "jeu": "caught out"
         },
         {
           "qui": "Skyler",
           "texte": "Ce n'est pas grave. J'irai demain matin.",
-          "vo": "It's all right. I'll go in the morning."
+          "vo": "It's all right. I'll go in the morning.",
+          "jeu": "gentle, disappointed"
         }
       ]
     ]
@@ -405,7 +430,8 @@
         {
           "qui": "Jesse",
           "texte": "Vous etes en retard.",
-          "vo": "You're late."
+          "vo": "You're late.",
+          "jeu": "annoyed"
         },
         {
           "qui": "Walter",
@@ -415,12 +441,14 @@
         {
           "qui": "Jesse",
           "texte": "Un alibi. Bien sur.",
-          "vo": "An alibi. Right."
+          "vo": "An alibi. Right.",
+          "jeu": "sarcastic"
         },
         {
           "qui": "Walter",
           "texte": "Allons cuisiner.",
-          "vo": "Let's cook."
+          "vo": "Let's cook.",
+          "jeu": "resolute"
         },
         {
           "qui": "Jesse",
@@ -453,7 +481,8 @@
         {
           "qui": "Jesse",
           "texte": "Vous etes en retard.",
-          "vo": "You're late."
+          "vo": "You're late.",
+          "jeu": "annoyed"
         },
         {
           "qui": "Walter",
@@ -468,17 +497,20 @@
         {
           "qui": "Jesse",
           "texte": "... C'est quoi, dans votre main ?",
-          "vo": "What's that in your hand?"
+          "vo": "What's that in your hand?",
+          "jeu": "puzzled"
         },
         {
           "qui": "Walter",
           "texte": "Des oeufs.",
-          "vo": "Eggs."
+          "vo": "Eggs.",
+          "jeu": "distracted"
         },
         {
           "qui": "Jesse",
           "texte": "Des oeufs. Tuco attend, et vous avez fait les courses.",
-          "vo": "Eggs. Tuco is waiting, and you went grocery shopping."
+          "vo": "Eggs. Tuco is waiting, and you went grocery shopping.",
+          "jeu": "incredulous"
         },
         {
           "qui": "Walter",
@@ -488,7 +520,8 @@
         {
           "qui": "Jesse",
           "texte": "Genial. Allons cuisiner, alors. L'autre cuisine.",
-          "vo": "Great. Let's cook, then. The other kind of cooking."
+          "vo": "Great. Let's cook, then. The other kind of cooking.",
+          "jeu": "sarcastic"
         }
       ]
     ]
@@ -520,22 +553,26 @@
         {
           "qui": "Tuco",
           "texte": "... Attends. C'est quoi, ca ?",
-          "vo": "Wait. What is that?"
+          "vo": "Wait. What is that?",
+          "jeu": "suspicious"
         },
         {
           "qui": "Walter",
           "texte": "Des oeufs.",
-          "vo": "Eggs."
+          "vo": "Eggs.",
+          "jeu": "distracted"
         },
         {
           "qui": "Tuco",
           "texte": "Des oeufs. Tu as fait tes courses avant de venir me voir.",
-          "vo": "Eggs. You went shopping before coming to see me."
+          "vo": "Eggs. You went shopping before coming to see me.",
+          "jeu": "amused, dangerous"
         },
         {
           "qui": "Tuco",
           "texte": "Ca veut dire qu'il y a une maison quelque part. Une femme, peut-etre.",
-          "vo": "That means there's a house somewhere. A wife, maybe."
+          "vo": "That means there's a house somewhere. A wife, maybe.",
+          "jeu": "slow, menacing"
         },
         {
           "qui": "Walter",
@@ -553,21 +590,24 @@
         {
           "qui": "Jesse",
           "texte": "Pas maintenant. Je suis concentre.",
-          "vo": "Not now. I'm concentrating."
+          "vo": "Not now. I'm concentrating.",
+          "jeu": "curt"
         }
       ],
       [
         {
           "qui": "Jesse",
           "texte": "Vous voyez bien que je bosse, la.",
-          "vo": "You can see I'm working here."
+          "vo": "You can see I'm working here.",
+          "jeu": "irritated"
         }
       ],
       [
         {
           "qui": "Jesse",
           "texte": "Vous voulez le faire vous-meme ? Non ? Alors.",
-          "vo": "You wanna do it yourself? No? Then don't."
+          "vo": "You wanna do it yourself? No? Then don't.",
+          "jeu": "snapping"
         }
       ]
     ]
@@ -584,7 +624,8 @@
         {
           "qui": "Jesse",
           "texte": "Qu'est-ce que vous attendez ? Il va pas patienter.",
-          "vo": "What are you waiting for? He's not gonna wait."
+          "vo": "What are you waiting for? He's not gonna wait.",
+          "jeu": "urgent"
         },
         {
           "qui": "Walter",
@@ -594,7 +635,8 @@
         {
           "qui": "Jesse",
           "texte": "Moi je reste ici. Tuco et moi, ca fait deux.",
-          "vo": "I'm staying here. Me and Tuco, that's a bad mix."
+          "vo": "I'm staying here. Me and Tuco, that's a bad mix.",
+          "jeu": "wary"
         }
       ]
     ]
@@ -607,7 +649,8 @@
         {
           "qui": "Jesse",
           "texte": "C'est ca, votre botte secrete ?",
-          "vo": "That's your ace up the sleeve?"
+          "vo": "That's your ace up the sleeve?",
+          "jeu": "unimpressed"
         },
         {
           "qui": "Walter",
@@ -617,12 +660,14 @@
         {
           "qui": "Jesse",
           "texte": "Ca ressemble a rien. Ca va marcher, au moins ?",
-          "vo": "It looks like nothing. Is it even gonna work?"
+          "vo": "It looks like nothing. Is it even gonna work?",
+          "jeu": "doubtful"
         },
         {
           "qui": "Walter",
           "texte": "Ca doit marcher.",
-          "vo": "It has to work."
+          "vo": "It has to work.",
+          "jeu": "tense"
         }
       ]
     ]
@@ -654,7 +699,8 @@
         {
           "qui": "Jesse",
           "texte": "Prenez-la et filez. Et... faites attention.",
-          "vo": "Take it and go. And... be careful."
+          "vo": "Take it and go. And... be careful.",
+          "jeu": "quiet, sincere"
         }
       ]
     ]
@@ -666,7 +712,8 @@
         {
           "qui": "Garde",
           "texte": "Tu t'es perdu, papi ?",
-          "vo": "You lost, old man?"
+          "vo": "You lost, old man?",
+          "jeu": "bored, condescending"
         },
         {
           "qui": "Walter",
@@ -676,7 +723,8 @@
         {
           "qui": "Garde",
           "texte": "Toi ? Une livraison.",
-          "vo": "You? A delivery."
+          "vo": "You? A delivery.",
+          "jeu": "sneering"
         },
         {
           "qui": "Walter",
@@ -686,7 +734,8 @@
         {
           "qui": "Garde",
           "texte": "Retourne a tes cours de chimie avant de te salir.",
-          "vo": "Go back to your chemistry class before you get dirty."
+          "vo": "Go back to your chemistry class before you get dirty.",
+          "jeu": "dismissive"
         },
         {
           "qui": "Tuco",
@@ -697,24 +746,28 @@
         {
           "qui": "Garde",
           "texte": "Patron, ce type c'est...",
-          "vo": "Boss, this guy is..."
+          "vo": "Boss, this guy is...",
+          "jeu": "hesitant"
         },
         {
           "qui": "Tuco",
           "texte": "(interphone) J'ai dit LAISSE-LE ENTRER !",
           "vo": "I said LET HIM IN!",
+          "jeu": "shouting",
           "canal": "interphone"
         },
         {
           "qui": "Tuco",
           "texte": "(interphone) Le chimiste ! Ha ! Fais-le monter !",
           "vo": "The chemist! Ha! Send him up!",
+          "jeu": "delighted",
           "canal": "interphone"
         },
         {
           "qui": "Garde",
           "texte": "... Les mains ou je peux les voir.",
-          "vo": "Hands where I can see them."
+          "vo": "Hands where I can see them.",
+          "jeu": "hard"
         }
       ]
     ]
@@ -731,7 +784,8 @@
         {
           "qui": "Tuco",
           "texte": "Le voila ! Le chimiste ! Approche, approche.",
-          "vo": "There he is! The chemist! Come here, come here."
+          "vo": "There he is! The chemist! Come here, come here.",
+          "jeu": "loud, delighted"
         },
         {
           "qui": "Walter",
@@ -741,18 +795,21 @@
         {
           "qui": "Tuco",
           "texte": "Ha ! Direct au business. J'aime ca.",
-          "vo": "Ha! Straight to business. I like that."
+          "vo": "Ha! Straight to business. I like that.",
+          "jeu": "amused"
         },
         {
           "qui": "Tuco",
           "texte": "Trois cent mille. Compte-les si tu veux.",
           "effet": "argent",
-          "vo": "Three hundred grand. Count it if you want."
+          "vo": "Three hundred grand. Count it if you want.",
+          "jeu": "casual, boastful"
         },
         {
           "qui": "Walter",
           "texte": "Ce ne sera pas necessaire.",
-          "vo": "That will not be necessary."
+          "vo": "That will not be necessary.",
+          "jeu": "controlled"
         },
         {
           "qui": "Tuco",
@@ -761,53 +818,63 @@
         {
           "qui": "Tuco",
           "texte": "Attends. Attends, attends, attends.",
-          "vo": "Wait. Wait, wait, wait."
+          "vo": "Wait. Wait, wait, wait.",
+          "jeu": "suspicious"
         },
         {
           "qui": "Tuco",
           "texte": "Il en manque. OU EST LE RESTE ?",
-          "vo": "Some is missing. WHERE IS THE REST?"
+          "vo": "Some is missing. WHERE IS THE REST?",
+          "jeu": "furious"
         },
         {
           "qui": "Walter",
           "texte": "Les delais etaient courts. Vous les avez fixes vous-meme.",
-          "vo": "The deadline was short. You set it yourself."
+          "vo": "The deadline was short. You set it yourself.",
+          "jeu": "steady, defiant"
         },
         {
           "qui": "Tuco",
           "texte": "Je fixe ce que je veux ! C'est MON business !",
-          "vo": "I set whatever I want! This is MY business!"
+          "vo": "I set whatever I want! This is MY business!",
+          "jeu": "shouting, unhinged"
         },
         {
           "qui": "Walter",
           "texte": "Nous pouvons livrer le reste sous deux jours.",
-          "vo": "We can deliver the rest within two days."
+          "vo": "We can deliver the rest within two days.",
+          "jeu": "measured"
         },
         {
           "qui": "Tuco",
           "texte": "Deux jours. Il me parle de deux jours.",
-          "vo": "Two days. He is telling me two days."
+          "vo": "Two days. He is telling me two days.",
+          "jeu": "mocking, dangerous"
         },
         {
           "qui": "Tuco",
           "texte": "Vous entendez ca, les gars ?",
-          "vo": "You hearing this, boys?"
+          "vo": "You hearing this, boys?",
+          "jeu": "mocking"
         },
         {
           "qui": "Tuco",
           "texte": "Dis-moi, le chimiste. Il t'en reste sur toi ?",
-          "vo": "Tell me, chemist. You got any more on you?"
+          "vo": "Tell me, chemist. You got any more on you?",
+          "jeu": "quiet, menacing"
         },
         {
           "qui": "Walter",
           "texte": "... Non.",
-          "vo": "No."
+          "vo": "No.",
+          "jeu": "flat, unafraid"
         },
         {
           "qui": "Tuco",
           "texte": "Fouille-le.",
           "effet": "fouille",
-          "vo": "Search him."
+          "vo": "Search him.",
+          "jeu": "cold"
         },
         {
           "qui": "Garde",
@@ -817,12 +884,14 @@
         {
           "qui": "Tuco",
           "texte": "Tu m'avais cache ca ?",
-          "vo": "You were holding out on me?"
+          "vo": "You were holding out on me?",
+          "jeu": "quiet, threatening"
         },
         {
           "qui": "Tuco",
           "texte": "TU VOULAIS M'ARNAQUER ?",
-          "vo": "YOU TRIED TO CHEAT ME?"
+          "vo": "YOU TRIED TO CHEAT ME?",
+          "jeu": "screaming, enraged"
         }
       ]
     ]
@@ -838,28 +907,32 @@
         {
           "qui": "Tuco",
           "texte": "Reponds-moi. REPONDS-MOI !",
-          "vo": "Answer me. ANSWER ME!"
+          "vo": "Answer me. ANSWER ME!",
+          "jeu": "screaming"
         }
       ],
       [
         {
           "qui": "Garde",
           "texte": "On s'en occupe, patron ?",
-          "vo": "You want us to handle it, boss?"
+          "vo": "You want us to handle it, boss?",
+          "jeu": "eager"
         }
       ],
       [
         {
           "qui": "Tuco",
           "texte": "Tu crois que je suis un imbecile, c'est ca ?",
-          "vo": "You think I'm stupid, is that it?"
+          "vo": "You think I'm stupid, is that it?",
+          "jeu": "seething"
         }
       ],
       [
         {
           "qui": "Tuco",
           "texte": "Personne ne vole Tuco Salamanca. Personne.",
-          "vo": "Nobody steals from Tuco Salamanca. Nobody."
+          "vo": "Nobody steals from Tuco Salamanca. Nobody.",
+          "jeu": "cold, final"
         }
       ],
       [
@@ -877,7 +950,8 @@
         {
           "qui": "Walter",
           "texte": "Il ne faut pas que Skyler trouve ca.",
-          "vo": "Skyler can't find this."
+          "vo": "Skyler can't find this.",
+          "jeu": "quiet, urgent"
         }
       ]
     ]
