@@ -1148,6 +1148,19 @@
     }
    ]
   },
+  "cinematique": {
+   "quoi": "CE QUE CETTE VUE PROUVE, ET CE QU'ELLE NE PEUT PAS PROUVER. Elle montre qu'un carton s'affiche et que tout le HUD est masque derriere — l'argent, la famille, la reputation, la minimap et l'objectif s'y affichaient par-dessus au premier essai. Elle ne montre PAS le cadrage des plans : capture.gd cree sa propre camera et la rend active, justement pour que la camera de poursuite ne reecrive pas sa position, et elle ecrase donc aussi celle de l'ouverture. Le cadrage se juge en lancant une nouvelle partie, pas ici. On force l'ouverture par appel parce qu'une situation de capture reprend toujours une sauvegarde, et l'ouverture ne se joue QUE quand il n'y en a pas.",
+   "fin": 150,
+   "etapes": [
+    {
+     "image": 20,
+     "appeler": "Cinematique",
+     "methode": "jouer",
+     "argument": 3
+    }
+   ]
+  },
+
   "boussole": {
    "quoi": "La minimap avec un objectif LOIN. On remet la mission a l'etape du desert, qui est a neuf cents metres : le marqueur doit alors se coller au bord du disque, en pointe, et pas disparaitre. C'est tout l'interet — un marqueur qui s'efface des qu'on sort de portee ne sert qu'a l'endroit ou on n'en a plus besoin. Sans ce scenario rien ne le montre : la sauvegarde du poste finit toujours a la derniere etape, mission finie, donc sans objectif.",
    "fin": 90,

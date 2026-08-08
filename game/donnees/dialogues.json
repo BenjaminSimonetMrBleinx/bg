@@ -9,7 +9,6 @@
     "Garder les repliques courtes : l'ecran fait 512 pixels de large et le",
     "cadre en affiche trois lignes."
   ],
-
   "telephone_jesse": {
     "nom": "Jesse",
     "sans_voix": true,
@@ -20,23 +19,33 @@
     ],
     "conversations": [
       [
-        { "qui": "Jesse",  "texte": "Yo." },
-        { "qui": "Walter", "texte": "Bonjour." }
+        {
+          "qui": "Jesse",
+          "texte": "Yo."
+        },
+        {
+          "qui": "Walter",
+          "texte": "Bonjour."
+        }
       ]
     ]
   },
-
   "telephone_skyler": {
     "nom": "Skyler",
     "sans_voix": true,
     "conversations": [
       [
-        { "qui": "Skyler", "texte": "Bonjour." },
-        { "qui": "Walter", "texte": "Bonjour." }
+        {
+          "qui": "Skyler",
+          "texte": "Bonjour."
+        },
+        {
+          "qui": "Walter",
+          "texte": "Bonjour."
+        }
       ]
     ]
   },
-
   "skyler": {
     "nom": "Skyler",
     "_note": [
@@ -56,20 +65,49 @@
     ],
     "conversations": [
       [
-        { "qui": "Skyler", "texte": "Walt, I've said it before. If you are in danger we go to the police." },
-        { "qui": "Walter", "texte": "Oh, no, I don't wanna hear about the police." },
-        { "qui": "Skyler", "texte": "I do not say that lightly. I know what it could do to this family, but if it's the only real choice we have. If it's either that or you getting shot when you open your front door-" },
-        { "qui": "Walter", "texte": "I don't want to hear about the police." },
-        { "qui": "Skyler", "texte": "You're not some hardened criminal, Walt. You are in over your head. That's what we tell them and that's the truth." },
-        { "qui": "Walter", "texte": "No, it's not the truth." },
-        { "qui": "Skyler", "texte": "Of course it is. A school teacher, cancer, desperate for money?" },
-        { "qui": "Walter", "texte": "Okay, we're done here." },
-        { "qui": "Skyler", "texte": "Roped into working for -- unable to even quit! You told me that yourself Walt. Jesus, what was I thinking? Walt, please, let's both of us stop trying to justify this whole thing and admit that you're in danger." },
-        { "qui": "Walter", "texte": "Who are you talking to right now? Who is it you think you see? Do you know how much I make a year? I mean, even if I told you, you wouldn't believe it. Do you know what would happen if I suddenly decided to stop going into work? A business big enough that it could be listed on the NASDAQ goes belly up. Disappears! It ceases to exist without me. No, you clearly don't know who you're talking to, so let me clue you in. I am not in danger, Skyler. I am the danger! A guy opens his door and gets shot and you think that of me? No. I am the one who knocks!" }
+        {
+          "qui": "Skyler",
+          "texte": "Walt, I've said it before. If you are in danger we go to the police."
+        },
+        {
+          "qui": "Walter",
+          "texte": "Oh, no, I don't wanna hear about the police."
+        },
+        {
+          "qui": "Skyler",
+          "texte": "I do not say that lightly. I know what it could do to this family, but if it's the only real choice we have. If it's either that or you getting shot when you open your front door-"
+        },
+        {
+          "qui": "Walter",
+          "texte": "I don't want to hear about the police."
+        },
+        {
+          "qui": "Skyler",
+          "texte": "You're not some hardened criminal, Walt. You are in over your head. That's what we tell them and that's the truth."
+        },
+        {
+          "qui": "Walter",
+          "texte": "No, it's not the truth."
+        },
+        {
+          "qui": "Skyler",
+          "texte": "Of course it is. A school teacher, cancer, desperate for money?"
+        },
+        {
+          "qui": "Walter",
+          "texte": "Okay, we're done here."
+        },
+        {
+          "qui": "Skyler",
+          "texte": "Roped into working for -- unable to even quit! You told me that yourself Walt. Jesus, what was I thinking? Walt, please, let's both of us stop trying to justify this whole thing and admit that you're in danger."
+        },
+        {
+          "qui": "Walter",
+          "texte": "Who are you talking to right now? Who is it you think you see? Do you know how much I make a year? I mean, even if I told you, you wouldn't believe it. Do you know what would happen if I suddenly decided to stop going into work? A business big enough that it could be listed on the NASDAQ goes belly up. Disappears! It ceases to exist without me. No, you clearly don't know who you're talking to, so let me clue you in. I am not in danger, Skyler. I am the danger! A guy opens his door and gets shot and you think that of me? No. I am the one who knocks!"
+        }
       ]
     ]
   },
-
   "jesse": {
     "nom": "Jesse",
     "_note": [
@@ -85,19 +123,45 @@
     ],
     "conversations": [
       [
-        { "qui": "Walter", "texte": "My name is Walter Hartwell White." },
-        { "qui": "Walter", "texte": "I live at 308 Negra Arroyo Lane, Albuquerque, New Mexico, 87104." },
-        { "qui": "Walter", "texte": "To all law enforcement entities, this is not an admission of guilt." },
-        { "qui": "Walter", "texte": "I am speaking to my family now." },
-        { "qui": "Walter", "texte": "Skyler, you are the love of my life. I hope you know that." },
-        { "qui": "Walter", "texte": "Walter Junior, you're my big man." },
-        { "qui": "Walter", "texte": "There are going to be some things." },
-        { "qui": "Walter", "texte": "Things that you'll come to learn about me in the next few days. I just want you to know that no matter how it may look, I only had you in my heart." },
-        { "qui": "Walter", "texte": "Good-bye." }
+        {
+          "qui": "Walter",
+          "texte": "My name is Walter Hartwell White."
+        },
+        {
+          "qui": "Walter",
+          "texte": "I live at 308 Negra Arroyo Lane, Albuquerque, New Mexico, 87104."
+        },
+        {
+          "qui": "Walter",
+          "texte": "To all law enforcement entities, this is not an admission of guilt."
+        },
+        {
+          "qui": "Walter",
+          "texte": "I am speaking to my family now."
+        },
+        {
+          "qui": "Walter",
+          "texte": "Skyler, you are the love of my life. I hope you know that."
+        },
+        {
+          "qui": "Walter",
+          "texte": "Walter Junior, you're my big man."
+        },
+        {
+          "qui": "Walter",
+          "texte": "There are going to be some things."
+        },
+        {
+          "qui": "Walter",
+          "texte": "Things that you'll come to learn about me in the next few days. I just want you to know that no matter how it may look, I only had you in my heart."
+        },
+        {
+          "qui": "Walter",
+          "texte": "Good-bye."
+        }
       ]
     ]
   },
-
   "_mission_1": [
     "LA PREMIERE MISSION. Les cles commencent toutes par mission_, et l'ordre",
     "dans lequel elles se declenchent vit dans donnees/mission1.json.",
@@ -107,60 +171,160 @@
     "ferait avancer deux fois. Les habitants de la ville, eux, en ont",
     "plusieurs — c'est ce qui donne l'impression qu'ils vivent."
   ],
-
   "mission_tuco_appel": {
     "nom": "Inconnu",
     "sans_voix": true,
     "conversations": [
       [
-        { "qui": "?",      "texte": "Heisenberg. C'est bien a qui je pense ?" },
-        { "qui": "Walter", "texte": "Qui est a l'appareil ?" },
-        { "qui": "?",      "texte": "Je travaille pour M. Salamanca. Il attend sa commande." },
-        { "qui": "Walter", "texte": "Elle sera prete. Il faut juste que..." },
-        { "qui": "?",      "texte": "Aujourd'hui. Il n'aime pas attendre, et moi non plus." },
-        { "qui": "?",      "texte": "Vous savez ou nous trouver." },
-        { "qui": "Walter", "texte": "... Allo ?" }
+        {
+          "qui": "?",
+          "texte": "Heisenberg. C'est bien a qui je pense ?",
+          "vo": "Heisenberg. That is who I think it is?"
+        },
+        {
+          "qui": "Walter",
+          "texte": "Qui est a l'appareil ?",
+          "vo": "Who is this?"
+        },
+        {
+          "qui": "?",
+          "texte": "Je travaille pour M. Salamanca. Il attend sa commande.",
+          "vo": "I work for Mister Salamanca. He is waiting on his order."
+        },
+        {
+          "qui": "Walter",
+          "texte": "Elle sera prete. Il faut juste que...",
+          "vo": "It will be ready. I just need to..."
+        },
+        {
+          "qui": "?",
+          "texte": "Aujourd'hui. Il n'aime pas attendre, et moi non plus.",
+          "vo": "Today. He does not like waiting. Neither do I."
+        },
+        {
+          "qui": "?",
+          "texte": "Vous savez ou nous trouver.",
+          "vo": "You know where to find us."
+        },
+        {
+          "qui": "Walter",
+          "texte": "... Allo ?",
+          "vo": "Hello? ... Hello?"
+        }
       ]
     ]
   },
-
   "mission_skyler_oeufs": {
     "nom": "Skyler",
     "sans_voix": true,
     "conversations": [
       [
-        { "qui": "Skyler", "texte": "Walt ? Tu es ou ?" },
-        { "qui": "Walter", "texte": "Je roule. Qu'est-ce qu'il y a ?" },
-        { "qui": "Skyler", "texte": "Il n'y a plus d'oeufs. Junior voulait des pancakes demain matin." },
-        { "qui": "Walter", "texte": "... Des oeufs." },
-        { "qui": "Skyler", "texte": "Tu passes en rentrant ? Ca te fait un detour de rien du tout." },
-        { "qui": "Walter", "texte": "Oui. Oui, je passe." },
-        { "qui": "Skyler", "texte": "Merci. A tout a l'heure." }
+        {
+          "qui": "Skyler",
+          "texte": "Walt ? Tu es ou ?",
+          "vo": "Walt? Where are you?"
+        },
+        {
+          "qui": "Walter",
+          "texte": "Je roule. Qu'est-ce qu'il y a ?",
+          "vo": "I'm driving. What is it?"
+        },
+        {
+          "qui": "Skyler",
+          "texte": "Il n'y a plus d'oeufs. Junior voulait des pancakes demain matin.",
+          "vo": "We're out of eggs. Junior wanted pancakes in the morning."
+        },
+        {
+          "qui": "Walter",
+          "texte": "... Des oeufs.",
+          "vo": "Eggs."
+        },
+        {
+          "qui": "Skyler",
+          "texte": "Tu passes en rentrant ? Ca te fait un detour de rien du tout.",
+          "vo": "Can you stop on your way back? It's barely a detour."
+        },
+        {
+          "qui": "Walter",
+          "texte": "Oui. Oui, je passe.",
+          "vo": "Yes. Yes, I'll stop."
+        },
+        {
+          "qui": "Skyler",
+          "texte": "Merci. A tout a l'heure.",
+          "vo": "Thank you. See you later."
+        }
       ]
     ]
   },
-
   "mission_jesse_maison": {
     "nom": "Jesse",
     "sans_voix": true,
     "conversations": [
       [
-        { "qui": "Jesse",  "texte": "Yo, vous avez une tete de deterre." },
-        { "qui": "Walter", "texte": "L'homme de Salamanca vient d'appeler. Il veut la commande aujourd'hui." },
-        { "qui": "Jesse",  "texte": "Aujourd'hui ? On n'a pas de quoi ! Il nous manque la moitie des precurseurs !" },
-        { "qui": "Walter", "texte": "Je sais ce qu'il nous manque, Jesse." },
-        { "qui": "Jesse",  "texte": "Alors on lui dit quoi ? On lui dit non a Tuco Salamanca ?" },
-        { "qui": "Walter", "texte": "On ne lui dit rien. On livre." },
-        { "qui": "Jesse",  "texte": "Avec quoi ?!" },
-        { "qui": "Walter", "texte": "J'ai une idee. Une botte secrete." },
-        { "qui": "Jesse",  "texte": "... J'aime pas quand vous dites ca." },
-        { "qui": "Walter", "texte": "Fais-moi confiance." },
-        { "qui": "Jesse",  "texte": "Bon. Le camping-car, dans le desert. J'y vais devant." },
-        { "qui": "Jesse",  "texte": "Et soyez a l'heure, pour une fois." }
+        {
+          "qui": "Jesse",
+          "texte": "Yo, vous avez une tete de deterre.",
+          "vo": "Yo, you look like hell."
+        },
+        {
+          "qui": "Walter",
+          "texte": "L'homme de Salamanca vient d'appeler. Il veut la commande aujourd'hui.",
+          "vo": "Salamanca's man just called. He wants the order today."
+        },
+        {
+          "qui": "Jesse",
+          "texte": "Aujourd'hui ? On n'a pas de quoi ! Il nous manque la moitie des precurseurs !",
+          "vo": "Today? No way, man! We're missing half the precursors!"
+        },
+        {
+          "qui": "Walter",
+          "texte": "Je sais ce qu'il nous manque, Jesse.",
+          "vo": "I know what we're missing, Jesse."
+        },
+        {
+          "qui": "Jesse",
+          "texte": "Alors on lui dit quoi ? On lui dit non a Tuco Salamanca ?",
+          "vo": "So what do we tell him? We say no to Tuco Salamanca?"
+        },
+        {
+          "qui": "Walter",
+          "texte": "On ne lui dit rien. On livre.",
+          "vo": "We tell him nothing. We deliver."
+        },
+        {
+          "qui": "Jesse",
+          "texte": "Avec quoi ?!",
+          "vo": "With what?!"
+        },
+        {
+          "qui": "Walter",
+          "texte": "J'ai une idee. Une botte secrete.",
+          "vo": "I have an idea. An ace up our sleeve."
+        },
+        {
+          "qui": "Jesse",
+          "texte": "... J'aime pas quand vous dites ca.",
+          "vo": "I hate it when you say that."
+        },
+        {
+          "qui": "Walter",
+          "texte": "Fais-moi confiance.",
+          "vo": "Trust me."
+        },
+        {
+          "qui": "Jesse",
+          "texte": "Bon. Le camping-car, dans le desert. J'y vais devant.",
+          "vo": "Fine. The RV, out in the desert. I'll head out first."
+        },
+        {
+          "qui": "Jesse",
+          "texte": "Et soyez a l'heure, pour une fois.",
+          "vo": "And be on time, for once."
+        }
       ]
     ]
   },
-
   "skyler_courses_oui": {
     "nom": "Skyler",
     "sans_voix": true,
@@ -174,13 +338,21 @@
     ],
     "conversations": [
       [
-        { "qui": "Skyler", "texte": "Tu es passe a l'epicerie." },
-        { "qui": "Walter", "texte": "Il n'y avait plus d'oeufs." },
-        { "qui": "Skyler", "texte": "Non, il n'y en avait plus. Junior voulait des pancakes." }
+        {
+          "qui": "Skyler",
+          "texte": "Tu es passe a l'epicerie."
+        },
+        {
+          "qui": "Walter",
+          "texte": "Il n'y avait plus d'oeufs."
+        },
+        {
+          "qui": "Skyler",
+          "texte": "Non, il n'y en avait plus. Junior voulait des pancakes."
+        }
       ]
     ]
   },
-
   "skyler_courses_non": {
     "nom": "Skyler",
     "sans_voix": true,
@@ -193,28 +365,58 @@
     ],
     "conversations": [
       [
-        { "qui": "Walter", "texte": "Je suis rentre." },
-        { "qui": "Skyler", "texte": "Les oeufs ?" },
-        { "qui": "Walter", "texte": "Je... j'ai oublie." },
-        { "qui": "Skyler", "texte": "Ce n'est pas grave. J'irai demain matin." }
+        {
+          "qui": "Walter",
+          "texte": "Je suis rentre."
+        },
+        {
+          "qui": "Skyler",
+          "texte": "Les oeufs ?"
+        },
+        {
+          "qui": "Walter",
+          "texte": "Je... j'ai oublie."
+        },
+        {
+          "qui": "Skyler",
+          "texte": "Ce n'est pas grave. J'irai demain matin."
+        }
       ]
     ]
   },
-
   "mission_jesse_camping": {
     "nom": "Jesse",
     "sans_voix": true,
     "conversations": [
       [
-        { "qui": "Jesse",  "texte": "Vous etes en retard." },
-        { "qui": "Walter", "texte": "J'avais des choses a faire. Un alibi, pour la journee." },
-        { "qui": "Jesse",  "texte": "Un alibi. Bien sur." },
-        { "qui": "Walter", "texte": "Allons cuisiner." },
-        { "qui": "Jesse",  "texte": "J'ai deja commence. C'est bientot pret." }
+        {
+          "qui": "Jesse",
+          "texte": "Vous etes en retard.",
+          "vo": "You're late."
+        },
+        {
+          "qui": "Walter",
+          "texte": "J'avais des choses a faire. Un alibi, pour la journee.",
+          "vo": "I had things to take care of. An alibi, for the day."
+        },
+        {
+          "qui": "Jesse",
+          "texte": "Un alibi. Bien sur.",
+          "vo": "An alibi. Right."
+        },
+        {
+          "qui": "Walter",
+          "texte": "Allons cuisiner.",
+          "vo": "Let's cook."
+        },
+        {
+          "qui": "Jesse",
+          "texte": "J'ai deja commence. C'est bientot pret.",
+          "vo": "Already started. It's almost ready."
+        }
       ]
     ]
   },
-
   "mission_jesse_camping_oeufs": {
     "nom": "Jesse",
     "sans_voix": true,
@@ -236,18 +438,49 @@
     ],
     "conversations": [
       [
-        { "qui": "Jesse",  "texte": "Vous etes en retard." },
-        { "qui": "Walter", "texte": "J'ai eu un empechement." },
-        { "qui": "Jesse",  "texte": "Un empechement." },
-        { "qui": "Jesse",  "texte": "... C'est quoi, dans votre main ?" },
-        { "qui": "Walter", "texte": "Des oeufs." },
-        { "qui": "Jesse",  "texte": "Des oeufs. Tuco attend, et vous avez fait les courses." },
-        { "qui": "Walter", "texte": "Junior voulait des pancakes." },
-        { "qui": "Jesse",  "texte": "Genial. Allons cuisiner, alors. L'autre cuisine." }
+        {
+          "qui": "Jesse",
+          "texte": "Vous etes en retard.",
+          "vo": "You're late."
+        },
+        {
+          "qui": "Walter",
+          "texte": "J'ai eu un empechement.",
+          "vo": "Something came up."
+        },
+        {
+          "qui": "Jesse",
+          "texte": "Un empechement.",
+          "vo": "Something came up."
+        },
+        {
+          "qui": "Jesse",
+          "texte": "... C'est quoi, dans votre main ?",
+          "vo": "What's that in your hand?"
+        },
+        {
+          "qui": "Walter",
+          "texte": "Des oeufs.",
+          "vo": "Eggs."
+        },
+        {
+          "qui": "Jesse",
+          "texte": "Des oeufs. Tuco attend, et vous avez fait les courses.",
+          "vo": "Eggs. Tuco is waiting, and you went grocery shopping."
+        },
+        {
+          "qui": "Walter",
+          "texte": "Junior voulait des pancakes.",
+          "vo": "Junior wanted pancakes."
+        },
+        {
+          "qui": "Jesse",
+          "texte": "Genial. Allons cuisiner, alors. L'autre cuisine.",
+          "vo": "Great. Let's cook, then. The other kind of cooking."
+        }
       ]
     ]
   },
-
   "mission_tuco_vente_oeufs": {
     "nom": "Tuco",
     "sans_voix": true,
@@ -268,27 +501,67 @@
     ],
     "conversations": [
       [
-        { "qui": "Tuco",   "texte": "Le voila ! Le chimiste !" },
-        { "qui": "Tuco",   "texte": "... Attends. C'est quoi, ca ?" },
-        { "qui": "Walter", "texte": "Des oeufs." },
-        { "qui": "Tuco",   "texte": "Des oeufs. Tu as fait tes courses avant de venir me voir." },
-        { "qui": "Tuco",   "texte": "Ca veut dire qu'il y a une maison quelque part. Une femme, peut-etre." },
-        { "qui": "Walter", "texte": "Vous vouliez votre commande." }
+        {
+          "qui": "Tuco",
+          "texte": "Le voila ! Le chimiste !",
+          "vo": "There he is! The chemist!"
+        },
+        {
+          "qui": "Tuco",
+          "texte": "... Attends. C'est quoi, ca ?",
+          "vo": "Wait. What is that?"
+        },
+        {
+          "qui": "Walter",
+          "texte": "Des oeufs.",
+          "vo": "Eggs."
+        },
+        {
+          "qui": "Tuco",
+          "texte": "Des oeufs. Tu as fait tes courses avant de venir me voir.",
+          "vo": "Eggs. You went shopping before coming to see me."
+        },
+        {
+          "qui": "Tuco",
+          "texte": "Ca veut dire qu'il y a une maison quelque part. Une femme, peut-etre.",
+          "vo": "That means there's a house somewhere. A wife, maybe."
+        },
+        {
+          "qui": "Walter",
+          "texte": "Vous vouliez votre commande.",
+          "vo": "You wanted your order."
+        }
       ]
     ]
   },
-
   "mission_jesse_occupe": {
     "nom": "Jesse",
     "sans_voix": true,
     "_note": "Tant qu'il cuisine. Plusieurs versions : on va lui reparler.",
     "conversations": [
-      [ { "qui": "Jesse", "texte": "Pas maintenant. Je suis concentre." } ],
-      [ { "qui": "Jesse", "texte": "Vous voyez bien que je bosse, la." } ],
-      [ { "qui": "Jesse", "texte": "Vous voulez le faire vous-meme ? Non ? Alors." } ]
+      [
+        {
+          "qui": "Jesse",
+          "texte": "Pas maintenant. Je suis concentre.",
+          "vo": "Not now. I'm concentrating."
+        }
+      ],
+      [
+        {
+          "qui": "Jesse",
+          "texte": "Vous voyez bien que je bosse, la.",
+          "vo": "You can see I'm working here."
+        }
+      ],
+      [
+        {
+          "qui": "Jesse",
+          "texte": "Vous voulez le faire vous-meme ? Non ? Alors.",
+          "vo": "You wanna do it yourself? No? Then don't."
+        }
+      ]
     ]
   },
-
   "mission_jesse_livre": {
     "nom": "Jesse",
     "sans_voix": true,
@@ -299,60 +572,144 @@
     ],
     "conversations": [
       [
-        { "qui": "Jesse",  "texte": "Qu'est-ce que vous attendez ? Il va pas patienter." },
-        { "qui": "Walter", "texte": "J'y vais." },
-        { "qui": "Jesse",  "texte": "Moi je reste ici. Tuco et moi, ca fait deux." }
+        {
+          "qui": "Jesse",
+          "texte": "Qu'est-ce que vous attendez ? Il va pas patienter.",
+          "vo": "What are you waiting for? He's not gonna wait."
+        },
+        {
+          "qui": "Walter",
+          "texte": "J'y vais.",
+          "vo": "I'm going."
+        },
+        {
+          "qui": "Jesse",
+          "texte": "Moi je reste ici. Tuco et moi, ca fait deux.",
+          "vo": "I'm staying here. Me and Tuco, that's a bad mix."
+        }
       ]
     ]
   },
-
   "mission_jesse_botte": {
     "nom": "Jesse",
     "sans_voix": true,
     "_note": "Se declenche pendant que Walter manipule l'atelier.",
     "conversations": [
       [
-        { "qui": "Jesse",  "texte": "C'est ca, votre botte secrete ?" },
-        { "qui": "Walter", "texte": "Affirmatif." },
-        { "qui": "Jesse",  "texte": "Ca ressemble a rien. Ca va marcher, au moins ?" },
-        { "qui": "Walter", "texte": "Ca doit marcher." }
+        {
+          "qui": "Jesse",
+          "texte": "C'est ca, votre botte secrete ?",
+          "vo": "That's your ace up the sleeve?"
+        },
+        {
+          "qui": "Walter",
+          "texte": "Affirmatif.",
+          "vo": "Affirmative."
+        },
+        {
+          "qui": "Jesse",
+          "texte": "Ca ressemble a rien. Ca va marcher, au moins ?",
+          "vo": "It looks like nothing. Is it even gonna work?"
+        },
+        {
+          "qui": "Walter",
+          "texte": "Ca doit marcher.",
+          "vo": "It has to work."
+        }
       ]
     ]
   },
-
   "mission_jesse_pret": {
     "nom": "Jesse",
     "sans_voix": true,
     "conversations": [
       [
-        { "qui": "Jesse",  "texte": "C'est pret. J'espere que ca fera l'affaire." },
-        { "qui": "Walter", "texte": "Ce n'est pas encore parfait." },
-        { "qui": "Jesse",  "texte": "Merci, hein." },
-        { "qui": "Walter", "texte": "Mais vu le temps qu'il nous restait, c'est deja bien." },
-        { "qui": "Jesse",  "texte": "Prenez-la et filez. Et... faites attention." }
+        {
+          "qui": "Jesse",
+          "texte": "C'est pret. J'espere que ca fera l'affaire.",
+          "vo": "It's done. Hope it does the job."
+        },
+        {
+          "qui": "Walter",
+          "texte": "Ce n'est pas encore parfait.",
+          "vo": "It is not perfect yet."
+        },
+        {
+          "qui": "Jesse",
+          "texte": "Merci, hein.",
+          "vo": "Thanks a lot."
+        },
+        {
+          "qui": "Walter",
+          "texte": "Mais vu le temps qu'il nous restait, c'est deja bien.",
+          "vo": "But given the time we had, it is good work."
+        },
+        {
+          "qui": "Jesse",
+          "texte": "Prenez-la et filez. Et... faites attention.",
+          "vo": "Take it and go. And... be careful."
+        }
       ]
     ]
   },
-
   "mission_garde": {
     "nom": "Homme de main",
     "sans_voix": true,
     "conversations": [
       [
-        { "qui": "Garde",  "texte": "Tu t'es perdu, papi ?" },
-        { "qui": "Walter", "texte": "J'ai une livraison pour M. Salamanca." },
-        { "qui": "Garde",  "texte": "Toi ? Une livraison." },
-        { "qui": "Walter", "texte": "C'est exact." },
-        { "qui": "Garde",  "texte": "Retourne a tes cours de chimie avant de te salir." },
-        { "qui": "Tuco",   "texte": "(interphone) Laisse-le entrer." },
-        { "qui": "Garde",  "texte": "Patron, ce type c'est..." },
-        { "qui": "Tuco",   "texte": "(interphone) J'ai dit LAISSE-LE ENTRER !" },
-        { "qui": "Tuco",   "texte": "(interphone) Le chimiste ! Ha ! Fais-le monter !" },
-        { "qui": "Garde",  "texte": "... Les mains ou je peux les voir." }
+        {
+          "qui": "Garde",
+          "texte": "Tu t'es perdu, papi ?",
+          "vo": "You lost, old man?"
+        },
+        {
+          "qui": "Walter",
+          "texte": "J'ai une livraison pour M. Salamanca.",
+          "vo": "I have a delivery for Mister Salamanca."
+        },
+        {
+          "qui": "Garde",
+          "texte": "Toi ? Une livraison.",
+          "vo": "You? A delivery."
+        },
+        {
+          "qui": "Walter",
+          "texte": "C'est exact.",
+          "vo": "That is correct."
+        },
+        {
+          "qui": "Garde",
+          "texte": "Retourne a tes cours de chimie avant de te salir.",
+          "vo": "Go back to your chemistry class before you get dirty."
+        },
+        {
+          "qui": "Tuco",
+          "texte": "(interphone) Laisse-le entrer.",
+          "vo": "Let him in."
+        },
+        {
+          "qui": "Garde",
+          "texte": "Patron, ce type c'est...",
+          "vo": "Boss, this guy is..."
+        },
+        {
+          "qui": "Tuco",
+          "texte": "(interphone) J'ai dit LAISSE-LE ENTRER !",
+          "vo": "I said LET HIM IN!"
+        },
+        {
+          "qui": "Tuco",
+          "texte": "(interphone) Le chimiste ! Ha ! Fais-le monter !",
+          "vo": "The chemist! Ha! Send him up!"
+        },
+        {
+          "qui": "Garde",
+          "texte": "... Les mains ou je peux les voir.",
+          "vo": "Hands where I can see them."
+        }
       ]
     ]
   },
-
   "mission_tuco_vente": {
     "nom": "Tuco",
     "sans_voix": true,
@@ -363,30 +720,105 @@
     ],
     "conversations": [
       [
-        { "qui": "Tuco",   "texte": "Le voila ! Le chimiste ! Approche, approche." },
-        { "qui": "Walter", "texte": "Vous vouliez votre commande." },
-        { "qui": "Tuco",   "texte": "Ha ! Direct au business. J'aime ca." },
-        { "qui": "Tuco",   "texte": "Trois cent mille. Compte-les si tu veux.",
-        "effet": "argent" },
-        { "qui": "Walter", "texte": "Ce ne sera pas necessaire." },
-        { "qui": "Tuco",   "texte": "..." },
-        { "qui": "Tuco",   "texte": "Attends. Attends, attends, attends." },
-        { "qui": "Tuco",   "texte": "Il en manque. OU EST LE RESTE ?" },
-        { "qui": "Walter", "texte": "Les delais etaient courts. Vous les avez fixes vous-meme." },
-        { "qui": "Tuco",   "texte": "Je fixe ce que je veux ! C'est MON business !" },
-        { "qui": "Walter", "texte": "Nous pouvons livrer le reste sous deux jours." },
-        { "qui": "Tuco",   "texte": "Deux jours. Il me parle de deux jours." },
-        { "qui": "Tuco",   "texte": "Vous entendez ca, les gars ?" },
-        { "qui": "Tuco",   "texte": "Dis-moi, le chimiste. Il t'en reste sur toi ?" },
-        { "qui": "Walter", "texte": "... Non." },
-        { "qui": "Tuco",   "texte": "Fouille-le.", "effet": "fouille" },
-        { "qui": "Garde",  "texte": "Patron. Il avait ca." },
-        { "qui": "Tuco",   "texte": "Tu m'avais cache ca ?" },
-        { "qui": "Tuco",   "texte": "TU VOULAIS M'ARNAQUER ?" }
+        {
+          "qui": "Tuco",
+          "texte": "Le voila ! Le chimiste ! Approche, approche.",
+          "vo": "There he is! The chemist! Come here, come here."
+        },
+        {
+          "qui": "Walter",
+          "texte": "Vous vouliez votre commande.",
+          "vo": "You wanted your order."
+        },
+        {
+          "qui": "Tuco",
+          "texte": "Ha ! Direct au business. J'aime ca.",
+          "vo": "Ha! Straight to business. I like that."
+        },
+        {
+          "qui": "Tuco",
+          "texte": "Trois cent mille. Compte-les si tu veux.",
+          "effet": "argent",
+          "vo": "Three hundred grand. Count it if you want."
+        },
+        {
+          "qui": "Walter",
+          "texte": "Ce ne sera pas necessaire.",
+          "vo": "That will not be necessary."
+        },
+        {
+          "qui": "Tuco",
+          "texte": "..."
+        },
+        {
+          "qui": "Tuco",
+          "texte": "Attends. Attends, attends, attends.",
+          "vo": "Wait. Wait, wait, wait."
+        },
+        {
+          "qui": "Tuco",
+          "texte": "Il en manque. OU EST LE RESTE ?",
+          "vo": "Some is missing. WHERE IS THE REST?"
+        },
+        {
+          "qui": "Walter",
+          "texte": "Les delais etaient courts. Vous les avez fixes vous-meme.",
+          "vo": "The deadline was short. You set it yourself."
+        },
+        {
+          "qui": "Tuco",
+          "texte": "Je fixe ce que je veux ! C'est MON business !",
+          "vo": "I set whatever I want! This is MY business!"
+        },
+        {
+          "qui": "Walter",
+          "texte": "Nous pouvons livrer le reste sous deux jours.",
+          "vo": "We can deliver the rest within two days."
+        },
+        {
+          "qui": "Tuco",
+          "texte": "Deux jours. Il me parle de deux jours.",
+          "vo": "Two days. He is telling me two days."
+        },
+        {
+          "qui": "Tuco",
+          "texte": "Vous entendez ca, les gars ?",
+          "vo": "You hearing this, boys?"
+        },
+        {
+          "qui": "Tuco",
+          "texte": "Dis-moi, le chimiste. Il t'en reste sur toi ?",
+          "vo": "Tell me, chemist. You got any more on you?"
+        },
+        {
+          "qui": "Walter",
+          "texte": "... Non.",
+          "vo": "No."
+        },
+        {
+          "qui": "Tuco",
+          "texte": "Fouille-le.",
+          "effet": "fouille",
+          "vo": "Search him."
+        },
+        {
+          "qui": "Garde",
+          "texte": "Patron. Il avait ca.",
+          "vo": "Boss. He had this."
+        },
+        {
+          "qui": "Tuco",
+          "texte": "Tu m'avais cache ca ?",
+          "vo": "You were holding out on me?"
+        },
+        {
+          "qui": "Tuco",
+          "texte": "TU VOULAIS M'ARNAQUER ?",
+          "vo": "YOU TRIED TO CHEAT ME?"
+        }
       ]
     ]
   },
-
   "mission_tuco_menace": {
     "nom": "Tuco",
     "sans_voix": true,
@@ -395,20 +827,52 @@
       "d'une minute, ils tirent."
     ],
     "conversations": [
-      [ { "qui": "Tuco", "texte": "Reponds-moi. REPONDS-MOI !" } ],
-      [ { "qui": "Garde", "texte": "On s'en occupe, patron ?" } ],
-      [ { "qui": "Tuco", "texte": "Tu crois que je suis un imbecile, c'est ca ?" } ],
-      [ { "qui": "Tuco", "texte": "Personne ne vole Tuco Salamanca. Personne." } ],
-      [ { "qui": "Walter", "texte": "(ce cristal sur le bureau...)" } ]
+      [
+        {
+          "qui": "Tuco",
+          "texte": "Reponds-moi. REPONDS-MOI !",
+          "vo": "Answer me. ANSWER ME!"
+        }
+      ],
+      [
+        {
+          "qui": "Garde",
+          "texte": "On s'en occupe, patron ?",
+          "vo": "You want us to handle it, boss?"
+        }
+      ],
+      [
+        {
+          "qui": "Tuco",
+          "texte": "Tu crois que je suis un imbecile, c'est ca ?",
+          "vo": "You think I'm stupid, is that it?"
+        }
+      ],
+      [
+        {
+          "qui": "Tuco",
+          "texte": "Personne ne vole Tuco Salamanca. Personne.",
+          "vo": "Nobody steals from Tuco Salamanca. Nobody."
+        }
+      ],
+      [
+        {
+          "qui": "Walter",
+          "texte": "(ce cristal sur le bureau...)"
+        }
+      ]
     ]
   },
-
   "mission_fin": {
     "nom": "Walter",
     "sans_voix": true,
     "conversations": [
       [
-        { "qui": "Walter", "texte": "Il ne faut pas que Skyler trouve ca." }
+        {
+          "qui": "Walter",
+          "texte": "Il ne faut pas que Skyler trouve ca.",
+          "vo": "Skyler can't find this."
+        }
       ]
     ]
   }

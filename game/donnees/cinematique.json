@@ -1,0 +1,84 @@
+{
+ "_lisez_moi": [
+  "LA CINEMATIQUE D'OUVERTURE, plan par plan.",
+  "",
+  "Elle ne se joue qu'au demarrage d'une NOUVELLE partie. Reprendre une",
+  "sauvegarde la saute : on ne fait pas reregarder une ouverture a quelqu'un",
+  "qui revient continuer.",
+  "",
+  "Rien n'est ecrit dans le code : cinematique.gd deroule cette liste et ne",
+  "sait rien d'Albuquerque. Reordonner, allonger un plan ou en ajouter un se",
+  "fait ici.",
+  "",
+  "UN PLAN :",
+  "",
+  "  camera   ou se place l'oeil, en coordonnees du monde",
+  "  vise     ce qu'il regarde",
+  "  duree    en secondes. Compter large : un plan trop court ne se lit pas,",
+  "           et on peut toujours passer la cinematique",
+  "  heure    l'heure du jeu pendant ce plan, de 0 a 24. C'est ce qui fait la",
+  "           lumiere — l'aube rase, midi ecrase, la nuit allume les fenetres",
+  "  carton   le texte affiche par-dessus. Facultatif : un plan sans carton",
+  "           est un plan qu'on regarde",
+  "  fondu    'ouvre' pour arriver du noir, 'ferme' pour y retourner",
+  "",
+  "POURQUOI DES PLANS FIXES ET PAS DES MOUVEMENTS.",
+  "",
+  "Une camera qui glisse demande un chemin, une vitesse, un lissage, et rate",
+  "systematiquement son cadre au premier changement de decor. Un plan fixe est",
+  "toujours cadre. C'est aussi ce que faisaient les jeux de l'epoque, et ce",
+  "que fait la serie : elle est batie sur des plans tenus."
+ ],
+
+ "musique": "res://assets/sons/musique/theme_ouverture.ogg",
+
+ "plans": [
+  {
+   "_note": "Le desert avant la ville. On commence par ce qui n'a rien.",
+   "camera": [900, 14, -760],
+   "vise": [906, 3, -803],
+   "heure": 6.2,
+   "duree": 4.5,
+   "fondu": "ouvre",
+   "carton": "Comté de Bernalillo, Nouveau-Mexique"
+  },
+  {
+   "_note": "Le camping-car, de loin. Il ne veut rien dire encore.",
+   "camera": [880, 4, -790],
+   "vise": [906, 2.5, -803],
+   "heure": 6.6,
+   "duree": 4.0
+  },
+  {
+   "_note": "La ville au reveil, vue de haut. Le contraste avec le desert.",
+   "camera": [40, 60, 90],
+   "vise": [0, 6, 0],
+   "heure": 7.4,
+   "duree": 4.5,
+   "carton": "Un professeur de chimie. Cinquante ans."
+  },
+  {
+   "_note": "La rue pavillonnaire, a hauteur d'homme. C'est ici qu'il vit.",
+   "camera": [30, 2.2, -12],
+   "vise": [26, 1.6, -20],
+   "heure": 8.2,
+   "duree": 4.0,
+   "carton": "Un diagnostic. Deux ans, peut-être."
+  },
+  {
+   "_note": "La voiture. Le dernier plan avant de rendre la main.",
+   "camera": [20, 1.9, -6],
+   "vise": [17, 1.2, -7],
+   "heure": 8.8,
+   "duree": 4.0,
+   "carton": "Et plus rien à perdre."
+  },
+  {
+   "camera": [30, 2.2, -12],
+   "vise": [26, 1.6, -20],
+   "heure": 9.0,
+   "duree": 1.6,
+   "fondu": "ferme"
+  }
+ ]
+}
