@@ -21,6 +21,18 @@ extends Node
 @export var controleur: NodePath
 @export var interface: NodePath
 
+## LE SUBVIEWPORT OU LE 3D EST RENDU, et il faut le nommer explicitement.
+##
+## Piege paye : ce noeud vit sous Monde, pas sous Rendu. get_viewport() y rend
+## donc la FENETRE, pas le SubViewport — sa camera 3D est nulle, la camera de
+## l'ouverture etait creee a cote de la scene et make_current() la rendait
+## active pour un viewport que personne ne regarde.
+##
+## Le symptome : l'ouverture se deroulait normalement — cartons, fondu, plans
+## qui defilent — sur un plan fixe de Walter vu de dos. Tout marchait sauf ce
+## qu'on voyait.
+@export var rendu: NodePath
+
 const FICHIER := "res://donnees/cinematique.json"
 
 ## Emis quand elle se termine, passee ou jouee jusqu'au bout.
@@ -114,22 +126,26 @@ func _charger() -> bool:
 
 
 func _demarrer() -> void:
-	var vp := get_viewport()
+	var vp := get_node_or_null(rendu) as SubViewport
+	if vp == null:
+		push_error("cinematique : aucun SubViewport assigne, l'ouverture "
+				+ "s'afficherait sur un plan fixe")
+		finie.emit()
+		return
 	_avant = vp.get_camera_3d()
 
-	# UNE CAMERA A ELLE, et pas celle du jeu.
+	# UNE CAMERA A ELLE, ET DANS LE BON VIEWPORT.
 	#
 	# La camera de poursuite reecrit sa position a chaque image : lui poser un
-	# plan revient a le perdre a l'image suivante. Le meme piege que pour les
-	# captures, ou capture.gd cree aussi la sienne.
+	# plan revient a le perdre a l'image suivante. capture.gd cree la sienne
+	# pour la meme raison, et la met DANS le SubViewport — c'est ce detail-la
+	# qui manquait ici.
 	_camera = Camera3D.new()
+	_camera.name = "CameraOuverture"
 	_camera.fov = 62.0
 	_camera.near = 0.1
 	_camera.far = 900.0
-	if _avant != null:
-		_avant.get_parent().add_child(_camera)
-	else:
-		add_child(_camera)
+	vp.add_child(_camera)
 	_camera.make_current()
 
 	# L'HEURE EST EMPRUNTEE, PAS PRISE.

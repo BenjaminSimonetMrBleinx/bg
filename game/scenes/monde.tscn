@@ -743,6 +743,7 @@ reglages = ExtResource("2_reglages")
 sauvegarde = NodePath("../Sauvegarde")
 controleur = NodePath("../Controleur")
 interface = NodePath("../Rendu/Interface/Echelle")
+rendu = NodePath("../Rendu")
 
 ; La purete du produit. Elle ne s'affiche nulle part : elle teinte le cristal
 ; tenu en main, et c'est tout ce que le joueur en percoit.
