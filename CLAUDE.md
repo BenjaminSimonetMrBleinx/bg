@@ -91,6 +91,14 @@ ou les tickets.
 une entrée dans `NOTES-DE-VERSION.md` écrite pour celui qui teste : ce qu'on
 peut essayer, et les bugs qui gênaient vraiment.
 
+**Un lot livré est un CORRECTIF, pas un mineur.** `0.53.1`, pas `0.54.0`. Le
+mineur est réservé à un morceau entier du jeu qui arrive — une mission de plus,
+l'économie, la famille. La règle est dans `NOTES-DE-VERSION.md` depuis le
+06/08/2026 et je l'ai quand même enfreinte deux fois le 08/08, sur deux lots
+d'affilée : le numéro a pris deux mineurs en une soirée pour des voix et des
+filtres audio. **À ce rythme on atteint 1.0 avant que le jeu tienne debout, et
+le numéro ne veut plus rien dire.** Dans le doute, c'est un correctif.
+
 **`livraisons/` se range dès qu'on y touche.** Et `assets-ref/` n'entre jamais
 dans git.
 

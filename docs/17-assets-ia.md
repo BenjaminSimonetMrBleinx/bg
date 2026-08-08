@@ -136,6 +136,19 @@ Ordres de grandeur en crédits : Tripo P1 ≈ 775, Tripo v3.1 de 580 à 1 160,
 Trellis 2 de 610 à 850, une image de 50 à 400. **Compter une tentative et demie
 par asset** : on ne réussit pas un modèle du premier coup.
 
+### La musique coûte cent fois une voix, et ça ne se devine pas
+
+**Mesuré le 08/08/2026 : une minute de musique = 1 200 crédits.** Une réplique
+doublée en coûte 4 à 14. Deux ambiances de soixante secondes ont donc coûté
+**2 400 crédits — quatre fois le doublage entier du jeu**, qui en a coûté 560
+pour 97 voix.
+
+Je les ai lancées sans vérifier le prix, alors que la première règle de la
+boucle dit « on voit la facture avant de la payer ». **Avant toute génération
+audio longue ou tout lot de modèles 3D : `simulate_cost`.** L'outil existe
+exactement pour ça, et l'écart entre les familles est trop grand pour être
+estimé de tête.
+
 ---
 
 ## Les personnages : ce que la chaîne ne peut pas faire

@@ -20,6 +20,21 @@ le numéro ne voulait plus rien dire. Un lot livré est désormais un correctif.
 
 ---
 
+## 0.54.1 — Le QG de Tuco et le camping-car ont leur ambiance
+
+**Ce qu'il faut essayer** : entre dans le camping-car pour cuisiner, puis monte
+chez Tuco. Écoute avant de parler.
+
+**Deux nappes qui n'existaient pas.** Le bureau de Tuco a un fond bas et
+menaçant, celui d'une pièce où quelqu'un peut perdre son calme. Le camping-car
+a un bourdonnement mécanique et confiné — un endroit où la concentration
+compte et où ça peut mal tourner.
+
+**Le désert sonnait déjà**, mais son fichier d'origine traînait dans le jeu en
+double, treize méga-octets pour rien. Il est sorti du dépôt.
+
+---
+
 ## 0.54.0 — Le téléphone sonne comme un téléphone, et les voix jouent
 
 **Ce qu'il faut essayer** : va au QG de Tuco et parle au type qui garde la
