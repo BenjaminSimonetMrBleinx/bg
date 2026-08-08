@@ -49,6 +49,7 @@
 [ext_resource type="PackedScene" path="res://assets/decor/fleche_sol.glb" id="27_fleche"]
 [ext_resource type="PackedScene" path="res://assets/decor/panneau_desert.glb" id="28_panneau"]
 [ext_resource type="Script" path="res://systemes/hud.gd" id="21_hud"]
+[ext_resource type="Script" path="res://systemes/minimap.gd" id="54_minimap"]
 [ext_resource type="Script" path="res://systemes/mission.gd" id="33_mission"]
 [ext_resource type="Script" path="res://systemes/bourse.gd" id="34_bourse"]
 [ext_resource type="Script" path="res://systemes/scenario.gd" id="35_scenario"]
@@ -532,6 +533,25 @@ joueur = NodePath("../../../Scene3D/Joueur")
 tir = NodePath("../../../../Tir")
 icone_argent = ExtResource("41_argent")
 icone_visage = ExtResource("43_visage")
+
+; LA MINIMAP, en bas a droite, avec la direction de l'objectif.
+;
+; Declaree APRES le Hud et AVANT la roue : elle se dessine par-dessus les
+; ressources, et sous tout ce qui s'ouvre. Une roue d'outils a moitie masquee
+; par un plan serait le genre de detail qu'on ne remarque qu'en jouant.
+;
+; Le trace vient des lampadaires — ils bordent les rues, donc ils sont le plan.
+[node name="Minimap" type="Control" parent="Rendu/Interface/Echelle"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("54_minimap")
+reglages = ExtResource("2_reglages")
+joueur = NodePath("../../../Scene3D/Joueur")
+mission = NodePath("../../../../Mission")
 
 ; La roue des outils. Sous le fondu, pour qu'un passage de porte la recouvre
 ; si elle etait restee ouverte.

@@ -1148,6 +1148,34 @@
     }
    ]
   },
+  "boussole": {
+   "quoi": "La minimap avec un objectif LOIN. On remet la mission a l'etape du desert, qui est a neuf cents metres : le marqueur doit alors se coller au bord du disque, en pointe, et pas disparaitre. C'est tout l'interet — un marqueur qui s'efface des qu'on sort de portee ne sert qu'a l'endroit ou on n'en a plus besoin. Sans ce scenario rien ne le montre : la sauvegarde du poste finit toujours a la derniere etape, mission finie, donc sans objectif.",
+   "fin": 90,
+   "etapes": [
+    {
+     "image": 30,
+     "appeler": "Mission",
+     "methode": "aller_a",
+     "argument": 3
+    },
+    {
+     "image": 40,
+     "placer": "Joueur",
+     "pos": [
+      20,
+      1.2,
+      -18
+     ],
+     "cap": 200
+    },
+    {
+     "_pourquoi": "Le telephone s'ouvre tout seul au changement d'etape et se pose PILE sur la minimap, qui se cache alors pour ne pas passer sous lui. On le referme, sinon cette vue ne montre jamais ce qu'elle est censee montrer.",
+     "image": 60,
+     "touche": "telephone"
+    }
+   ]
+  },
+
   "labo_paillasse": {
    "quoi": "La paillasse de gauche vue de pres, la ou se pose la verrerie. Un montage de distillation fait 48 cm : depuis le couloir il tient dans soixante pixels et se confond avec tout ce qui l'entoure. C'est la seule vue ou l'on peut dire si un modele d'objet est bon ou rate.",
    "fin": 80,

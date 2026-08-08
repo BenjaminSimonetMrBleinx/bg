@@ -20,6 +20,39 @@ le numéro ne voulait plus rien dire. Un lot livré est désormais un correctif.
 
 ---
 
+## 0.51.2 — Une minimap, et on sait enfin de quel côté partir
+
+**Ce qu'il faut essayer** : lance une partie et regarde en bas à droite.
+
+Un disque, toi au centre, et **les rues** — elles sont tracées par les
+lampadaires, qui les bordent. La carte **tourne avec la caméra** : le haut du
+disque est ce que tu as devant toi, pas le nord.
+
+**Le point jaune est ton objectif.** Quand il est loin — le désert est à neuf
+cents mètres — il se colle au bord du disque en pointe, et te dit la direction.
+Il ne disparaît jamais : un marqueur qui s'efface dès qu'on sort de portée ne
+sert qu'à l'endroit où on n'en a plus besoin.
+
+**Aucun chiffre.** Pas de distance, pas de coordonnées. Tu vois que c'est loin
+sur la gauche, tu ne sais pas que c'est 340 m — et c'est voulu : un compteur
+transforme un trajet en optimisation.
+
+La minimap se cache quand le téléphone, la roue, un dialogue ou le menu sont
+ouverts. Elle occupait le même coin que le téléphone, qui la recouvrait aux
+trois quarts.
+
+### Aussi
+
+Le labo du camping-car est meublé : **quatre montages de distillation** avec
+leur ballon et leur liquide, **un fût et un jerrycan** au sol, et la verrerie du
+décor est passée du bloc blanc opaque à **du verre** — bord qui accroche la
+lumière, ménisque, liquides translucides.
+
+Le sol, les paillasses et les cloisons ont de vraies textures. Le bureau de Tuco
+aussi.
+
+---
+
 ## 0.51.0 — Le jeu se voit enfin
 
 **Rien de neuf à faire. Tout est à regarder.** Aucun asset n'a changé de forme :

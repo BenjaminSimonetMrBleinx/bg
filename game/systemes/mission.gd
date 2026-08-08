@@ -95,6 +95,19 @@ func objectif() -> String:
 	return str(etape().get("objectif", ""))
 
 
+## Le NOM DU NOEUD vers lequel pointer, ou une chaine vide.
+##
+## La mission ne resout pas ce nom et ne connait aucune position : elle rend ce
+## que la donnee dit, et c'est l'affichage qui va chercher le noeud. C'est la
+## meme discipline que pour les evenements — elle avance dans une liste, elle
+## ne sait rien du monde.
+##
+## Vide veut dire « ne montre rien ». Une boussole qui pointe au hasard est
+## pire qu'une boussole absente : on la suit.
+func ou() -> String:
+	return str(etape().get("ou", ""))
+
+
 ## Le texte d'aide de l'etape courante, s'il y en a un. Il n'est rendu QU'UNE
 ## FOIS : un conseil qui reste affiche n'est plus un conseil.
 func prendre_le_tuto() -> String:
@@ -132,6 +145,20 @@ func evenement(nom: String) -> bool:
 ## Repositionne la mission a l'etat d'une sauvegarde : on saute directement a
 ## l'etape `i`, avec la liste des objectifs deja franchis. Sert au chargement,
 ## pour reprendre une partie sans rejouer la mission depuis le debut.
+## Se place a une etape donnee, sans rien valider avant. POUR LES OUTILS.
+##
+## reprendre() existe deja mais prend deux arguments, et le vocabulaire des
+## situations de capture n'en passe qu'un : sans cette porte, aucune image ne
+## peut montrer une mission EN COURS. Or la sauvegarde du poste finit toujours
+## par etre a la derniere etape — chaque capture joue et sauvegarde — donc tout
+## ce qui ne s'affiche qu'en cours de mission devenait invisible aux captures.
+##
+## C'est la lecon du piege 22 sous une autre forme : ce qui se mesure et ce qui
+## se joue ont besoin de portes differentes.
+func aller_a(i: int) -> void:
+	reprendre(i, [])
+
+
 func reprendre(i: int, faits: Array) -> void:
 	_index = clampi(i, 0, _etapes.size())
 	_faites.clear()

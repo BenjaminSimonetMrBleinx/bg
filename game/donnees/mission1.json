@@ -14,6 +14,17 @@
   "             1999 et le texte y tient sur deux lignes",
   "  valide_par l'EVENEMENT qui fait passer a la suivante. Un seul.",
   "  tuto       texte facultatif affiche en bandeau a l'arrivee sur l'etape",
+  "  ou         le NOM DU NOEUD vers lequel la boussole pointe. Facultatif :",
+  "             sans lui, la boussole se cache au lieu de montrer un cap faux.",
+  "",
+  "POURQUOI 'ou' EST UNE DONNEE ET PAS UNE DEDUCTION.",
+  "",
+  "Une etape dit ce qui la VALIDE — un dialogue, une zone, un objet ramasse.",
+  "Aucun de ces evenements ne porte de position : 'dialogue:mission_jesse_maison'",
+  "ne dit pas ou habite Jesse, et il n'a pas a le dire. La boussole a besoin",
+  "d'un point ; on l'ecrit, plutot que de faire deviner au code quel noeud",
+  "correspond a quel evenement — ce serait une table de correspondance cachee",
+  "dans un script, exactement ce que ce fichier existe pour eviter.",
   "",
   "LES EVENEMENTS. Ils sont emis par les systemes du jeu, qui appellent",
   "mission.evenement('...'). La mission ne surveille rien elle-meme : ca lui",
@@ -29,9 +40,7 @@
   "Une etape sans 'valide_par' ne se termine jamais toute seule : c'est le cas",
   "de la derniere."
  ],
-
  "titre": "Un client impatient",
-
  "depart": {
   "argent_min": 100,
   "argent_max": 200,
@@ -57,91 +66,104 @@
    "la fin du personnage avant son debut."
   ]
  },
-
  "etapes": [
   {
    "cle": "appel",
    "objectif": "Sortir de chez soi",
    "tuto": "Vos missions en cours se consultent dans votre telephone (T)",
-   "valide_par": "dialogue:mission_tuco_appel"
+   "valide_par": "dialogue:mission_tuco_appel",
+   "ou": "Sortie"
   },
   {
    "cle": "parler_jesse",
    "objectif": "Parler a Jesse",
    "tuto": "Jesse habite un peu plus loin dans la rue",
-   "valide_par": "dialogue:mission_jesse_maison"
+   "valide_par": "dialogue:mission_jesse_maison",
+   "ou": "Jesse"
   },
   {
    "cle": "voiture",
    "objectif": "Trouver la voiture de Walt",
    "tuto": "Direction le desert. Il vous faut la voiture",
-   "valide_par": "volant"
+   "valide_par": "volant",
+   "ou": "Vehicule"
   },
   {
    "cle": "camping",
    "objectif": "Rejoindre le labo dans le desert",
-   "valide_par": "zone:camping"
+   "valide_par": "zone:camping",
+   "ou": "PorteCampingCar"
   },
   {
    "cle": "jesse_dehors",
    "objectif": "Parler a Jesse devant le camping-car",
-   "valide_par": "dialogue:mission_jesse_camping"
+   "valide_par": "dialogue:mission_jesse_camping",
+   "ou": "JesseDehors"
   },
   {
    "cle": "entrer_camping",
    "objectif": "Entrer dans le camping-car",
-   "valide_par": "zone:camping_interieur"
+   "valide_par": "zone:camping_interieur",
+   "ou": "PorteCampingCar"
   },
   {
    "cle": "cuisiner",
    "objectif": "Utiliser l'atelier de chimie",
    "tuto": "Jesse cuisine au fond. L'atelier libre est de l'autre cote",
-   "valide_par": "objet:botte"
+   "valide_par": "objet:botte",
+   "ou": "AtelierLibre"
   },
   {
    "cle": "jesse_pret",
    "objectif": "Parler a Jesse",
-   "valide_par": "dialogue:mission_jesse_pret"
+   "valide_par": "dialogue:mission_jesse_pret",
+   "ou": "JesseDedans"
   },
   {
    "cle": "prendre_meth",
    "objectif": "Recuperer la marchandise",
-   "valide_par": "objet:meth"
+   "valide_par": "objet:meth",
+   "ou": "Marchandise"
   },
   {
    "cle": "aller_tuco",
    "objectif": "Livrer Tuco Salamanca",
-   "valide_par": "zone:qg"
+   "valide_par": "zone:qg",
+   "ou": "QgExterieur"
   },
   {
    "cle": "entrer_qg",
    "objectif": "Entrer dans le QG",
-   "valide_par": "dialogue:mission_garde"
+   "valide_par": "dialogue:mission_garde",
+   "ou": "Garde"
   },
   {
    "cle": "vendre",
    "objectif": "Vendre la marchandise",
-   "valide_par": "dialogue:mission_tuco_vente"
+   "valide_par": "dialogue:mission_tuco_vente",
+   "ou": "TucoParle"
   },
   {
    "cle": "fuir",
    "objectif": "Sortir de la vivant",
    "tuto": "La botte secrete est sur le bureau",
-   "valide_par": "action:botte_bureau"
+   "valide_par": "action:botte_bureau",
+   "ou": "BotteSurLeBureau"
   },
   {
    "cle": "rentrer",
    "objectif": "Cacher l'argent chez vous",
-   "valide_par": "zone:maison_walter"
+   "valide_par": "zone:maison_walter",
+   "ou": "Walter"
   },
   {
    "cle": "cacher",
    "objectif": "Trouver une cachette dans la maison",
    "tuto": "Une latte du mur n'est pas comme les autres",
-   "valide_par": "argent_cache"
+   "valide_par": "argent_cache",
+   "ou": "LatteDescellee"
   }
  ],
-
  "cachette": {
   "reste_maximum": 10000,
   "refus_sortie": "Vous avez trop d'argent sur vous, vous ne pouvez pas sortir ainsi",
@@ -150,7 +172,6 @@
    "c'est ce qui oblige a se servir de la cachette au lieu de l'ignorer."
   ]
  },
-
  "vente": {
   "montant": 300000,
   "_note": "Ce que Tuco paie. Le compte du joueur monte d'autant."

@@ -672,6 +672,21 @@ switch ($Commande) {
             @{ cle = 'montee'; nom = 'montee et descente'
                script = 'res://verifs/test_montee.gd'
                couvre = @('systemes/controleur', 'systemes/vehicule', 'systemes/joueur', 'scenes/joueur') }
+            # LA BOUSSOLE POINTE-T-ELLE QUELQUE PART DE REEL ?
+            #
+            # Une cible mal nommee dans mission1.json ne casse rien : la
+            # minimap ne montre pas de marqueur, ce qui est exactement ce
+            # qu'elle fait quand une etape n'a volontairement pas de cible.
+            # Deux causes, un seul symptome, et le symptome est une absence.
+            #
+            # Le test imprime aussi la POSITION de chaque cible : find_child
+            # rend le premier noeud du nom demande, et il y a deux « Sortie »
+            # et plusieurs « Porte » dans le jeu. L'etape du QG visait ainsi
+            # une porte du desert, a six cents metres de Tuco.
+            @{ cle = 'boussole'; nom = 'ou pointe la boussole'
+               script = 'res://verifs/test_boussole.gd'
+               couvre = @('systemes/minimap', 'systemes/mission',
+                          'donnees/mission1', 'scenes/mission1', 'scenes/monde') }
             @{ cle = 'mission'; nom = 'mission 1'
                script = 'res://verifs/test_mission.gd'
                couvre = @('systemes/mission', 'systemes/scenario', 'systemes/tir',

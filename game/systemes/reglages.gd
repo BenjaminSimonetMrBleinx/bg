@@ -391,6 +391,36 @@ extends Resource
 
 ## Combien chaque source donne a l'air. Les phares sont les plus forts : deux
 ## cones qui percent la nuit sont le plan qu'on veut voir en roulant.
+## LA MINIMAP. Tous ces nombres sont en pixels du repere d'interface — celui de
+## taille_de_reference(), 512x384 — et pas en pixels d'ecran : le HUD est
+## dessine dedans puis agrandi.
+@export_group("Minimap")
+
+@export var minimap: bool = true
+
+## Le rayon du disque. 46 px sur 384 de haut, soit un cinquieme de la hauteur :
+## assez pour lire un carrefour, assez petit pour qu'on regarde la route.
+@export_range(20.0, 120.0, 1.0) var minimap_rayon: float = 46.0
+
+## Sa distance au coin, en bas a droite.
+@export_range(2.0, 40.0, 1.0) var minimap_marge: float = 9.0
+
+## Combien de metres tient dans le disque, du centre au bord. La ville a des
+## ilots de 57 m : a 90 on en voit un et demi dans chaque direction, ce qui
+## suffit pour choisir un carrefour sans transformer l'ecran en plan cadastral.
+@export_range(20.0, 400.0, 5.0) var minimap_portee: float = 90.0
+
+@export var minimap_fond: Color = Color(0.06, 0.07, 0.09, 0.66)
+@export var minimap_bord: Color = Color(0.72, 0.70, 0.62, 0.85)
+## Les lampadaires servent de trace : ils bordent les rues, donc les dessiner
+## dessine le plan sans qu'on ait a le fabriquer.
+@export var minimap_rue: Color = Color(0.80, 0.72, 0.50, 0.75)
+@export var minimap_joueur: Color = Color(0.94, 0.93, 0.88, 1.0)
+## Le jaune de l'objectif est le seul point vif du disque : c'est ce qu'on
+## cherche des qu'on y jette un oeil.
+@export var minimap_objectif: Color = Color(1.0, 0.82, 0.25, 1.0)
+
+@export_group("Rendu PS2")
 @export_range(0.0, 8.0, 0.1) var lampe_volume: float = 1.6
 @export_range(0.0, 8.0, 0.1) var phare_volume: float = 2.2
 ## Le soleil reste bas : au-dela, midi devient de la soupe.
