@@ -61,10 +61,6 @@ var _texte_annonce: String = ""
 ## minutes plus tard. Le rappel permanent vit en bas a gauche.
 var _outil: int = -1
 
-## Vitesse lissee. La valeur brute d'un VehicleBody3D oscille d'un ou deux
-## km/h a chaque image ; affichee telle quelle, le compteur papillonne.
-var _kmh: float = 0.0
-
 ## LA PALETTE DE LA SERIE, en un endroit.
 ##
 ## Breaking Bad tient dans trois couleurs : le vert-olive de la case du
@@ -151,9 +147,6 @@ func _process(delta: float) -> void:
 		_objectif = maxf(0.0, _objectif - delta)
 	if _douleur > 0.0:
 		_douleur = maxf(0.0, _douleur - delta * 1.6)
-	if _v != null:
-		var cible: float = absf(_v.vitesse_kmh())
-		_kmh = lerpf(_kmh, cible, clampf(delta * 12.0, 0.0, 1.0))
 	if _bourse != null:
 		var somme := float(_bourse.montant())
 		# Un rattrapage proportionnel a l'ECART, avec un plancher : sans le
@@ -182,8 +175,21 @@ func _draw() -> void:
 	_objet_en_main(police)
 	_reticule()
 
-	if _au_volant():
-		_compteur(police)
+	# LE COMPTEUR DE VITESSE A ETE RETIRE le 08/08/2026, et il n'avait jamais eu
+	# sa place ici.
+	#
+	# Deux raisons, et la seconde suffisait a elle seule.
+	#
+	# Il occupait le coin bas droit, ou la minimap est arrivee : les deux se
+	# recouvraient. Mais surtout, la REGLE 1 du projet ne souffre que trois
+	# exceptions — l'argent, la famille, la reputation — et une vitesse n'en est
+	# pas une. « Un chiffre transforme un choix en optimisation. » On sent qu'on
+	# va vite au bruit du moteur, a la camera qui recule et au grain de la
+	# route ; on n'a pas besoin de lire 87.
+	#
+	# Le cadran etait soigne — arc de 200 degres cale sur la vitesse maximale
+	# reelle, aiguille, graduations — et c'est justement pour ca qu'il valait la
+	# peine de dire pourquoi il part.
 
 	if _annonce > 0.0:
 		# Fondu sur le dernier tiers, pour que ca ne disparaisse pas d'un coup.
@@ -398,58 +404,6 @@ func _reticule() -> void:
 		draw_line(c + d * 3.0, c + d * 8.0, couleur, 1.0)
 
 
-func _compteur(police: Font) -> void:
-	# UN CADRAN, PAS UN NOMBRE NU.
-	#
-	# La vitesse s'affichait en chiffres poses sur le decor. Deux choses n'y
-	# allaient pas : on ne lit pas un nombre en conduisant — on regarde ou en
-	# est l'aiguille — et une voiture de 2008 a un cadran, pas un afficheur.
-	#
-	# L'arc fait 200 degres et s'arrete a la vitesse maximale du vehicule : la
-	# position de l'aiguille veut donc dire quelque chose, au lieu d'etre une
-	# fraction d'un maximum invente. Le chiffre reste, petit, au centre — c'est
-	# ce qu'on lit quand on veut savoir exactement.
-	var centre := Vector2(size.x - 40.0, size.y - 30.0)
-	var rayon := 26.0
-	var depart := deg_to_rad(160.0)
-	var arc := deg_to_rad(200.0)
-	var maxi := 140.0
-	if _v != null and _v.reglages != null:
-		maxi = maxf(60.0, _v.reglages.vitesse_max_kmh)
-	var part := clampf(_kmh / maxi, 0.0, 1.0)
-
-	# Le fond du cadran : un disque sombre, pour que l'arc se detache d'un
-	# decor clair comme d'un decor sombre.
-	draw_circle(centre, rayon + 4.0, Color(0.043, 0.055, 0.086, 0.55))
-	draw_arc(centre, rayon, depart, depart + arc, 32,
-			Color(0.72, 0.70, 0.64, 0.40), 2.0)
-	# Les graduations, tous les vingt kilometres/heure.
-	var pas_grad := 20.0
-	var g := 0.0
-	while g <= maxi:
-		var ang := depart + arc * (g / maxi)
-		var dir := Vector2(cos(ang), sin(ang))
-		draw_line(centre + dir * (rayon - 4.0), centre + dir * rayon,
-				Color(0.72, 0.70, 0.64, 0.45), 1.0)
-		g += pas_grad
-	# L'arc parcouru, ambre puis rouge dans le dernier quart — c'est la ou la
-	# voiture cesse de tourner.
-	var teinte := BB_AMBRE if part < 0.75 else BB_ROUGE
-	if part > 0.01:
-		draw_arc(centre, rayon, depart, depart + arc * part, 28, teinte, 3.0)
-	# L'aiguille.
-	var a := depart + arc * part
-	var d := Vector2(cos(a), sin(a))
-	draw_line(centre + d * 6.0, centre + d * (rayon - 2.0), teinte, 2.0)
-
-	_ecrire(police, "%d" % roundi(_kmh), centre + Vector2(0.0, 6.0), 18,
-			Color(0.949, 0.925, 0.867), false, HORIZONTAL_ALIGNMENT_CENTER)
-	_ecrire(police, "km/h", centre + Vector2(0.0, 17.0), 9,
-			Color(0.72, 0.70, 0.64), false, HORIZONTAL_ALIGNMENT_CENTER)
-
-
-# Contour noir puis texte : sans lui, un chiffre clair passe devant un phare
-# ou une facade claire et devient illisible une seconde sur trois.
 func _ecrire(police: Font, texte: String, ou: Vector2, taille: int,
 		couleur: Color, centre: bool,
 		alignement: int = HORIZONTAL_ALIGNMENT_LEFT) -> void:
