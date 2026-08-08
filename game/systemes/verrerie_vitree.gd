@@ -38,6 +38,25 @@ const PIECES := {
 	"Verrerie": {"couleur": Color(0.87, 0.91, 0.89, 0.52), "trouble": 0.16},
 	"Liquides": {"couleur": Color(0.79, 0.55, 0.16, 0.92), "trouble": 0.62},
 	"LiquidesVerts": {"couleur": Color(0.32, 0.62, 0.28, 0.92), "trouble": 0.62},
+	# Le plateau de verre du bureau de Tuco. Meme defaut que la verrerie du
+	# labo, et il aura mis plus longtemps a se voir parce qu'il est SEUL : une
+	# dalle blanche opaque posee sur un bureau sombre, qu'on lit comme un
+	# placeholder oublie alors que c'est l'endroit ou la mission demande de
+	# poser la botte.
+	#
+	# UNE COULEUR SOMBRE, ET C'EST CONTRE-INTUITIF. Le premier essai reprenait
+	# le blanc bleute de la verrerie et rendait la dalle AUSSI blanche qu'avant
+	# — le shader etait pourtant bien pose, mesure a l'execution.
+	#
+	# La cause n'est pas la transparence, c'est la lampe : LampeBureau est a
+	# trente centimetres au-dessus du plateau, energie 3,4. Sous une source
+	# pareille, un albedo clair devient eclatant et ecrase le brun du bureau
+	# qu'on voit au travers, meme a 30 % d'opacite.
+	#
+	# Du vrai verre n'a presque pas d'albedo : il se lit par son bord qui
+	# s'allume et par ce qu'il laisse passer. On l'assombrit donc jusqu'a ce
+	# que le bureau reprenne le dessus.
+	"Plateau": {"couleur": Color(0.16, 0.20, 0.21, 0.16), "trouble": 0.02},
 }
 
 
@@ -49,6 +68,10 @@ func _ready() -> void:
 	var poses := 0
 	for enfant in get_parent().get_children():
 		poses += _vitrer(enfant, shader)
+	# ON DIT AUSSI QUAND CA MARCHE. Le script ne parlait qu'en cas d'echec
+	# total, donc « pas de warning » se confondait avec « tout est vitre » —
+	# alors qu'un seul maillage sur trois pose exactement le meme silence.
+	print("VERRE : %d maillage(s) vitre(s) sous %s" % [poses, get_parent().name])
 	if poses == 0:
 		# On le DIT plutot que de laisser croire que c'est fait. Les noms de
 		# maillage viennent du generateur : le jour ou il les renomme, ce

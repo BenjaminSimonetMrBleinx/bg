@@ -20,6 +20,21 @@ le numéro ne voulait plus rien dire. Un lot livré est désormais un correctif.
 
 ---
 
+## 0.54.2 — La dalle blanche du bureau de Tuco est enfin une vitre
+
+**Ce qu'il faut essayer** : monte chez Tuco et regarde son bureau.
+
+**Ce bloc blanc posé devant lui était un plateau de verre** — celui sur lequel
+la mission demande de poser la botte. Il se lisait comme un morceau oublié. Il
+laisse maintenant voir le bureau au travers, avec un bord qui s'allume.
+
+**Et les trois personnages ont perdu quinze mégaoctets sans rien perdre à
+l'écran.** Walt, Jesse et Tuco portaient chacun une texture de 2048 pixels pour
+un millier de triangles — plus nette que tout ce qui les entoure, et invisible
+à la résolution du jeu. Leurs animations et leur squelette n'ont pas bougé.
+
+---
+
 ## 0.54.1 — Le QG de Tuco et le camping-car ont leur ambiance
 
 **Ce qu'il faut essayer** : entre dans le camping-car pour cuisiner, puis monte

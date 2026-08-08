@@ -557,6 +557,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1200, 0, -900)
 
 [node name="Decor" parent="QgInterieur" instance=ExtResource("6_qg_int")]
 
+; Le plateau de verre du bureau. Le meme script que dans le camping-car : il
+; n'y tournait que la, donc la dalle posee devant Tuco restait blanche et
+; opaque — lue comme un placeholder alors que c'est l'endroit ou la mission
+; demande de poser la botte.
+[node name="VerrerieVitree" type="Node" parent="QgInterieur"]
+script = ExtResource("53_verre")
+
 ; LA LAMPE DE BUREAU, et rien d'autre.
 ;
 ; Une seule source, basse, posee sur le bureau de Tuco : c'est elle qui fait

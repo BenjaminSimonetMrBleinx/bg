@@ -65,23 +65,23 @@
   "Skyler": {
    "voix": 291,
    "nom": "Emma Johnson",
-   "pourquoi": "« chaleureuse et abordable, narration ». Proposition, pas encore ecoutee.",
+   "pourquoi": "« chaleureuse et abordable, narration ». Validee a l ecoute le 08/08/2026, une fois dirigee : chaleureuse et fatiguee, jamais dans le reproche.",
    "stabilite": 0.3,
-   "valide": false
+   "valide": true
   },
   "Garde": {
    "voix": 533,
    "nom": "Zeke Rivers",
-   "pourquoi": "« decontracte et polyvalent, taille pour le jeu video ». Proposition, pas encore ecoutee.",
+   "pourquoi": "« decontracte et polyvalent, taille pour le jeu video ». Validee a l ecoute le 08/08/2026 : l ennui d un type paye pour attendre devant une porte.",
    "stabilite": 0.25,
-   "valide": false
+   "valide": true
   },
   "?": {
    "voix": 441,
    "nom": "Noah Reed",
-   "pourquoi": "« grave, resonant, legerement rauque, direct et autoritaire ». C'est l'inconnu qui appelle au nom de Salamanca : on ne doit pas savoir qui c'est, seulement que ce n'est pas negociable. Proposition, pas encore ecoutee.",
+   "pourquoi": "« grave, resonant, legerement rauque, direct et autoritaire ». C'est l'inconnu qui appelle au nom de Salamanca : on ne doit pas savoir qui c'est, seulement que ce n'est pas negociable. Validee a l ecoute le 08/08/2026.",
    "stabilite": 0.3,
-   "valide": false
+   "valide": true
   }
  }
 }
