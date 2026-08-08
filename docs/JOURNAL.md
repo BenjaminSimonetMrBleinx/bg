@@ -13,6 +13,101 @@ raconte la session.
 
 ---
 
+## Session du 8 août 2026 — le rendu laisse enfin passer le détail
+
+**Début** : sur `v0.50.0`. **Fin** : sur `v0.51.0`, taguée et publiée.
+
+### Ce qui était demandé
+
+Pousser les graphismes — lumières, fluides, détails, textures — avec de vrais
+modèles 3D haute définition, en restant dans l'esprit PS2 voire PS3. Et se doter
+d'une chaîne de production d'assets par IA, Magnific en tête, pour alimenter tout
+ça.
+
+Curseur choisi : **fond PS3, sortie PS2**. On monte la géométrie, les textures et
+l'éclairage ; on garde le SubViewport agrandi comme signature.
+
+### Ce qui a été livré
+
+Le socle de rendu, en entier : rendu à **960×720**, post-traitement allumé
+(filmique, halo, occlusion de contact), **huit lampadaires sur 526 qui projettent**,
+la lune qui porte ses ombres, les phares, le brouillard volumétrique. Plus la
+cohérence des textures — l'Aztek passe de 10,1 Mo à 0,59 — et les décors de la
+mission 1 qui montent de 32 px à 256, dont quatre textures générées par Magnific.
+
+Trois outils neufs : `magnific.ps1`, `lire_glb.py`, `alleger_textures.py`.
+
+### Les surprises, et elles sont nombreuses
+
+**1. La 3D de Magnific n'est pas dans son API.** Douze chemins sondés, tous en
+404, et le `llms.txt` de leur documentation n'en mentionne aucun. Elle n'existe
+que dans le MCP — qui refuse la clé d'API : 401 en `x-magnific-api-key`, en
+`Bearer` et sans en-tête. Les textures se produisent donc en ligne de commande,
+mais les modèles demandent une session OAuth. **La moitié de ce qui était prévu
+est bloquée par une porte différente de celle qu'on avait ouverte.**
+
+**2. `generer` a détruit la ville, sans une seule erreur.** 519 m et 526
+lampadaires sont devenus 137 m et 32, parce que `bg.ps1` a `-Blocs 2` par défaut
+et que la ville du dépôt n'a jamais été générée comme ça. Le seul symptôme est
+arrivé après, et de biais : un ancrage introuvable. Sauvé par `git checkout`, et
+écrit en **piège 23**. Le vrai nombre de blocs n'est écrit nulle part — c'est ce
+qu'il faut retrouver en premier la prochaine fois.
+
+**3. Le jeu mélangeait du 2048 px et du 32 px.** L'Aztek et le chapeau
+embarquaient des cartes de 2048 — 27 Mo à eux quatre avec les personnages —
+pendant que l'intérieur du QG était texturé en 32. La charte prévenait mot pour
+mot ; rien ne l'appliquait, parce que `--texture-max` valait 0 par défaut,
+c'est-à-dire « ne touche à rien ». C'est maintenant 256.
+
+**4. Un défaut qui détruit est pire qu'une erreur.** C'est le lien entre les deux
+surprises précédentes, et la leçon de la session : `-Blocs 2` et `--texture-max 0`
+sont tous les deux des valeurs par défaut qui font silencieusement le contraire
+de ce qu'on veut.
+
+**5. `use_nodes` ne servait plus à rien, sauf à casser la chaîne.** Onze
+occurrences, un `DeprecationWarning` sur la sortie d'erreur, et `generer` qui
+s'arrête. Mesuré : Blender 5.2 crée déjà le `node_tree` et son BSDF. La ligne ne
+faisait plus que se plaindre. **Avant de contourner une dépréciation, vérifier si
+la ligne fait encore quelque chose.**
+
+**6. Une erreur de shader ne fait pas de bruit.** `INSTANCE_CUSTOM` n'existe que
+dans `vertex()` ; le lire dans `fragment()` écrit « Unknown identifier » sur la
+sortie d'erreur, et le jeu se charge quand même. Sans `bg.ps1` qui transforme le
+moindre stderr en échec, ça passait inaperçu.
+
+**7. Le coût de tout ça est nul.** 0,6 ms par image avant, 0,7 après — pour 3,5
+fois plus de pixels, dix sources qui projettent et trois effets d'écran. Le jeu
+n'était pas limité par les pixels, il ne l'est toujours pas. **Le budget qu'on
+croyait dépenser n'a jamais existé**, et c'est ce qui autorise la suite.
+
+**8. J'ai repayé un piège que je connaissais.** Un `Set-Content` PowerShell sur un
+fichier accentué, et les tirets cadratins sont devenus du mojibake. Le piège est
+écrit depuis des semaines. La parade : éditer les fichiers avec l'outil d'édition,
+jamais avec PowerShell.
+
+### Où on reprend
+
+1. **Retrouver le nombre de blocs de la ville** et le poser en défaut. Tant que ce
+   n'est pas fait, `generer` reste une commande dangereuse et les textures de
+   ville restent en 128.
+2. **Autoriser le MCP Magnific** (`/mcp` après rechargement) — c'est ce qui
+   débloque les modèles 3D, donc la verrerie du labo, les hommes de Tuco et le
+   camping-car du ticket #52.
+3. **Poser `liquide.gdshader`** sur la verrerie : le shader est écrit et compilé,
+   il n'est branché nulle part. Il faut le donner au chargement, puisque la
+   verrerie vient de `gen_lieux`.
+4. Les tickets **#56** et **#57** pour les deux suites qui échouaient déjà avant.
+
+### Le bilan
+
+Une session longue et productive, avec un incident sérieux — la ville — rattrapé
+parce que `game/assets/` est versionné. Ce qui a le mieux marché : mesurer avant
+et après à chaque étape, et refuser de conclure sans une image ou un nombre. Ce
+qui a manqué : vérifier ce qu'une commande allait faire **avant** de la lancer sur
+tout le dépôt.
+
+---
+
 ## Session du 7 aout 2026, deuxieme partie — la premiere fois qu'on JOUE
 
 **Début** : sur `v0.48.13`. **Fin** : sur `v0.50.0`, trois releases plus loin.

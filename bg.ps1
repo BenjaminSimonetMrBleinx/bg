@@ -204,7 +204,18 @@ function Get-ArgsEcran {
         $ecrans = @([System.Windows.Forms.Screen]::AllScreens)
     } catch {}
     if ($Ecran -ge 0 -and $Ecran -lt $ecrans.Count) {
-        return , @('--screen', "$Ecran")
+        # ON DONNE AUSSI LA POSITION, PAS SEULEMENT LE NUMERO D ECRAN.
+        #
+        # --screen seul ne suffit pas toujours : selon le pilote et l ordre de
+        # branchement, Godot ouvre quand meme sur le moniteur principal. En
+        # ajoutant les coordonnees du coin haut-gauche de l ecran vise, la
+        # fenetre atterrit ou on l a demandee dans tous les cas.
+        #
+        # Ca compte pour les tests et les captures autant que pour jouer : une
+        # fenetre qui surgit sur l ecran ou on est en train de lire est une
+        # interruption a chaque appel, et il y en a des dizaines par soiree.
+        $b = $ecrans[$Ecran].Bounds
+        return , @('--screen', "$Ecran", '--position', "$($b.X),$($b.Y)")
     }
     if ($Ecran -gt 0) {
         Write-Host ("  (ecran {0} demande, mais {1} ecran(s) detecte(s) : ouverture par defaut)" -f $Ecran, $ecrans.Count) -ForegroundColor Gray
@@ -568,7 +579,10 @@ switch ($Commande) {
         # sur le fichier, l import, les bus, le peripherique et le volume.
         Exiger $GodotConsole 'Godot (console)'
         Initialize-Projet
-        & $GodotConsole --path $Projet --script 'res://verifs/diag_son.gd'
+        # Get-ArgsEcran manquait ici : ce diagnostic n est pas headless, donc il
+        # ouvrait sa fenetre sur le moniteur principal alors que tout le reste
+        # du script respecte -Ecran.
+        & $GodotConsole @('--path', $Projet) @(Get-ArgsEcran) --script 'res://verifs/diag_son.gd'
         exit $LASTEXITCODE
     }
 
