@@ -15,8 +15,7 @@ raconte la session.
 
 ## Session du 7 aout 2026, deuxieme partie — la premiere fois qu'on JOUE
 
-**Début** : sur `v0.48.13`. **Fin** : sur `v0.49.0`, et trois releases publiées
-dans la soirée.
+**Début** : sur `v0.48.13`. **Fin** : sur `v0.50.0`, trois releases plus loin.
 
 ### Ce qui était demandé
 
@@ -86,7 +85,7 @@ l'appel, cinq points pour le retard, trois cents dollars la livraison.
 
 ## Session du 7 aout 2026, premiere partie — un remede qui dormait a cote du malade
 
-**Début** : 07/08, sur `v0.48.10`. **Fin** : sur `v0.48.12`, deux releases
+**Début** : 07/08, sur `v0.48.10`. **Fin** : sur `v0.48.13`, trois releases
 publiées après deux jours de silence.
 
 ### Ce qui était demandé
