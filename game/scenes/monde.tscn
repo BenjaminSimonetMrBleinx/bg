@@ -295,9 +295,19 @@ reglages = ExtResource("2_reglages")
 
 ; Les passants. Leurs trajets viennent du generateur de ville, comme les
 ; lampadaires : une ville regeneree repeuple ses trottoirs toute seule.
+;
+; VINGT-SIX, ET PAS ZERO. Le systeme etait complet — recyclage autour du
+; joueur, portee de soixante metres, demarche parametrique — et sa valeur par
+; defaut valait 0 : la ville n'a donc jamais eu un seul pietre depuis qu'il
+; existe. C'est le ticket #16, et il ne demandait pas d'ecrire du code.
+;
+; 26 est ce que dev.gd appelle deja « normal » dans son reglage de densite ; le
+; nombre est FIXE et pas proportionnel a la ville, parce qu'on les recycle
+; autour du joueur. Mesure : 4,2 ms par image avant, a comparer apres.
 [node name="Foule" type="Node3D" parent="Rendu/Scene3D"]
 script = ExtResource("22_foule")
 reglages = ExtResource("2_reglages")
+combien = 26
 
 ; Les deux maisons occupent la parcelle reservee sur la facade sud de l'ilot
 ; (0, 0) — voir RESERVES dans outils/gen_ville.py. Elles donnent sur le
