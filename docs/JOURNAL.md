@@ -194,7 +194,82 @@ changement d'étape et en recouvrait les trois quarts. Elle se cache maintenant
 sous tout ce qui passe devant. Vu à la première capture, pas au premier essai en
 jeu — et c'est bien pour ça qu'on capture.
 
-### Où on reprend
+---
+
+## Quatrième partie — la tranche verticale, l'ouverture, et les voix en VO
+
+**Décision de séance : le jeu se joue en anglais avec des sous-titres français.**
+C'est la convention des jeux de cette époque et ça colle au ton de la série.
+
+### Ce qui a été livré
+
+**L'epic [#59](https://github.com/benjibleinx-perso/bg/issues/59)** — « la tranche
+verticale : du titre à la fin de la mission 1 » — écrit avec l'inventaire réel de
+chaque maillon, et non avec ce qu'on croyait en place.
+
+**Une cinématique d'ouverture** : cinq plans fixes pris dans le monde déjà chargé,
+avec leur heure, leurs cartons, un thème de 30 s et un fondu. Tout le déroulé est
+dans `donnees/cinematique.json`. Elle ne se joue qu'au démarrage d'une nouvelle
+partie et se saute à la première touche.
+
+**Le compteur de vitesse est retiré.** Il gênait la minimap, mais surtout c'était
+un chiffre affiché : la règle 1 ne l'autorise que pour l'argent, la famille et la
+réputation.
+
+**93 répliques ont leur version anglaise.** `texte` reste le sous-titre français,
+`vo` porte ce qui se dit. Rétrocompatible : sans `vo`, rien ne change.
+
+**Le casting est dans `donnees/casting.json`**, avec la raison de chaque choix.
+
+### Les surprises
+
+**18. Quatre défauts pour une seule cinématique, tous invisibles au raisonnement.**
+Le HUD s'affichait par-dessus les cartons. Elle écrasait l'heure de la mission —
+six heures du matin contre les neuf qu'impose `mission1.json`, dit par la suite
+`jour` en une ligne. Elle démarrait sous les outils, et mon premier correctif
+coupait sur le mode *headless* : sans effet, puisque `bg.ps1` lance les suites
+**avec** une fenêtre. C'est `--script` qu'il fallait regarder.
+
+**19. Et le dernier : elle jouait dans le mauvais viewport.** Symptôme rapporté
+par Benjamin — « un plan fixe de Walter de dos, sans changement ». Tout
+fonctionnait pourtant : les cartons défilaient, le fondu passait, les plans
+s'enchaînaient. **Tout marchait sauf ce qu'on voyait.**
+
+La cause : `Cinematique` vit sous `Monde`, pas sous `Rendu`. `get_viewport()` y
+rend donc la **fenêtre** et non le SubViewport où tout le 3D est rendu ; la caméra
+était créée à côté de la scène et `make_current()` la rendait active pour un
+viewport que personne ne regarde. Le SubViewport est maintenant nommé en export,
+comme le fait `capture.gd` qui met aussi la sienne dedans.
+
+**J'avais conclu de la capture que c'était `capture.gd` qui écrasait ma caméra.**
+C'était vrai, et c'était à côté : la bonne question était « pourquoi la mienne n'a
+jamais pris ».
+
+### Où on reprend, précisément
+
+1. **Générer les 93 répliques** avec le casting de `donnees/casting.json`, via le
+   MCP Magnific (`audio_tts`). Compter ~1 100 crédits. Walter, Jesse et Tuco sont
+   **validés à l'écoute** ; Skyler, le garde et l'inconnu au téléphone sont des
+   propositions à faire écouter.
+2. **Brancher VO + sous-titres** : `dialogue.gd` doit jouer le son de `vo` et
+   afficher `texte`. C'est le seul travail de code qui reste sur l'audio.
+3. **Faire valider le cadrage de la cinématique en jouant.** Une capture ne peut
+   pas le montrer — `capture.gd` impose sa propre caméra.
+4. Le **QG de Tuco** : un homme sur trois, un bloc blanc sur le bureau, et Tuco
+   lui-même à 8,77 Mo / 2048 px dans un jeu qui est en 256.
+
+### Le bilan
+
+Session très longue, et une constante : **presque tous les défauts trouvés
+n'étaient pas là où le symptôme les désignait.** Un shader accusé de coûter quatre
+millisecondes qui n'en coûte aucune, un import accusé d'écrire faux dont
+l'instrument mentait, une cinématique « qui ne se lance pas » et qui se déroulait
+parfaitement dans un viewport invisible. Ce qui a marché à chaque fois : mesurer
+les deux côtés au lieu de choisir l'explication qui arrange.
+
+---
+
+## Où on reprend
 
 1. Les tickets **#56** et **#57**, les deux suites qui échouaient déjà avant.
 2. Le décor du **QG de Tuco** est le prochain à meubler : lambris texturé, mais un
