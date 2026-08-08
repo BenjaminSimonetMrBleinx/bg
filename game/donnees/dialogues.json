@@ -11,7 +11,6 @@
   ],
   "telephone_jesse": {
     "nom": "Jesse",
-    "sans_voix": true,
     "_note": [
       "Appele depuis le telephone, pas rencontre chez lui. Volontairement",
       "court : un appel qui s'eternise donne envie de raccrocher, et le",
@@ -21,27 +20,30 @@
       [
         {
           "qui": "Jesse",
-          "texte": "Yo."
+          "texte": "Yo.",
+          "vo": "Yo."
         },
         {
           "qui": "Walter",
-          "texte": "Bonjour."
+          "texte": "Bonjour.",
+          "vo": "Hello, Jesse."
         }
       ]
     ]
   },
   "telephone_skyler": {
     "nom": "Skyler",
-    "sans_voix": true,
     "conversations": [
       [
         {
           "qui": "Skyler",
-          "texte": "Bonjour."
+          "texte": "Bonjour.",
+          "vo": "Hi."
         },
         {
           "qui": "Walter",
-          "texte": "Bonjour."
+          "texte": "Bonjour.",
+          "vo": "Hello."
         }
       ]
     ]
@@ -173,7 +175,6 @@
   ],
   "mission_tuco_appel": {
     "nom": "Inconnu",
-    "sans_voix": true,
     "conversations": [
       [
         {
@@ -216,7 +217,6 @@
   },
   "mission_skyler_oeufs": {
     "nom": "Skyler",
-    "sans_voix": true,
     "conversations": [
       [
         {
@@ -259,7 +259,6 @@
   },
   "mission_jesse_maison": {
     "nom": "Jesse",
-    "sans_voix": true,
     "conversations": [
       [
         {
@@ -327,7 +326,6 @@
   },
   "skyler_courses_oui": {
     "nom": "Skyler",
-    "sans_voix": true,
     "_note": [
       "On rentre avec la boite d'oeufs et on la pose sur le plan de travail.",
       "C'est le seul endroit du jeu ou les points de famille montent.",
@@ -340,22 +338,24 @@
       [
         {
           "qui": "Skyler",
-          "texte": "Tu es passe a l'epicerie."
+          "texte": "Tu es passe a l'epicerie.",
+          "vo": "You stopped at the store."
         },
         {
           "qui": "Walter",
-          "texte": "Il n'y avait plus d'oeufs."
+          "texte": "Il n'y avait plus d'oeufs.",
+          "vo": "They were out of eggs."
         },
         {
           "qui": "Skyler",
-          "texte": "Non, il n'y en avait plus. Junior voulait des pancakes."
+          "texte": "Non, il n'y en avait plus. Junior voulait des pancakes.",
+          "vo": "No, they were out. Junior wanted pancakes."
         }
       ]
     ]
   },
   "skyler_courses_non": {
     "nom": "Skyler",
-    "sans_voix": true,
     "_note": [
       "Les mains vides. Aucun point ne tombe, mais quelque chose se dit — sinon",
       "oublier ne couterait rien, et un choix sans cout n'est pas un choix.",
@@ -367,26 +367,29 @@
       [
         {
           "qui": "Walter",
-          "texte": "Je suis rentre."
+          "texte": "Je suis rentre.",
+          "vo": "I'm home."
         },
         {
           "qui": "Skyler",
-          "texte": "Les oeufs ?"
+          "texte": "Les oeufs ?",
+          "vo": "The eggs?"
         },
         {
           "qui": "Walter",
-          "texte": "Je... j'ai oublie."
+          "texte": "Je... j'ai oublie.",
+          "vo": "I... I forgot."
         },
         {
           "qui": "Skyler",
-          "texte": "Ce n'est pas grave. J'irai demain matin."
+          "texte": "Ce n'est pas grave. J'irai demain matin.",
+          "vo": "It's all right. I'll go in the morning."
         }
       ]
     ]
   },
   "mission_jesse_camping": {
     "nom": "Jesse",
-    "sans_voix": true,
     "conversations": [
       [
         {
@@ -419,7 +422,6 @@
   },
   "mission_jesse_camping_oeufs": {
     "nom": "Jesse",
-    "sans_voix": true,
     "_note": [
       "MEME MOMENT, MAIS WALTER PORTE LA BOITE D'OEUFS.",
       "",
@@ -483,7 +485,6 @@
   },
   "mission_tuco_vente_oeufs": {
     "nom": "Tuco",
-    "sans_voix": true,
     "_note": [
       "UNE OUVERTURE, PAS UNE SECONDE SCENE.",
       "",
@@ -536,7 +537,6 @@
   },
   "mission_jesse_occupe": {
     "nom": "Jesse",
-    "sans_voix": true,
     "_note": "Tant qu'il cuisine. Plusieurs versions : on va lui reparler.",
     "conversations": [
       [
@@ -564,7 +564,6 @@
   },
   "mission_jesse_livre": {
     "nom": "Jesse",
-    "sans_voix": true,
     "_note": [
       "Jesse DEHORS, une fois la marchandise en poche. Sans cette fiche il",
       "continuait de dire « allons cuisiner » alors que la cuisine etait faite,",
@@ -592,7 +591,6 @@
   },
   "mission_jesse_botte": {
     "nom": "Jesse",
-    "sans_voix": true,
     "_note": "Se declenche pendant que Walter manipule l'atelier.",
     "conversations": [
       [
@@ -621,7 +619,6 @@
   },
   "mission_jesse_pret": {
     "nom": "Jesse",
-    "sans_voix": true,
     "conversations": [
       [
         {
@@ -654,7 +651,6 @@
   },
   "mission_garde": {
     "nom": "Homme de main",
-    "sans_voix": true,
     "conversations": [
       [
         {
@@ -712,7 +708,6 @@
   },
   "mission_tuco_vente": {
     "nom": "Tuco",
-    "sans_voix": true,
     "_note": [
       "La scene centrale. Le joueur n'est PAS bloque pendant celle-ci : il",
       "peut se deplacer, ce qui laisse monter la tension au lieu de la",
@@ -821,7 +816,6 @@
   },
   "mission_tuco_menace": {
     "nom": "Tuco",
-    "sans_voix": true,
     "_note": [
       "Boucle tant que le joueur ne se sert pas de la botte secrete. Au bout",
       "d'une minute, ils tirent."
@@ -865,7 +859,6 @@
   },
   "mission_fin": {
     "nom": "Walter",
-    "sans_voix": true,
     "conversations": [
       [
         {

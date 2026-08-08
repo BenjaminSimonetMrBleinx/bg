@@ -144,18 +144,36 @@ func _montrer() -> void:
 		_nom.text = str(r.get("qui", ""))
 	if _texte != null:
 		_texte.text = str(r.get("texte", ""))
-	_dire(str(r.get("qui", "")), str(r.get("texte", "")))
+	_dire(str(r.get("qui", "")), _prononce(r))
 	var e := str(r.get("effet", ""))
 	if e != "":
 		effet.emit(e)
 
 
+## CE QUI EST PRONONCE, qui n'est plus ce qui est affiche.
+##
+## Depuis le 08/08/2026 le jeu se joue en VO anglaise sous-titree francais :
+## 'vo' est la phrase dite, 'texte' le sous-titre. L'empreinte qui nomme le
+## fichier son doit donc porter sur 'vo' — c'est la regle d'origine appliquee
+## telle quelle, pas une exception. Elle dit : le nom suit ce qui est ENREGISTRE.
+## Reecrire la VO change le fichier ; retoucher une virgule du sous-titre ne
+## jette pas une prise qui reste juste.
+##
+## Une replique sans 'vo' retombe sur 'texte' : c'est le cas des repliques pas
+## encore traduites, et elles gardent leur voix francaise en attendant.
+static func _prononce(replique: Dictionary) -> String:
+	var vo := str(replique.get("vo", ""))
+	if vo != "":
+		return vo
+	return str(replique.get("texte", ""))
+
+
 # Joue l'enregistrement de cette replique, s'il existe.
 #
-# Le nom du fichier est deduit du TEXTE, pas d'un index : l'empreinte MD5 des
-# dix premiers caracteres suffit. Reecrire une replique change son empreinte,
-# donc son fichier — impossible d'entendre l'ancienne version sur le nouveau
-# texte, ce qu'un index numerique aurait permis sans rien signaler.
+# Le nom du fichier est deduit de CE QUI EST DIT, pas d'un index : l'empreinte
+# MD5 des dix premiers caracteres suffit. Reecrire une replique change son
+# empreinte, donc son fichier — impossible d'entendre l'ancienne version sur le
+# nouveau texte, ce qu'un index numerique aurait permis sans rien signaler.
 func _dire(qui: String, texte: String) -> void:
 	if _lecteur == null:
 		return

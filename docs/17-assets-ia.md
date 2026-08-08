@@ -14,7 +14,7 @@ Deux outils, deux métiers :
 
 | Outil | Ce qu'il produit | Ce qu'il ne produit pas |
 |---|---|---|
-| **Magnific** (`mcp.magnific.com`) | Images, textures, upscale, modèles 3D en `.glb` avec maps PBR, voix de synthèse | **Ni bruitage, ni musique.** Son seul audio est du texte-vers-parole |
+| **Magnific** (`mcp.magnific.com`) | Images, textures, upscale, modèles 3D en `.glb` avec maps PBR, **voix** (`audio_tts`) et **musique** (`audio_music_generate`) | **Pas de bruitage.** Un grésillement de néon ou un bouillonnement de ballon ne s'y demandent pas |
 | **ElevenLabs** | Bruitages (0,5 à 30 s), musique, voix | La 3D et les textures |
 
 **Ni l'un ni l'autre ne sait rigger.** Tripo — le moteur 3D derrière Magnific —
@@ -38,9 +38,14 @@ Magnific se pilote de deux façons, et **la différence n'est pas un détail** :
 L'API REST ne publie que les images, l'upscale et la vidéo. Le `llms.txt` de la
 documentation ne mentionne aucun endpoint 3D non plus.
 
+**L'audio est logé à la même enseigne** — dix chemins sondés le même jour,
+tous en 404 : `tts`, `audio/tts`, `text-to-speech`, `voiceover`, `speech`,
+`audio/music`… Une voix ne se génère donc pas depuis un script, et c'est la
+raison pour laquelle `outils/voix_ia.ps1` **intègre** au lieu de générer.
+
 **Conséquence pratique : les textures se produisent en ligne de commande, les
-modèles 3D demandent que le MCP soit connecté.** Les deux voies partagent le
-même solde de crédits.
+modèles 3D et l'audio demandent que le MCP soit connecté.** Les deux voies
+partagent le même solde de crédits.
 
 Ce que l'API REST donne, mesuré : une image en **2048×2048** en 12 à 30
 secondes. Le script la ramène à la taille du jeu et **relit le fichier écrit**
@@ -199,6 +204,56 @@ Jesse livré a déjà été écrasé par un `generer` lancé pour une autre rais
 normale et rugosité, et c'est ce qu'on veut d'un modèle généré — c'est même la
 moitié de ce qui le rend meilleur que du procédural. `-Plat` reste disponible
 pour un asset qui doit se fondre dans le décor généré.
+
+---
+
+## Les voix : le nom du fichier est tout le contrat
+
+Le jeu se joue en **VO anglaise sous-titrée français** depuis le 08/08/2026.
+Dans `donnees/dialogues.json` : `vo` est ce qui se **dit**, `texte` ce qui
+s'**affiche**.
+
+Le casting vit dans [`donnees/casting.json`](../game/donnees/casting.json) —
+une voix et une stabilité par rôle, avec la raison du choix. Tuco est à 0,2
+parce qu'il doit déraper ; Walter à 0,6 parce qu'il se tient.
+
+La chaîne, en trois temps :
+
+1. **Générer** par le MCP, `audio_tts`, avec le `voiceId` et la `stability` du
+   casting. Mesuré : **4 à 12 crédits par réplique** selon sa longueur — les
+   97 voix du jeu ont coûté ~560 crédits, pas les 1 100 estimés.
+2. **Ranger** par `.\outils\voix_ia.ps1 -Travail <lot.json>`, qui télécharge,
+   convertit au format du jeu et **relit la durée écrite**.
+3. **Vérifier** par `.\bg.ps1 test -Suite dialogue`.
+
+### Les trois choses à ne pas se refaire dire
+
+**L'empreinte porte sur `vo`, pas sur `texte`.** Le nom d'un fichier de voix
+suit ce qui est **enregistré**. Réécrire la VO change le fichier ; corriger une
+virgule du sous-titre ne jette pas une prise qui reste juste. C'est la règle
+d'origine appliquée telle quelle — elle disait déjà « le nom suit ce qui est
+dit », et ce qui est dit a changé de champ.
+
+**Une voix générée passe par le même traitement qu'une vraie prise** — même
+filtre, même 22 kHz mono. Deux qualités mélangées s'entendent d'une réplique à
+l'autre, et c'est plus gênant qu'une voix moyenne partout.
+
+**Certaines répliques ne se régénèrent pas.** La confession de Walter et la
+dispute avec Skyler — 19 répliques — ont été **enregistrées**. Elles sont déjà
+en anglais, donc elles n'ont pas de champ `vo`, donc leur empreinte n'a pas
+bougé. Ce n'est pas une liste d'exceptions à maintenir : c'est une conséquence,
+et c'est ce qui les protège de `voix_orphelines.py`.
+
+### Ce que le nettoyage a coûté d'apprendre
+
+Passer en VO a rendu 92 fichiers introuvables **d'un coup**, sans une erreur :
+les empreintes françaises n'étaient plus demandées par personne. Les fichiers
+restaient là, pesaient 12,7 Mo et laissaient croire que les personnages étaient
+doublés.
+
+`outils/voix_orphelines.py` les liste, et ne supprime que sur `--purger`.
+Et `gen_voix.ps1` **saute désormais toute réplique qui a une VO** — sans ce
+garde-fou, chacun de ses passages refabriquait les 92.
 
 ---
 

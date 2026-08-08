@@ -123,7 +123,9 @@ foreach ($cle in $d.PSObject.Properties.Name) {
     $fiche = $d.$cle
     foreach ($conv in $fiche.conversations) {
         foreach ($r in $conv) {
-            $repliques += [pscustomobject]@{ Qui = $r.qui; Texte = $r.texte }
+            $repliques += [pscustomobject]@{
+                Qui = $r.qui; Texte = $r.texte; Vo = $r.vo
+            }
         }
     }
 }
@@ -508,12 +510,30 @@ if (Test-Path $Registre) {
 }
 
 $numero = 0
+$enVo = 0
 foreach ($r in $repliques) {
     $numero++
     if ($enregistrees.ContainsKey('{0:d3}' -f $numero)) {
         $proteges++
         continue
     }
+
+    # UNE REPLIQUE QUI A UNE VO N EST PLUS DE NOTRE RESSORT.
+    #
+    # Depuis le 08/08/2026 le jeu se joue en anglais sous-titre francais. Ce
+    # qui est PARLE est le champ 'vo', et c est lui qui nomme le fichier. Deux
+    # raisons de ne pas y toucher ici, et la seconde est la vraie :
+    #
+    #   1. la voix de Windows installee est francaise. Lui faire lire de
+    #      l anglais donne un accent inutilisable ;
+    #   2. si on synthetisait le TEXTE francais en le nommant d apres la VO
+    #      anglaise, le jeu jouerait du francais en croyant jouer de l anglais.
+    #      Le nom mentirait sur le contenu, ce qui est pire qu un trou.
+    #
+    # Sans ce saut, chaque passage de ce script refabriquait 92 fichiers que
+    # plus personne ne reclame. Voir outils/voix_ia.ps1, qui range les vraies
+    # VO, et outils/voix_orphelines.py, qui a nettoye les premiers.
+    if ($r.Vo) { $enVo++; continue }
     $profil = if ($p.voix.PSObject.Properties.Name -contains $r.Qui) {
         $p.voix.($r.Qui)
     } else {
@@ -565,5 +585,8 @@ Write-Host ""
 Write-Host "$faits fichier(s) ecrits, $sautes deja a jour" -ForegroundColor Green
 if ($proteges -gt 0) {
     Write-Host "$proteges replique(s) laissees intactes : elles ont un vrai enregistrement" -ForegroundColor Cyan
+}
+if ($enVo -gt 0) {
+    Write-Host "$enVo replique(s) en VO anglaise : voir outils\voix_ia.ps1" -ForegroundColor Cyan
 }
 Write-Host "-> $Sortie" -ForegroundColor Gray

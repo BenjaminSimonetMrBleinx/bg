@@ -522,6 +522,61 @@ changent avec la graine. `terrain_vague_3_7` existait le matin et plus
 l'après-midi (voir piège 23). `--lieu <nom>` reste disponible pour mesurer
 ailleurs volontairement.
 
+---
+
+## 27. J'ai écrasé un test, et le remplaçant était moins exigeant
+
+**Le plus cher de la session, parce qu'il ne se voit pas.** J'ai écrit
+`verifs/test_voix.gd` en croyant le créer. Il existait depuis deux commits, et
+`git status` l'a affiché `M` — modifié — au lieu de `??`. C'est la seule chose
+qui l'a signalé, et je ne l'ai vu qu'au moment de commiter.
+
+Le test que j'ai remplacé faisait **deux choses de plus** que le mien :
+
+1. **Il mesurait la crête du bus audio**, pas la présence du fichier. Un WAV
+   valide de zéro seconde se charge sans erreur et ne s'entend pas — compter les
+   fichiers l'aurait déclaré bon. Le mien comptait les fichiers.
+2. **Il appelait `Dialogue.VOIX` et `Dialogue._simplifier()`** au lieu de les
+   recopier. Son commentaire disait pourquoi, et j'ai fait exactement ce qu'il
+   interdisait : *« si le test refaisait le sien, il validerait sa propre
+   convention et pas celle qui est réellement utilisée »*. Deux copies de la
+   même règle restent d'accord entre elles en étant fausses toutes les deux.
+
+**La parade, et elle vaut au-delà des tests :** avant d'écrire un fichier dans
+`verifs/`, `outils/` ou `systemes/`, vérifier qu'il n'existe pas. `Write` écrase
+sans rien demander. Et devant un `M` là où on attendait `??`, s'arrêter : c'est
+un fichier qu'on croyait neuf.
+
+Le test livré est la **fusion** : la mesure de volume et l'appel aux fonctions du
+jeu viennent de l'ancien, le détail par personnage et la distinction
+« posée mais pas importée » du nouveau. Il relève **−6,5 dB** sur le bus
+Interface, ce qui est la seule preuve qu'on entend quelque chose.
+
+---
+
+## 28. `ConvertFrom-Json` rend un tableau comme UN SEUL objet
+
+Trois voix sont sorties fusionnées en une, sous le nom `Jesse Walter Tuco`, sans
+la moindre erreur :
+
+```powershell
+$lot = @(Get-Content $f -Raw | ConvertFrom-Json)   # $lot.Count = 1
+```
+
+PowerShell 5.1 ne déroule pas un tableau JSON dans le pipeline : il l'émet
+entier. Le `@()` autour n'en fait donc pas une liste de *n* éléments, mais une
+liste de **un** qui les contient tous — et `$v.qui` sur cette collection
+concatène silencieusement les valeurs de tous les éléments.
+
+```powershell
+$lot = @()
+$lot += (Get-Content $f -Raw | ConvertFrom-Json)   # le += aplatit
+```
+
+**Ce qui rend ce piège coûteux :** il ne lève rien. La boucle tourne une fois,
+le script annonce « 1 voix à ranger » au lieu de 8, et il faut lire ce nombre
+pour s'apercevoir qu'il est faux.
+
 ### Ce que ça a coûté en affirmations fausses
 
 La note de version de la 0.51.0 annonçait « 0,6 ms avant, 0,7 après ». Les deux

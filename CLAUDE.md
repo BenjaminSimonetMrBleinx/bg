@@ -142,8 +142,16 @@ d'en produire un**. Les quatre choses à savoir sans ouvrir le document :
    squelette et tout ce qui les anime en dépend : **ils ne se remplacent pas.**
    On leur donne une texture plus fine, c'est tout. Les personnages sans
    squelette se régénèrent librement.
-4. **Magnific ne fait ni bruitage ni musique** — son seul audio est de la voix
-   de synthèse. Pour un son, c'est ElevenLabs.
+4. **Magnific fait la voix et la musique, pas le bruitage.** `audio_tts` pour
+   les répliques, `audio_music_generate` pour une nappe — le thème d'ouverture
+   en vient. Pour un bruitage, c'est ElevenLabs.
+5. **Les dialogues se jouent en anglais, sous-titrés français.** Dans
+   `dialogues.json`, `vo` est ce qui se dit et `texte` ce qui s'affiche. Le nom
+   du fichier son est l'empreinte de **`vo`** : il suit ce qui est enregistré,
+   jamais ce qui est lu à l'écran. Les voix générées entrent par
+   `outils/voix_ia.ps1`, le casting vit dans `donnees/casting.json`, et
+   `.\bg.ps1 test -Suite dialogue` mesure qu'on les **entend** — pas qu'elles
+   existent.
 
 Le reste ne change pas : un asset généré entre par `.\bg.ps1 integrer` comme les
 autres, il tient les budgets de la charte, et il se juge sur une capture.

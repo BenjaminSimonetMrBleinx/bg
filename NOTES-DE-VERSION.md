@@ -20,6 +20,29 @@ le numéro ne voulait plus rien dire. Un lot livré est désormais un correctif.
 
 ---
 
+## 0.53.0 — Tout le monde parle anglais, et tu lis en français
+
+**Ce qu'il faut essayer** : joue la mission 1 et écoute. Puis va parler à Skyler
+dans le salon, et décroche le téléphone.
+
+**Les 125 répliques du jeu sont doublées.** En anglais, sous-titrées français —
+la convention des jeux de cette époque, et le ton de la série. Fini la voix de
+synthèse de Windows qui lisait du français.
+
+**Les voix ont été castées, pas prises au hasard.** Walter se tient, même quand
+il ment. Jesse dérape à chaque phrase. Tuco a l'accent de Mexico et part en
+vrille sans prévenir — écoute-le compter l'argent, puis découvrir qu'il en
+manque.
+
+**La confession de Walter et la dispute avec Skyler n'ont pas bougé** : ce sont
+les vraies voix enregistrées, et elles restent les meilleures du jeu.
+
+**Trois voix attendent ton avis** : Skyler, l'homme de main de Tuco, et
+l'inconnu qui appelle au début. Elles sont posées, pas validées — si l'une
+sonne faux, elle se refait.
+
+---
+
 ## 0.51.2 — Une minimap, et on sait enfin de quel côté partir
 
 **Ce qu'il faut essayer** : lance une partie et regarde en bas à droite.

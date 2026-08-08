@@ -269,17 +269,112 @@ les deux côtés au lieu de choisir l'explication qui arrange.
 
 ---
 
+## Cinquième partie — le jeu parle, et ce n'était pas le travail annoncé
+
+**Livré** : `0.53.0`. Les **125 répliques** du jeu sont doublées en anglais,
+sous-titrées français.
+
+### Ce qui était prévu, et ce que c'était vraiment
+
+Le plan disait : générer 93 répliques, puis **brancher `dialogue.gd`** pour
+qu'il joue la VO. Le branchement n'était pas à faire — **il existait depuis des
+mois**. `dialogue.gd` cherchait déjà `assets/voix/<qui>_<md5>.wav`, un
+`gen_voix.ps1` de 570 lignes savait déjà découper une prise de comédien sur ses
+silences et la reconnaître à la voix, et 93 fichiers étaient déjà là.
+
+Le travail réel n'était donc pas *brancher* mais **remplacer** — et la seule
+décision qui comptait était : **sur quoi porte l'empreinte qui nomme le
+fichier ?**
+
+Le code répondait lui-même. Son commentaire disait : *« le nom du fichier est
+déduit du TEXTE, pas d'un index — réécrire une réplique change son empreinte,
+donc son fichier »*. La règle n'était pas « le français » : c'était **ce qui est
+enregistré**. Ce qui est enregistré est passé de `texte` à `vo`, donc
+l'empreinte suit. Aucune exception à écrire, et un effet secondaire utile : les
+93 voix françaises deviennent introuvables d'elles-mêmes.
+
+### Ce que la vérification a trouvé, et que je ne cherchais pas
+
+Il n'y avait pas 93 répliques mais **125**, dont 32 sans VO. Et ces 32 ne
+formaient pas un groupe mais **trois, qui demandaient trois traitements
+opposés** :
+
+| Combien | Ce que c'est | Ce qu'on en fait |
+|---|---|---|
+| **19** | La confession de Walter et la dispute avec Skyler — **de vraies prises**, dont une de 11 Mo enregistrée d'une traite | **Ne jamais régénérer** |
+| **11** | Les œufs, le téléphone — du français jamais traduit | Écrire la VO, générer |
+| **2** | Une pensée entre parenthèses, un silence | **Ne jamais doubler** |
+
+Les 19 étaient déjà en anglais dans `texte`, ce qui les rendait invisibles à un
+comptage naïf — et c'est **exactement ce qui les protège** : pas de champ `vo`,
+donc empreinte inchangée, donc réclamées par le jeu, donc épargnées par le
+nettoyage. Le garde-fou n'est pas une liste d'exceptions à maintenir, c'est une
+conséquence.
+
+### Les surprises
+
+**20. J'ai écrasé un test, et le remplaçant était moins exigeant.**
+`verifs/test_voix.gd` existait. Je l'ai écrit en croyant le créer, et seul le
+`M` de `git status` — au lieu de `??` — l'a signalé, au moment de commiter.
+L'ancien mesurait **la crête du bus audio** ; le mien comptait des fichiers. Un
+WAV valide de zéro seconde se charge sans erreur et ne s'entend pas. Pire :
+l'ancien appelait `Dialogue.VOIX` et `Dialogue._simplifier()` *plutôt que de les
+recopier*, et son commentaire disait pourquoi — j'ai fait exactement ce qu'il
+interdisait. Le test livré est la fusion des deux. **Piège 27.**
+
+**21. Passer en VO a rendu 92 fichiers orphelins d'un coup, en silence.** Pas
+une erreur : simplement plus personne pour les demander. 12,7 Mo qui laissaient
+croire que les personnages étaient doublés. Et `gen_voix.ps1` les aurait
+**refabriqués à chaque passage** — il saute désormais toute réplique qui a une
+VO, parce que lui faire lire de l'anglais avec la voix française de Windows, ou
+nommer du français d'après de l'anglais, sont deux façons de mentir.
+
+**22. `ConvertFrom-Json` rend un tableau comme un seul objet.** Trois voix
+fusionnées sous le nom `Jesse Walter Tuco`, sans erreur. **Piège 28.**
+
+**23. Et le tiret cadratin dans un `.ps1`, encore.** Le piège est écrit, je le
+connais, je l'ai refait dans les vingt premières lignes de `voix_ia.ps1`.
+
+### Ce que ça a coûté
+
+**~560 crédits** pour 97 voix — 4 à 12 par réplique selon la longueur, contre
+les 1 100 estimés pour 93. Le dédoublonnage y a aidé : « Eggs. » revient trois
+fois chez Walter, et un nom de fichier vaut une seule génération.
+
+**Reste ~17 500 crédits sur 20 000.**
+
+### La preuve
+
+```
+  qui               ont   sans a importer
+  Jesse              26      0          0
+  Tuco               23      0          0
+  Walter             51      0          0
+       125 replique(s), dont 21 sans VO anglaise
+  ok   toutes ont un enregistrement (0 manquant(s))
+       crete bus Interface  -6.5 dB
+  ok   on entend la voix
+```
+
+Les 21 sans VO sont les 19 vraies prises et les 2 répliques non parlées. Le
+compte tombe juste.
+
+---
+
 ## Où on reprend
 
-1. Les tickets **#56** et **#57**, les deux suites qui échouaient déjà avant.
-2. Le décor du **QG de Tuco** est le prochain à meubler : lambris texturé, mais un
-   seul homme sur trois et un placeholder blanc sur le bureau.
-3. Les textures de **ville** peuvent maintenant monter en 256 : le nombre de blocs
-   est retrouvé, `generer` n'est plus dangereux.
-4. Le **relevé de coût varie de 2,4 à 4,2 ms** d'une exécution à l'autre au même
-   point. Le bruit est plus grand que la plupart des effets qu'on mesure : c'est
-   la prochaine chose à resserrer si l'on veut trancher un jour sur un
-   millième.
+1. **Faire écouter trois voix non validées** — Skyler, l'homme de main, et
+   l'inconnu au téléphone. Elles sont générées et en place ; si l'une sonne
+   faux, `casting.json` change et on régénère ce rôle.
+2. **Le cadrage de la cinématique** se valide en **jouant**, pas en capture :
+   `capture.gd` impose sa propre caméra.
+3. Le décor du **QG de Tuco** : lambris texturé, mais un seul homme sur trois et
+   un placeholder blanc sur le bureau.
+4. Les tickets **#56** et **#57**, les deux suites qui échouaient déjà avant.
+5. Les textures de **ville** peuvent monter en 256 : le nombre de blocs est
+   retrouvé, `generer` n'est plus dangereux.
+6. Le **relevé de coût varie de 2,4 à 4,2 ms** au même point. Le bruit est plus
+   grand que la plupart des effets qu'on mesure.
 
 ### Le bilan
 
@@ -289,6 +384,14 @@ une image ou un nombre, et **remesurer quand deux nombres se contredisent** plut
 que de choisir celui qui arrange. Ce qui a manqué : vérifier ce qu'une commande
 allait faire avant de la lancer sur tout le dépôt, et un `Set-Content` PowerShell
 sur un fichier accentué alors que le piège est écrit depuis des semaines.
+
+**Et sur la dernière partie** : la leçon n'est pas « lire le code avant
+d'écrire », qui est trop vague pour servir. C'est plus précis — **quand une
+tâche est formulée comme « brancher X », vérifier d'abord que X n'est pas déjà
+branché.** Deux fois de suite le travail annoncé n'était pas le travail réel :
+la cinématique ne manquait pas d'une caméra mais du bon viewport, et les voix ne
+manquaient pas d'un branchement mais d'un remplacement. Dans les deux cas la
+vraie question était plus courte que celle que j'allais traiter.
 
 ---
 
