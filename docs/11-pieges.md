@@ -577,6 +577,45 @@ $lot += (Get-Content $f -Raw | ConvertFrom-Json)   # le += aplatit
 le script annonce « 1 voix à ranger » au lieu de 8, et il faut lire ce nombre
 pour s'apercevoir qu'il est faux.
 
+---
+
+## 29. J'ai ajouté trois personnages qui existaient déjà, sur une recherche tronquée
+
+**C'est la règle « une absence ne prouve rien » de [CLAUDE.md](../CLAUDE.md),
+repayée au prix fort.** Elle y était écrite depuis des semaines, avec son
+exemple — le bug « on ne peut pas courir » ouvert sur une liste coupée par ma
+propre commande.
+
+J'ai cherché les hommes de main de Tuco dans `mission1.tscn` :
+
+```
+Grep "Bureau|Tuco|Homme|Argent|Liasse|Sachet"   →  [limit: 25]
+```
+
+Le dernier résultat affiché était `CaisseBasse`, ligne 616. `Homme1`, `Homme2`
+et `Homme3` sont **lignes 670 à 686**. La coupure est tombée entre les deux.
+
+J'en ai conclu qu'ils n'existaient pas, j'ai écrit dans le commit qu'ils étaient
+« décrits partout, posés nulle part », et j'en ai ajouté trois. Le jeu en a
+affiché **cinq**, dont deux à soixante centimètres l'un de l'autre. C'est
+Benjamin qui l'a vu, en jouant.
+
+Et le comble : les trois originaux portaient un commentaire qui disait
+exactement ce qu'ils faisaient là — *« Les trois hommes de main sont DERRIERE
+le joueur, au fond de la piece. C'est le placement du scenario, et il fait
+tout : on ne les voit pas, on sait qu'ils sont la. »*
+
+**La parade, et elle est mécanique :** quand une recherche sert à prouver
+qu'une chose **n'existe pas**, la troncature n'est pas un détail d'affichage,
+c'est une réponse fausse. Soit on relance sans limite, soit on compte —
+`output_mode: "count"` ne se tronque pas. Un `[limit: N]` en bas d'un résultat
+qui sert à conclure à une absence doit arrêter la main.
+
+**Et le contrôle qui aurait tout évité coûtait dix secondes :** charger la scène
+et compter ce qu'elle contient. C'est ce qu'a fait `verifs/ou_est_qg.gd` après
+coup, et il a donné la réponse du premier coup — sept personnages, trois de
+trop. On mesure la scène chargée, pas le fichier lu à travers un filtre.
+
 ### Ce que ça a coûté en affirmations fausses
 
 La note de version de la 0.51.0 annonçait « 0,6 ms avant, 0,7 après ». Les deux

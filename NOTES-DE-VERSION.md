@@ -35,14 +35,22 @@ quarante et un, dont trente-sept parcelles nommees `terrain_vague_6_7`. Il en
 reste quatre, ceux qu'on demande vraiment.
 
 ---
-## 0.54.3 — Tuco n'est plus seul dans son bureau
+## 0.54.5 — Retour à trois hommes chez Tuco
 
-**Ce qu'il faut essayer** : monte chez Tuco, puis **retourne-toi**.
+**Correction de la 0.54.3, qui annonçait une chose fausse.** Les trois hommes
+de main de Tuco étaient déjà dans le jeu, au fond de la pièce, dans ton dos —
+exactement là où la mise en scène les voulait. Trois autres ont été ajoutés
+par-dessus : on en voyait **cinq**, dont deux presque l'un dans l'autre.
 
-**Ses trois hommes sont là.** Deux encadrent le bureau derrière lui, le
-troisième est près de la porte, dans ton dos — c'est lui qu'on imagine quand
-Tuco dit de te fouiller. Ils ne parlent pas : dans cette scène c'est le garde
-qui répond et Tuco qui décide.
+Les doublons sont retirés. On est revenu à ce qui existait, qui était juste.
+
+---
+
+## 0.54.3 — ~~Tuco n'est plus seul dans son bureau~~ (annulée)
+
+**Cette version ajoutait trois hommes de main qui existaient déjà.** Voir la
+0.54.5. Elle est conservée ici parce qu'un numéro publié ne se réécrit pas,
+mais il n'y a rien à y essayer.
 
 ---
 ## 0.54.2 — La dalle blanche du bureau de Tuco est enfin une vitre

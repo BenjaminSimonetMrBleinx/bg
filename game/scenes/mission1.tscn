@@ -631,38 +631,14 @@ cle = "tuco"
 pose = "Assis"
 geometrie = ExtResource("11_tuco")
 
-; LES TROIS HOMMES DE MAIN.
+; LES HOMMES DE MAIN SONT PLUS BAS, sous les noms Homme1 a Homme3, et ils y
+; sont depuis longtemps. Trois doublons ont ete ajoutes ici le 08/08/2026 et
+; retires le meme jour : la recherche qui avait conclu a leur absence etait
+; TRONQUEE a vingt-cinq resultats et s'arretait quatre lignes trop tot.
 ;
-; Ils etaient DECRITS a deux endroits — l'en-tete de gen_lieux.py et le
-; commentaire de la lampe juste au-dessus — et poses nulle part. Le scenario de
-; capture les annonce lui aussi. Trois textes affirmaient une chose que la
-; scene ne contenait pas, et personne ne l'a vu parce qu'un decor vide ne leve
-; aucune erreur.
-;
-; AUCUNE CLE DE DIALOGUE, et c'est voulu : ils ne parlent pas. Dans la scene
-; c'est le garde qui repond et Tuco qui decide ; trois muets qui regardent
-; valent mieux que trois personnages a qui on pourrait parler pour rien.
-;
-; DEUX DERRIERE TUCO, UN DERRIERE LE JOUEUR. Les deux du fond encadrent le
-; bureau et restent dans le noir — la lampe est basse et ne porte pas jusqu'a
-; eux. Le troisieme est pres de l'entree, dans le dos du joueur : c'est lui qui
-; ferme la piece, et c'est lui qu'on imagine quand Tuco dit « Search him ».
-; Les deux commentaires d'origine se contredisaient sur leur place ; ils
-; avaient raison tous les deux.
-[node name="HommeGauche" type="Node3D" parent="QgInterieur"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -1.7, 0, -3.85)
-script = ExtResource("1_pnj")
-geometrie = ExtResource("9_passant_b")
-
-[node name="HommeDroit" type="Node3D" parent="QgInterieur"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 1.7, 0, -3.85)
-script = ExtResource("1_pnj")
-geometrie = ExtResource("10_passant_c")
-
-[node name="HommePorte" type="Node3D" parent="QgInterieur"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.0, 0, 2.6)
-script = ExtResource("1_pnj")
-geometrie = ExtResource("8_passant_a")
+; On en voyait donc cinq en jouant, dont deux qui se chevauchaient presque.
+; Voir docs/11-pieges.md, piege 19 : une absence ne prouve rien tant que la
+; recherche n'est pas complete.
 
 ; Les trois hommes de main sont DERRIERE le joueur, au fond de la piece. C'est
 ; le placement du scenario, et il fait tout : on ne les voit pas, on sait
