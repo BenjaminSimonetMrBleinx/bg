@@ -86,6 +86,22 @@
    "licence": "Magnific - genere, usage libre"
   },
   {
+   "cle": "bidons_chimie",
+   "decor": "labo",
+   "type": "3d",
+   "moteur": "magnific/tripo-p1",
+   "prompt_image": "Two industrial chemical drums isolated on a plain flat white background, product photography, front orthographic view: a dented blue 55-gallon steel barrel and a red plastic jerrycan next to it, both scuffed and stained, faded unreadable warning labels, rust spots along the rim. Neutral even studio lighting, no shadows on the background, no text, no people, centered, full objects visible.",
+   "faces_max": 2500,
+   "texture": "standard",
+   "vers": "game/assets/decor/bidons_chimie.glb",
+   "hauteur": 0.88,
+   "creation_id_image": "TdpnjHgVNR",
+   "creation_id_3d": "s7U1CeAl8e",
+   "produit": "2500 triangles, 0.08 Mo, texture 256, hauteur relue 0.880 m",
+   "note": "ERREUR DE BRIEF A NE PAS REFAIRE : l'image montrait DEUX objets, Tripo en a fait un seul bloc. On ne peut ni les separer ni les repartir dans la piece. Une image de reference = UN objet. Pose a x 1,10 et pas plus : a 1,30 le couple ressortait de 14 cm a travers la coque.",
+   "licence": "Magnific - genere, usage libre"
+  },
+  {
    "cle": "lambris",
    "decor": "qg",
    "type": "texture",

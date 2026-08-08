@@ -14,10 +14,11 @@
 ; par desert.gd la ou gen_desert.py le publie. On lui ajoute seulement Jesse et
 ; sa porte — et on ne recopie PAS ses coordonnees, on s'ancre dessus.
 
-[gd_scene load_steps=35 format=3 uid="uid://bgmission1t001"]
+[gd_scene load_steps=36 format=3 uid="uid://bgmission1t001"]
 
 [ext_resource type="Shader" path="res://rendu/particule_douce.gdshader" id="50_vapeur"]
 [ext_resource type="PackedScene" path="res://assets/decor/verrerie.glb" id="51_verrerie"]
+[ext_resource type="PackedScene" path="res://assets/decor/bidons_chimie.glb" id="52_bidons"]
 
 [ext_resource type="Script" path="res://systemes/pnj.gd" id="1_pnj"]
 [ext_resource type="Script" path="res://systemes/ancrage.gd" id="14_ancrage"]
@@ -408,6 +409,22 @@ transform = Transform3D(0.643, 0, -0.766, 0, 1, 0, 0.766, 0, 0.643, -1.18, 0.94,
 
 [node name="Verrerie4" parent="CampingCarInterieur" instance=ExtResource("51_verrerie")]
 transform = Transform3D(-0.94, 0, -0.342, 0, 1, 0, 0.342, 0, -0.94, -1.18, 0.94, 1.4)
+
+; LE FUT ET LE JERRYCAN, au sol pres de l'entree.
+;
+; Le cote droit est occupe de z = 2,3 a 6,5 par les bidons du generateur ; on
+; se pose donc avant, entre l'entree et eux.
+;
+; LES DEUX OBJETS SONT DANS LE MEME MODELE, et c'est une erreur de brief plus
+; qu'un defaut : l'image de reference en montrait deux, Tripo en a fait un seul
+; bloc. On ne peut donc pas les separer ni les repartir. Pour la suite : une
+; image de reference = UN objet, sinon on perd le placement.
+; Le X est a 1,10 et pas plus : tourne d'un quart de tour le couple mesure
+; 1,08 m de large, et la coque s'arrete a 1,70. A 1,30 il ressortait de
+; quatorze centimetres a travers la paroi — invisible depuis le couloir, et
+; parfaitement visible du dehors.
+[node name="Bidons" parent="CampingCarInterieur" instance=ExtResource("52_bidons")]
+transform = Transform3D(0.766, 0, 0.643, 0, 1, 0, -0.643, 0, 0.766, 1.1, 0, 1.7)
 
 [node name="Atelier" type="Node3D" parent="CampingCarInterieur"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.85, 1, 3.8)
