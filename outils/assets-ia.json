@@ -70,6 +70,22 @@
    "licence": "Magnific - genere, usage libre"
   },
   {
+   "cle": "verrerie",
+   "decor": "labo",
+   "type": "3d",
+   "moteur": "magnific/tripo-p1",
+   "prompt_image": "A single laboratory glassware setup isolated on a plain flat white background, product photography, front orthographic view: a round-bottom borosilicate flask half filled with pale amber liquid, clamped to a simple grey metal ring stand, a short condenser tube attached. Slightly scratched and used glass, faint chemical residue. Neutral even studio lighting, no shadows on the background, no text, no people, centered, full object visible.",
+   "faces_max": 4000,
+   "texture": "standard",
+   "vers": "game/assets/decor/verrerie.glb",
+   "hauteur": 0.48,
+   "creation_id_image": "YMT2KrqWeC",
+   "creation_id_3d": "tCaXPQ0mZJ",
+   "produit": "3990 triangles, 0.20 Mo, texture 512, hauteur relue 0.480 m",
+   "note": "PREMIER modele 3D de la chaine, et il a revele deux bugs. Tripo pose une echelle de 0,4008 sur son noeud racine : importer_modele ECRASAIT l'echelle au lieu de la multiplier, et sortait un modele de 1,198 m au lieu de 0,48. Voir piege 25. Non pose dans la scene pour l'instant.",
+   "licence": "Magnific - genere, usage libre"
+  },
+  {
    "cle": "lambris",
    "decor": "qg",
    "type": "texture",

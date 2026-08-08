@@ -413,3 +413,63 @@ c'est un `World`, pas un `Material`, et ces fichiers ne sont pas dans la chaîne
 
 **Le réflexe :** avant de contourner un avertissement de dépréciation, vérifier
 si la ligne fait encore quelque chose. Souvent elle ne fait plus que se plaindre.
+
+---
+
+## 25. L'échelle était **écrasée**, pas multipliée — et l'instrument mentait aussi
+
+Deux bugs emboîtés, découverts sur le premier modèle 3D généré. L'ordre dans
+lequel ils sont apparus est toute la leçon.
+
+### Le symptôme
+
+`integrer -Hauteur 0.48` annonçait `echelle x1.2000 pour atteindre 0.48 m`, et
+écrivait un fichier de **1,198 m**. Deux fois et demie trop grand, sans un mot.
+
+### Le vrai bug
+
+```gdscript
+obj.scale = (facteur,) * 3        # AVANT — ecrase
+obj.scale = tuple(s * facteur for s in obj.scale)   # APRES — multiplie
+```
+
+Il était là depuis toujours et **ne pouvait pas se déclencher** : tous les
+modèles livrés à la main arrivent à l'échelle 1, et écraser 1 par 1,2 donne 1,2.
+
+Un modèle Tripo, lui, arrive avec **une échelle de 0,4008 sur son nœud**. La
+boîte mesurait donc correctement 0,400 m, le facteur 1,2 était correct — et
+l'écrasement rendait `0,998 × 1,2` au lieu de `0,400 × 1,2`.
+
+**La règle : une transformation se compose, elle ne se remplace pas.** Un défaut
+qui dort pendant cinquante imports n'est pas un défaut absent.
+
+### Le faux coupable, et c'est le plus instructif
+
+Avant de trouver ça, `lire_glb.py` — que je venais d'écrire — a désigné
+`importer_modele.py`. Il lisait les `min`/`max` des accesseurs de POSITION en
+croyant tenir « la mesure du fichier ».
+
+**Il ignorait les transformations de nœuds.** Sur ce modèle il annonçait 0,998 m
+quand l'objet en fait 0,400. J'ai donc conclu que la chaîne écrivait un fichier
+faux, et j'ai « corrigé » du code qui n'avait rien — un détachement de parent qui
+ne servait à rien.
+
+C'est le **piège 18 à l'identique** : avant de corriger ce qu'un instrument
+dénonce, vérifier l'instrument. La différence, cette fois, c'est que
+l'instrument avait dix minutes d'âge et que je l'avais écrit moi-même.
+
+`_etendue()` compose maintenant les matrices de nœuds et transforme **les huit
+coins** — deux ne suffisent plus dès qu'il y a une rotation.
+
+### Et un troisième cas, qu'il faut dire plutôt que mesurer
+
+La même fonction annonçait **0,018 m pour Walt**, qui fait 1,78 m. Un maillage
+peau est en pose de référence : c'est l'armature qui le place. `lire_glb` rend
+donc `hauteur = None` sur un modèle riggé, et le dit. **Mieux vaut rien qu'un
+nombre faux** — un appelant qui compare à une cible croirait au nombre.
+
+### Ce qui a sauvé la mise
+
+Le garde-fou ajouté au même moment : `integrer` **relit le fichier écrit** et
+refuse si la hauteur ne correspond pas à 1 % près. C'est lui qui a rendu les
+trois bugs visibles au lieu de les laisser passer en silence.

@@ -36,6 +36,12 @@ from pathlib import Path
 import bpy
 from mathutils import Matrix
 
+# lire_glb vit a cote et n'importe pas bpy : c'est lui qui dit ce que le fichier
+# CONTIENT, par opposition a ce que la scene annoncait. Blender ne met pas le
+# dossier du script dans le chemin d'import, il faut l'y mettre.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import lire_glb  # noqa: E402
+
 
 def arguments() -> argparse.Namespace:
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
@@ -217,129 +223,6 @@ def reduire_les_textures(mat, maxi: int) -> None:
               % (n.image.name, largeur, hauteur, *n.image.size))
 
 
-def _taille_image(octets: bytes) -> tuple:
-    """Cotes d une image PNG ou JPEG, lus dans ses octets. (0, 0) si inconnu.
-
-    Sans dependance : on ne peut pas importer Pillow dans le Python de Blender
-    sans l installer, et ce script doit tourner sur une machine nue.
-    """
-    if octets[:8] == b"\x89PNG\r\n\x1a\n":
-        # IHDR est toujours le premier chunk : largeur et hauteur en 16 et 20.
-        return (int.from_bytes(octets[16:20], "big"),
-                int.from_bytes(octets[20:24], "big"))
-    if octets[:2] == b"\xff\xd8":
-        i = 2
-        while i + 9 < len(octets):
-            if octets[i] != 0xFF:
-                i += 1
-                continue
-            marqueur = octets[i + 1]
-            # SOFn porte les dimensions, sauf C4 (Huffman), C8 et CC.
-            if 0xC0 <= marqueur <= 0xCF and marqueur not in (0xC4, 0xC8, 0xCC):
-                return (int.from_bytes(octets[i + 7:i + 9], "big"),
-                        int.from_bytes(octets[i + 5:i + 7], "big"))
-            i += 2 + int.from_bytes(octets[i + 2:i + 4], "big")
-    return (0, 0)
-
-
-def relire_le_glb(chemin: Path) -> None:
-    """Dit ce que le FICHIER contient, et pas ce que la scene contenait.
-
-    C est la regle la plus chere du projet : un outil annonce un nombre juste et
-    ecrit un fichier faux. Le compte de triangles imprime jusqu ici venait de la
-    scene Blender, c est-a-dire de l intention ; celui-ci vient des accesseurs du
-    glTF, c est-a-dire du resultat.
-
-    Ce rapport aurait attrape en une ligne les trois camping-cars blancs du
-    piege 20, et il aurait montre que l Aztek est entree avec ses textures de
-    2048 px intactes.
-
-    Un .glb est un en-tete de 12 octets, puis des morceaux longueur/type. Le
-    premier est toujours le JSON ; le second, quand il existe, porte les
-    binaires. Aucune bibliotheque n est necessaire pour les lire.
-    """
-    import json as _json
-
-    brut = chemin.read_bytes()
-    if brut[:4] != b"glTF":
-        print("relu      ce n est pas un .glb")
-        return
-
-    morceaux = {}
-    i = 12
-    while i + 8 <= len(brut):
-        longueur = int.from_bytes(brut[i:i + 4], "little")
-        genre = brut[i + 4:i + 8]
-        morceaux[genre] = (i + 8, longueur)
-        i += 8 + longueur + (-longueur % 4)
-
-    if b"JSON" not in morceaux:
-        print("relu      aucun morceau JSON")
-        return
-    debut, longueur = morceaux[b"JSON"]
-    g = _json.loads(brut[debut:debut + longueur])
-
-    # Les triangles, comptes sur les accesseurs d indices. Mode 4 = TRIANGLES,
-    # et c est le defaut du glTF quand le champ est absent.
-    tris = 0
-    for maillage in g.get("meshes", []):
-        for prim in maillage.get("primitives", []):
-            if prim.get("mode", 4) != 4:
-                continue
-            if "indices" in prim:
-                tris += g["accessors"][prim["indices"]].get("count", 0) // 3
-            elif prim.get("attributes", {}).get("POSITION") is not None:
-                tris += g["accessors"][prim["attributes"]["POSITION"]].get(
-                    "count", 0) // 3
-
-    bin_debut = morceaux.get(b"BIN\x00", (0, 0))[0]
-    vues = g.get("bufferViews", [])
-    images = g.get("images", [])
-    textures = g.get("textures", [])
-
-    def decrire(indice_texture) -> str:
-        if indice_texture is None:
-            return "ABSENT"
-        source = textures[indice_texture].get("source")
-        if source is None:
-            return "sans image"
-        img = images[source]
-        if "bufferView" not in img:
-            return img.get("uri", "externe")
-        vue = vues[img["bufferView"]]
-        depart = bin_debut + vue.get("byteOffset", 0)
-        octets = brut[depart:depart + min(vue.get("byteLength", 0), 4096)]
-        l, h = _taille_image(octets)
-        poids = vue.get("byteLength", 0) / 1024.0
-        return "%dx%d, %.0f Ko" % (l, h, poids) if l else "%.0f Ko" % poids
-
-    print("relu      %d triangles dans le FICHIER, %d materiau(x)"
-          % (tris, len(g.get("materials", []))))
-    for n, mat in enumerate(g.get("materials", [])):
-        pbr = mat.get("pbrMetallicRoughness", {})
-        base = (pbr.get("baseColorTexture") or {}).get("index")
-        mr = (pbr.get("metallicRoughnessTexture") or {}).get("index")
-        normale = (mat.get("normalTexture") or {}).get("index")
-        emis = (mat.get("emissiveTexture") or {}).get("index")
-        occ = (mat.get("occlusionTexture") or {}).get("index")
-        print("  mat %d   couleur %s | normale %s" % (n, decrire(base),
-                                                      decrire(normale)))
-        print("          metal/rugosite %s | emission %s | occlusion %s"
-              % (decrire(mr), decrire(emis), decrire(occ)))
-        # Le piege 20 : une emission blanche sans texture noie la couleur de
-        # base et sort un modele entierement blanc. On le dit tout de suite.
-        facteur = mat.get("emissiveFactor")
-        if facteur and max(facteur) > 0.0 and emis is None:
-            print("          ATTENTION emissiveFactor %s sans texture : ce"
-                  " materiau EMET" % facteur)
-
-    total = sum(vues[i["bufferView"]].get("byteLength", 0)
-                for i in images if "bufferView" in i)
-    if images:
-        print("          %d image(s), %.2f Mo au total"
-              % (len(images), total / 1048576.0))
-
-
 def main() -> None:
     a = arguments()
     racine = Path.cwd()
@@ -382,6 +265,23 @@ def main() -> None:
         print("          l objet est plus long en Y qu en Z : il arrive couche,")
         print("          on le redresse d un quart de tour.")
 
+    # ON DETACHE LES PARENTS AVANT DE FUSIONNER, en gardant la matrice monde.
+    #
+    # Piege paye le 08/08/2026 sur le premier modele genere : annonce a 0,48 m,
+    # ecrit a 1,198 m. Exactement le facteur 2,5 de l'echelle du noeud racine
+    # que Tripo pose au-dessus du maillage.
+    #
+    # bpy.ops.object.join() fusionne dans l'objet actif et repart de SA matrice
+    # a lui : la transformation du parent est perdue en chemin. La boite mesuree
+    # ensuite decrit donc un objet qui n'existe plus, et l'echelle calculee
+    # dessus est fausse d'autant — sans que rien ne le signale.
+    #
+    # matrix_basis = matrix_world fige la transformation complete dans l'objet
+    # lui-meme ; parent = None le detache ensuite sans qu'il bouge.
+    for o in maillages:
+        if o.parent is not None:
+            o.matrix_basis = o.matrix_world.copy()
+            o.parent = None
     for o in maillages:
         o.select_set(True)
     bpy.context.view_layer.objects.active = maillages[0]
@@ -412,7 +312,21 @@ def main() -> None:
     hauteur = maxi[2] - mini[2]
     if a.hauteur > 0 and hauteur > 1e-6:
         facteur = a.hauteur / hauteur
-        obj.scale = (facteur,) * 3
+        # ON MULTIPLIE L'ECHELLE, ON NE LA REMPLACE PAS.
+        #
+        # `obj.scale = (facteur,) * 3` ecrasait celle que le modele portait
+        # deja. Tant que les modeles arrivaient a l'echelle 1, ca ne se voyait
+        # pas — et tous les modeles livres a la main l'etaient.
+        #
+        # Le premier modele genere ne l'etait pas : Tripo pose une echelle de
+        # 0,4008 sur son noeud. La boite mesurait donc 0,400 m, le facteur
+        # calcule dessus valait bien 1,2 — et l'ecraser rendait 0,998 x 1,2,
+        # soit 1,198 m au lieu de 0,48. Deux fois et demie trop grand, sans un
+        # mot, avec une console qui annoncait le bon chiffre.
+        #
+        # Trouve le 08/08/2026 par le garde-fou qui relit le fichier ecrit. Sans
+        # lui, la verrerie entrait dans le camping-car a la taille d'un homme.
+        obj.scale = tuple(s * facteur for s in obj.scale)
         bpy.ops.object.transform_apply(scale=True)
         print("echelle   x%.4f pour atteindre %.2f m" % (facteur, a.hauteur))
 
@@ -478,22 +392,38 @@ def main() -> None:
         export_cameras=False,
         export_lights=False,
     )
-    # Les cotes finaux dans le repere de GODOT, seule mesure qui permette de
-    # trancher sans regarder une image : l export +Y up echange Y et Z. Une
-    # voiture doit etre longue sur Z, un personnage haut sur Y.
-    mini, maxi = boite([obj])
-    print("godot     X %.2f  Y %.2f  Z %.2f" % (
-        maxi[0] - mini[0], maxi[2] - mini[2], maxi[1] - mini[1]))
     # ON MESURE LE FICHIER ECRIT, pas la scene qui l a produit. C est la regle
-    # la plus chere du projet, et elle a ete apprise quatre fois : un outil
-    # annonce un nombre juste et ecrit un fichier faux.
+    # la plus chere du projet, et elle a ete apprise cinq fois maintenant : un
+    # outil annonce un nombre juste et ecrit un fichier faux.
     if not sortie.exists():
         raise SystemExit("rien n a ete ecrit : %s" % sortie)
     print("produit   %.2f Mo" % (sortie.stat().st_size / 1048576.0))
-    # Le compte de triangles imprime ici venait de la SCENE, c'est-a-dire de
-    # l'intention. Celui de relire_le_glb() vient des accesseurs du fichier,
-    # c'est-a-dire du resultat — et c'est la regle la plus chere du projet.
-    relire_le_glb(sortie)
+    lire_glb.imprimer(sortie)
+
+    # ET ON REFUSE SI LA HAUTEUR N EST PAS CELLE QU ON A DEMANDEE.
+    #
+    # C est le garde-fou qui manquait, et il a coute un modele le 08/08/2026 :
+    # la verrerie du labo, demandee a 0,48 m, est sortie a 1,198. La scene
+    # Blender annoncait pourtant 0,48 — elle mesurait un objet detache de son
+    # parent par le join, donc plus petit d un facteur 2,5 que ce qui a ete
+    # exporte.
+    #
+    # Une tolerance de 1 % : le decimateur et l export bougent la derniere
+    # decimale, et refuser sur du bruit rendrait l outil inutilisable.
+    mesuree = lire_glb.decrire(sortie).get("hauteur")
+    if a.hauteur > 0 and mesuree:
+        ecart = abs(mesuree - a.hauteur) / a.hauteur
+        if ecart > 0.01:
+            raise SystemExit(
+                "ECHEC : hauteur demandee %.3f m, ECRITE %.3f m (%.0f %% d ecart).\n"
+                "        Le fichier est en place mais il est FAUX — ne pas le "
+                "garder.\n"
+                "        Relancer avec -Hauteur %.3f donnerait la bonne taille, "
+                "mais la\n"
+                "        vraie question est pourquoi la mesure et l ecriture ne "
+                "s accordent pas."
+                % (a.hauteur, mesuree, ecart * 100.0,
+                   a.hauteur * a.hauteur / mesuree if mesuree > 0 else 0.0))
     print("sortie    %s" % sortie)
 
 

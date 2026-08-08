@@ -47,6 +47,90 @@ def taille_image(octets: bytes) -> tuple:
     return (0, 0)
 
 
+# LES COTES SE MESURENT SUR LES SOMMETS TRANSFORMES, PAS SUR LES ACCESSEURS.
+#
+# Piege paye le 08/08/2026, et il vaut d'etre ecrit parce qu'il a d'abord fait
+# accuser le mauvais coupable.
+#
+# Chaque accesseur de POSITION porte son min et son max. Les lire directement
+# parait etre « la mesure du fichier » — et c'est faux : un noeud glTF porte sa
+# propre transformation, et un modele genere par Tripo arrive avec une echelle
+# de 0,4 sur son noeud racine. Les positions brutes disaient 0,998 m quand
+# l'objet en fait 0,400.
+#
+# Sur cette mesure fausse, j'ai conclu que importer_modele.py ecrivait un
+# fichier faux, et j'ai « corrige » une chaine qui marchait. C'est exactement le
+# piege 18 : avant de corriger ce qu'un instrument denonce, verifier
+# l'instrument.
+def _matrice(noeud: dict) -> list:
+    """La transformation d'un noeud, en 4x4 ligne par ligne."""
+    if "matrix" in noeud:
+        m = noeud["matrix"]
+        # Le glTF stocke en colonnes ; on transpose pour travailler en lignes.
+        return [[m[0], m[4], m[8], m[12]],
+                [m[1], m[5], m[9], m[13]],
+                [m[2], m[6], m[10], m[14]],
+                [m[3], m[7], m[11], m[15]]]
+    t = noeud.get("translation", [0.0, 0.0, 0.0])
+    r = noeud.get("rotation", [0.0, 0.0, 0.0, 1.0])
+    s = noeud.get("scale", [1.0, 1.0, 1.0])
+    x, y, z, w = r
+    rot = [
+        [1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)],
+        [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
+        [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)],
+    ]
+    return [[rot[i][0] * s[0], rot[i][1] * s[1], rot[i][2] * s[2], t[i]]
+            for i in range(3)] + [[0.0, 0.0, 0.0, 1.0]]
+
+
+def _produit(a: list, b: list) -> list:
+    return [[sum(a[i][k] * b[k][j] for k in range(4)) for j in range(4)]
+            for i in range(4)]
+
+
+def _applique(m: list, p: tuple) -> tuple:
+    return tuple(m[i][0] * p[0] + m[i][1] * p[1] + m[i][2] * p[2] + m[i][3]
+                 for i in range(3))
+
+
+def _etendue(g: dict) -> tuple:
+    """Boite englobante du modele entier, transformations comprises."""
+    lo = [1e9, 1e9, 1e9]
+    hi = [-1e9, -1e9, -1e9]
+    identite = [[1.0 if i == j else 0.0 for j in range(4)] for i in range(4)]
+
+    def descendre(indice: int, parent: list) -> None:
+        noeud = g["nodes"][indice]
+        monde = _produit(parent, _matrice(noeud))
+        if "mesh" in noeud:
+            for prim in g["meshes"][noeud["mesh"]].get("primitives", []):
+                pos = prim.get("attributes", {}).get("POSITION")
+                if pos is None:
+                    continue
+                acc = g["accessors"][pos]
+                if "min" not in acc or "max" not in acc:
+                    continue
+                # LES HUIT COINS, pas seulement min et max : une rotation fait
+                # tourner la boite, et deux coins ne suffisent plus a la decrire.
+                for cx in (acc["min"][0], acc["max"][0]):
+                    for cy in (acc["min"][1], acc["max"][1]):
+                        for cz in (acc["min"][2], acc["max"][2]):
+                            p = _applique(monde, (cx, cy, cz))
+                            for k in range(3):
+                                lo[k] = min(lo[k], p[k])
+                                hi[k] = max(hi[k], p[k])
+        for enfant in noeud.get("children", []):
+            descendre(enfant, monde)
+
+    scenes = g.get("scenes", [])
+    racines = scenes[g.get("scene", 0)].get("nodes", []) if scenes else \
+        range(len(g.get("nodes", [])))
+    for r in racines:
+        descendre(r, identite)
+    return lo, hi
+
+
 def _morceaux(brut: bytes) -> dict:
     trouve = {}
     i = 12
@@ -134,6 +218,24 @@ def decrire(chemin: Path) -> dict:
         l, _ = taille_image(brut[depart:depart + min(vue.get("byteLength", 0), 4096)])
         plus_grande = max(plus_grande, l)
 
+    lo, hi = _etendue(g)
+    cotes = tuple(hi[k] - lo[k] for k in range(3)) if lo[0] < 1e8 else (0.0, 0.0, 0.0)
+
+    # UN MODELE RIGGE NE SE MESURE PAS COMME CA, et il faut le DIRE plutot que
+    # de rendre un nombre qui a l'air d'en etre un.
+    #
+    # Les sommets d'un maillage peau sont en pose de reference, et c'est
+    # l'armature qui les place. Walt, qui fait 1,78 m dans le jeu, se mesure
+    # ainsi a 0,018 : les noeuds d'os portent l'echelle, le maillage non. Le
+    # journal le dit deja pour Blender — « la boite englobante decrit la
+    # geometrie AVANT deformation par l'armature » — et c'est vrai du glTF pour
+    # la meme raison.
+    rigge = bool(g.get("skins"))
+    if rigge:
+        alertes.append(
+            "modele RIGGE : les cotes ci-dessus ne veulent rien dire, la taille"
+            " vient de l'armature. Mesurer sur les os.")
+
     return {
         "triangles": tris,
         "materiaux": materiaux,
@@ -141,6 +243,12 @@ def decrire(chemin: Path) -> dict:
         "poids_images_mo": sum(vues[i["bufferView"]].get("byteLength", 0)
                                for i in images if "bufferView" in i) / 1048576.0,
         "plus_grande_texture": plus_grande,
+        "cotes": cotes,
+        # hauteur reste None sur un modele rigge : mieux vaut rien qu'un nombre
+        # faux, parce qu'un appelant qui compare a une cible y croirait.
+        "hauteur": None if rigge else cotes[1],
+        "rigge": rigge,
+        "sous_le_sol": lo[1] if lo[0] < 1e8 else 0.0,
         "alertes": alertes,
     }
 
@@ -154,6 +262,8 @@ def imprimer(chemin: Path) -> None:
     print("%-46s %7.2f Mo  %6d tris  %d img  max %d px"
           % (chemin.name, poids, d["triangles"], d["images"],
              d["plus_grande_texture"]))
+    print("    cotes  X %.3f  Y %.3f (hauteur)  Z %.3f   pied a %.3f"
+          % (d["cotes"][0], d["cotes"][1], d["cotes"][2], d["sous_le_sol"]))
     for n, m in enumerate(d["materiaux"]):
         print("    mat %d  couleur %-16s normale %-16s metal/rug %s"
               % (n, m["couleur"], m["normale"], m["metal_rugosite"]))
