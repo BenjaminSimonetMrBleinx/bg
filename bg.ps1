@@ -347,8 +347,13 @@ switch ($Commande) {
     'editeur' {
         Exiger $Godot 'Godot'
         Initialize-Projet
-        # -e ouvre l editeur au lieu de lancer le jeu
-        & $Godot -e --path $Projet
+        # -e ouvre l editeur au lieu de lancer le jeu.
+        #
+        # L ECRAN VAUT AUSSI POUR LUI. C etait la derniere commande a ouvrir une
+        # fenetre sans le demander : l editeur surgissait sur l ecran principal
+        # pendant que le jeu tournait a cote, et le faisait reduire. C est
+        # exactement ce que Get-ArgsEcran existe pour eviter.
+        & $Godot -e @('--path', $Projet) @(Get-ArgsEcran)
     }
 
     'generer' {
