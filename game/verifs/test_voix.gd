@@ -136,6 +136,18 @@ func _process(_delta: float) -> bool:
 				"toutes ont un enregistrement (%d manquant(s))" % manquants.size())
 		_verifier(pas_importees == 0, "toutes sont importees")
 
+		# LES BUS D'APPAREIL DOIVENT EXISTER, sinon la panne est inaudible :
+		# dialogue.gd retombe volontairement sur la voix directe quand un bus
+		# manque — mieux vaut un personnage non filtre qu'un personnage muet —
+		# et le seul signe est un avertissement dans la console. En jeu, on
+		# entendrait juste Tuco present dans la piece au lieu de l'interphone,
+		# ce qui ressemble a un choix.
+		print("--- les canaux ---")
+		for canal in Dialogue.BUS_PAR_CANAL:
+			var nom: String = Dialogue.BUS_PAR_CANAL[canal]
+			_verifier(AudioServer.get_bus_index(nom) >= 0,
+					"le bus '%s' existe pour le canal '%s'" % [nom, canal])
+
 		print("--- on ouvre une conversation et on ecoute ---")
 		_verifier(_bus >= 0, "le bus Interface existe")
 		_d.call("demarrer", "walter" if _d.call("connait", "walter") else "skyler")

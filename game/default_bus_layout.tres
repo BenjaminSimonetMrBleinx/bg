@@ -7,8 +7,69 @@
 ;   Effets     moteur, portes, pas, impacts
 ;   Musique    compositions
 ;   Interface  roue des outils, dialogue
+;   Telephone  ce qui sort d'un ecouteur     -> Interface
+;   Interphone ce qui sort d'un haut-parleur -> Interface
+;
+; POURQUOI DEUX BUS DE PLUS, ET PAS UN FILTRE CUIT DANS LES FICHIERS.
+;
+; Une voix au telephone doit s'entendre comme une voix au telephone. Le texte
+; francais disait deja « (interphone) » devant trois repliques de Tuco : la
+; scene le savait, le son l'ignorait, et on entendait le patron aussi present
+; que l'homme qui garde la porte.
+;
+; Le traitement se fait ICI plutot qu'a la generation, pour trois raisons :
+;   - il ne coute aucun credit et se regle a l'oreille dans l'editeur ;
+;   - le fichier reste la voix PURE. Si une replique cesse un jour de passer
+;     par un appareil, il n'y a rien a regenerer ;
+;   - un filtre cuit dans le .wav serait invisible : plus moyen de savoir, six
+;     mois plus tard, si la voix est sourde a cause de l'appareil ou parce que
+;     la prise etait mauvaise.
+;
+; QUI PASSE PAR LA, ET QUI NON. Seul le CORRESPONDANT est filtre. Walter est le
+; joueur : il est physiquement dans la piece, la camera est sur lui, et sa voix
+; ne traverse aucun appareil meme quand c'est lui qui tient le combine. C'est la
+; convention du cinema, et l'inverse s'entend immediatement comme une erreur.
+;
+; Le canal se declare dans donnees/dialogues.json, replique par replique.
 
-[gd_resource type="AudioBusLayout" format=3]
+[gd_resource type="AudioBusLayout" load_steps=6 format=3]
+
+; --- Telephone : la bande passante d'une ligne, 300 a 3400 Hz -------------
+;
+; Ce ne sont pas des chiffres choisis a l'oreille : c'est la bande reellement
+; transmise par le reseau telephonique. C'est elle qui donne le timbre qu'on
+; reconnait sans y penser, et la respecter vaut mieux que d'assourdir au juge.
+[sub_resource type="AudioEffectHighPassFilter" id="tel_haut"]
+cutoff_hz = 300.0
+resonance = 0.4
+
+[sub_resource type="AudioEffectLowPassFilter" id="tel_bas"]
+cutoff_hz = 3400.0
+resonance = 0.4
+
+; Une pointe de saturation : une ligne n'est jamais propre. Reste discrete,
+; c'est la coupure des graves qui fait l'essentiel du travail.
+[sub_resource type="AudioEffectDistortion" id="tel_grain"]
+mode = 3
+drive = 0.12
+pre_gain = 0.0
+post_gain = 0.0
+
+; --- Interphone : plus etroit, plus sale ----------------------------------
+;
+; Un haut-parleur de portier a une membrane minuscule dans un boitier en
+; plastique. Il coupe plus haut dans les graves, plus bas dans les aigus, et il
+; sature des qu'on monte la voix — ce que Tuco fait precisement au milieu de la
+; scene, en hurlant LET HIM IN.
+[sub_resource type="AudioEffectBandPassFilter" id="int_bande"]
+cutoff_hz = 1400.0
+resonance = 1.2
+
+[sub_resource type="AudioEffectDistortion" id="int_grain"]
+mode = 3
+drive = 0.3
+pre_gain = 2.0
+post_gain = -2.0
 
 [resource]
 bus/1/name = &"Ambiance"
@@ -35,3 +96,25 @@ bus/4/mute = false
 bus/4/bypass_fx = false
 bus/4/volume_db = 0.0
 bus/4/send = &"Master"
+bus/5/name = &"Telephone"
+bus/5/solo = false
+bus/5/mute = false
+bus/5/bypass_fx = false
+bus/5/volume_db = 1.5
+bus/5/send = &"Interface"
+bus/5/effect/0/effect = SubResource("tel_haut")
+bus/5/effect/0/enabled = true
+bus/5/effect/1/effect = SubResource("tel_bas")
+bus/5/effect/1/enabled = true
+bus/5/effect/2/effect = SubResource("tel_grain")
+bus/5/effect/2/enabled = true
+bus/6/name = &"Interphone"
+bus/6/solo = false
+bus/6/mute = false
+bus/6/bypass_fx = false
+bus/6/volume_db = 2.0
+bus/6/send = &"Interface"
+bus/6/effect/0/effect = SubResource("int_bande")
+bus/6/effect/0/enabled = true
+bus/6/effect/1/effect = SubResource("int_grain")
+bus/6/effect/1/enabled = true

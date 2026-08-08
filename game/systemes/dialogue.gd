@@ -16,6 +16,19 @@ const VOIX := "res://assets/voix/%s_%s.wav"
 ## reste de l'habillage, et ca les met sous le meme curseur de volume.
 const BUS_VOIX := "Interface"
 
+## Une voix qui traverse un appareil ne sort pas sur le meme bus.
+##
+## Le champ 'canal' d'une replique nomme l'appareil qu'elle traverse. Les bus
+## correspondants vivent dans default_bus_layout.tres, ils renvoient tous sur
+## Interface, et c'est la que se reglent les filtres — pas ici.
+##
+## SEUL LE CORRESPONDANT PORTE UN CANAL. Walter est le joueur : il est dans la
+## piece, sa voix ne traverse rien, meme quand c'est lui qui tient le combine.
+const BUS_PAR_CANAL := {
+	"telephone": "Telephone",
+	"interphone": "Interphone",
+}
+
 signal termine
 
 ## Emis quand la replique affichee porte un champ 'effet'.
@@ -144,7 +157,7 @@ func _montrer() -> void:
 		_nom.text = str(r.get("qui", ""))
 	if _texte != null:
 		_texte.text = str(r.get("texte", ""))
-	_dire(str(r.get("qui", "")), _prononce(r))
+	_dire(str(r.get("qui", "")), _prononce(r), str(r.get("canal", "")))
 	var e := str(r.get("effet", ""))
 	if e != "":
 		effet.emit(e)
@@ -174,10 +187,24 @@ static func _prononce(replique: Dictionary) -> String:
 # MD5 des dix premiers caracteres suffit. Reecrire une replique change son
 # empreinte, donc son fichier — impossible d'entendre l'ancienne version sur le
 # nouveau texte, ce qu'un index numerique aurait permis sans rien signaler.
-func _dire(qui: String, texte: String) -> void:
+func _dire(qui: String, texte: String, canal: String = "") -> void:
 	if _lecteur == null:
 		return
 	_lecteur.stop()
+
+	# Le bus se choisit AVANT de jouer : en changer pendant la lecture ne
+	# reprend pas le son deja envoye au melangeur, et la premiere syllabe
+	# sortirait sur le bus precedent.
+	#
+	# Un canal inconnu retombe sur la voix normale plutot que de rester muet :
+	# une faute de frappe dans dialogues.json doit s'entendre comme une voix
+	# non filtree, pas comme un personnage qui a perdu la parole.
+	var bus: String = BUS_PAR_CANAL.get(canal, BUS_VOIX)
+	if AudioServer.get_bus_index(bus) < 0:
+		push_warning("dialogue : bus '%s' introuvable, voix en direct" % bus)
+		bus = BUS_VOIX
+	_lecteur.bus = bus
+
 	var chemin := VOIX % [_simplifier(qui), texte.md5_text().substr(0, 10)]
 	if not ResourceLoader.exists(chemin):
 		if not _manquantes.has(qui):

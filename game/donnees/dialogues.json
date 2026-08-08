@@ -21,7 +21,8 @@
         {
           "qui": "Jesse",
           "texte": "Yo.",
-          "vo": "Yo."
+          "vo": "Yo.",
+          "canal": "telephone"
         },
         {
           "qui": "Walter",
@@ -38,7 +39,8 @@
         {
           "qui": "Skyler",
           "texte": "Bonjour.",
-          "vo": "Hi."
+          "vo": "Hi.",
+          "canal": "telephone"
         },
         {
           "qui": "Walter",
@@ -180,7 +182,8 @@
         {
           "qui": "?",
           "texte": "Heisenberg. C'est bien a qui je pense ?",
-          "vo": "Heisenberg. That is who I think it is?"
+          "vo": "Heisenberg. That is who I think it is?",
+          "canal": "telephone"
         },
         {
           "qui": "Walter",
@@ -190,7 +193,8 @@
         {
           "qui": "?",
           "texte": "Je travaille pour M. Salamanca. Il attend sa commande.",
-          "vo": "I work for Mister Salamanca. He is waiting on his order."
+          "vo": "I work for Mister Salamanca. He is waiting on his order.",
+          "canal": "telephone"
         },
         {
           "qui": "Walter",
@@ -200,12 +204,14 @@
         {
           "qui": "?",
           "texte": "Aujourd'hui. Il n'aime pas attendre, et moi non plus.",
-          "vo": "Today. He does not like waiting. Neither do I."
+          "vo": "Today. He does not like waiting. Neither do I.",
+          "canal": "telephone"
         },
         {
           "qui": "?",
           "texte": "Vous savez ou nous trouver.",
-          "vo": "You know where to find us."
+          "vo": "You know where to find us.",
+          "canal": "telephone"
         },
         {
           "qui": "Walter",
@@ -222,7 +228,8 @@
         {
           "qui": "Skyler",
           "texte": "Walt ? Tu es ou ?",
-          "vo": "Walt? Where are you?"
+          "vo": "Walt? Where are you?",
+          "canal": "telephone"
         },
         {
           "qui": "Walter",
@@ -232,7 +239,8 @@
         {
           "qui": "Skyler",
           "texte": "Il n'y a plus d'oeufs. Junior voulait des pancakes demain matin.",
-          "vo": "We're out of eggs. Junior wanted pancakes in the morning."
+          "vo": "We're out of eggs. Junior wanted pancakes in the morning.",
+          "canal": "telephone"
         },
         {
           "qui": "Walter",
@@ -242,7 +250,8 @@
         {
           "qui": "Skyler",
           "texte": "Tu passes en rentrant ? Ca te fait un detour de rien du tout.",
-          "vo": "Can you stop on your way back? It's barely a detour."
+          "vo": "Can you stop on your way back? It's barely a detour.",
+          "canal": "telephone"
         },
         {
           "qui": "Walter",
@@ -252,7 +261,8 @@
         {
           "qui": "Skyler",
           "texte": "Merci. A tout a l'heure.",
-          "vo": "Thank you. See you later."
+          "vo": "Thank you. See you later.",
+          "canal": "telephone"
         }
       ]
     ]
@@ -681,7 +691,8 @@
         {
           "qui": "Tuco",
           "texte": "(interphone) Laisse-le entrer.",
-          "vo": "Let him in."
+          "vo": "Let him in.",
+          "canal": "interphone"
         },
         {
           "qui": "Garde",
@@ -691,12 +702,14 @@
         {
           "qui": "Tuco",
           "texte": "(interphone) J'ai dit LAISSE-LE ENTRER !",
-          "vo": "I said LET HIM IN!"
+          "vo": "I said LET HIM IN!",
+          "canal": "interphone"
         },
         {
           "qui": "Tuco",
           "texte": "(interphone) Le chimiste ! Ha ! Fais-le monter !",
-          "vo": "The chemist! Ha! Send him up!"
+          "vo": "The chemist! Ha! Send him up!",
+          "canal": "interphone"
         },
         {
           "qui": "Garde",
