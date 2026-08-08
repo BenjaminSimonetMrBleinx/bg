@@ -1,10 +1,17 @@
 # Pipeline de rendu PS2.
 #
-# Tout le 3D est rendu dans un SubViewport a resolution reduite (512x288 par
+# Tout le 3D est rendu dans un SubViewport a resolution reduite (960x720 par
 # defaut), puis agrandi en plein ecran avec un filtrage lineaire. C'est ce
 # double mouvement qui produit le rendu d'epoque : la geometrie est nette au
 # moment du rendu, et le flou vient de l'agrandissement, exactement comme une
 # PS2 sur un ecran moderne.
+#
+# CE QUI FAIT LE GRAIN, C'EST LE RAPPORT, PAS LA FINESSE. La fenetre est a
+# 1440x1080 dans project.godot ; l'agrandissement vaut donc 1,5. On est reste
+# longtemps a 512x384 dans 1024x768, soit un facteur 2 — c'etait plus grossier,
+# mais surtout tout detail sous deux pixels disparaissait, et aucun travail sur
+# la matiere ne se voyait. Monter la resolution SANS monter la fenetre aurait
+# rendu un facteur 1,07, c'est-a-dire un jeu net comme les autres.
 #
 # Ce script ne contient aucun nombre : tout vient de reglages.tres.
 extends Node
@@ -14,6 +21,7 @@ extends Node
 @onready var _viewport: SubViewport = $Rendu
 @onready var _ecran: TextureRect = $Affichage/Ecran
 @onready var _environnement: WorldEnvironment = $Rendu/Environnement
+@onready var _echelle: Control = $Rendu/Interface/Echelle
 
 
 func _ready() -> void:
@@ -28,6 +36,7 @@ func _ready() -> void:
 func appliquer() -> void:
 	_configurer_viewport()
 	_configurer_ecran()
+	_configurer_interface()
 	_configurer_environnement()
 
 
@@ -39,7 +48,23 @@ func _configurer_viewport() -> void:
 	_viewport.msaa_3d = Viewport.MSAA_DISABLED
 	_viewport.screen_space_aa = Viewport.SCREEN_SPACE_AA_DISABLED
 	_viewport.use_hdr_2d = false
-	_viewport.positional_shadow_atlas_size = 1024
+
+	# LA CARTE D'OMBRES, ET SON DECOUPAGE.
+	#
+	# Le defaut de Godot donne au premier quadrant une seule case — un quart de
+	# la carte pour UNE lumiere. Avec huit lampadaires, deux phares et les
+	# lampes d'interieur, c'est du gachis : la source la plus proche prend tout
+	# et les autres se battent pour le reste.
+	#
+	# On decoupe donc en deux quadrants de quatre cases pour ce qui est pres —
+	# les phares, la lampe qu'on longe — et deux de seize pour le fond, ou une
+	# ombre de 256 pixels est deja plus fine que ce que le brouillard laisse
+	# voir.
+	_viewport.positional_shadow_atlas_size = reglages.atlas_ombres
+	_viewport.positional_shadow_atlas_quad_0 = Viewport.SHADOW_ATLAS_QUADRANT_SUBDIV_4
+	_viewport.positional_shadow_atlas_quad_1 = Viewport.SHADOW_ATLAS_QUADRANT_SUBDIV_4
+	_viewport.positional_shadow_atlas_quad_2 = Viewport.SHADOW_ATLAS_QUADRANT_SUBDIV_16
+	_viewport.positional_shadow_atlas_quad_3 = Viewport.SHADOW_ATLAS_QUADRANT_SUBDIV_16
 
 	# Indispensable, et desactive par defaut : sans ecouteur audio 3D, TOUT
 	# son positionne place dans ce viewport est muet. La camera devient
@@ -59,6 +84,37 @@ func _configurer_ecran() -> void:
 	)
 	_ecran.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_ecran.stretch_mode = TextureRect.STRETCH_SCALE
+
+
+# L'INTERFACE EST DESSINEE PETIT, PUIS AGRANDIE.
+#
+# Le HUD partage le viewport de la 3D — c'est voulu, les HUD PS2 partageaient le
+# meme tampon, et la capture le photographie avec la scene. Mais tout y est
+# ecrit en pixels absolus : une police de 13, une barre de vie de 78 pixels, un
+# rayon de roue de 92 pris dans reglages.tres. Ces nombres ont ete regles a
+# l'oeil sur un rendu de 512x384.
+#
+# Monter la resolution sans rien faire d'autre ne rend donc pas l'interface plus
+# fine : elle la rend plus PETITE, de tout le facteur d'agrandissement. Un texte
+# qui occupait 3,4 % de la hauteur d'ecran tombait a 1,8 %.
+#
+# On la dessine dans les cotes de reference et on applique le facteur ici. Tout
+# ce qui lit size continue de lire 512x384, et aucun des six scripts d'interface
+# n'a eu a bouger.
+func _configurer_interface() -> void:
+	if _echelle == null:
+		return
+	# Par les offsets et non par size : ecrire size sur un Control dont les
+	# ancres opposees different fait ecrire un avertissement sur la sortie
+	# d'erreur, et une seule ligne de stderr fait echouer bg.ps1 capture.
+	var repere := reglages.taille_de_reference()
+	_echelle.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_echelle.offset_left = 0.0
+	_echelle.offset_top = 0.0
+	_echelle.offset_right = repere.x
+	_echelle.offset_bottom = repere.y
+	var f := reglages.facteur_hud()
+	_echelle.scale = Vector2(f, f)
 
 
 func _configurer_environnement() -> void:
@@ -93,11 +149,97 @@ func _configurer_environnement() -> void:
 	env.fog_depth_curve = 1.0
 	env.fog_sky_affect = reglages.brume_ciel()
 
+	# L'AIR QUI SE VOIT, PAR-DESSUS le brouillard de profondeur.
+	#
+	# Les deux coexistent et ce n'est pas un doublon : celui du dessus masque la
+	# limite d'affichage — c'est lui qui rend la ville finie — pendant que
+	# celui-ci ne travaille que sur les premiers metres, pour donner un CONE aux
+	# lampadaires au lieu d'une flaque au sol.
+	#
+	# S'ils se cumulent mal, c'est TOUJOURS le volumetrique qu'on baisse : sans
+	# le brouillard de profondeur, on voit le bord du monde.
+	env.volumetric_fog_enabled = reglages.brume_volume
+	if reglages.brume_volume:
+		env.volumetric_fog_density = reglages.brume_volume_densite()
+		env.volumetric_fog_length = reglages.brume_volume_portee
+		env.volumetric_fog_anisotropy = reglages.brume_volume_diffusion
+		env.volumetric_fog_albedo = reglages.brume()
+		env.volumetric_fog_detail_spread = 2.0
+
 	_configurer_soleil()
 
-	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
-	env.glow_enabled = false
-	env.ssao_enabled = false
+	_configurer_post_traitement(env)
+
+
+# CE QUI SE PASSE APRES QUE LA SCENE EST RENDUE.
+#
+# Tout etait coupe ici, et ce n'etait pas un oubli : a 512x384 la plupart de
+# ces effets ne se voyaient pas, ou se voyaient trop. A 960x720 ils tiennent, et
+# le releve de cout laisse toute la marge — 0,6 ms par image sur les 33
+# disponibles.
+#
+# Chacun est pilote par un booleen de reglages.tres, ce qui n'est pas du luxe :
+# ces trois-la ne se jugent pas ensemble. On en bascule un, on capture, on
+# compare. Les allumer tous d'un coup et trouver l'image moins bonne ne dit pas
+# lequel est en cause.
+func _configurer_post_traitement(env: Environment) -> void:
+	# LE TONEMAP CHANGE TOUTES LES COULEURS DU JEU D'UN COUP.
+	#
+	# Lineaire coupait net a 1.0 : un lampadaire, un phare et une fenetre
+	# allumee rendaient la meme tache blanche, sans forme. Filmique garde de la
+	# matiere au-dela et creuse un peu les tons moyens — d'ou l'exposition, qui
+	# rend ce qu'il a pris.
+	env.tonemap_mode = (
+		Environment.TONE_MAPPER_FILMIC if reglages.tonemap_filmique
+		else Environment.TONE_MAPPER_LINEAR
+	)
+	env.tonemap_exposure = reglages.exposition()
+	env.tonemap_white = reglages.blanc
+
+	env.glow_enabled = reglages.glow
+	if reglages.glow:
+		# ECRAN plutot qu'ADDITIF : l'additif empile les halos et deux
+		# lampadaires proches deviennent une seule flaque blanche.
+		env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SCREEN
+		env.glow_intensity = reglages.glow_intensite()
+		env.glow_strength = 1.0
+		env.glow_bloom = reglages.glow_bloom
+		env.glow_hdr_threshold = reglages.glow_seuil()
+		env.glow_hdr_scale = 2.0
+		# LES NIVEAUX SONT UN CHOIX, PAS UN DEFAUT.
+		#
+		# Le 1 fait un halo d'un pixel qui scintille des que la camera bouge —
+		# a cette resolution il attrape le bruit plutot que les sources. Les 5 a
+		# 7 etalent si large qu'ils ne font plus une aureole mais un voile sur
+		# toute l'image : c'est du brouillard, et on en a deja un qui fait ce
+		# travail mieux. Restent 2, 3 et 4.
+		#
+		# ATTENTION A LA NUMEROTATION : l'inspecteur affiche glow_levels/1 a
+		# /7, mais set_glow_level() indexe de 0 a 6. Les niveaux 2, 3 et 4 de
+		# l'inspecteur sont donc les indices 1, 2 et 3.
+		const NIVEAUX_GARDES := [1, 2, 3]
+		for indice in range(0, 7):
+			env.set_glow_level(indice, 1.0 if indice in NIVEAUX_GARDES else 0.0)
+
+	# L'OMBRE DE CONTACT. Elle ne mord que l'ambiante, jamais la lumiere
+	# directe : ssao_light_affect a 0. Autre valeur et on obtient des cernes
+	# sales en plein midi, sous un soleil qui n'a aucune raison d'en produire.
+	env.ssao_enabled = reglages.ssao
+	if reglages.ssao:
+		env.ssao_radius = reglages.ssao_rayon
+		env.ssao_intensity = reglages.ssao_intensite
+		env.ssao_power = reglages.ssao_puissance
+		env.ssao_light_affect = 0.0
+		# Aucun de nos materiaux ne porte de canal d'occlusion : les
+		# generateurs cuisent une couleur de base et rien d'autre.
+		env.ssao_ao_channel_affect = 0.0
+
+	# CEUX-LA RESTENT COUPES, ET C'EST DELIBERE.
+	#
+	# SSIL rebondit la lumiere en espace ecran : cher, et invisible dans une
+	# ville dont l'ambiante est deja forte. SDFGI construit un champ de
+	# distance sur tout le monde ouvert — c'est l'effet le plus cher de Godot,
+	# pour un gain que le brouillard mange a quarante metres.
 	env.ssil_enabled = false
 	env.sdfgi_enabled = false
 
@@ -170,9 +312,18 @@ func _configurer_lune(nuit: float) -> void:
 	lune.rotation_degrees = Vector3(-LUNE_HAUTEUR, LUNE_AZIMUT + 180.0, 0.0)
 	lune.light_color = reglages.lune_couleur
 	lune.light_energy = reglages.lune_energie * nuit
-	# Pas d'ombres : deux jeux d'ombres portees dans la meme scene se croisent
-	# et se contredisent, et celles de la lune ne se remarqueraient pas.
-	lune.shadow_enabled = false
+	# LA LUNE PORTE MAINTENANT SES OMBRES, et l'objection d'avant tenait :
+	# « deux jeux d'ombres dans la meme scene se croisent et se contredisent ».
+	# Elle tenait tant que les deux pouvaient etre allumes ensemble. Avec deux
+	# seuils qui ne se recouvrent pas — le soleil s'arrete a 0,30 de jour, la
+	# lune ne commence qu'a 0,70 de nuit — ils ne coexistent jamais, et la bande
+	# entre les deux est l'aube et le crepuscule ou aucune ombre rasante n'est
+	# lisible de toute facon.
+	#
+	# Ce que ca gagne : la voiture ne FLOTTE plus. Sans ombre au sol, de nuit,
+	# elle etait posee sur rien.
+	lune.shadow_enabled = nuit >= reglages.lune_ombres_seuil
+	lune.directional_shadow_max_distance = reglages.lune_ombre_distance
 	lune.visible = nuit > 0.02
 
 
@@ -212,7 +363,16 @@ func _configurer_soleil() -> void:
 			Color(1.0, 0.58, 0.34), clampf(nuit * 1.4, 0.0, 1.0))
 	# Une lumiere d'energie nulle projette quand meme ses ombres : on les coupe,
 	# et on economise la carte d'ombres pendant toute la nuit.
-	soleil.shadow_enabled = reglages.soleil_ombres and jour > 0.05
+	#
+	# Le seuil est monte de 0,05 a un reglage (0,30) : entre les deux, le soleil
+	# est si rasant que ses ombres traversent toute la rue en bouillie. Et c'est
+	# ce qui laisse la place a celles de la lune sans jamais les croiser.
+	soleil.shadow_enabled = reglages.soleil_ombres and jour >= reglages.soleil_ombres_seuil
+	soleil.directional_shadow_max_distance = reglages.soleil_ombre_distance
+	# Le soleil donne peu a l'air : une directionnelle eclaire TOUT le volume a
+	# la fois, donc ce qui fait un joli rayon rasant a l'aube fait de la soupe
+	# a midi.
+	soleil.light_volumetric_fog_energy = reglages.soleil_volume
 	soleil.visible = jour > 0.01
 
 

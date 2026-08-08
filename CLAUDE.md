@@ -125,6 +125,31 @@ Vérifier `gen_personnage.py`, `gen_objets.py`, `gen_lieux.py` avant d'intégrer
 
 ---
 
+## Fabriquer un asset au lieu de l'attendre
+
+Depuis le 08/08/2026, un asset peut être **généré** : Magnific pour les images,
+les textures et la 3D, ElevenLabs pour les bruitages et la musique. La chaîne
+complète est dans [docs/17-assets-ia.md](docs/17-assets-ia.md), **à relire avant
+d'en produire un**. Les quatre choses à savoir sans ouvrir le document :
+
+1. **Rien ne se génère sans passer par le manifeste.** `outils/assets-ia.json`
+   porte le prompt, le moteur, les paramètres et l'empreinte de chaque fichier.
+   Il est versionné ; les originaux, eux, vont dans `livraisons/ia/` qui est hors
+   de git. **C'est le manifeste la source, pas le `.glb`.**
+2. **Une référence de style par décor**, jamais par objet. Dix objets générés
+   séparément sortent de dix univers différents, et ça se voit immédiatement.
+3. **Aucun des deux outils ne sait rigger.** Walt, Jesse et Tuco portent un
+   squelette et tout ce qui les anime en dépend : **ils ne se remplacent pas.**
+   On leur donne une texture plus fine, c'est tout. Les personnages sans
+   squelette se régénèrent librement.
+4. **Magnific ne fait ni bruitage ni musique** — son seul audio est de la voix
+   de synthèse. Pour un son, c'est ElevenLabs.
+
+Le reste ne change pas : un asset généré entre par `.\bg.ps1 integrer` comme les
+autres, il tient les budgets de la charte, et il se juge sur une capture.
+
+---
+
 ## Tester
 
 `.\bg.ps1 test -Suite <nom>` — la suite nommée, et rien d'autre. Le jeu est

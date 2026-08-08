@@ -468,7 +468,6 @@ def main() -> None:
     gen.ecrire_png(png, a.taille, a.taille, image.px)
 
     mat = bpy.data.materials.new(sortie.stem)
-    mat.use_nodes = True
     principal = mat.node_tree.nodes["Principled BSDF"]
     principal.inputs["Roughness"].default_value = 0.95
     principal.inputs["Metallic"].default_value = 0.0

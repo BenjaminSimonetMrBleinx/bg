@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Genere les textures 128 px du jeu.
+"""Genere les textures du jeu, 256 px par defaut.
 
     python outils/gen_textures.py [--sortie .tmp/textures]
 
@@ -1213,7 +1213,15 @@ def camping_car(u: float, v: float):
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--sortie", default=".tmp/textures")
-    ap.add_argument("--taille", type=int, default=128)
+    # 256 DEPUIS LE 08/08/2026, et c'est le seul chiffre a changer : tout ce
+    # que produit ce fichier est relatif a --taille. Les vitres, les pneus et
+    # le trottoir restent a la moitie, le petit mobilier au quart, le banc au
+    # double — les proportions sont conservees, seul le palier monte.
+    #
+    # Pourquoi : le rendu est passe de 512x384 a 960x720. A 128 px, une facade
+    # vue de pres n'avait plus assez de matiere pour remplir l'ecran, et tout
+    # le travail sur la lumiere tombait sur des aplats.
+    ap.add_argument("--taille", type=int, default=256)
     ap.add_argument("--moment", default="nuit", choices=["jour", "nuit"],
                     help="l'etat des vitres est cuit dans la texture")
     ap.add_argument("--donnees", default="game/donnees/monde.json")

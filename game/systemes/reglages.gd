@@ -245,12 +245,156 @@ extends Resource
 # ------------------------------------------------------------------- rendu
 @export_group("Rendu PS2")
 
-## Largeur du rendu interne. La PS2 tournait autour de 512.
-## Tout le reste de l'ecran est un agrandissement de cette image.
-@export_range(160, 1280, 16) var largeur_rendu: int = 512
+## Largeur du rendu interne. Tout le reste de l'ecran est un agrandissement
+## de cette image, et c'est cet agrandissement qui fait le grain du jeu.
+##
+## La PS2 tournait autour de 512, et on y est reste longtemps. On rend
+## desormais plus fin — 960x720 — parce qu'a 512 tout detail sous deux pixels
+## disparaissait : un modele soigne ne se voyait pas plus qu'un modele rate,
+## et ca rendait inutile tout travail sur la matiere.
+##
+## CE QUI COMPTE N'EST PAS CETTE VALEUR, C'EST SON RAPPORT A LA FENETRE.
+## Le grain vient du facteur d'agrandissement, pas de la finesse : rendre en
+## 960 dans une fenetre de 1024 ne grandit rien du tout et le jeu devient net
+## comme n'importe quel jeu moderne. La fenetre est donc a 1440x1080 dans
+## project.godot, ce qui laisse un facteur 1,5. Changer l'un sans l'autre est
+## la facon la plus simple de perdre l'identite du rendu sans comprendre
+## pourquoi.
+@export_range(160, 1920, 16) var largeur_rendu: int = 960
 
-## Hauteur du rendu interne.
-@export_range(120, 720, 8) var hauteur_rendu: int = 288
+## Hauteur du rendu interne. Le 4:3 est tenu : 960x720 comme 512x384.
+@export_range(120, 1440, 8) var hauteur_rendu: int = 720
+
+## LA TAILLE DANS LAQUELLE L'INTERFACE EST DESSINEE, avant agrandissement.
+##
+## Le HUD vit dans le meme viewport que la 3D — c'est voulu, les HUD PS2
+## partageaient le meme tampon, et la capture le photographie avec la scene.
+## Mais tout y est ecrit en pixels absolus : une taille de police 13, une barre
+## de vie de 78 pixels, un rayon de roue de 92. Monter le rendu sans rien faire
+## d'autre reduit l'interface d'autant — le texte passait de 3,4 % a 1,8 % de
+## la hauteur d'ecran, soit presque la moitie.
+##
+## On dessine donc l'interface dans CES cotes-la, puis on la met a l'echelle du
+## rendu. Tout ce qui lit une taille continue de lire 512x384, et aucun des six
+## fichiers d'interface n'a eu besoin d'etre reecrit.
+@export_range(256, 1280, 16) var hud_largeur_reference: int = 512
+@export_range(192, 960, 8) var hud_hauteur_reference: int = 384
+
+## LE TONEMAP. Lineaire jusqu'ici, ce qui ecrase tout ce qui depasse 1.0 en
+## blanc pur : un lampadaire, un phare et une fenetre allumee rendaient
+## exactement la meme tache. Filmique garde de la matiere dans les hautes
+## lumieres et creuse legerement les tons moyens — c'est ce qui donne a une
+## source de nuit une forme au lieu d'un trou blanc.
+##
+## Le rendre reglable parce que basculer les deux et comparer est la seule
+## facon de juger : ca change TOUTES les couleurs du jeu d'un coup.
+@export var tonemap_filmique: bool = true
+
+## L'exposition. Filmique assombrit les tons moyens, donc on rend un peu — mais
+## PEU, et c'est une correction apres coup : les premieres valeurs (1,15 et
+## 1,30) delavaient les interieurs. Le camping-car ressortait beige uniforme
+## avec un plafonnier brule, ce qui est l'inverse de « lent, sale, provincial ».
+##
+## L'ambiante du jeu est deja forte — 0,62 de jour — et c'est elle qui porte la
+## lisibilite. L'exposition n'a pas a la doubler.
+@export_range(0.3, 3.0, 0.05) var exposition_jour: float = 1.0
+@export_range(0.3, 3.0, 0.05) var exposition_nuit: float = 1.05
+
+## Ou le blanc sature. Monte, il garde du detail dans les sources vives — c'est
+## ce qui evite qu'un plafonnier devienne un trou blanc sans forme.
+@export_range(0.5, 4.0, 0.05) var blanc: float = 2.0
+
+## LE HALO DES SOURCES VIVES.
+##
+## De nuit, les seuls emetteurs sont les lampadaires, les phares et les
+## fenetres allumees — dont l'emission est deja portee par les materiaux de
+## facade. C'est exactement la que le halo doit se voir, et nulle part ailleurs.
+@export var glow: bool = true
+@export_range(0.0, 2.0, 0.01) var glow_intensite_jour: float = 0.28
+@export_range(0.0, 2.0, 0.01) var glow_intensite_nuit: float = 0.55
+
+## Au-dessus de quelle luminosite une surface se met a rayonner. Bas de nuit
+## pour attraper les lampadaires, haut de jour pour que le ciel ne bave pas.
+@export_range(0.0, 4.0, 0.05) var glow_seuil_jour: float = 1.30
+@export_range(0.0, 4.0, 0.05) var glow_seuil_nuit: float = 0.95
+
+## Combien la lueur deborde meme sous le seuil. Tres bas : au-dela, c'est un
+## voile sur toute l'image et on refait du brouillard, qu'on a deja.
+@export_range(0.0, 1.0, 0.01) var glow_bloom: float = 0.05
+
+## L'OMBRE DE CONTACT DANS LES CREUX.
+##
+## Le poste le plus rentable sur une ville de boites : les embrasures creusees
+## de 12 cm — le geste que formes.py appelle « le plus rentable de tout le
+## projet graphique » — ne se lisaient que par leur bande d'ombre portee. La
+## lumiere ambiante du jeu est forte (0,62 de jour), donc elle les remplissait.
+@export var ssao: bool = true
+
+## Le rayon, en metres. Le defaut de Godot (1,0) noircit des facades entieres
+## sur des immeubles de cette taille : on ne veut que les angles.
+@export_range(0.1, 4.0, 0.05) var ssao_rayon: float = 0.65
+@export_range(0.0, 8.0, 0.1) var ssao_intensite: float = 1.6
+@export_range(0.1, 4.0, 0.1) var ssao_puissance: float = 1.5
+
+## LA CARTE OU TOUTES LES OMBRES PONCTUELLES SE PARTAGENT LA PLACE.
+##
+## Elle etait a 1024 en dur dans rendu_ps2.gd, ce qui suffisait puisque rien
+## ne projetait. Avec huit lampadaires, deux phares et les lampes d'interieur,
+## il faut de la place : a 1024 chacun herite d'un timbre-poste et l'ombre
+## devient un escalier.
+@export_enum("1024:1024", "2048:2048", "4096:4096") var atlas_ombres: int = 2048
+
+## A partir de quelle part de JOUR le soleil porte ses ombres. Sous ce seuil il
+## rase tellement que ses ombres s'etirent en bouillie sur toute la rue.
+@export_range(0.0, 1.0, 0.05) var soleil_ombres_seuil: float = 0.30
+
+## A partir de quelle part de NUIT la lune porte les siennes.
+##
+## Les deux ne se croisent jamais : entre les deux seuils il y a une bande sans
+## ombre directionnelle, et c'est l'aube et le crepuscule. C'est ce qui repond a
+## l'objection ecrite dans rendu_ps2 — « deux jeux d'ombres se contredisent » —
+## sans renoncer a l'ombre de nuit, qui est ce qui POSE la voiture au sol au
+## lieu de la laisser flotter.
+@export_range(0.0, 1.0, 0.05) var lune_ombres_seuil: float = 0.70
+
+## Jusqu'ou portent les ombres directionnelles, en metres. Le defaut de Godot
+## est 100, alors que de jour le brouillard ne mord qu'a 340 : les ombres
+## s'arretaient net au milieu de la rue. De nuit c'est l'inverse, la brume mord
+## a 58 et il est inutile d'aller plus loin.
+@export_range(20.0, 400.0, 5.0) var soleil_ombre_distance: float = 140.0
+@export_range(10.0, 200.0, 5.0) var lune_ombre_distance: float = 60.0
+
+## L'AIR QUI SE VOIT. C'est ce qui donne un CONE a un lampadaire au lieu d'une
+## simple flaque au sol, et c'est le seul effet qui fasse exister la nuit comme
+## une matiere plutot que comme une absence.
+##
+## IL NE REMPLACE PAS LE BROUILLARD DE PROFONDEUR, il s'ajoute. Les deux ont des
+## metiers differents et il faut les garder separes : brouillard_debut/fin
+## masque la limite d'affichage, exactement comme dans GTA III, et c'est lui
+## qui rend la ville finie. Celui-ci est court et faible, il ne sert qu'aux
+## premiers metres. Si le lointain se met a blanchir, c'est CELUI-CI qu'on
+## baisse, jamais l'autre.
+@export var brume_volume: bool = true
+
+## De jour il doit rester presque invisible : a midi, un air epais donne une
+## soupe laiteuse et Albuquerque devient Londres.
+@export_range(0.0, 0.2, 0.001) var brume_volume_densite_jour: float = 0.008
+@export_range(0.0, 0.2, 0.001) var brume_volume_densite_nuit: float = 0.035
+
+## Jusqu'ou l'air est calcule, en metres. Au-dela c'est le brouillard de
+## profondeur qui prend le relais.
+@export_range(10.0, 200.0, 1.0) var brume_volume_portee: float = 56.0
+
+## Vers ou la lumiere se diffuse dans l'air. A 0 elle part dans toutes les
+## directions ; positif, elle continue vers l'avant — ce qui dessine le cone.
+@export_range(-0.9, 0.9, 0.05) var brume_volume_diffusion: float = 0.15
+
+## Combien chaque source donne a l'air. Les phares sont les plus forts : deux
+## cones qui percent la nuit sont le plan qu'on veut voir en roulant.
+@export_range(0.0, 8.0, 0.1) var lampe_volume: float = 1.6
+@export_range(0.0, 8.0, 0.1) var phare_volume: float = 2.2
+## Le soleil reste bas : au-dela, midi devient de la soupe.
+@export_range(0.0, 4.0, 0.1) var soleil_volume: float = 0.4
 
 ## Distance ou le brouillard commence a mordre, en metres.
 @export_range(0.0, 200.0, 1.0) var brouillard_debut: float = 7.0
@@ -308,9 +452,26 @@ extends Resource
 ## Couleur des lampadaires. Le sodium orange est le plus caracteristique.
 @export var lampe_couleur: Color = Color(1.0, 0.827, 0.596)
 
-## Ombres portees. Coup de fouet visuel, mais couteux quand toutes les rues
-## sont eclairees. A tester une fois la ville complete.
-@export var lampe_ombres: bool = false
+## Ombres portees des lampadaires. Elles etaient coupees, et la raison tenait :
+## la ville en pose 526. Les allumer toutes, c'est 526 rendus de plus par
+## image, et aucun GPU ne suit.
+##
+## Ce qui a change, c'est qu'on n'allume plus que les PLUS PROCHES — voir
+## lampe_ombres_combien. Le cout ne depend donc plus de la taille de la ville.
+@export var lampe_ombres: bool = true
+
+## Combien de lampadaires projettent, a tout instant. Les autres eclairent
+## sans porter d'ombre, ce qui ne se voit pas : a vingt metres, l'ombre d'un
+## poteau tient dans deux pixels et le brouillard l'a deja mangee.
+@export_range(0, 24, 1) var lampe_ombres_combien: int = 8
+
+## A quelle cadence on refait le tri, en secondes. Trois fois par seconde
+## suffit : on ne traverse pas huit lampadaires en un tiers de seconde.
+@export_range(0.05, 2.0, 0.05) var lampe_ombres_periode: float = 0.35
+
+## Au-dela de cette distance, jamais d'ombre — meme si c'est la plus proche.
+## Sur une route vide, les huit plus proches peuvent etre a cent metres.
+@export_range(5.0, 120.0, 1.0) var lampe_ombres_portee: float = 34.0
 
 # ------------------------------------------------------------------- phares
 @export_group("Phares")
@@ -328,6 +489,14 @@ extends Resource
 @export_range(5.0, 90.0, 1.0) var phare_angle: float = 34.0
 
 @export var phare_couleur: Color = Color(1.0, 0.949, 0.855)
+
+## Ombres portees par les phares.
+##
+## C'est l'ombre la moins chere du jeu et la plus parlante : un spot ne rend
+## QU'UNE carte, la ou une omnidirectionnelle en rend six. Et c'est la seule
+## qui raconte quelque chose en roulant — les poteaux dont l'ombre balaie la
+## chaussee quand on passe devant.
+@export var phare_ombres: bool = true
 
 # ------------------------------------------------------------------- audio
 @export_group("Audio")
@@ -747,3 +916,44 @@ func brume_fin() -> float:
 ## obtient un aplat gris pale au lieu du bleu d'Albuquerque.
 func brume_ciel() -> float:
 	return lerpf(jour_brume_ciel, nuit_brume_ciel, nuit_part())
+
+
+## LES COTES DANS LESQUELS L'INTERFACE EST DESSINEE, avant agrandissement.
+##
+## Tout ce qui lit une taille d'interface passe par ici plutot que par la taille
+## du viewport : c'est ce qui permet de monter le rendu sans reecrire une seule
+## des valeurs en pixels du HUD.
+func taille_de_reference() -> Vector2:
+	return Vector2(hud_largeur_reference, hud_hauteur_reference)
+
+
+## De combien l'interface est agrandie pour couvrir le rendu.
+##
+## On prend le PLUS PETIT des deux rapports. Aujourd'hui les deux sont egaux —
+## 960/512 et 720/384 valent 1,875, le 4:3 est tenu des deux cotes. Le jour ou
+## il cesserait de l'etre, prendre le plus petit garde l'interface entiere a
+## l'ecran ; prendre le plus grand en sortirait un bord.
+func facteur_hud() -> float:
+	if hud_largeur_reference <= 0 or hud_hauteur_reference <= 0:
+		return 1.0
+	return minf(float(largeur_rendu) / float(hud_largeur_reference),
+			float(hauteur_rendu) / float(hud_hauteur_reference))
+
+
+func exposition() -> float:
+	return lerpf(exposition_jour, exposition_nuit, nuit_part())
+
+
+func glow_intensite() -> float:
+	return lerpf(glow_intensite_jour, glow_intensite_nuit, nuit_part())
+
+
+## Le seuil DESCEND quand la nuit tombe : de jour il doit etre assez haut pour
+## que le ciel et le sable clair ne bavent pas, de nuit assez bas pour attraper
+## un lampadaire qui n'est pas si vif que ca.
+func glow_seuil() -> float:
+	return lerpf(glow_seuil_jour, glow_seuil_nuit, nuit_part())
+
+
+func brume_volume_densite() -> float:
+	return lerpf(brume_volume_densite_jour, brume_volume_densite_nuit, nuit_part())

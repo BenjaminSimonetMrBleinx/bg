@@ -60,7 +60,6 @@ def materiau(nom: str, dossier: Path):
     if nom in bpy.data.materials:
         return bpy.data.materials[nom]
     mat = bpy.data.materials.new(nom)
-    mat.use_nodes = True
     bsdf = mat.node_tree.nodes["Principled BSDF"]
     bsdf.inputs["Roughness"].default_value = 0.9
     bsdf.inputs["Metallic"].default_value = 0.0

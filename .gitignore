@@ -31,6 +31,23 @@ __pycache__/
 # Temporaires du projet — tout ce qui est régénérable
 .tmp/
 
+# Originaux générés par IA — le sas avant intégration.
+#
+# Ils ne rentrent pas dans git, pour la même raison que le dossier ci-dessous :
+# un binaire commité reste dans l'historique même après suppression. Un modèle
+# en qualité « detailed » pèse des dizaines de Mo, et la CI de release fait un
+# checkout LFS complet à CHAQUE tag — le quota se viderait en un build.
+#
+# Ce qui est versionné à la place, c'est outils/assets-ia.json : le prompt, le
+# modèle, les paramètres et l'empreinte du fichier. C'est LUI la source. Un
+# original perdu se régénère ; un manifeste perdu ne se retrouve pas.
+livraisons/ia/
+
+# Sauvegardes ecrites par alleger_textures.py avant de reecrire un .glb.
+# Ce sont les ORIGINAUX lourds — celui de l'Aztek pesait 10 Mo a lui seul, et
+# git checkout suffit a les retrouver puisque game/assets/ est versionne.
+*.glb.avant-allegement
+
 # Médias issus de la série — référence, placeholders, sources sonores.
 # Ne rentrent JAMAIS dans git : un binaire commité reste dans l'historique
 # même après suppression, et l'en sortir casse les clones existants.

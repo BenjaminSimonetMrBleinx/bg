@@ -39,6 +39,7 @@ param(
     # le niveau se discute — plus beau ne se tranche pas dans le vide.
     [int]$Triangles = 0,
     [int]$TextureMax = 0,
+    [switch]$Heros,
     [switch]$Plat,
 
     [int]$Blocs = 2,
@@ -139,6 +140,12 @@ function Find-Outil {
         if ($trouve) { return $trouve.FullName }
     }
     $cmd = Get-Command $Nom -ErrorAction SilentlyContinue
+    # WindowsApps\python.exe est un LEURRE : un stub de zero octet que Windows
+    # installe d office et qui ouvre le Microsoft Store au lieu d executer le
+    # script. Le retenir donnait un $Python non nul, donc un Exiger qui passe,
+    # un "bg.ps1 outils" qui affiche un chemin rassurant, et generer qui
+    # echouait plus loin sans dire pourquoi. Absent vaut mieux que faux.
+    if ($cmd -and $cmd.Source -like '*\WindowsApps\*') { $cmd = $null }
     if ($cmd) { return $cmd.Source }
     return $null
 }
@@ -169,8 +176,13 @@ $GodotConsole = if ($Godot) { $Godot -replace '_win64\.exe$', '_win64_console.ex
 $Blender = Find-Outil 'blender' @(
     "$env:ProgramFiles\Blender Foundation\Blender *\blender.exe"
 )
+# Le Python de Blender est le DERNIER recours, et il suffit : gen_textures.py
+# et normaliser_sons.py n utilisent que la bibliotheque standard. Sans lui,
+# cette machine ne pouvait pas regenerer une seule texture alors qu elle avait
+# tout ce qu il fallait a portee.
 $Python = Find-Outil 'python' @(
-    "$env:LOCALAPPDATA\Programs\Python\Python3*\python.exe"
+    "$env:LOCALAPPDATA\Programs\Python\Python3*\python.exe",
+    "$env:ProgramFiles\Blender Foundation\Blender *\*\python\bin\python.exe"
 )
 
 function Exiger($chemin, $nom) {
@@ -417,9 +429,23 @@ switch ($Commande) {
             # pour un jeu ou une maison en fait 50 a 300. Sans ces options,
             # integrer aurait rendu le fichier tel quel et le dossier se
             # serait rempli d assets hors charte, un par livraison.
+            # LE PALIER DE TEXTURE EST DESORMAIS UN DEFAUT, PAS UNE OPTION.
+            #
+            # L'ancien test « -gt 0 » ne passait rien quand on ne demandait
+            # rien, et l'outil ne touchait alors a rien : c'est par la que
+            # l'Aztek est entree avec trois cartes de 2048 px, 10,1 Mo, dans un
+            # jeu ou l'interieur du QG est texture en 32.
+            #
+            # Maintenant : sans rien dire on obtient 256 (le palier courant),
+            # -Heros donne 512, et -TextureMax 0 reste le moyen EXPLICITE de
+            # dire « ne touche pas » — il faut donc le transmettre meme a zero.
             $degraissage = @()
             if ($Triangles -gt 0)  { $degraissage += @('--triangles', $Triangles) }
-            if ($TextureMax -gt 0) { $degraissage += @('--texture-max', $TextureMax) }
+            if ($Heros) {
+                $degraissage += @('--texture-max', 512)
+            } elseif ($PSBoundParameters.ContainsKey('TextureMax')) {
+                $degraissage += @('--texture-max', $TextureMax)
+            }
             if ($Plat)             { $degraissage += '--plat' }
             & $Blender -b -P outils/importer_modele.py -- `
                 --fichier $Fichier --sortie $Vers `

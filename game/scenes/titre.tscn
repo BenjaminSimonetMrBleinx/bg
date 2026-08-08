@@ -21,15 +21,17 @@ script = ExtResource("1_titre")
 reglages = ExtResource("2_reglages")
 
 [node name="Rendu" type="SubViewport" parent="."]
-size = Vector2i(512, 384)
+size = Vector2i(960, 720)
 render_target_update_mode = 4
 
+; PAS D'ANCRES ICI, et c'est voulu : le menu est dessine dans les cotes de
+; reference (512x384) puis agrandi par titre.gd, comme l'interface du monde.
+; Des ancres plein cadre lui donneraient la taille du viewport et ecraseraient
+; ce que _configurer_ecran() vient de poser — le menu serait alors dessine a
+; 960 de large PUIS agrandi encore, et il sortirait de l'ecran.
 [node name="Menu" type="Control" parent="Rendu"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+offset_right = 512.0
+offset_bottom = 384.0
 script = ExtResource("3_menu")
 
 [node name="Affichage" type="CanvasLayer" parent="."]

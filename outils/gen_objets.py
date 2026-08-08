@@ -34,7 +34,6 @@ def arguments() -> argparse.Namespace:
 
 def materiau(nom: str, dossier: Path) -> bpy.types.Material:
     mat = bpy.data.materials.new(nom)
-    mat.use_nodes = True
     arbre = mat.node_tree
     principal = arbre.nodes["Principled BSDF"]
     principal.inputs["Roughness"].default_value = 0.85

@@ -164,7 +164,20 @@ func _poser_lampes() -> void:
 		lumiere.light_energy = reglages.lampe_energie
 		lumiere.omni_range = reglages.lampe_portee
 		lumiere.omni_attenuation = reglages.lampe_attenuation
-		lumiere.shadow_enabled = reglages.lampe_ombres
+		# Eteintes a la creation : c'est _trier_les_ombres() qui en rallume
+		# quelques-unes, et lui seul. Les allumer ici en poserait 526.
+		lumiere.shadow_enabled = false
+		# DEUX RENDUS AU LIEU DE SIX.
+		#
+		# Une OmniLight3D en mode cube rend ses six faces pour savoir ce qu'elle
+		# eclaire. En dual-paraboloide, deux suffisent. La deformation se voit
+		# sur une source au milieu d'une piece ; sur un lampadaire qui eclaire
+		# vers le bas, personne ne l'a jamais remarquee — et c'est trois fois
+		# moins cher, ce qui est ce qui rend l'affaire jouable.
+		lumiere.omni_shadow_mode = OmniLight3D.SHADOW_DUAL_PARABOLOID
+		# Ce que la lampe donne a l'air. C'est cette valeur qui decide si on
+		# voit un cone sous le lampadaire ou seulement une flaque au sol.
+		lumiere.light_volumetric_fog_energy = reglages.lampe_volume
 		# Sans cette limite, une rue entiere de lampadaires sature le rendu
 		# de la moindre facade. La PS2 avait la meme contrainte, en pire.
 		lumiere.distance_fade_enabled = true
@@ -189,6 +202,81 @@ func allumer_lampes(part: float) -> void:
 	_lampes.visible = f > 0.01
 	for l in _lampes.get_children():
 		(l as OmniLight3D).light_energy = reglages.lampe_energie * f
+
+
+# ------------------------------------------------------- les ombres de rue
+
+var _depuis_le_tri: float = 0.0
+
+## Combien de rangs de marge avant qu'une lampe perde son ombre. Voir plus bas :
+## sans cette hysteresis, deux lampes a egale distance echangent leur ombre a
+## chaque tri, et Godot refabrique leur carte a chaque echange.
+const MARGE_HYSTERESIS := 4
+
+
+# LES OMBRES NE SONT ALLUMEES QUE SUR LES LAMPES LES PLUS PROCHES.
+#
+# La ville en pose 526. Une OmniLight3D qui projette coute un rendu de la scene
+# depuis sa position — meme en dual-paraboloide, 526 est hors de question, et
+# c'est pour ca que lampe_ombres etait a false depuis le debut.
+#
+# Mais l'ombre d'un lampadaire ne se lit que de pres : a vingt metres le poteau
+# tient dans deux pixels et le brouillard de nuit mord a 58. On en allume donc
+# huit, et le cout cesse de dependre de la taille de la ville.
+func _process(delta: float) -> void:
+	if _lampes == null or reglages == null:
+		return
+	if not reglages.lampe_ombres or reglages.lampe_ombres_combien <= 0:
+		return
+	_depuis_le_tri += delta
+	if _depuis_le_tri < reglages.lampe_ombres_periode:
+		return
+	_depuis_le_tri = 0.0
+	_trier_les_ombres()
+
+
+func _trier_les_ombres() -> void:
+	# ON SE REPERE SUR LA CAMERA, PAS SUR LE JOUEUR.
+	#
+	# Ce qui compte est ce qui est A L'ECRAN. En voiture on regarde souvent
+	# derriere soi, et les ombres doivent etre la ou l'on regarde.
+	var oeil := get_viewport().get_camera_3d()
+	if oeil == null:
+		return
+	var ici := oeil.global_position
+	var portee_max := reglages.lampe_ombres_portee * reglages.lampe_ombres_portee
+
+	var classees: Array = []
+	for l in _lampes.get_children():
+		var d: float = ici.distance_squared_to((l as Node3D).global_position)
+		if d <= portee_max:
+			classees.append({"l": l, "d": d})
+	classees.sort_custom(func(a, b): return a["d"] < b["d"])
+
+	var combien := reglages.lampe_ombres_combien
+	for i in range(classees.size()):
+		var lampe: OmniLight3D = classees[i]["l"]
+		# UNE HYSTERESIS, SANS QUOI CA CLIGNOTE.
+		#
+		# Deux lampes a distance quasi egale s'echangeraient le huitieme rang a
+		# chaque tri. Chaque bascule fait refabriquer une carte d'ombre a Godot,
+		# et ca se voit comme un scintillement le long d'une rue droite ou tous
+		# les lampadaires sont a intervalle regulier — c'est-a-dire partout.
+		#
+		# Une lampe PREND son ombre en entrant dans les huit premiers, et ne la
+		# REND qu'en sortant des douze premiers.
+		if i < combien:
+			lampe.shadow_enabled = true
+		elif i >= combien + MARGE_HYSTERESIS:
+			lampe.shadow_enabled = false
+
+	# Celles qui sont sorties de portee ne sont plus dans la liste : on les
+	# eteint separement, sinon elles gardent leur ombre en s'eloignant.
+	for l in _lampes.get_children():
+		var lampe: OmniLight3D = l
+		if lampe.shadow_enabled:
+			if ici.distance_squared_to(lampe.global_position) > portee_max:
+				lampe.shadow_enabled = false
 
 
 # Le mobilier vient du meme fichier que les lampes. Chaque type n'est charge

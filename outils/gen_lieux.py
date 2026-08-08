@@ -50,7 +50,6 @@ def arguments() -> argparse.Namespace:
 
 def matiere(nom: str, dossier: Path):
     mat = bpy.data.materials.new(nom)
-    mat.use_nodes = True
     bsdf = mat.node_tree.nodes["Principled BSDF"]
     for champ in ("Specular IOR Level", "Metallic", "Sheen Weight"):
         if champ in bsdf.inputs:

@@ -346,3 +346,70 @@ mécanique et se contente de contrôler que les deux fiches **existent** —
 **Le réflexe général :** avant de conclure qu'un ajout casse un test, refaire le
 même geste avec quelque chose qui marchait déjà. Ça coûte une exécution et ça
 évite de réécrire du code qui n'avait rien.
+
+---
+
+## 23. `generer` ne reproduit pas la ville du dépôt — il en fabrique une plus petite
+
+**Le pire piège trouvé jusqu'ici, parce qu'il détruit sans rien dire.**
+
+`.\bg.ps1 generer` a été lancé pour monter les textures. Il s'est terminé
+normalement, sans erreur. La ville est passée de :
+
+| | Avant | Après `generer` |
+|---|---|---|
+| Étendue | **519 m** | 137 m |
+| Lampadaires | **526** | 32 |
+| Éléments de décor | **2 674** | 297 |
+| Triangles | **62 910** | 7 134 |
+
+**La cause :** `bg.ps1` a `[int]$Blocs = 2` en valeur par défaut, et la ville du
+dépôt n'a jamais été générée avec 2 blocs. Le vrai nombre n'est écrit **nulle
+part** — ni dans le journal, ni dans les notes de version, ni dans un commentaire.
+
+Le seul symptôme visible venait après, et de biais : `ancrage : aucun lieu nommé
+'terrain_vague_3_7'`. La ville neuve n'avait plus les quartiers que le reste du
+jeu référence.
+
+**La parade, en attendant mieux : ne pas lancer `generer` tout court.** Les
+générateurs s'appellent un par un, et seuls `gen_ville.py` et `gen_banc_graphique.py`
+dépendent de `--blocs` :
+
+```powershell
+blender -b -P outils/gen_lieux.py   -- --nom tous
+blender -b -P outils/gen_maison.py  -- --nom toutes
+blender -b -P outils/gen_decor.py   -- --nom tous
+```
+
+**Ce qui sauve, c'est que `game/assets/` est versionné** : `git checkout --
+game/assets` a tout rendu. Si la génération avait été commitée, la ville était
+perdue — elle n'existe que comme fichier, sa graine ne suffit pas à la refaire
+sans son nombre de blocs.
+
+**Ce qui reste à faire :** retrouver le nombre de blocs, et l'écrire comme défaut
+dans `bg.ps1`. Un défaut qui détruit est pire qu'une erreur.
+
+---
+
+## 24. `mat.use_nodes = True` casse `generer` en Blender 5.2, et ne sert plus à rien
+
+Le même piège que celui documenté dans `aplatir()`, mais dans neuf générateurs.
+
+`Material.use_nodes` est déprécié. L'affecter écrit un `DeprecationWarning` sur
+la **sortie d'erreur**, et PowerShell traite la moindre ligne de stderr d'un
+binaire natif comme une erreur : `generer` s'arrêtait sur `gen_ville.py:331`,
+avec un message qui parlait de Blender 6.
+
+**Et la ligne ne servait déjà plus.** Mesuré : en Blender 5.2,
+`bpy.data.materials.new()` crée **déjà** le `node_tree` et son Principled BSDF.
+
+```
+APRES new()      : node_tree = present
+BSDF present     : True
+```
+
+Les onze occurrences ont été retirées. Les `scene.world.use_nodes` sont restés —
+c'est un `World`, pas un `Material`, et ces fichiers ne sont pas dans la chaîne.
+
+**Le réflexe :** avant de contourner un avertissement de dépréciation, vérifier
+si la ligne fait encore quelque chose. Souvent elle ne fait plus que se plaindre.

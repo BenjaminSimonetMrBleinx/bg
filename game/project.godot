@@ -8,7 +8,7 @@ config_version=5
 config/name="Breaking Bad Game"
 config/description="GTA-like 3D low-poly PS2 dans l'univers de Breaking Bad.
 Projet de fan, non commercial. Voir DISCLAIMER.md a la racine du depot."
-config/version="0.50.0"
+config/version="0.51.0"
 run/main_scene="res://scenes/titre.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 
@@ -16,8 +16,16 @@ config/features=PackedStringArray("4.7", "Forward Plus")
 
 ; 4/3 assume : bandes noires sur un ecran large, comme un jeu d'epoque.
 ; "keep" garde le ratio quoi qu'il arrive, on ne deforme jamais l'image.
-window/size/viewport_width=1024
-window/size/viewport_height=768
+;
+; CETTE TAILLE EST LA MOITIE DU GRAIN DU JEU, et pas un detail de fenetrage.
+; Avec stretch/mode="viewport", Godot rend la racine a ces cotes-la quelle que
+; soit la taille reelle de la fenetre, et notre SubViewport y est agrandi. Le
+; flou PS2 vient de CE rapport : 512 dans 1024, c'etait x2. Le rendu est passe
+; a 960 ; le garder dans 1024 aurait donne x1,07, c'est-a-dire plus aucun
+; agrandissement et un jeu net comme les autres. A 1440x1080 le rapport est
+; x1,5, et 1080 tombe juste sur un ecran 1080p.
+window/size/viewport_width=1440
+window/size/viewport_height=1080
 window/stretch/mode="viewport"
 window/stretch/aspect="keep"
 

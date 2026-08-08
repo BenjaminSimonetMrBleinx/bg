@@ -328,7 +328,6 @@ def materiau(nom: str, dossier: Path) -> bpy.types.Material:
         return bpy.data.materials[nom]
 
     mat = bpy.data.materials.new(nom)
-    mat.use_nodes = True
     arbre = mat.node_tree
     bsdf = arbre.nodes["Principled BSDF"]
     bsdf.inputs["Roughness"].default_value = 1.0

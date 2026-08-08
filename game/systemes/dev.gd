@@ -35,8 +35,8 @@ const VITESSES_NOM := ["figee", "normale", "x10"]
 ## Les resolutions internes proposees, toutes en 4:3 comme le rendu du jeu. La
 ## grande sert a voir ce qu'une geometrie contient vraiment, la petite a juger
 ## ce qui reste lisible quand tout est ecrase.
-const RESOLUTIONS := [Vector2i(256, 192), Vector2i(512, 384), Vector2i(1024, 768)]
-const RESOLUTIONS_NOM := ["256", "512", "1024"]
+const RESOLUTIONS := [Vector2i(512, 384), Vector2i(960, 720), Vector2i(1440, 1080)]
+const RESOLUTIONS_NOM := ["512", "960", "1440"]
 
 ## L'ordre est celui de la lecture, pas celui de l'implementation : le temps et
 ## le deplacement d'abord, parce que c'est ce qu'on vient chercher.

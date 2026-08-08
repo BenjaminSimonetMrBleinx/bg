@@ -68,6 +68,24 @@ func _configurer_ecran() -> void:
 		return
 	_rendu.size = Vector2i(reglages.largeur_rendu, reglages.hauteur_rendu)
 	_rendu.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	# Le menu est dessine dans les cotes de reference, puis mis a l'echelle du
+	# rendu — meme mecanique que l'interface du monde. Sans ca, monter la
+	# resolution ne rend pas le titre plus fin : il le rend plus PETIT.
+	# ON POSE LES OFFSETS, PAS size.
+	#
+	# Ecrire size sur un Control dont les ancres opposees ne sont pas egales
+	# fait crier Godot — « size overridden after _ready() » — et un
+	# avertissement sur la sortie d'erreur suffit a faire echouer bg.ps1
+	# capture : PowerShell traite la moindre ligne de stderr d'un binaire natif
+	# comme une erreur. Les offsets, eux, sont ce que le moteur relit ensuite.
+	var repere := reglages.taille_de_reference()
+	_menu.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_menu.offset_left = 0.0
+	_menu.offset_top = 0.0
+	_menu.offset_right = repere.x
+	_menu.offset_bottom = repere.y
+	var f := reglages.facteur_hud()
+	_menu.scale = Vector2(f, f)
 	_ecran.texture_filter = (
 		CanvasItem.TEXTURE_FILTER_LINEAR if reglages.filtrage_lineaire
 		else CanvasItem.TEXTURE_FILTER_NEAREST
@@ -177,8 +195,15 @@ func _souris_dans_le_rendu() -> Vector2:
 	var cadre := Vector2(fenetre.size)
 	if cadre.x <= 0.0 or cadre.y <= 0.0:
 		return Vector2(-1.0, -1.0)
-	var rendu := Vector2(_rendu.size)
-	return fenetre.get_mouse_position() * (rendu / cadre)
+	# ON VISE LES COTES DE REFERENCE, PAS CEUX DU RENDU.
+	#
+	# Le menu est dessine dans 512x384 puis agrandi ; index_sous() compare donc
+	# a des coordonnees de 512x384. Rendre ici la position dans le rendu — 960
+	# de large depuis que la resolution a monte — ferait survoler une entree
+	# presque deux fois trop bas. C'est le piege 9 sous une autre forme : la
+	# souris et le dessin ne vivent pas dans le meme repere.
+	var repere := reglages.taille_de_reference()
+	return fenetre.get_mouse_position() * (repere / cadre)
 
 
 func _suivre_la_souris() -> void:

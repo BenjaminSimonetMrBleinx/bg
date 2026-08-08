@@ -20,6 +20,55 @@ le numéro ne voulait plus rien dire. Un lot livré est désormais un correctif.
 
 ---
 
+## 0.51.0 — Le jeu se voit enfin
+
+**Rien de neuf à faire. Tout est à regarder.** Aucun asset n'a changé de forme :
+c'est la façon dont le jeu est rendu qui a bougé, et ça se voit partout.
+
+### Ce qu'il faut regarder ce soir
+
+**Sors de chez toi la nuit et arrête-toi sous un lampadaire.** Avant, c'était une
+tache orange posée sur le mur. Maintenant la lampe a une source, un abat-jour, un
+halo — et **le cactus projette son ombre sur la façade**. Huit lampadaires
+projettent en même temps, ceux dont tu es le plus près.
+
+**Lève la caméra.** La lune éclaire pour de vrai : elle porte ses propres ombres,
+et la voiture ne flotte plus au-dessus de la chaussée.
+
+**Allume les phares et roule.** Ils projettent aussi, et l'air se voit dans leur
+faisceau.
+
+**Regarde de près.** Le rendu est passé de 512×384 à **960×720** — presque quatre
+fois plus de pixels. Le portrait dans le coin de l'écran est reconnaissable, les
+lattes de bois se distinguent, la calandre de l'Aztek a du relief.
+
+**Le grain n'a pas bougé.** C'était le risque : à cette finesse, le jeu pouvait
+devenir net comme n'importe quel jeu moderne et perdre ce qui fait son allure. La
+fenêtre a donc grandi avec le rendu, et le flou d'agrandissement est resté.
+
+### Ce qui est réparé
+
+**L'intérieur du camping-car et le bureau de Tuco étaient texturés en 32 pixels**
+— les décors les plus pauvres du jeu, dans la mission qu'on joue le plus. Ils sont
+en 256.
+
+**La voiture de Walter pesait 10 Mo à elle seule**, avec des textures quatre fois
+plus fines que tout ce qui l'entoure. Elle en pèse 0,6, et personne ne verra la
+différence — sauf au chargement.
+
+### Ce que ça coûte
+
+Rien de mesurable : **0,6 ms par image avant, 0,7 après**, sur les 33 disponibles.
+Si ça rame chez toi, dis-le tout de suite — c'est le genre de chose qui ne se voit
+pas depuis la machine qui l'a fabriqué.
+
+### Deux bugs connus, qui existaient déjà
+
+La suite `conduite` et la suite `murs` échouent, et échouaient déjà avant cette
+session. Ils sont ouverts en tickets.
+
+---
+
 ## 📌 La session du 7 août 2026 — de la 0.48.10 à la 0.50.0
 
 **Neuf versions, et la première fois qu'on JOUE.** Le détail est en dessous ;

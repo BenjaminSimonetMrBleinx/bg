@@ -117,6 +117,14 @@ func appliquer_reglages() -> void:
 		p.spot_range = reglages.phare_portee
 		p.spot_angle = reglages.phare_angle
 		p.light_color = reglages.phare_couleur
+		# L'ombre la moins chere du jeu : un spot ne rend QU'UNE carte, quand
+		# une omnidirectionnelle en rend six. Et c'est la seule qui raconte
+		# quelque chose en roulant — les poteaux dont l'ombre balaie la
+		# chaussee au moment ou on les depasse.
+		p.shadow_enabled = reglages.phare_ombres
+		# Les phares sont les plus genereux avec l'air : deux cones qui percent
+		# la nuit sont le plan qu'on vient chercher en roulant.
+		p.light_volumetric_fog_energy = reglages.phare_volume
 		# L'ETAT ALLUME NE SE RELIT PAS ICI.
 		#
 		# appliquer_reglages() est appele a chaud, chaque fois qu'on bouge un

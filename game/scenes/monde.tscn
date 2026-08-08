@@ -1,7 +1,11 @@
 ﻿; Scene principale.
 ;
-; Tout le 3D vit dans le SubViewport "Rendu" a resolution reduite (512x384,
+; Tout le 3D vit dans le SubViewport "Rendu" a resolution reduite (960x720,
 ; 4/3). Le TextureRect "Ecran" l'agrandit en plein ecran.
+;
+; Le grain du jeu vient de CE RAPPORT, pas de la finesse du rendu : la fenetre
+; est a 1440x1080 dans project.godot, donc l'agrandissement vaut 1,5. Toucher
+; l'un sans l'autre supprime le grain sans qu'aucun reglage ne le dise.
 ;
 ; La ville et le vehicule sont generes :
 ;   python  outils/gen_textures.py
@@ -105,7 +109,7 @@ script = ExtResource("1_rendu")
 reglages = ExtResource("2_reglages")
 
 [node name="Rendu" type="SubViewport" parent="."]
-size = Vector2i(512, 384)
+size = Vector2i(960, 720)
 render_target_update_mode = 4
 audio_listener_enable_3d = true
 
@@ -447,7 +451,22 @@ cible = NodePath("../Scene3D/Joueur")
 ; un jeu moderne — les HUD PS2 partageaient le meme tampon que la 3D.
 [node name="Interface" type="CanvasLayer" parent="Rendu"]
 
-[node name="Invite" type="Label" parent="Rendu/Interface"]
+; L'ECHELLE DE L'INTERFACE.
+;
+; Tout le HUD est ecrit en pixels absolus — une police 13, une barre de
+; vie de 78 pixels, un rayon de roue de 92 pris dans reglages.tres. Ces
+; nombres ont ete regles a l'oeil sur un rendu de 512x384 ; le rendu est
+; passe a 960x720, et sans rien faire l'interface aurait fondu de moitie.
+;
+; On dessine donc dedans a 512x384, et rendu_ps2.gd applique le facteur.
+; Tout ce qui lit size continue de lire 512x384 : aucun des six scripts
+; d'interface n'a eu besoin d'etre touche.
+[node name="Echelle" type="Control" parent="Rendu/Interface"]
+offset_right = 512.0
+offset_bottom = 384.0
+mouse_filter = 2
+
+[node name="Invite" type="Label" parent="Rendu/Interface/Echelle"]
 anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
@@ -464,7 +483,7 @@ vertical_alignment = 1
 
 ; Le cadre de dialogue, en bas de l'ecran comme sur PS2. Il est cache tant
 ; qu'aucune conversation ne tourne.
-[node name="CadreDialogue" type="PanelContainer" parent="Rendu/Interface"]
+[node name="CadreDialogue" type="PanelContainer" parent="Rendu/Interface/Echelle"]
 visible = false
 anchors_preset = 12
 anchor_top = 1.0
@@ -478,26 +497,26 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_override_styles/panel = SubResource("fond_dialogue")
 
-[node name="Marge" type="MarginContainer" parent="Rendu/Interface/CadreDialogue"]
+[node name="Marge" type="MarginContainer" parent="Rendu/Interface/Echelle/CadreDialogue"]
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 7
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 7
 
-[node name="Colonne" type="VBoxContainer" parent="Rendu/Interface/CadreDialogue/Marge"]
+[node name="Colonne" type="VBoxContainer" parent="Rendu/Interface/Echelle/CadreDialogue/Marge"]
 theme_override_constants/separation = 3
 
-[node name="Qui" type="Label" parent="Rendu/Interface/CadreDialogue/Marge/Colonne"]
+[node name="Qui" type="Label" parent="Rendu/Interface/Echelle/CadreDialogue/Marge/Colonne"]
 theme_override_colors/font_color = Color(0.949, 0.776, 0.42, 1)
 theme_override_font_sizes/font_size = 15
 
-[node name="Texte" type="Label" parent="Rendu/Interface/CadreDialogue/Marge/Colonne"]
+[node name="Texte" type="Label" parent="Rendu/Interface/Echelle/CadreDialogue/Marge/Colonne"]
 size_flags_vertical = 3
 theme_override_colors/font_color = Color(0.949, 0.941, 0.914, 1)
 theme_override_font_sizes/font_size = 15
 autowrap_mode = 3
 
-[node name="Hud" type="Control" parent="Rendu/Interface"]
+[node name="Hud" type="Control" parent="Rendu/Interface/Echelle"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -506,17 +525,17 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("21_hud")
 reglages = ExtResource("2_reglages")
-vehicule = NodePath("../../Scene3D/Vehicule")
-equipement = NodePath("../../../Equipement")
-controleur = NodePath("../../../Controleur")
-joueur = NodePath("../../Scene3D/Joueur")
-tir = NodePath("../../../Tir")
+vehicule = NodePath("../../../Scene3D/Vehicule")
+equipement = NodePath("../../../../Equipement")
+controleur = NodePath("../../../../Controleur")
+joueur = NodePath("../../../Scene3D/Joueur")
+tir = NodePath("../../../../Tir")
 icone_argent = ExtResource("41_argent")
 icone_visage = ExtResource("43_visage")
 
 ; La roue des outils. Sous le fondu, pour qu'un passage de porte la recouvre
 ; si elle etait restee ouverte.
-[node name="Roue" type="Control" parent="Rendu/Interface"]
+[node name="Roue" type="Control" parent="Rendu/Interface/Echelle"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -525,11 +544,11 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("20_roue")
 reglages = ExtResource("2_reglages")
-equipement = NodePath("../../../Equipement")
+equipement = NodePath("../../../../Equipement")
 
 ; Le telephone. Dessine par-dessus la roue : les deux ne s'ouvrent jamais en
 ; meme temps, mais si ca arrivait c'est le combine qu'on veut voir.
-[node name="Telephone" type="Control" parent="Rendu/Interface"]
+[node name="Telephone" type="Control" parent="Rendu/Interface/Echelle"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -541,7 +560,7 @@ reglages = ExtResource("2_reglages")
 
 ; Le fondu de porte. Declare APRES l'invite, donc dessine par-dessus : pendant
 ; le noir, plus rien ne doit rester lisible a l'ecran.
-[node name="Cachette" type="Control" parent="Rendu/Interface"]
+[node name="Cachette" type="Control" parent="Rendu/Interface/Echelle"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -553,7 +572,7 @@ reglages = ExtResource("2_reglages")
 
 ; Le menu pause. Il suspend l'arbre entier, donc il doit rester vivant quand
 ; tout est fige — son script s'en charge (PROCESS_MODE_ALWAYS).
-[node name="Pause" type="Control" parent="Rendu/Interface"]
+[node name="Pause" type="Control" parent="Rendu/Interface/Echelle"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -562,8 +581,8 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("42_pause")
 reglages = ExtResource("2_reglages")
-sauvegarde = NodePath("../../../Sauvegarde")
-dev = NodePath("../../../Dev")
+sauvegarde = NodePath("../../../../Sauvegarde")
+dev = NodePath("../../../../Dev")
 
 ; L'APPEL DE SKYLER, PENDANT QU'ON ROULE VERS LE DESERT.
 ;
@@ -579,7 +598,7 @@ dev = NodePath("../../../Dev")
 ;
 ; VINGT SECONDES AU VOLANT, et le compte repart a zero des qu'on descend. Un
 ; appel qui tombe pendant qu'on cherche encore ses cles se prend pour un bug.
-[node name="AppelSkyler" type="Control" parent="Rendu/Interface"]
+[node name="AppelSkyler" type="Control" parent="Rendu/Interface/Echelle"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -590,11 +609,11 @@ script = ExtResource("50_appel")
 etape = "camping"
 conversation = "mission_skyler_oeufs"
 apres_secondes = 20.0
-joueur = NodePath("../../Scene3D/Joueur")
-controleur = NodePath("../../../Controleur")
-dialogue = NodePath("../../../Dialogue")
+joueur = NodePath("../../../Scene3D/Joueur")
+controleur = NodePath("../../../../Controleur")
+dialogue = NodePath("../../../../Dialogue")
 
-[node name="JaugePerf" type="Control" parent="Rendu/Interface"]
+[node name="JaugePerf" type="Control" parent="Rendu/Interface/Echelle"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -605,7 +624,7 @@ script = ExtResource("46_jauge")
 
 ; L'ecran de fin est DERRIERE le fondu dans l'arbre, donc dessine par-dessus :
 ; le voile de mort doit couvrir le jeu, y compris un fondu de porte en cours.
-[node name="FinDePartie" type="Control" parent="Rendu/Interface"]
+[node name="FinDePartie" type="Control" parent="Rendu/Interface/Echelle"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -614,9 +633,9 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("37_fin")
 reglages = ExtResource("2_reglages")
-sauvegarde = NodePath("../../../Sauvegarde")
+sauvegarde = NodePath("../../../../Sauvegarde")
 
-[node name="Fondu" type="ColorRect" parent="Rendu/Interface"]
+[node name="Fondu" type="ColorRect" parent="Rendu/Interface/Echelle"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -636,9 +655,9 @@ porteur = NodePath("../Rendu/Scene3D/Joueur")
 
 [node name="Dialogue" type="Node" parent="."]
 script = ExtResource("16_dialogue")
-cadre = NodePath("../Rendu/Interface/CadreDialogue")
-etiquette_nom = NodePath("../Rendu/Interface/CadreDialogue/Marge/Colonne/Qui")
-etiquette_texte = NodePath("../Rendu/Interface/CadreDialogue/Marge/Colonne/Texte")
+cadre = NodePath("../Rendu/Interface/Echelle/CadreDialogue")
+etiquette_nom = NodePath("../Rendu/Interface/Echelle/CadreDialogue/Marge/Colonne/Qui")
+etiquette_texte = NodePath("../Rendu/Interface/Echelle/CadreDialogue/Marge/Colonne/Texte")
 
 ; L horloge du monde. Un seul noeud avance l heure et previent les autres :
 ; sans ce point unique, le ciel et les lampadaires divergeraient d une image.
@@ -718,7 +737,7 @@ joueur = NodePath("../Rendu/Scene3D/Joueur")
 vehicule = NodePath("../Rendu/Scene3D/Vehicule")
 foule = NodePath("../Rendu/Scene3D/Foule")
 trafic = NodePath("../Rendu/Scene3D/Trafic")
-jauge = NodePath("../Rendu/Interface/JaugePerf")
+jauge = NodePath("../Rendu/Interface/Echelle/JaugePerf")
 purete = NodePath("../Purete")
 scene_3d = NodePath("../Rendu/Scene3D")
 rendu = NodePath("..")
@@ -740,26 +759,26 @@ sauvegarde = NodePath("../Sauvegarde")
 
 [node name="Controleur" type="Node" parent="."]
 script = ExtResource("8_controleur")
-service = NodePath("../Rendu/Interface/AppelSkyler")
+service = NodePath("../Rendu/Interface/Echelle/AppelSkyler")
 reglages = ExtResource("2_reglages")
 joueur = NodePath("../Rendu/Scene3D/Joueur")
 vehicule = NodePath("../Rendu/Scene3D/Vehicule")
 camera = NodePath("../Rendu/Camera3D")
-invite = NodePath("../Rendu/Interface/Invite")
+invite = NodePath("../Rendu/Interface/Echelle/Invite")
 maisons = NodePath("../Rendu/Scene3D/Maisons")
-fondu = NodePath("../Rendu/Interface/Fondu")
+fondu = NodePath("../Rendu/Interface/Echelle/Fondu")
 audio = NodePath("../Audio")
 dialogue = NodePath("../Dialogue")
-roue = NodePath("../Rendu/Interface/Roue")
-telephone = NodePath("../Rendu/Interface/Telephone")
+roue = NodePath("../Rendu/Interface/Echelle/Roue")
+telephone = NodePath("../Rendu/Interface/Echelle/Telephone")
 desert = NodePath("../Rendu/Scene3D/Desert")
 commencer_chez = NodePath("../Rendu/Scene3D/Maisons/Walter")
 passages = [NodePath("../Rendu/Scene3D/VersDesert/Zone"), NodePath("../Rendu/Scene3D/Desert/RetourVille"), NodePath("../Rendu/Scene3D/Mission1/RouteTuco/VersTuco"), NodePath("../Rendu/Scene3D/Mission1/QgExterieur/RetourCamping")]
 scenario = NodePath("../Scenario")
 tir = NodePath("../Tir")
-fin_de_partie = NodePath("../Rendu/Interface/FinDePartie")
-cachette = NodePath("../Rendu/Interface/Cachette")
-pause = NodePath("../Rendu/Interface/Pause")
+fin_de_partie = NodePath("../Rendu/Interface/Echelle/FinDePartie")
+cachette = NodePath("../Rendu/Interface/Echelle/Cachette")
+pause = NodePath("../Rendu/Interface/Echelle/Pause")
 ecran = NodePath("../Affichage/Ecran")
 
 [node name="Affichage" type="CanvasLayer" parent="."]
