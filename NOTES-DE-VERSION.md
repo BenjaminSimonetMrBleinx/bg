@@ -20,6 +20,16 @@ le numéro ne voulait plus rien dire. Un lot livré est désormais un correctif.
 
 ---
 
+## 0.54.3 — Tuco n'est plus seul dans son bureau
+
+**Ce qu'il faut essayer** : monte chez Tuco, puis **retourne-toi**.
+
+**Ses trois hommes sont là.** Deux encadrent le bureau derrière lui, le
+troisième est près de la porte, dans ton dos — c'est lui qu'on imagine quand
+Tuco dit de te fouiller. Ils ne parlent pas : dans cette scène c'est le garde
+qui répond et Tuco qui décide.
+
+---
 ## 0.54.2 — La dalle blanche du bureau de Tuco est enfin une vitre
 
 **Ce qu'il faut essayer** : monte chez Tuco et regarde son bureau.
