@@ -39,100 +39,52 @@ transfert, y compris le corps de chaque release publiée.
 
 ### Les surprises
 
-**Trois parcours de test sur trois, sans un défaut.** Le désert, les courses et
-la mission 1 de bout en bout : tout ce qui avait été livré à l'aveugle dans la
-journée s'est révélé juste en jouant. C'est la première fois de ce projet.
+**Trois parcours de test sur trois, sans un défaut.** Tout ce qui avait été livré
+à l'aveugle dans la journée s'est révélé juste manette en main. C'est la première
+fois de ce projet.
 
-**Et le seul vrai blocage n'était pas une régression.** La cachette de fin de
-mission était introuvable — non pas cassée, mais **jamais trouvable** : aucune
-géométrie, posée à un mètre soixante du mur, à deux mètres soixante-dix en biais
-de la porte, dans un salon de quatorze mètres sur dix. Le tuto annonçait pourtant
-« une latte du mur n'est pas comme les autres ». C'est exactement le défaut de
-l'épicerie sans enseigne, corrigé la veille : **une adresse exacte que rien ne
-signale n'est pas une adresse.** Elle est désormais visible et collée près de la
-bibliothèque, le seul repère du salon.
+**Le seul blocage n'était pas une régression : la cachette n'avait jamais été
+trouvable.** Aucune planche à l'écran, posée au milieu du vide, dans un salon de
+quatorze mètres sur dix — alors que le tuto annonce « une latte du mur n'est pas
+comme les autres ». Troisième fois cette semaine que la même leçon se paie :
+**une adresse exacte que rien ne signale n'est pas une adresse.**
 
-**Le klaxon ne s'entendait pas, et ce n'était ni le code ni l'atténuation.** Le
-fichier culmine à **16 % de l'échelle** quand la portière est à 99 %. Mesuré sur
-les `.wav`, pas deviné. Le rattrapage vit maintenant dans `sons.json` : un gain
-par mécanisme, en données, plutôt qu'un fichier livré réécrit. Quatorze fichiers
-sur soixante-quatre sont sous 40 % — seuls ceux qui gênent en jouant auront une
-ligne.
+**La sauvegarde ne gardait que la moitié depuis quinze versions.** L'argent et
+l'heure revenaient ; ni l'inventaire, ni la position, ni l'avancement. Ce qui a
+masqué le trou pendant si longtemps : **la moitié qui marchait était la moitié
+qu'on regarde** en relançant.
 
-**Une variante de dialogue peut bloquer une mission, et le symptôme apparaît
-trois écrans plus loin.** `dialogue_fini()` émet « dialogue:\<clé\> », et c'est
-ce qui fait avancer la mission. Jouer la version de Jesse où il voit les œufs
-émettait donc une clé inconnue : **prendre les courses aurait bloqué la mission
-1**, sans aucun rapport visible avec les œufs. Vu avant de coder, en lisant
-comment l'événement est émis — pas en jouant.
+**Le klaxon ne s'entendait pas, et ce n'était pas le code.** Le fichier est
+enregistré six fois plus bas que les autres. Mesuré, pas deviné — et quatorze
+sons sur soixante-quatre sont dans le même cas.
 
-**Une scène centrale ne se duplique pas pour trois lignes.** Tuco devait
-remarquer la boîte, mais sa scène fait vingt répliques et porte deux effets,
-l'argent et la fouille. La recopier aurait donné deux scènes à maintenir, et le
-jour où l'une change, l'autre ment. On joue donc une **ouverture** courte, et le
-scénario enchaîne sur la vraie — zéro duplication.
-
-**Une protection peut être correcte et le résultat faux quand même.** Pendant
-que le téléphone sonnait, l'écran proposait « F Décrocher / T Raccrocher » **et**
-« F Descendre ». L'action était bien protégée depuis le début ; c'est l'invite
-qui restait. Et la première correction — ne plus appeler `_afficher()` — n'a rien
-changé : **l'invite garde son dernier texte tant que personne ne lui en donne un
-autre.** Il fallait l'effacer, pas se taire. Vu à la capture, deux fois.
-
-**Deux suites de tests sont cassées, et ce n'est pas nous.** `sons` et
-`sauvegarde` s'arrêtent sans un mot. Vérifié en revenant à la version livrée : le
-même arrêt, sans nos changements. C'est le réflexe du piège 22 — refaire le geste
-avec quelque chose qui marchait déjà — et il a servi trois fois dans la soirée.
+**Un faux diagnostic, et il était de moi.** Un bug « on ne peut pas courir »
+ouvert sur une liste d'actions que ma propre commande avait tronquée. On court
+très bien. **Une absence ne prouve rien tant que la recherche n'est pas
+complète** — c'est passé dans `CLAUDE.md`.
 
 ### Où on reprend
 
-**Une passe globale sur le dépôt**, demandée en fin de session : épurer,
-homogénéiser, clarifier. Avec une question de fond derrière — **comment organiser
-le travail sans un backlog verbeux qu'on ne fera jamais.** Des objectifs clairs,
-un ordre de priorité, des testeurs, des processus courts. À creuser en
-s'appuyant sur la façon dont les jeux se développent vraiment : dans quel ordre,
-comment on teste, comment on traite la 3D et les voix.
+**#55** : reprendre une partie ne dit pas où l'on arrive — revers de la
+sauvegarde réparée. À vérifier en premier : reprend-on **dans** sa voiture ou à
+côté ?
 
-**Les deux suites cassées** — `sons` et `sauvegarde` — n'ont pas été
-diagnostiquées, seulement disculpées.
+**La passe d'organisation, demandée et pas faite.** Le classement était prêt
+— trois « maintenant », cinq « ensuite », le reste en feuille de route — et mis
+de côté pour traiter des tickets plutôt que les archiver. Restent à écrire : la
+feuille de route, la méthode et la fiche de test.
 
-**Et toujours la manette** : l'appel de Skyler n'a jamais été joué en conditions
-réelles. Les vingt secondes de conduite, le choix de décrocher ou pas, le
-demi-tour vers l'épicerie : tout ça est mesuré et capturé, rien n'est *vécu*.
+**Les sept chantiers de code restants n'attendent aucun code**, mais des choix :
+les précurseurs, où vivent Junior et Hank, ce que voient les témoins, les quatre
+missions du palier 2. Les trancher seul, c'est livrer un jeu que Benjamin
+découvrirait.
 
-### Ce qui est laissé en route, et où le reprendre
+**Et les nombres de ressenti n'ont jamais été joués** : vingt secondes avant
+l'appel, cinq points pour le retard, trois cents dollars la livraison.
 
-**Deux bugs trouvés dans les trois premières minutes de test**, et c'est la
-meilleure preuve que jouer trouve ce que tester ne trouve pas :
+---
 
-- ~~**#54 — on ne peut pas courir.**~~ **Fausse alerte, et l'erreur était de mon
-  côté.** L'action existe et s'appelle `sprint`. J'avais conclu d'une **liste
-  d'actions tronquée par ma propre commande** — `sprint` venait quatre lignes
-  après la coupure — et je cherchais « courir », le mot du README, alors que le
-  code dit `sprint`. Que j'avais lu dix minutes plus tôt dans `joueur.gd`, sans
-  faire le lien. **Une absence ne prouve rien tant que la recherche n'est pas
-  complète** ; c'est passé dans `CLAUDE.md`.
-- **#55 — reprendre ne dit pas où l'on arrive.** Revers direct de la sauvegarde
-  réparée : pendant quinze versions, « Reprendre » et « Nouvelle partie »
-  donnaient le même début. Le point à vérifier en premier : une partie reprise
-  **au volant** repose-t-elle Walter dans sa voiture, ou à côté ? La position est
-  restaurée, l'état « au volant » ne l'est pas.
-
-**La passe d'organisation, demandée et pas faite.** Le classement était prêt —
-3 « maintenant », 5 « ensuite », le reste en feuille de route — et il a été mis
-de côté pour traiter les tickets plutôt que les archiver. Restent à écrire : la
-feuille de route (`docs/17-feuille-de-route.md`), la méthode (WIP de trois par
-personne, `maintenant`/`ensuite`, plus de backlog verbeux) et la fiche de test
-par version. La recherche est faite et résumée dans la conversation : **vertical
-slice** (la mission 1 en est une, elle n'a jamais été nommée ainsi), limite de
-travail en cours plutôt que tri de backlog, playtest sur un ou deux aspects à la
-fois, et pas de sprints — le flux continu colle à deux personnes qui codent le
-soir.
-
-**Les sept tickets 🤖 restants ne sont pas bloqués par du code**, mais par des
-choix de contenu : les précurseurs de #27, où vivent Junior et Hank pour #29, le
-système de témoins de #35, les quatre missions de #36. Les faire sans décision,
-c'est livrer un jeu que Benjamin découvrirait.
+## Session du 7 aout 2026, premiere partie — un remede qui dormait a cote du malade
 
 **Début** : 07/08, sur `v0.48.10`. **Fin** : sur `v0.48.12`, deux releases
 publiées après deux jours de silence.
@@ -162,141 +114,63 @@ Côté tickets : **#48, #49, #50 et #51 fermés**, **#52 ouvert** pour Guillaume
 
 ### Les surprises
 
-**Un ticket peut décrire cinq pannes et n'en contenir qu'une.** #48 listait cinq
-symptômes. Un seul venait de l'ouverture du désert — celui du titre. Les trois
-suivants avaient **une seule cause commune, vieille de huit jours**, et le
-cinquième n'était pas une panne mais un travail jamais fait. La veille déjà,
-cinq tickets décrivaient un travail déjà fait ; cette fois c'est l'inverse dans
-le même ticket. **Diagnostiquer avant de corriger a coûté vingt minutes et
-évité de refermer le désert pour rien.**
+**Un ticket peut décrire cinq pannes et n'en contenir qu'une.** #48 en listait
+cinq. Un seul symptôme venait de l'ouverture du désert ; trois avaient une cause
+commune vieille de huit jours, et le cinquième n'était pas une panne mais un
+travail jamais fait. **Vingt minutes de diagnostic ont évité de refermer le
+désert pour rien.**
 
-**Le code annonçait sa propre panne, en majuscules.** `desert.gd` écrit
-*« CETTE VALEUR EST UN SECOURS, PAS LA SOURCE »* au-dessus de la constante du
-camping-car. `gen_desert.py` écrit *« les deux doivent bouger ensemble ; s'ils
-divergent, un cactus repousse dans le véhicule »*. Les deux disaient exactement
-ce qui allait arriver, et c'est arrivé : la scène de mission avait recopié la
-constante de secours, le générateur a déplacé le véhicule de vingt-neuf mètres,
-Jesse est resté en arrière — **au milieu de la piste**. Deuxième session
-consécutive où un commentaire prédit une panne et se lit comme une décoration.
+**Le code annonçait sa propre panne, en majuscules.** Deux fichiers écrivaient
+noir sur blanc que ces coordonnées ne devaient jamais être recopiées, et ce qui
+arriverait si on le faisait. C'est arrivé : Jesse est resté vingt-neuf mètres
+derrière le camping-car, au milieu de la piste. Deuxième session d'affilée où un
+commentaire prédit une panne et se lit comme une décoration.
 
-**Le remède existait déjà, à côté du malade.** `systemes/ancrage.gd` fait
-précisément ce qui manquait : poser un nœud sur un lieu publié par le
-générateur. Son en-tête raconte la même histoire — payée deux fois dans la
-ville, une chaussée élargie puis un trottoir élargi, un panneau retrouvé au
-milieu de la route. Le désert avait la même maladie et pas le remède, à un
-champ près. Il a suffi d'apprendre à `Ancrage` qu'il existe deux cartes.
+**Le remède dormait à côté du malade.** `ancrage.gd` faisait déjà exactement ce
+qui manquait, pour la ville, et son en-tête racontait la même histoire payée
+deux fois. Le désert avait la maladie et pas le remède, à un champ près.
 
-**Trois vérifications regardaient à côté, et elles étaient au vert.** Le test du
-désert **téléportait la voiture sur la zone de sortie** avant de vérifier qu'on
-peut repartir : il mesurait la seule partie qui n'était pas cassée. La capture
-censée prouver que la porte du jeu tombe sur la porte du modèle visait des
-coordonnées écrites à la main, et photographiait du sable à vingt-neuf mètres du
-véhicule. Et une fois recalée, elle était **à la verticale exacte** — une image
-sans haut ni bas, où l'on ne peut rien trancher. C'est le piège 19, et c'est la
-troisième soirée d'affilée qu'un instrument de ce projet se révèle aveugle.
+**Trois vérifications regardaient à côté, et elles étaient au vert.** Un test qui
+se téléportait sur la sortie avant de vérifier qu'on peut sortir. Une capture qui
+photographiait du sable à vingt-neuf mètres de son sujet. Et la même, recalée,
+posée à la verticale exacte — une image sans haut ni bas. Troisième soirée
+d'affilée qu'un instrument de ce projet se révèle aveugle.
 
-**Le camping-car de Guillaume n'a jamais été dans le jeu.** Le `.glb` chargé
-contient les maillages `Caisse`, `Pneu`, `Vitre` — les noms que produit
-`gen_desert.py`. Le modèle livré, 17 Mo, dort dans `livraisons/` depuis le
-début. Deux commentaires du code affirmaient pourtant le contraire, dont celui
-qui expliquait en détail comment la porte avait été replacée « parce que le
-modèle livré est plus long de deux mètres ». **Un commentaire qui décrit un
-asset se périme sans bruit** : personne ne relit un commentaire pour vérifier
-qu'il est encore vrai.
+**Le camping-car de Guillaume n'avait jamais été dans le jeu.** Il dormait dans
+`livraisons/` depuis des semaines pendant que deux commentaires du code
+affirmaient le contraire. **Un commentaire qui décrit un asset se périme sans
+bruit** : personne ne le relit pour vérifier qu'il est encore vrai.
 
-**Guillaume attendait un exe qui n'existait pas.** Trois de ses tickets sont en
-🔥 depuis le 6 août — les voix, les passants, le formulaire de mission. La
-dernière release téléchargeable datait du 5 août : onze versions de retard. Un
-bump sans tag ne livre rien, et personne ne s'en aperçoit du côté qui bumpe.
+**Guillaume attendait un exe qui n'existait pas.** Onze versions bumpées sans
+jamais être taguées : il téléchargeait un jeu sans écran-titre ni sauvegarde,
+pendant que trois de ses tickets 🔥 attendaient qu'il voie ce qui existait déjà.
 
-**Le budget d'un asset se mesure, il ne se décide pas.** Le camping-car livré
-pesait 17 828 triangles pour un budget de 2 000, et la question « on garde
-quoi ? » n'avait aucune bonne réponse sur le papier. Cinq niveaux ont été
-produits et posés côte à côte sur le banc graphique du désert — l'outil existait
-depuis longtemps et n'avait jamais servi à ça. La planche a tranché en une
-image : **à 2 000 la carrosserie se froisse et devient une épave**, à 4 000 la
-jupe reste bosselée, et **à partir de 8 000 la silhouette cesse de bouger**.
-Entre 8 000 et 17 828, plus de différence visible — huit fois le poids pour
-rien. Aucun de ces trois faits n'était devinable.
-
-**Un modèle entièrement blanc, et sa couleur était pourtant là.** En jetant les
-canaux PBR inutiles, on avait débranché la texture émissive — sans écrire de
-valeur à la place. L'entrée « émission » du shader vaut blanc plein par défaut :
-la texture ne faisait que la moduler, et le lien coupé a **découvert** ce blanc
-au lieu de l'annuler. Trois variantes sont sorties comme des blocs de neige.
-**Débrancher n'est pas neutraliser** — piège 20, trouvé en lisant le bloc
-`materials` du fichier produit, pas dans Blender.
+**Le budget d'un asset se mesure, il ne se décide pas.** 17 828 triangles livrés
+pour un budget de 2 000, et aucune bonne réponse sur le papier. Cinq niveaux
+posés côte à côte sur le banc graphique — un outil qui existait et n'avait jamais
+servi à ça — ont tranché en une image : sous 4 000 la carrosserie se froisse, et
+**à partir de 8 000 la silhouette cesse de bouger**. Huit fois le poids pour rien
+au-delà. Aucun des trois faits n'était devinable.
 
 **Une image et un test se sont contredits, et les deux avaient raison.** La
-capture montrait Walter dehors, contre le flanc, devant la porte ; le test
-annonçait le point d'entrée à 1,20 m **dans** la coque. La coque est aussi la
-collision : la physique avait éjecté Walter du volume avant la prise de vue.
-**L'image montrait où il finit, pas où on l'avait mis.** C'est le piège 21, et
-c'est le contraire exact de la règle d'or — ici l'image mentait et le nombre
-disait vrai. La leçon n'est pas de préférer l'un à l'autre : quand les deux se
-contredisent, ils ne répondent pas à la même question, et il faut trouver
-laquelle avant de corriger.
-
-**Un avertissement de dépréciation suffit à casser une commande.** `bg.ps1
-integrer` a échoué net sur un `DeprecationWarning` de Blender 5.2 : PowerShell
-traite la moindre ligne de stderr d'un binaire natif comme une erreur. Le script
-Python marchait parfaitement. Un outil qui marche mais qu'on ne peut plus
-appeler est un outil cassé.
-
-**Le modèle de Guillaume est un scan, et ça se voyait depuis le début.** La tôle
-du camping-car ondule sur toute sa surface. Trois versions posées côte à côte —
-le fichier brut, le brut aplati, et celui du jeu à 8 000 triangles — sont
-**identiques** : les bosses sont dans la livraison, pas dans la décimation. Sa
-signature le disait déjà (un maillage d'un bloc, une texture 2048 avec normale
-et metallic/roughness). C'est #52, avec la capture et le tableau des essais, et
-ça se répare chez lui : un nettoyage dans Blender battra toujours un lissage
-automatique.
-
-**Python n'existe pas sur cette machine.** `bg.ps1 generer` est donc
-inutilisable tel quel — l'alias du Store répond mais n'exécute rien. Blender
-embarque un Python 3.13 complet, et les générateurs n'utilisent que la
-bibliothèque standard : `…\Blender 5.2\5.2\python\bin\python.exe` les fait
-tourner tels quels. À câbler dans `bg.ps1` en repli, un jour.
-
-**Un générateur relancé écrase ce qu'on ne lui a pas demandé.** `gen_sons.py`
-réécrivait ses cinq fichiers à chaque appel : ajouter la caisse enregistreuse en
-a écrasé quatre autres. Restaurés dans la minute, et le script accepte
-maintenant un `--nom`, comme `gen_objets`. Le piège 11, encore, dans sa version
-la plus bête — et la troisième fois qu'il se présente dans ce projet.
-
-**Deux vérifications se sont tues, et ce n'était pas le contenu neuf.** La
-capture et la suite `mission` s'arrêtaient net, sans message, dès qu'un dialogue
-s'ouvrait. On l'a mesuré en démarrant une fiche vieille de plusieurs semaines au
-même endroit : même arrêt. C'est le piège 22 — **avant de croire qu'un ajout
-casse un test, refaire le geste avec quelque chose qui marchait déjà.** La
-mécanique des courses a été sortie du dialogue pour redevenir mesurable.
+capture montrait Walter dehors ; le test le disait dans la tôle. La physique
+l'avait éjecté avant la prise de vue — **l'image montrait où il finit, pas où on
+l'avait mis.** Quand les deux se contredisent, ils ne répondent pas à la même
+question, et il faut trouver laquelle avant de corriger.
 
 ### Où on reprend
 
-**Une manette, d'abord.** Trois choses n'ont été vues par personne en jouant : la
-mission 1 de bout en bout, le trajet complet épicerie → maison, et le refus de
-l'épicerie quand on n'a pas les quatre dollars. Les tests couvrent la mécanique
-et les distances ; ils ne disent rien du plaisir qu'il y a — ou pas — à faire ce
-détour. C'est exactement le genre de chose que seule la manette tranche, et le
-réglage des dix points de famille en dépend.
+**Une manette, d'abord.** Rien de ce qui a été livré n'a été joué : la mission de
+bout en bout, le trajet épicerie → maison, le refus quand on n'a pas les quatre
+dollars. Les tests couvrent la mécanique, jamais le plaisir qu'il y a — ou pas —
+à faire ce détour.
 
-**En attente ailleurs** : #47 (l'objet tenu ne revient plus après une reprise),
-un système de **dialogue à choix** que réclament #31, #35 et #29, et dix tickets
-jamais passés en revue (#34 à #45). Guillaume : #52 (la tôle du camping-car),
-les rigs de passants, les voix, le formulaire de mission — et il a maintenant un
-jeu à jour pour les écrire.
-
-**Trois choses à surveiller :**
-
-- la chaîne d'intégration sait dégraisser, mais **seulement si on le lui
-  demande** : le prochain modèle livré passera au budget de son auteur si
-  personne ne pense aux options. La charte porte l'exception des repères, pas de
-  garde-fou automatique ;
-- `bg.ps1 generer` est **inutilisable sur cette machine** faute de Python. Le
-  contournement est connu (celui de Blender), il n'est pas câblé ;
-- les deux réactions de Skyler **n'ont pas de voix** et sont marquées muettes
-  assumées. Elles marchent, mais la maison est le seul endroit du jeu où l'on
-  parle sans entendre personne.
+**À surveiller :** la chaîne d'intégration ne dégraisse que si on le lui demande,
+et le prochain modèle livré passera au budget de son auteur si personne n'y
+pense. Les deux réactions de Skyler n'ont pas de voix — la maison est le seul
+endroit du jeu où l'on parle sans entendre personne. Et `bg.ps1 generer` est
+inutilisable sur cette machine faute de Python : le contournement est connu, pas
+câblé.
 
 ---
 
