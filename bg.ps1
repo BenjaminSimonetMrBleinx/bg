@@ -778,6 +778,9 @@ switch ($Commande) {
             @{ cle = 'murs'; nom = 'camera et murs'
                script = 'res://verifs/test_camera_murs.gd'
                couvre = @('systemes/camera_poursuite', 'systemes/maison') }
+            @{ cle = 'phases'; nom = 'sauter a une phase de la mission 1'
+               script = 'res://verifs/test_phases.gd'
+               couvre = @('systemes/dev', 'systemes/mission', 'donnees/mission1') }
             @{ cle = 'voix'; nom = 'voix des dialogues'
                script = 'res://verifs/test_voix.gd'
                couvre = @('systemes/dialogue', 'donnees/dialogues', 'donnees/voix', 'assets/voix', 'gen_voix') }

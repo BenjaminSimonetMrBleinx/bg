@@ -43,6 +43,7 @@ const RESOLUTIONS_NOM := ["512", "960", "1440"]
 const ENTREES := [
 	{"cle": "temps", "nom": "Vitesse du temps", "genre": CHOIX},
 	{"cle": "lieu", "nom": "Aller a un lieu nomme...", "genre": PAGE},
+	{"cle": "mission1", "nom": "Mission 1 : aller a une phase...", "genre": PAGE},
 	{"cle": "traverse", "nom": "Traverser les murs et voler", "genre": BASCULE},
 	{"cle": "voiture", "nom": "Faire venir la voiture", "genre": ACTION},
 	{"cle": "fin_mission", "nom": "Derouler la mission jusqu'a la fin", "genre": ACTION},
@@ -93,6 +94,11 @@ const COLLISIONS_MAX := 400
 ## La racine du contenu 3D : c'est sous elle qu'on cherche les collisions et
 ## qu'on pose les reperes.
 @export var scene_3d: NodePath
+## Le controleur, pour sauter a une phase de mission par le MEME chemin qu'une
+## porte : fondu, zone annoncee au scenario, camera d'interieur. Sans lui on
+## peut encore teleporter, mais on arrive dans le bureau de Tuco avec la camera
+## du dehors et l'ambiance de la rue.
+@export var controleur: NodePath
 ## Le noeud qui porte le pipeline de rendu — la racine du monde. Son
 ## appliquer() relit reglages.tres a chaud, ce qui est exactement ce qu'il faut
 ## pour changer la resolution sans relancer.
@@ -111,6 +117,7 @@ var _purete: Purete
 var _famille: Famille
 var _reputation: Reputation
 var _scene: Node3D
+var _controleur: Node
 
 ## Ce qu'on a fabrique pour montrer. Garde pour pouvoir le DEFAIRE : des
 ## maillages de controle laisses en place apres extinction sont pires que pas
@@ -132,6 +139,7 @@ func _ready() -> void:
 	_famille = Famille.courante(self)
 	_reputation = Reputation.courante(self)
 	_scene = get_node_or_null(scene_3d) as Node3D
+	_controleur = get_node_or_null(controleur)
 	if reglages != null:
 		_vitesse_normale = reglages.temps_vitesse
 
@@ -318,22 +326,123 @@ func regler(i: int, sens: int) -> void:
 
 
 ## Le titre de la page ouverte par une ligne de genre PAGE.
-func page_titre(_cle_page: String) -> String:
-	return "ALLER A..."
+func page_titre(cle_page: String) -> String:
+	return "MISSION 1 - PHASE" if cle_page == "mission1" else "ALLER A..."
 
 
 ## Ce que la page contient.
-func page_lignes(_cle_page: String) -> Array:
+func page_lignes(cle_page: String) -> Array:
+	if cle_page == "mission1":
+		var noms: Array = []
+		for p in PHASES:
+			noms.append(str(p["nom"]))
+		return noms
 	return lieux()
 
 
 ## F sur la ligne i d'une page. Renvoie [message, fermer_le_menu] : se rendre
 ## quelque part demande de refermer pour voir ou l'on arrive.
 func page_agir(cle_page: String, i: int) -> Array:
+	if cle_page == "mission1":
+		return [_aller_a_la_phase(i), true]
 	var lignes := page_lignes(cle_page)
 	if i < 0 or i >= lignes.size():
 		return ["", false]
 	return [aller_a(str(lignes[i])), true]
+
+
+# ------------------------------------------------------- les phases de mission
+
+
+## LES MOMENTS DE LA MISSION 1 OU L'ON VEUT POUVOIR REVENIR.
+##
+## Pas les quinze etapes : les dix qui changent d'endroit ou de situation. Aller
+## voir le bureau de Tuco demandait de rejouer vingt minutes — l'appel, Jesse,
+## la route, la cuisine, la route — a chaque fois qu'on touchait a une texture.
+##
+## 'etape' est la CLE de l'etape dans mission1.json, jamais son numero : inserer
+## une etape au milieu de la mission renumeroterait tout, et cette table
+## deposerait le joueur a un endroit qui n'a plus de rapport.
+##
+## 'zone' et 'clos' ne se deduisent pas de la position. Le camping-car et le
+## bureau de Tuco sont poses a plus d'un kilometre du monde, et il faut le DIRE
+## au scenario, sinon l'ambiance et la camera restent celles du dehors.
+const PHASES := [
+	{"nom": "1. Le coup de fil", "etape": "appel", "zone": "", "clos": false},
+	{"nom": "2. Chez Jesse", "etape": "parler_jesse", "zone": "", "clos": false},
+	{"nom": "3. Au camping-car", "etape": "camping", "zone": "camping", "clos": false},
+	{"nom": "4. Dans le labo", "etape": "cuisiner", "zone": "camping_interieur", "clos": true},
+	{"nom": "5. La marchandise en poche", "etape": "prendre_meth", "zone": "camping_interieur", "clos": true},
+	{"nom": "6. Devant chez Tuco", "etape": "aller_tuco", "zone": "qg", "clos": false},
+	{"nom": "7. Le garde a la porte", "etape": "entrer_qg", "zone": "qg", "clos": false},
+	{"nom": "8. Face a Tuco", "etape": "vendre", "zone": "qg", "clos": true},
+	{"nom": "9. La botte, et fuir", "etape": "fuir", "zone": "qg", "clos": true},
+	{"nom": "10. Cacher l'argent", "etape": "cacher", "zone": "", "clos": false},
+]
+
+
+# ON DEROULE LES EVENEMENTS, ON NE POSE PAS L'INDEX.
+#
+# C'est la meme regle que « derouler la mission jusqu'a la fin », et elle vaut
+# encore plus ici. Poser l'index de l'etape « vendre » depose le joueur devant
+# Tuco LES MAINS VIDES : il n'a pas cuisine, donc pas de marchandise, donc la
+# scene qu'on venait regarder ne se joue pas. L'etat obtenu ne ressemblerait a
+# aucun etat atteignable en jouant, ce qui est exactement ce qu'un raccourci de
+# test ne doit pas produire.
+#
+# En passant par evenement(), chaque etape franchie declenche ce qu'elle
+# declenche : la marchandise entre dans l'inventaire, l'argent tombe, les
+# scenarios s'arment.
+func _aller_a_la_phase(i: int) -> String:
+	if i < 0 or i >= PHASES.size():
+		return ""
+	var phase: Dictionary = PHASES[i]
+	var m := Mission.courante(self)
+	if m == null:
+		return "pas de mission"
+
+	var cible := str(phase["etape"])
+	# Reculer demande de tout reprendre : une mission ne se rembobine pas.
+	if m.finie() or m.passee(cible):
+		m.recommencer()
+	var garde := 0
+	while not m.finie() and m.cle_etape() != cible and garde < 40:
+		garde += 1
+		var quoi := str(m.etape().get("valide_par", ""))
+		if quoi == "" or not m.evenement(quoi):
+			return "bloque a l'etape '%s'" % m.cle_etape()
+	if m.cle_etape() != cible:
+		return "n'a pas atteint '%s'" % cible
+
+	return _poser_le_joueur_sur(m.ou(), phase)
+
+
+# La position vient du NOEUD que l'etape designe, jamais de coordonnees ecrites
+# ici : c'est le meme choix que pour les lieux, et pour la meme raison. La ville
+# se regenere, les interieurs se deplacent, et deux coordonnees recopiees
+# finissent toujours par diverger de ce qu'elles decrivent.
+func _poser_le_joueur_sur(nom_du_noeud: String, phase: Dictionary) -> String:
+	if _joueur == null:
+		return "pas de joueur"
+	var nom := str(phase["nom"])
+	if nom_du_noeud == "":
+		return "%s : l'etape ne dit pas ou" % nom
+	var cible: Node3D = null
+	if _rendu != null:
+		cible = _rendu.find_child(nom_du_noeud, true, false) as Node3D
+	if cible == null:
+		return "%s : '%s' introuvable" % [nom, nom_du_noeud]
+
+	var ou := cible.global_position + Vector3.UP
+	if _controleur != null and _controleur.has_method("emmener"):
+		# Le fondu, la zone, la camera d'interieur et le son des pas : c'est le
+		# meme chemin que celui d'une porte, donc le meme resultat.
+		_controleur.emmener(ou, _joueur.global_rotation.y,
+				str(phase["zone"]), bool(phase["clos"]))
+	else:
+		_joueur.global_position = ou
+		_joueur.velocity = Vector3.ZERO
+	return nom
 
 
 func cle(i: int) -> String:
@@ -361,16 +470,22 @@ const DESTINATIONS := [
 ]
 
 
-## Les lieux ou l'on peut se rendre : les endroits de l'histoire d'abord, puis
-## les parcelles du generateur, triees. Celles-ci suivent la ville qu'on a
-## fabriquee — une seconde liste ecrite a la main se perimerait a la premiere
-## regeneration.
+## Les lieux ou l'on peut se rendre.
+##
+## LES PARCELLES DU GENERATEUR N'Y SONT PLUS. La liste en publiait quarante et
+## un, dont trente-sept `terrain_vague_6_7` et `parking_4_3` — des noms de
+## decoupage, pas des endroits. Le cadre en montre quatorze a la fois : trouver
+## « Chez Walter » demandait de faire defiler une liste ou rien ne se
+## distinguait, pour un menu dont tout l'interet est d'aller vite.
+##
+## Elles restent atteignables : `_ou_est` les resout toujours, donc les reperes
+## et `bg.ps1 jouer -Ou` continuent de les connaitre. Ce qui change, c'est
+## qu'on ne les PROPOSE plus.
 func lieux() -> Array:
 	var sortie: Array = []
 	for d in DESTINATIONS:
 		if _noeud_de_scene(str(d[1])) != null:
 			sortie.append(str(d[0]))
-	sortie.append_array(Ancrage.noms())
 	return sortie
 
 

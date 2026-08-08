@@ -20,6 +20,21 @@ le numéro ne voulait plus rien dire. Un lot livré est désormais un correctif.
 
 ---
 
+## 0.54.4 — Le menu de test va droit au but
+
+**Pour ceux qui testent.** Ouvre la pause, **Outils**.
+
+**« Mission 1 : aller a une phase… »** propose les dix moments qui comptent —
+le coup de fil, chez Jesse, le labo, face a Tuco, la fuite. On y arrive **dans
+l'etat ou l'on serait en jouant** : avec la marchandise en poche si la scene la
+demande, et l'argent si on l'a deja touche. Plus besoin de refaire vingt
+minutes pour regarder un decor.
+
+**Et la liste des lieux ne propose plus que des lieux.** Elle en publiait
+quarante et un, dont trente-sept parcelles nommees `terrain_vague_6_7`. Il en
+reste quatre, ceux qu'on demande vraiment.
+
+---
 ## 0.54.3 — Tuco n'est plus seul dans son bureau
 
 **Ce qu'il faut essayer** : monte chez Tuco, puis **retourne-toi**.
