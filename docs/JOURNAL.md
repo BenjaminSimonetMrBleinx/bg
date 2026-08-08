@@ -85,26 +85,91 @@ fichier accentué, et les tirets cadratins sont devenus du mojibake. Le piège e
 écrit depuis des semaines. La parade : éditer les fichiers avec l'outil d'édition,
 jamais avec PowerShell.
 
+---
+
+## Seconde partie — le MCP branché, et quatre instruments qui mentaient
+
+Le MCP Magnific autorisé, la 3D s'est débloquée. Et **chaque objet produit a fait
+tomber un bug** — pas dans le modèle, dans la chaîne qui le mesure.
+
+### Ce qui a été livré
+
+Le labo est meublé : **quatre montages de distillation** (ballon, liquide ambré,
+pince, statif, condenseur — 3 990 triangles, 48 cm), **un fût et un jerrycan** au
+sol, et **du verre** sur les quatorze cylindres du générateur, qui étaient des
+blocs blancs opaques.
+
+Coût : **1 660 crédits sur 20 000** pour toute la session — cinq textures, deux
+images de référence, deux modèles. Un modèle revient à 655 crédits tout compris.
+
+### Les surprises, et c'est une série
+
+**9. L'échelle était écrasée, pas multipliée.** `obj.scale = (facteur,) * 3`
+remplaçait celle que le modèle portait déjà. Invisible depuis toujours — les
+modèles livrés à la main arrivent à l'échelle 1 — et fatal au premier modèle
+généré, que Tripo livre à 0,4008 : demandé à 0,48 m, il sortait à 1,198.
+
+**10. L'instrument que je venais d'écrire a désigné le mauvais coupable.**
+`lire_glb` lisait les min/max des accesseurs sans les transformations de nœuds.
+Il annonçait 0,998 m pour un objet de 0,400, et j'ai « corrigé » une chaîne qui
+n'avait rien. **Piège 18, avec un instrument de dix minutes d'âge.**
+
+**11. Un modèle bon peut avoir l'air raté.** Le premier montage sortait blanc et
+sans détail. J'ai cherché dans le matériau, dans l'émission, dans la texture —
+qui contenait bien son ambre. Il était **caché derrière les cylindres du
+générateur**, à neuf centimètres près. Déplacé sur la bande avant, il se lit d'un
+coup.
+
+**12. `diag` mesurait un endroit différent à chaque appel.** Deux relevés
+consécutifs : 0,7 ms et 5,0 ms, 125 et 906 appels de rendu, sans qu'une ligne ait
+bougé. `monde.tscn` reprend la sauvegarde, et chaque capture joue puis sauvegarde.
+J'en avais conclu qu'un shader coûtait quatre millisecondes — mesuré des deux
+côtés, **il ne coûte rien**.
+
+Et la conséquence la plus gênante : **la note de version publiée annonçait un
+chiffre faux.** « 0,6 ms avant, 0,7 après » — deux mesures réelles, prises à deux
+endroits différents. La conclusion tenait, les chiffres non. Corrigée : au même
+point, effets coupés 3,0 ms contre 2,8 pour la 0.51.0 complète.
+
+**13. Le verre transparent ne se génère pas en 3D.** Tripo le rend opaque. Le
+ballon ne marche que parce que son liquide lui donne une couleur ; un bécher vide
+serait un bloc blanc. C'est au shader de le faire, et pour zéro crédit.
+
+**14. Une image de référence vaut UN objet.** J'en ai mis deux — le fût et le
+jerrycan — et Tripo en a fait un bloc unique, impossible à séparer ou répartir.
+
+### Le fil qui relie tout ça
+
+**Quatre défauts sur cinq n'étaient pas dans le jeu, mais dans ce qui le mesure.**
+Un outil qui annonce un nombre juste et écrit un fichier faux, un autre qui lit le
+bon fichier avec la mauvaise méthode, un troisième qui mesure un endroit au
+hasard. Le projet avait déjà écrit la règle — *vérifier l'instrument avant de
+corriger ce qu'il dénonce* — et elle a été repayée trois fois dans la même
+journée.
+
+Ce qui les a tous attrapés : **relire ce qu'on vient d'écrire**. Le garde-fou de
+hauteur dans `integrer`, `verifs/ou_est.gd` qui imprime l'emprise réelle en
+coordonnées monde, le point de mesure fixe dans `diag`. Aucun n'existait le matin.
+
 ### Où on reprend
 
-1. **Retrouver le nombre de blocs de la ville** et le poser en défaut. Tant que ce
-   n'est pas fait, `generer` reste une commande dangereuse et les textures de
-   ville restent en 128.
-2. **Autoriser le MCP Magnific** (`/mcp` après rechargement) — c'est ce qui
-   débloque les modèles 3D, donc la verrerie du labo, les hommes de Tuco et le
-   camping-car du ticket #52.
-3. **Poser `liquide.gdshader`** sur la verrerie : le shader est écrit et compilé,
-   il n'est branché nulle part. Il faut le donner au chargement, puisque la
-   verrerie vient de `gen_lieux`.
-4. Les tickets **#56** et **#57** pour les deux suites qui échouaient déjà avant.
+1. **La minimap** — ticket **#58**, demandé en séance. Le point à résoudre
+   d'abord : `mission1.json` décrit des **évènements**, pas des positions. Il faut
+   relier une étape à un lieu nommé avant de savoir où pointer.
+2. Les tickets **#56** et **#57**, les deux suites qui échouaient déjà avant.
+3. Le décor du **QG de Tuco** est le prochain à meubler : lambris texturé, mais
+   un seul homme sur trois et un placeholder blanc sur le bureau.
+4. Les textures de **ville** peuvent maintenant monter en 256 : le nombre de blocs
+   est retrouvé, `generer` n'est plus dangereux.
 
 ### Le bilan
 
-Une session longue et productive, avec un incident sérieux — la ville — rattrapé
-parce que `game/assets/` est versionné. Ce qui a le mieux marché : mesurer avant
-et après à chaque étape, et refuser de conclure sans une image ou un nombre. Ce
-qui a manqué : vérifier ce qu'une commande allait faire **avant** de la lancer sur
-tout le dépôt.
+Longue session, deux incidents sérieux — la ville détruite, une affirmation fausse
+publiée — tous deux rattrapés. Ce qui a le mieux marché : refuser de conclure sans
+une image ou un nombre, et **remesurer quand deux nombres se contredisent** plutôt
+que de choisir celui qui arrange. Ce qui a manqué : vérifier ce qu'une commande
+allait faire avant de la lancer sur tout le dépôt, et un `Set-Content` PowerShell
+sur un fichier accentué alors que le piège est écrit depuis des semaines.
 
 ---
 
