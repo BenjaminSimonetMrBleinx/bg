@@ -151,16 +151,60 @@ Ce qui les a tous attrapés : **relire ce qu'on vient d'écrire**. Le garde-fou 
 hauteur dans `integrer`, `verifs/ou_est.gd` qui imprime l'emprise réelle en
 coordonnées monde, le point de mesure fixe dans `diag`. Aucun n'existait le matin.
 
+---
+
+## Troisième partie — la minimap, et ce qui manquait n'était pas le dessin
+
+Le ticket **#58** demandait « une minimap et qu'on puisse voir où aller ». Livré
+en **0.51.2**, taguée et publiée.
+
+Un disque en bas à droite, le joueur au centre, **les rues tracées par les
+lampadaires** — ils les bordent, donc les semer sur le disque dessine le réseau
+sans avoir à produire ni resynchroniser une carte. Le plan tourne avec la caméra.
+L'objectif est un point jaune qui **se colle au bord en pointe** quand il est hors
+de portée : le désert est à neuf cents mètres, trente fois hors du disque, et un
+marqueur qui disparaît ne sert qu'à l'endroit où on n'en a plus besoin. Aucun
+chiffre nulle part.
+
+### Ce qui a vraiment coûté
+
+**Pas le dessin — la donnée.** Une étape dit ce qui la **valide** : un dialogue,
+une zone, un objet ramassé. Aucun de ces évènements ne porte de position, et
+`dialogue:mission_jesse_maison` n'a pas à savoir où habite Jesse. Chaque étape a
+donc un champ `ou`, **écrit à la main plutôt que déduit** : une table de
+correspondance évènement-vers-nœud cachée dans un script serait exactement ce que
+`mission1.json` existe pour éviter.
+
+**15. Le symptôme d'une cible fausse est une absence.** Une cible mal nommée ne
+casse rien : pas de marqueur — soit exactement ce que fait une étape sans cible.
+Deux causes, un seul symptôme, et le symptôme est que rien ne s'affiche. D'où
+`test_boussole`, qui vérifie que les quinze étapes visent un nœud existant **et
+imprime sa position**. Il a servi tout de suite : `find_child` rend le *premier*
+nœud du nom demandé, il y a deux « Sortie » et plusieurs « Porte » dans le jeu, et
+l'étape du QG visait une porte du désert à six cents mètres de Tuco.
+
+**16. La sauvegarde du poste est toujours à la dernière étape.** Chaque capture
+joue puis sauvegarde : la mission finit inévitablement terminée, donc sans
+objectif, donc sans marqueur. Aucune image ne pouvait montrer une mission **en
+cours**. `Mission.aller_a()` existe pour ça — la leçon du piège 22 sous une autre
+forme : ce qui se mesure et ce qui se joue ont besoin de portes différentes.
+
+**17. Le téléphone se posait pile sur la minimap.** Il s'ouvre tout seul au
+changement d'étape et en recouvrait les trois quarts. Elle se cache maintenant
+sous tout ce qui passe devant. Vu à la première capture, pas au premier essai en
+jeu — et c'est bien pour ça qu'on capture.
+
 ### Où on reprend
 
-1. **La minimap** — ticket **#58**, demandé en séance. Le point à résoudre
-   d'abord : `mission1.json` décrit des **évènements**, pas des positions. Il faut
-   relier une étape à un lieu nommé avant de savoir où pointer.
-2. Les tickets **#56** et **#57**, les deux suites qui échouaient déjà avant.
-3. Le décor du **QG de Tuco** est le prochain à meubler : lambris texturé, mais
-   un seul homme sur trois et un placeholder blanc sur le bureau.
-4. Les textures de **ville** peuvent maintenant monter en 256 : le nombre de blocs
+1. Les tickets **#56** et **#57**, les deux suites qui échouaient déjà avant.
+2. Le décor du **QG de Tuco** est le prochain à meubler : lambris texturé, mais un
+   seul homme sur trois et un placeholder blanc sur le bureau.
+3. Les textures de **ville** peuvent maintenant monter en 256 : le nombre de blocs
    est retrouvé, `generer` n'est plus dangereux.
+4. Le **relevé de coût varie de 2,4 à 4,2 ms** d'une exécution à l'autre au même
+   point. Le bruit est plus grand que la plupart des effets qu'on mesure : c'est
+   la prochaine chose à resserrer si l'on veut trancher un jour sur un
+   millième.
 
 ### Le bilan
 
